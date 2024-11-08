@@ -3,7 +3,13 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 import { RegisterUserInput, UserLoginInput } from "../dto";
 import * as EmailValidator from "email-validator";
-import { PasswordSchema } from "../utility/PasswordUtility";
+import {
+  GeneratePassword,
+  GenerateSalt,
+  GenerateSignature,
+  PasswordSchema,
+  ValidatePassword,
+} from "../utility/PasswordUtility";
 
 export const register = async (
   req: Request,
@@ -25,24 +31,26 @@ export const register = async (
     return;
   }
 
-  // TODO: NEED TO HASH PASSWORD
-
-  const emailUsed = await prisma.user.findUnique({
+  const userAlreadyExists = await prisma.user.findUnique({
     where: {
       email,
     },
   });
 
-  if (emailUsed) {
+  if (userAlreadyExists) {
     res.status(422).json({ message: "There has been an error signing up" });
     return;
   }
+
+  const salt = await GenerateSalt();
+  const passwordHash = await GeneratePassword(password, salt);
 
   const newUser = await prisma.user.create({
     data: {
       email,
       username,
-      password,
+      password: passwordHash,
+      salt,
     },
   });
 
@@ -56,13 +64,40 @@ export const login = async (
 ) => {
   const { email, password } = <UserLoginInput>req.body;
 
-  // TODO: WE NEED ERROR CHECKING HERE
-
-  if (email || password) {
-    res.json({ message: "There has been an error signing up" });
+  if (!email || !password) {
+    res.status(422).json({ message: "There has been an error logging in" });
     return;
   }
-  res.status(200).json({ message: "login" });
+
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+
+  if (!user) {
+    res.status(422).json({ message: "There has been an error logging in" });
+    return;
+  }
+
+  const validPassword = await ValidatePassword(
+    password,
+    user.password,
+    user.salt,
+  );
+
+  if (!validPassword) {
+    res.status(422).json({ message: "There has been an error logging in" });
+    return;
+  }
+
+  const signature = GenerateSignature({
+    _id: user.id,
+    email: user.email,
+  });
+
+  res.status(200).json(signature);
+  return;
 };
 
 export const refresh = async (
