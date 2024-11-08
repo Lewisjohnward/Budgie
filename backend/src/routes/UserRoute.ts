@@ -24,6 +24,7 @@ router.post("/change-password", changePassword);
 router.get("/me");
 router.patch("/me");
 
+/* User preferences */
 router.get("/me/preferences");
 router.put("/me/preferences");
 
