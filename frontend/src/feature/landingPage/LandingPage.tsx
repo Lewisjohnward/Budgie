@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { bannerColor } from "../../core/theme/colors";
 
 export default function LandingPage() {
   return (
@@ -11,7 +12,9 @@ export default function LandingPage() {
 
 function TopBar() {
   return (
-    <div className="flex justify-between items-center px-[480px] py-4 bg-violet-950">
+    <div
+      className={`flex justify-between items-center px-[480px] py-4 ${bannerColor}`}
+    >
       <h1 className="text-2xl text-white font-bold">Budgie.</h1>
       <ul className="flex items-center space-x-10">
         <li className="text-white hover:cursor-pointer hover:underline">
