@@ -1,37 +1,64 @@
 import { Link } from "react-router-dom";
 import { bannerColor, bannerColorText } from "../../core/theme/colors";
 import { GiHamburgerMenu } from "../../core/icons/icons";
+import { useState } from "react";
 
 export default function LandingPage() {
+  const [menuVisible, setMenuVisible] = useState(true);
+
+  const toggleMenu = () => {
+    setMenuVisible((prevState) => !prevState);
+  };
+
+  const menu = {
+    visible: menuVisible,
+    toggle: toggleMenu,
+  };
+
   return (
     <div>
-      <LandingContent />
+      <LandingContent menu={menu} />
     </div>
   );
 }
 
-function LandingContent() {
+function LandingContent({
+  menu,
+}: {
+  menu: { visible: boolean; toggle: () => void };
+}) {
   return (
     <>
-      <TopBar />
+      <TopBar menu={menu} />
       <Body />
     </>
   );
 }
 
-function TopBar() {
+function TopBar({ menu }: { menu: { visible: boolean; toggle: () => void } }) {
   return (
-    <div className={`flex justify-center ${bannerColor}`}>
-      <div
-        className={`flex-grow flex justify-between items-center max-w-screen-xl py-4 px-2 lg:px-4 ${bannerColor}`}
-      >
-        <div className="flex items-center gap-8">
-          <Logo />
-          <NavBar />
+    <div>
+      <div className={`fixed w-full flex justify-center ${bannerColor}`}>
+        <div
+          className={`flex-grow flex justify-between items-center max-w-screen-xl py-4 px-2 lg:px-4 ${bannerColor}`}
+        >
+          <div className="flex items-center gap-8">
+            <Logo />
+            <NavBar />
+          </div>
+          <MenuButton onClick={menu.toggle} />
+          <AuthActions />
         </div>
-        <Menu />
-        <AuthActions />
       </div>
+      {menu.visible && <Menu />}
+    </div>
+  );
+}
+
+function Menu() {
+  return (
+    <div className="w-full h-screen bg-red-200">
+      <p>menu</p>
     </div>
   );
 }
@@ -43,15 +70,21 @@ function Logo() {
 function NavBar() {
   return (
     <ul className="hidden md:block">
-      <li className="text-white">What is Budgie?</li>
+      <Link className="text-white hover:underline" to={"#"}>
+        What is Budgie?
+      </Link>
     </ul>
   );
 }
 
-function Menu() {
+function MenuButton({ onClick }: { onClick: () => void }) {
   return (
-    <ul className="md:hidden">
-      <GiHamburgerMenu className="text-white" size={28} />
+    <ul className="md:hidden hover:cursor-pointer">
+      <GiHamburgerMenu
+        className="text-white"
+        size={28}
+        onClick={() => onClick()}
+      />
     </ul>
   );
 }
@@ -63,9 +96,9 @@ function AuthActions() {
         <Link to={`login`}>Log In</Link>
       </li>
       <li
-        className={`px-4 py-2 bg-lime-400 ${bannerColorText} rounded-md hover:cursor-pointer hover:bg-lime-500`}
+        className={`px-4 py-2 bg-lime-400 ${bannerColorText} font-semibold rounded-md hover:cursor-pointer hover:bg-lime-500`}
       >
-        <Link to={`login`}>Start Your Free Trial</Link>
+        <Link to={`login`}>Join Budgie</Link>
       </li>
     </ul>
   );
@@ -73,8 +106,37 @@ function AuthActions() {
 
 function Body() {
   return (
-    <div className="h-[5000px] bg-indigo-500">
-      <p>body</p>
+    <div>
+      <HomeHero />
+      <section className="h-[1000px] bg-amber-50"></section>
     </div>
+  );
+}
+
+function HomeHero() {
+  return (
+    <section className="flex justify-center pt-20 pb-40 bg-indigo-500">
+      <div className="max-w-screen-xl px-4 pt-20 bg-indigo-500">
+        <div className="flex gap-40">
+          <div>
+            <h1 className="text-4xl text-white font-bold pb-4">
+              Rethink your relationship with money.
+            </h1>
+            <p className="italic text-white pb-4">
+              Budgie aims to help thousands discover how to spend wisely, save
+              confidently, and live joyfully through a straightforward set of
+              transformative habits.
+            </p>
+            <Link
+              className={`block md:inline-block px-4 py-4 bg-lime-400 ${bannerColorText} text-center font-semibold rounded-md hover:cursor-pointer hover:bg-lime-500`}
+              to={`login`}
+            >
+              Join Budgie
+            </Link>
+          </div>
+          <div className="hidden md:block bg-pink-400 w-10/12"></div>
+        </div>
+      </div>
+    </section>
   );
 }
