@@ -1,7 +1,8 @@
-export const bannerColor = "bg-violet-950";
+export const bannerColor = "bg-sky-950";
+export const bannerColorText = "text-sky-950"
 
 export const lightColors = {
-  primary: "bg-violet-950",
+  primary: "bg-sky-950",
   // secondary: '#7f7f7f',
   // background: '#efefef',
   // border: '#303030',
@@ -13,4 +14,3 @@ export const darkColors = {
   // background: '#101010',
   // border: '#b0b0b0',
 };
-
