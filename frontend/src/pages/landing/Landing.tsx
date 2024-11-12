@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { bannerColor } from "../../core/theme/colors";
+import { bannerColor, bannerColorText } from "../../core/theme/colors";
 
 export default function LandingPage() {
   return (
@@ -20,7 +20,9 @@ function TopBar() {
         <li className="text-white hover:cursor-pointer hover:underline">
           <Link to={`login`}>Log In</Link>
         </li>
-        <li className="px-4 py-2 bg-lime-400 text-sky-900 rounded-md hover:cursor-pointer hover:bg-lime-500">
+        <li
+          className={`px-4 py-2 bg-lime-400 ${bannerColorText} rounded-md hover:cursor-pointer hover:bg-lime-500`}
+        >
           <Link to={`login`}>Start Your Free Trial</Link>
         </li>
       </ul>

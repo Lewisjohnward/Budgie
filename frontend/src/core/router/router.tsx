@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
-import { BudgetPage, LandingPage, LoginPage } from "../../feature";
+import { BudgetPage, LandingPage, LoginPage } from "../../pages";
 import { ErrorPage } from "../../components";
 
 const router = createBrowserRouter([
