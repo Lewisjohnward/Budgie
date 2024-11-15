@@ -1,44 +1,34 @@
 import { Link } from "react-router-dom";
 import { bannerColor, bannerColorText } from "../../core/theme/colors";
 import { GiHamburgerMenu } from "../../core/icons/icons";
-import { useState } from "react";
+import { useMenu } from "../budget/hooks/useMenu";
 
 export default function LandingPage() {
-  const [menuVisible, setMenuVisible] = useState(true);
+  const { menu } = useMenu();
 
-  const toggleMenu = () => {
-    setMenuVisible((prevState) => !prevState);
-  };
-
-  const menu = {
-    visible: menuVisible,
-    toggle: toggleMenu,
-  };
-
-  return (
-    <div>
-      <LandingContent menu={menu} />
-    </div>
-  );
+  return <LandingContent menu={menu} />;
 }
 
-function LandingContent({
-  menu,
-}: {
-  menu: { visible: boolean; toggle: () => void };
-}) {
+type MenuProps = {
+  menu: {
+    visible: boolean;
+    toggle: () => void;
+  };
+};
+
+function LandingContent({ menu }: MenuProps) {
   return (
     <>
       <TopBar menu={menu} />
-      <Body />
+      <Body menuVisible={menu.visible} />
     </>
   );
 }
 
-function TopBar({ menu }: { menu: { visible: boolean; toggle: () => void } }) {
+function TopBar({ menu }: MenuProps) {
   return (
     <div>
-      <div className={`fixed w-full flex justify-center ${bannerColor}`}>
+      <div className={`fixed w-full flex justify-center z-10 ${bannerColor}`}>
         <div
           className={`flex-grow flex justify-between items-center max-w-screen-xl py-4 px-2 lg:px-4 ${bannerColor}`}
         >
@@ -50,15 +40,17 @@ function TopBar({ menu }: { menu: { visible: boolean; toggle: () => void } }) {
           <AuthActions />
         </div>
       </div>
-      {menu.visible && <Menu />}
+      <Menu visible={menu.visible} />
     </div>
   );
 }
 
-function Menu() {
+function Menu({ visible }: { visible: boolean }) {
   return (
-    <div className="w-full h-screen bg-red-200">
-      <p>menu</p>
+    <div
+      className={`fixed w-full h-screen p-4 ${bannerColor} transform ease-in-out transition-transform duration-300 md:hidden ${visible ? "translate-y-0" : "-translate-y-full"}`}
+    >
+      <div className="flex justify-center items-center bg-red-200 transform-none overflow-scroll"></div>
     </div>
   );
 }
@@ -104,11 +96,11 @@ function AuthActions() {
   );
 }
 
-function Body() {
+function Body({ menuVisible }: { menuVisible: boolean }) {
   return (
-    <div>
+    <div className={`h-screen ${menuVisible && "overflow-hidden"}`}>
       <HomeHero />
-      <section className="h-[1000px] bg-amber-50"></section>
+      <section className="h-[5000px] bg-amber-50"></section>
     </div>
   );
 }
