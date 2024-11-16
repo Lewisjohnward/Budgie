@@ -5,8 +5,7 @@ import {
   LandingPage,
   LoginPage,
 } from "../../pages";
-import { ErrorPage } from "../../components";
-import RequireAuth from "../../pages/RequireAuth";
+import { RequireAuth, ErrorPage } from "../components";
 
 const router = createBrowserRouter([
   {
