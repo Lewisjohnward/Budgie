@@ -36,9 +36,9 @@ const baseQueryWithReauth: BaseQueryFn<
       api.dispatch(setCredentials({ ...refreshResult.data, user }));
       // Retry original query
       result = await baseQuery(args, api, extraOptions);
-    }
   } else {
     api.dispatch(logOut());
+  }
   }
   return result;
 };
