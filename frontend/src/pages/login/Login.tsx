@@ -1,8 +1,29 @@
+import { useNavigate } from "react-router-dom";
+import { login, selectCurrentToken } from "../../core/auth/authSlice";
+import { useAppDispatch, useAppSelector } from "../../core/hooks/reduxHooks";
+import { useEffect } from "react";
+
 export default function LoginPage() {
-  const login = () => console.log("login");
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const token = useAppSelector(selectCurrentToken);
+
+  useEffect(() => {
+    if (token) {
+      navigate("/budget", { replace: true });
+    }
+  }, []);
+
+  const testLogin = () => {
+    dispatch(login());
+    navigate("/budget");
+  };
+
   const loginWithGoogle = () => console.log("login");
 
-  return <LoginPageContent login={login} loginWithGoogle={loginWithGoogle} />;
+  return (
+    <LoginPageContent login={testLogin} loginWithGoogle={loginWithGoogle} />
+  );
 }
 
 function LoginPageContent({

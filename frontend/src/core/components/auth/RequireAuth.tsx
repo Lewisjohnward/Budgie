@@ -1,7 +1,9 @@
 import { Navigate, useLocation } from "react-router-dom";
+import { useAppSelector } from "../../hooks/reduxHooks";
+import { selectCurrentToken } from "../../auth/authSlice";
 
 const RequireAuth = ({ children }: { children: React.ReactNode }) => {
-  const token = false;
+  const token = useAppSelector(selectCurrentToken);
   const location = useLocation();
 
   return token ? (
