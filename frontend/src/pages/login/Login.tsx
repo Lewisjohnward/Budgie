@@ -1,12 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { login, selectCurrentToken } from "../../core/auth/authSlice";
+import { selectCurrentToken, setCredentials } from "../../core/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "../../core/hooks/reduxHooks";
 import { useEffect } from "react";
+import { useLoginMutation } from "../../core/api/authApiSlice";
 
 export default function LoginPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const token = useAppSelector(selectCurrentToken);
+  const [login, { isLoading }] = useLoginMutation();
 
   useEffect(() => {
     if (token) {
@@ -14,9 +16,30 @@ export default function LoginPage() {
     }
   }, []);
 
-  const testLogin = () => {
-    dispatch(login());
-    navigate("/budget");
+  const testLogin = async () => {
+    try {
+      const user = "john";
+      const userData = await login({
+        username: user,
+        password: "password",
+      }).unwrap();
+      dispatch(setCredentials({ ...userData, user }));
+      navigate("/budget");
+    } catch (error) {
+      // TODO: react redux login auth flow 30:01
+      // TODO: add typing
+      console.log(error);
+      if (!error) {
+        //setErrMsg('')
+        console.log("No server response");
+      } else if (error.status === 400) {
+        console.log("Missing username or password");
+      } else if (error.status === 401) {
+        console.log("Unauthorised");
+      } else {
+        console.log("login failed");
+      }
+    }
   };
 
   const loginWithGoogle = () => console.log("login");
