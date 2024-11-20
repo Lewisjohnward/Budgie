@@ -1,5 +1,6 @@
 export const bannerColor = "bg-sky-950";
 export const bannerColorText = "text-sky-950"
+export const buttonBlue = "bg-blue-600"
 
 export const lightColors = {
   primary: "bg-sky-950",

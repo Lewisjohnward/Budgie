@@ -2,7 +2,7 @@
 
 import { isRouteErrorResponse, useRouteError } from "react-router-dom";
 
-export default function ErrorPage() {
+export default function NotFound() {
   const error = useRouteError();
   let errorMessage: String;
 

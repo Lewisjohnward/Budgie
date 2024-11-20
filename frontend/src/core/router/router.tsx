@@ -1,12 +1,18 @@
-import { createBrowserRouter } from "react-router-dom";
-import { BudgetPage, LandingPage, LoginPage } from "../../pages";
-import { ErrorPage } from "../../components";
+import { createBrowserRouter, Outlet } from "react-router-dom";
+import {
+  AccountSettingsPage,
+  BudgetPage,
+  LandingPage,
+  LoginPage,
+  NotFoundPage,
+} from "../../pages";
+import { RequireAuth } from "../components";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <LandingPage />,
-    errorElement: <ErrorPage />,
+    errorElement: <NotFoundPage />,
   },
   {
     path: "/login",
@@ -14,7 +20,22 @@ const router = createBrowserRouter([
   },
   {
     path: "/budget",
-    element: <BudgetPage />,
+    element: (
+      <RequireAuth>
+        <Outlet />
+      </RequireAuth>
+    ),
+    errorElement: <NotFoundPage />,
+    children: [
+      {
+        path: "",
+        element: <BudgetPage />,
+      },
+      {
+        path: "settings",
+        element: <AccountSettingsPage />,
+      },
+    ],
   },
 ]);
 
