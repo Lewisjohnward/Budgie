@@ -2,11 +2,13 @@ import { createBrowserRouter, Outlet } from "react-router-dom";
 import {
   AccountSettingsPage,
   BudgetPage,
+  ForgotPassword,
   LandingPage,
   LoginPage,
   NotFoundPage,
-} from "../../pages";
-import { RequireAuth } from "../components";
+} from "@/pages";
+import { RequireAuth } from "@/core/components";
+import Signup from "@/pages/signup/Signup";
 
 const router = createBrowserRouter([
   {
@@ -17,6 +19,14 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />,
+  },
+  {
+    path: "/forgotpassword",
+    element: <ForgotPassword />,
+  },
+  {
+    path: "/signup",
+    element: <Signup />,
   },
   {
     path: "/budget",

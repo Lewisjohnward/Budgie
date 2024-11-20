@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import { useLoginMutation } from "@/core/api/authApiSlice";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
 import { Button } from "@/core/components/uiLibrary/button";
-import { buttonBlue, textBlue } from "@/core/theme/colors";
+import { buttonBlue, buttonBlueHover, textBlue } from "@/core/theme/colors";
 import {
   Form,
   FormControl,
@@ -22,58 +22,11 @@ import { FaGithub, FcGoogle, IoMdArrowBack } from "@/core/icons/icons";
 import { PasswordInput } from "@/core/components/uiLibrary/PasswordInput";
 import { Copyright } from "@/core/components";
 
-export default function LoginPage() {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const token = useAppSelector(selectCurrentToken);
-  const [login, { isLoading }] = useLoginMutation();
-
-  useEffect(() => {
-    if (token) {
-      navigate("/budget", { replace: true });
-    }
-  }, []);
-
-  const testLogin = async () => {
-    try {
-      const user = "john";
-      const userData = await login({
-        username: user,
-        password: "password",
-      }).unwrap();
-      dispatch(setCredentials({ ...userData, user }));
-      navigate("/budget");
-    } catch (error) {
-      // TODO: react redux login auth flow 30:01
-      // TODO: add typing
-      console.log(error);
-      if (!error) {
-        //setErrMsg('')
-        console.log("No server response");
-      } else if (error.status === 400) {
-        console.log("Missing username or password");
-      } else if (error.status === 401) {
-        console.log("Unauthorised");
-      } else {
-        console.log("login failed");
-      }
-    }
-  };
-
-  const loginWithGoogle = () => console.log("login");
-
-  return (
-    <LoginPageContent login={testLogin} loginWithGoogle={loginWithGoogle} />
-  );
+export default function SignupPage() {
+  return <SignupPageContent />;
 }
 
-function LoginPageContent({
-  login,
-  loginWithGoogle,
-}: {
-  login: () => void;
-  loginWithGoogle: () => void;
-}) {
+function SignupPageContent() {
   return (
     <div className="min-h-screen w-screen bg-[radial-gradient(rgba(53,87,129)_0%,rgba(28,65,72,1)_100%)]">
       <main className="flex flex-col h-screen space-y-10 pt-10 pb-4 px-4 md:px-10">
@@ -106,11 +59,12 @@ function Separator() {
 function Aside() {
   return (
     <aside className="xl:max-w-md space-y-5">
-      <h1 className="text-4xl font-bold text-white">Do money differently.</h1>
+      <h1 className="text-4xl font-bold text-white">
+        Give Budgie a shot free for 30 days
+      </h1>
       <p className="text-white">
-        Budgie aims to help thousands discover how to spend wisely, save
-        confidently, and live joyfully through a straightforward set of
-        transformative habits
+        Most Budgie users save £600 within their first two months (and we’re
+        betting you’ll save even more).
       </p>
     </aside>
   );
@@ -131,7 +85,6 @@ function LogoLink() {
 const formSchema = z.object({
   username: z.string(),
   password: z.string(),
-  stayLoggedIn: z.boolean().default(true).optional(),
 });
 
 function SocialAuth() {
@@ -181,11 +134,11 @@ function MyForm() {
   return (
     <div className="w-full xs:max-w-[500px] py-8 px-6 space-y-0 rounded-lg bg-white">
       <div className="space-y-5">
-        <h1 className="text-center text-4xl font-bold">Log In</h1>
+        <h1 className="text-center text-4xl font-bold">Sign Up</h1>
         <p className="text-center">
-          New to Budgie?
-          <Link to="/signup" className={`ml-2 ${textBlue}`}>
-            Sign up today.
+          Have an account?
+          <Link to="/login" className={`ml-2 ${textBlue}`}>
+            Log in
           </Link>
         </p>
       </div>
@@ -218,31 +171,10 @@ function MyForm() {
             )}
           />
 
-          <div className="flex justify-between items-center">
-            <FormField
-              control={form.control}
-              name="stayLoggedIn"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 border-none">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Keep me logged in</FormLabel>
-
-                    <FormMessage />
-                  </div>
-                </FormItem>
-              )}
-            />
-            <Link to={"/forgotPassword"} className={`text-sm ${textBlue}`}>
-              Forgot password?
-            </Link>
-          </div>
-          <Button type="submit" className={`${buttonBlue} w-full`}>
+          <Button
+            type="submit"
+            className={`${buttonBlue} w-full ${buttonBlueHover}`}
+          >
             Log In
           </Button>
         </form>
