@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import { bannerColor, bannerColorText } from "../../core/theme/colors";
+import { darkBlueBg, bannerColorText } from "../../core/theme/colors";
 import { GiHamburgerMenu } from "../../core/icons/icons";
-import { useMenu } from "../budget/hooks/useMenu";
+import { useMenu } from "@/pages/landing/hooks/useMenu";
 
 export default function LandingPage() {
   const { menu } = useMenu();
@@ -28,9 +28,9 @@ function LandingContent({ menu }: MenuProps) {
 function TopBar({ menu }: MenuProps) {
   return (
     <div>
-      <div className={`fixed w-full flex justify-center z-10 ${bannerColor}`}>
+      <div className={`fixed w-full flex justify-center z-10 ${darkBlueBg}`}>
         <div
-          className={`flex-grow flex justify-between items-center max-w-screen-xl py-4 px-2 lg:px-4 ${bannerColor}`}
+          className={`flex-grow flex justify-between items-center max-w-screen-xl py-4 px-2 lg:px-4 ${darkBlueBg}`}
         >
           <div className="flex items-center gap-8">
             <Logo />
@@ -48,7 +48,7 @@ function TopBar({ menu }: MenuProps) {
 function Menu({ visible }: { visible: boolean }) {
   return (
     <div
-      className={`fixed w-full h-screen p-4 ${bannerColor} transform ease-in-out transition-transform duration-300 md:hidden ${visible ? "translate-y-0" : "-translate-y-full"}`}
+      className={`fixed w-full h-screen p-4 ${darkBlueBg} transform ease-in-out transition-transform duration-300 md:hidden ${visible ? "translate-y-0" : "-translate-y-full"}`}
     >
       <div className="flex justify-center items-center bg-red-200 transform-none overflow-scroll"></div>
     </div>
