@@ -4,14 +4,15 @@ import {
   BudgetPage,
   LandingPage,
   LoginPage,
+  NotFoundPage,
 } from "../../pages";
-import { RequireAuth, ErrorPage } from "../components";
+import { RequireAuth } from "../components";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <LandingPage />,
-    errorElement: <ErrorPage />,
+    errorElement: <NotFoundPage />,
   },
   {
     path: "/login",
@@ -24,7 +25,7 @@ const router = createBrowserRouter([
         <Outlet />
       </RequireAuth>
     ),
-    errorElement: <ErrorPage />,
+    errorElement: <NotFoundPage />,
     children: [
       {
         path: "",
