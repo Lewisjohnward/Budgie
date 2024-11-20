@@ -6,4 +6,4 @@ export { default as NotFoundPage } from "@/pages/notFound/NotFound";
 
 export { default as LoginPage } from "@/pages/login/Login";
 export { default as SignUpPage } from "@/pages/signup/Signup"
-export { default as ForgotPassword } from "@/pages/forgotPassword/ForgotPassword"
+export { default as ForgotPasswordPage } from "@/pages/forgotPassword/ForgotPassword"

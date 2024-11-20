@@ -184,7 +184,7 @@ function MyForm() {
         <h1 className="text-center text-4xl font-bold">Log In</h1>
         <p className="text-center">
           New to Budgie?
-          <Link to="/signup" className={`ml-2 ${textBlue}`}>
+          <Link to="../signup" className={`ml-2 ${textBlue}`}>
             Sign up today.
           </Link>
         </p>
@@ -238,7 +238,7 @@ function MyForm() {
                 </FormItem>
               )}
             />
-            <Link to={"/forgotPassword"} className={`text-sm ${textBlue}`}>
+            <Link to={"../forgotPassword"} className={`text-sm ${textBlue}`}>
               Forgot password?
             </Link>
           </div>

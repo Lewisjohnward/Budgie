@@ -137,7 +137,7 @@ function MyForm() {
         <h1 className="text-center text-4xl font-bold">Sign Up</h1>
         <p className="text-center">
           Have an account?
-          <Link to="/login" className={`ml-2 ${textBlue}`}>
+          <Link to="../login" className={`ml-2 ${textBlue}`}>
             Log in
           </Link>
         </p>

@@ -2,12 +2,12 @@ import { createBrowserRouter, Outlet } from "react-router-dom";
 import {
   AccountSettingsPage,
   BudgetPage,
-  ForgotPassword,
+  ForgotPasswordPage,
   LandingPage,
   LoginPage,
   NotFoundPage,
 } from "@/pages";
-import { RequireAuth } from "@/core/components";
+import { Auth } from "@/core/components";
 import Signup from "@/pages/signup/Signup";
 
 const router = createBrowserRouter([
@@ -17,25 +17,34 @@ const router = createBrowserRouter([
     errorElement: <NotFoundPage />,
   },
   {
-    path: "/login",
-    element: <LoginPage />,
-  },
-  {
-    path: "/forgotpassword",
-    element: <ForgotPassword />,
-  },
-  {
-    path: "/signup",
-    element: <Signup />,
+    path: "/users",
+    element: (
+      <Auth>
+        <Outlet />
+      </Auth>
+    ),
+    children: [
+      {
+        path: "login",
+        element: <LoginPage />,
+      },
+      {
+        path: "forgotpassword",
+        element: <ForgotPasswordPage />,
+      },
+      {
+        path: "signup",
+        element: <Signup />,
+      },
+    ],
   },
   {
     path: "/budget",
     element: (
-      <RequireAuth>
+      <Auth required>
         <Outlet />
-      </RequireAuth>
+      </Auth>
     ),
-    errorElement: <NotFoundPage />,
     children: [
       {
         path: "",
