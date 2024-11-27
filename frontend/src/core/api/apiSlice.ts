@@ -32,8 +32,8 @@ const baseQueryWithReauth: BaseQueryFn<
   if (result.error && result.error.status === 403) {
     const refreshResult = await baseQuery("/refresh", api, extraOptions);
     if (refreshResult.data) {
-      const user = (api.getState() as RootState).auth.user;
-      api.dispatch(setCredentials({ ...refreshResult.data, user }));
+      const email = (api.getState() as RootState).auth.email;
+      api.dispatch(setCredentials({ ...refreshResult.data, email }));
       // Retry original query
       result = await baseQuery(args, api, extraOptions);
   } else {
