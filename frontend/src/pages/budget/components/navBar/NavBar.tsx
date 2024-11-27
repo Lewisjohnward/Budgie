@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { ReactNode } from "react";
+import { forwardRef, ReactNode } from "react";
 import { cn } from "@/core/lib/utils";
 import {
   BankIcon,
@@ -15,13 +15,31 @@ import { Link } from "react-router-dom";
 import { useNavbar } from "./hooks/useNavBar";
 import useMouseOver from "@/core/hooks/useMouseOver";
 
-export default function Navbar() {
+import { LogOut, User } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from "@/core/components/uiLibrary/dropdown-menu";
+
+export default function Navbar({ logout }: { logout: () => void }) {
   const { navbar } = useNavbar();
 
   return (
     <Layout
       open={navbar.open}
-      menu={<Menu displayText={navbar.open} animate={navbar.animateIcon} />}
+      menu={
+        <Menu
+          displayText={navbar.open}
+          animate={navbar.animateIcon}
+          logout={logout}
+        />
+      }
       items={
         <>
           <NavbarItem
@@ -102,35 +120,72 @@ function Layout({
 function Menu({
   displayText,
   animate,
+  logout,
 }: {
   displayText: boolean;
   animate: boolean;
+  logout: () => void;
 }) {
-  const { mouseOver, handleMouseOver } = useMouseOver();
-
   return (
-    <button
-      className="flex justify-between items-center gap-4 w-full h-14 px-2 rounded hover:bg-white/10"
-      onMouseEnter={handleMouseOver}
-    >
-      <div className="flex flex-row items-center gap-2">
-        <BirdIcon
-          className={clsx(
-            animate || mouseOver ? "animate-shake" : "",
-            "h-8 w-8",
-          )}
-        />
-        {displayText && (
-          <div>
-            <p className="text-left font-bold">budget</p>
-            <p className="text-xs text-white/70">placeholder@email.com</p>
-          </div>
-        )}
-      </div>
-      {displayText && <ChevronDownIcon />}
-    </button>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <MenuButton animate={animate} displayText={displayText} />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56">
+        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem onClick={() => console.log("navbar - user button")}>
+            <User />
+            <span>Profile</span>
+            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={logout}>
+            <LogOut />
+            <span>Log out</span>
+            <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
+
+type MenuBottonProps = {
+  animate: boolean;
+  displayText: boolean;
+};
+
+const MenuButton = forwardRef<HTMLButtonElement, MenuBottonProps>(
+  ({ displayText, animate, ...props }, ref) => {
+    const { mouseOver, handleMouseOver } = useMouseOver();
+
+    return (
+      <button
+        className="flex justify-between items-center gap-4 w-full h-14 px-2 rounded hover:bg-white/10"
+        onMouseEnter={handleMouseOver}
+        ref={ref}
+        {...props}
+      >
+        <div className="flex flex-row items-center gap-2">
+          <BirdIcon
+            className={clsx(
+              animate || mouseOver ? "animate-shake" : "",
+              "h-8 w-8",
+            )}
+          />
+          {displayText && (
+            <div>
+              <p className="text-left font-bold">budget</p>
+              <p className="text-xs text-white/70">placeholder@email.com</p>
+            </div>
+          )}
+        </div>
+        {displayText && <ChevronDownIcon />}
+      </button>
+    );
+  },
+);
 
 type NavBarItemProps = {
   to: string;
