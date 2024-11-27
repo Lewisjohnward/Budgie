@@ -7,6 +7,9 @@
     "start": "nodemon src/index.ts",
     "test": "make run-test"
   },
+  "prisma": {
+    "seed": "ts-node src/prisma/seed.ts"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {

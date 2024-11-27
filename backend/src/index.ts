@@ -6,7 +6,9 @@ import cors from "cors";
 import path from "path";
 import bodyParser from "body-parser";
 import { AudioRoute, UserRoute } from "./routes";
+import morgan from "morgan";
 import helmet from "helmet";
+import { BudgetRoute } from "./routes/BudgetRoute";
 
 // export const StartServer = async () => {
 if (!process.env.PAYLOAD_SECRET) {
@@ -27,28 +29,26 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/images", express.static(path.join(__dirname, "images")));
-// USE HELMET AND CORS MIDDLEWARES
+app.use(morgan("dev"));
 app.use(
   cors({
-    origin: ["*"], // Comma separated list of your urls to access your api. * means allow everything
-    credentials: true, // Allow cookies to be sent with requests
+    origin: "http://localhost:5173",
+    credentials: true,
+    methods: ["GET", "POST", "OPTIONS"], // Allow GET, POST, and OPTIONS
   }),
 );
 app.use(helmet());
 
-// app.use("/", (req, res) => {
-// return res.json("hello from back end");
-// });
-
 app.use("/user", UserRoute);
+app.use("/budget", BudgetRoute);
 
 app.get("/", (req, res) => {
   res.send("hello from /");
 });
 
-if (process.env.NODE_ENV !== 'test') {
-    app.listen(8000, () => {
-      console.log("Listening on port 8000");
+if (process.env.NODE_ENV !== "test") {
+  app.listen(8000, () => {
+    console.log("Listening on port 8000");
   });
 }
 
