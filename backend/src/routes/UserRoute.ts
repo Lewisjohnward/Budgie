@@ -7,6 +7,7 @@ import {
   resetPassword,
   changePassword,
 } from "../controllers";
+import { Authenticate } from "../middleware/CommonAuth";
 
 const router = express.Router();
 
@@ -20,8 +21,7 @@ router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/change-password", changePassword);
 
-/* User */
-router.get("/me");
+router.use(Authenticate);
 router.patch("/me");
 
 /* User preferences */

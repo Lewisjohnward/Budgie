@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+import { PrismaClient } from "@prisma/client";
 import { RegisterUserInput, UserLoginInput } from "../dto";
 import * as EmailValidator from "email-validator";
 import {
@@ -11,12 +10,14 @@ import {
   ValidatePassword,
 } from "../utility/PasswordUtility";
 
+const prisma = new PrismaClient();
+
 export const register = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const { email, username, password } = <RegisterUserInput>req.body;
+  const { email, password } = <RegisterUserInput>req.body;
 
   const validEmail = EmailValidator.validate(email);
   const inValidPassword = !PasswordSchema().validate(password);
@@ -26,7 +27,7 @@ export const register = async (
     return;
   }
 
-  if (!email || !username || !password || !validEmail) {
+  if (!email || !password || !validEmail) {
     res.status(422).json({ message: "There has been an error signing up" });
     return;
   }
@@ -48,7 +49,6 @@ export const register = async (
   const newUser = await prisma.user.create({
     data: {
       email,
-      username,
       password: passwordHash,
       salt,
     },
@@ -63,6 +63,7 @@ export const login = async (
   next: NextFunction,
 ) => {
   const { email, password } = <UserLoginInput>req.body;
+  console.log(email, password);
 
   if (!email || !password) {
     res.status(422).json({ message: "There has been an error logging in" });
@@ -95,6 +96,8 @@ export const login = async (
     _id: user.id,
     email: user.email,
   });
+
+  console.log("login was successful");
 
   res.status(200).json(signature);
   return;
