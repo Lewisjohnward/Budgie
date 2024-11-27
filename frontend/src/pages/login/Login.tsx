@@ -22,6 +22,14 @@ import { FaGithub, FcGoogle, IoMdArrowBack } from "@/core/icons/icons";
 import { PasswordInput } from "@/core/components/uiLibrary/PasswordInput";
 import { Copyright } from "@/core/components";
 
+const formSchema = z.object({
+  email: z.string(),
+  password: z.string(),
+  stayLoggedIn: z.boolean().default(false),
+});
+
+type FormValues = z.infer<typeof formSchema>;
+
 export default function LoginPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -34,16 +42,17 @@ export default function LoginPage() {
     }
   }, []);
 
-  const testLogin = async () => {
+  const handleLogin = async (values: FormValues) => {
+    const { email, password, stayLoggedIn } = values;
     try {
-      const user = "john";
-      const userData = await login({
-        username: user,
-        password: "password",
+      const token = await login({
+        email,
+        password,
       }).unwrap();
-      dispatch(setCredentials({ ...userData, user }));
-      navigate("/budget");
+      dispatch(setCredentials({ token, email }));
     } catch (error) {
+      console.log("Form submission error", error);
+      console.log("THERE HAS BEEN A LOGIN ERROR");
       // TODO: react redux login auth flow 30:01
       // TODO: add typing
       console.log(error);
@@ -63,15 +72,18 @@ export default function LoginPage() {
   const loginWithGoogle = () => console.log("login");
 
   return (
-    <LoginPageContent login={testLogin} loginWithGoogle={loginWithGoogle} />
+    <LoginPageContent
+      handleLogin={handleLogin}
+      loginWithGoogle={loginWithGoogle}
+    />
   );
 }
 
 function LoginPageContent({
-  login,
+  handleLogin,
   loginWithGoogle,
 }: {
-  login: () => void;
+  handleLogin: (values: FormValues) => void;
   loginWithGoogle: () => void;
 }) {
   return (
@@ -80,7 +92,7 @@ function LoginPageContent({
         <LogoLink />
         <div className="flex-grow flex flex-col lg:flex-row items-center lg:justify-center pt-20 lg:gap-20 space-y-10 lg:space-y-0">
           <Aside />
-          <MyForm />
+          <LoginForm handleLogin={handleLogin} />
         </div>
         <Copyright />
       </main>
@@ -128,12 +140,6 @@ function LogoLink() {
   );
 }
 
-const formSchema = z.object({
-  username: z.string(),
-  password: z.string(),
-  stayLoggedIn: z.boolean().default(true).optional(),
-});
-
 function SocialAuth() {
   return (
     <div className="space-y-4">
@@ -159,24 +165,10 @@ function SocialAuth() {
   );
 }
 
-function MyForm() {
+function LoginForm({ handleLogin }: { handleLogin: (formValues) => void }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
-
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      console.log(values);
-      // toast(
-      //   <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-      //     <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-      //   </pre>,
-      // );
-    } catch (error) {
-      console.error("Form submission error", error);
-      // toast.error("Failed to submit the form. Please try again.");
-    }
-  }
 
   return (
     <div className="w-full xs:max-w-[500px] py-8 px-6 space-y-0 rounded-lg bg-white">
@@ -190,10 +182,13 @@ function MyForm() {
         </p>
       </div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 py-5">
+        <form
+          onSubmit={form.handleSubmit(handleLogin)}
+          className="space-y-8 py-5"
+        >
           <FormField
             control={form.control}
-            name="username"
+            name="email"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Username</FormLabel>
