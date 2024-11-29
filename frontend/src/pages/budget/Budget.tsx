@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom";
 import { logOut } from "@/core/auth/authSlice";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
 import Navbar from "./components/navBar/NavBar";
@@ -7,23 +6,34 @@ import Body from "./components/categories/Categories";
 import { ReactNode } from "react";
 import { bgGray, borderBottom } from "@/core/theme/colors";
 import Assign from "./components/assign/Assign";
+import { useGetDataQuery } from "@/core/api/budgetApiSlice";
 
 export default function BudgetPage() {
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-
-  function logout(): void {
-    dispatch(logOut());
-    navigate("/login", { replace: true });
-  }
-
   return <BudgetContent />;
 }
 
 function BudgetContent() {
+  const dispatch = useAppDispatch();
+  const { data, isSuccess, isLoading } = useGetDataQuery();
+
+  if (isLoading) return <div>loading baby</div>;
+
+  if (isSuccess) {
+    console.log("budget content - is success block");
+    // console.log(data);
+
+    // console.log("accounts", data.data.accounts);
+    // console.log("budgets", data.budgets);
+  }
+
+  function logout() {
+    dispatch(logOut());
+  }
+
   return (
     <BudgetLayout
-      navBar={<Navbar />}
+      // navBar={<Navbar logout={logout} accounts={data.data.accounts} />}
+      navBar={<Navbar logout={logout}/>}
       header={<Header />}
       menu={<Menu />}
       categories={<Body />}
