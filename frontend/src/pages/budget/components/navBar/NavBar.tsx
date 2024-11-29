@@ -15,7 +15,7 @@ import { Link } from "react-router-dom";
 import { useNavbar } from "./hooks/useNavBar";
 import useMouseOver from "@/core/hooks/useMouseOver";
 
-import { LogOut, User } from "lucide-react";
+import { LogOut, Settings, User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -99,21 +99,21 @@ export default function Navbar({ logout }: { logout: () => void }) {
       items={
         <>
           <NavbarItem
-            to={"#"}
+            to={"allocation"}
             open={navbar.open}
             selected={true}
             icon={<MoneyNoteIcon />}
             text={"Budget"}
           />
           <NavbarItem
-            to={"#"}
+            to={"reflect"}
             open={navbar.open}
             selected={false}
             icon={<ClipboardIcon />}
             text={"Reflect"}
           />
           <NavbarItem
-            to={"#"}
+            to={"accounts"}
             open={navbar.open}
             selected={false}
             icon={<BankIcon />}
@@ -167,6 +167,8 @@ function Layout({
   );
 }
 
+// TODO: Navigate to settings button
+
 function Menu({
   displayText,
   animate,
@@ -189,6 +191,11 @@ function Menu({
             <User />
             <span>Profile</span>
             <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Settings />
+            Settings
+            <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={logout}>
             <LogOut />
@@ -294,6 +301,7 @@ function Accounts() {
 
   return (
     <div className="space-y-2 w-60">
+      <div className="flex flex-col"></div>
       {accounts.length > 0 ? (
         <div className="space-y-2">
           <button
@@ -316,7 +324,7 @@ function Accounts() {
               {accounts.map((account) => (
                 <Link
                   key={account.id}
-                  to={"#"}
+                  to={`account/${account.id}`}
                   className={clsx(
                     account.selected && "bg-white/10",
                     "flex justify-between pl-8 pr-4 py-2 text-sm rounded hover:bg-white/10",

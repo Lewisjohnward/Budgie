@@ -9,6 +9,8 @@ import {
 } from "@/pages";
 import { Auth } from "@/core/components";
 import Signup from "@/pages/signup/Signup";
+import Navbar from "@/pages/budget/components/navBar/NavBar";
+import { Allocation } from "@/pages/budget/Budget";
 
 const router = createBrowserRouter([
   {
@@ -42,19 +44,35 @@ const router = createBrowserRouter([
     path: "/budget",
     element: (
       <Auth required>
-        <Outlet />
+        <BudgetPage />
       </Auth>
     ),
     children: [
       {
-        path: "",
-        element: <BudgetPage />,
+        path: "allocation",
+        element: <Allocation />,
       },
       {
-        path: "settings",
-        element: <AccountSettingsPage />,
+        path: "reflect",
+        element: <div>reflect</div>,
+      },
+      {
+        path: "accounts",
+        element: <div>accounts</div>,
+      },
+      {
+        path: "account/:accountId",
+        element: <div>my account id</div>,
       },
     ],
+  },
+  {
+    path: "/settings",
+    element: (
+      <Auth required>
+        <AccountSettingsPage />,
+      </Auth>
+    ),
   },
 ]);
 
