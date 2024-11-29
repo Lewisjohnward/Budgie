@@ -29,7 +29,9 @@ function BudgetContent() {
   return (
     <main className="flex h-dvh">
       <Navbar logout={logout} />
-      <Outlet />
+      <div className="flex-grow">
+        <Outlet />
+      </div>
     </main>
   );
 }
