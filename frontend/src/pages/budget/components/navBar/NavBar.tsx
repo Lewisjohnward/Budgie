@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { forwardRef, ReactNode } from "react";
+import { forwardRef, ReactNode, useState } from "react";
 import { cn } from "@/core/lib/utils";
 import {
   BankIcon,
@@ -27,8 +27,64 @@ import {
   DropdownMenuTrigger,
 } from "@/core/components/uiLibrary/dropdown-menu";
 
+const mockAccounts = [
+  {
+    id: "595812dc-fa03-4def-85ae-a24d92dfee1c",
+    userId: "08eeeb07-8932-49b5-a5d9-ea55f888c0e1",
+    name: "Halifax",
+    type: "BANK",
+    // TODO: this false is not coming from the db
+    selected: false,
+    balance: "120.00",
+    createdAt: "2024-11-29T09:09:42.232Z",
+    updatedAt: "2024-11-29T09:09:42.232Z",
+    transactions: [
+      {
+        id: "3bbf025e-01ad-4dcd-8094-d230eb3b62ec",
+        accountId: "595812dc-fa03-4def-85ae-a24d92dfee1c",
+        categoryId: "25678c61-b29c-45b7-84a2-941430375462",
+        budgetId: "93362012-e02d-4d26-a9fc-da4e8d4c6cde",
+        amount: "12.5",
+        date: "2024-11-29T09:09:42.242Z",
+        payee: "Supermart",
+        memo: "Chicken thighs, mince",
+        cleared: false,
+        createdAt: "2024-11-29T09:09:42.242Z",
+        updatedAt: "2024-11-29T09:09:42.242Z",
+      },
+      {
+        id: "5f39b028-1e12-4e64-9c3a-c0e061c9ff56",
+        accountId: "595812dc-fa03-4def-85ae-a24d92dfee1c",
+        categoryId: "25678c61-b29c-45b7-84a2-941430375462",
+        budgetId: "93362012-e02d-4d26-a9fc-da4e8d4c6cde",
+        amount: "0.8",
+        date: "2024-11-29T09:09:42.242Z",
+        payee: "M&S",
+        memo: "Sparkling water",
+        cleared: false,
+        createdAt: "2024-11-29T09:09:42.242Z",
+        updatedAt: "2024-11-29T09:09:42.242Z",
+      },
+    ],
+  },
+  {
+    id: "585812dc-fa03-4def-85ae-a24d92dfee1c",
+    userId: "08eeeb07-8932-49b5-a5d9-ea55f888c0e1",
+    name: "Natwest",
+    type: "BANK",
+    // TODO: this false is not coming from the db
+    selected: false,
+    balance: "0.00",
+    createdAt: "2024-11-29T09:09:42.232Z",
+    updatedAt: "2024-11-29T09:09:42.232Z",
+    transactions: [],
+  },
+];
+
 export default function Navbar({ logout }: { logout: () => void }) {
   const { navbar } = useNavbar();
+
+  const accounts = mockAccounts;
 
   return (
     <Layout
@@ -65,8 +121,7 @@ export default function Navbar({ logout }: { logout: () => void }) {
           />
         </>
       }
-      noAccountMessage={navbar.open && <NoAccountMessage />}
-      button={navbar.open && <AddAccountBtn />}
+      accounts={navbar.open && <Accounts />}
       toggleButton={
         <ToggleMenu open={navbar.open} toggle={navbar.toggleOpen} />
       }
@@ -78,15 +133,13 @@ function Layout({
   menu,
   items,
   toggleButton,
-  noAccountMessage,
+  accounts,
   open,
-  button,
 }: {
   menu: ReactNode;
   items: ReactNode;
   toggleButton: ReactNode;
-  noAccountMessage: ReactNode;
-  button: ReactNode;
+  accounts: ReactNode;
   open: boolean;
 }) {
   return (
@@ -99,10 +152,7 @@ function Layout({
       <div className="space-y-4">
         {menu}
         <div className="space-y-1">{items}</div>
-        <div className="space-y-2">
-          {noAccountMessage}
-          {button}
-        </div>
+        <div className="space-y-2">{accounts}</div>
       </div>
 
       <div
@@ -228,15 +278,76 @@ function NavbarItem({
   );
 }
 
+function Accounts() {
+  const accounts = mockAccounts;
+  const currency = "£";
+  const [open, setOpen] = useState(false);
+  const toggleOpen = () => {
+    setOpen((prev) => !prev);
+  };
+
+  const sum = "120.00";
+
+  // TODO: need to handle mutiple accounts with sum of money
+  // TODO: handle negative numbers
+  // TODO: persist open close budget state when opening navbar
+
+  return (
+    <div className="space-y-2 w-60">
+      {accounts.length > 0 ? (
+        <div className="space-y-2">
+          <button
+            onClick={toggleOpen}
+            className="flex items-center justify-between px-4 gap-2 w-full"
+          >
+            <div className="flex items-center gap-2 tracking-wider">
+              {open ? (
+                // TODO: move into own component open prop?
+                <ChevronDownIcon />
+              ) : (
+                <ChevronDownIcon className="-rotate-90" />
+              )}
+              <p>BUDGET</p>
+            </div>
+            <p className="min-w-max">{`${currency} ${sum}`}</p>
+          </button>
+          {open && (
+            <div className="space-y-2">
+              {accounts.map((account) => (
+                <Link
+                  key={account.id}
+                  to={"#"}
+                  className={clsx(
+                    account.selected && "bg-white/10",
+                    "flex justify-between pl-8 pr-4 py-2 text-sm rounded hover:bg-white/10",
+                  )}
+                >
+                  <p>{account.name}</p>
+                  <p>{`${currency} ${account.balance}`}</p>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <NoAccountMessage />
+      )}
+      <AddAccountBtn />
+    </div>
+  );
+}
+
 function NoAccountMessage() {
   return (
-    <div className={clsx("px-2 py-2 bg-white/10 rounded text-sm")}>
-      <div className="w-56">
-        <p className="font-semibold">No Accounts</p>
-        <p>
-          You can't budget without adding accounts to YNAB first. How about
-          adding one now?
-        </p>
+    <div className="space-y-2">
+      <div className={clsx("px-2 py-2 bg-white/10 rounded text-sm")}>
+        <div className="w-56">
+          <p className="font-semibold">No Accounts</p>
+          <p>
+            You can't budget without adding accounts to YNAB first. How about
+            adding one now?
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -247,11 +358,11 @@ function AddAccountBtn() {
   return (
     <button
       onMouseEnter={handleMouseOver}
-      className="flex items-center  py-1 pl-1 pr-4 rounded bg-white/10 hover:bg-white/10"
+      className="flex items-center py-1 pl-1 pr-3 ml-2 rounded bg-white/10 hover:bg-white/20"
     >
-      <div className="flex items-center w-32">
+      <div className="flex items-center gap-1">
         <AddIcon className={clsx(mouseOver && "animate-shake", "h-6 w-6")} />
-        {true && <p className="text-md">Add Account</p>}
+        {true && <p className="text-sm">Add Account</p>}
       </div>
     </button>
   );
