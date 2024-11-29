@@ -9,8 +9,9 @@ import {
 } from "@/pages";
 import { Auth } from "@/core/components";
 import Signup from "@/pages/signup/Signup";
-import Navbar from "@/pages/budget/components/navBar/NavBar";
-import { Allocation } from "@/pages/budget/Budget";
+import { Allocation } from "@/pages/budget/allocation/Allocation";
+import { Account } from "@/pages/budget/account/Account";
+import { Reflect } from "@/pages/budget/reflect/Reflect";
 
 const router = createBrowserRouter([
   {
@@ -54,15 +55,11 @@ const router = createBrowserRouter([
       },
       {
         path: "reflect",
-        element: <div>reflect</div>,
-      },
-      {
-        path: "accounts",
-        element: <div>accounts</div>,
+        element: <Reflect />,
       },
       {
         path: "account/:accountId",
-        element: <div>my account id</div>,
+        element: <Account />,
       },
     ],
   },

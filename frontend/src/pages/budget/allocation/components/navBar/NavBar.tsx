@@ -113,7 +113,7 @@ export default function Navbar({ logout }: { logout: () => void }) {
             text={"Reflect"}
           />
           <NavbarItem
-            to={"accounts"}
+            to={"account/all"}
             open={navbar.open}
             selected={false}
             icon={<BankIcon />}
