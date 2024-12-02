@@ -183,8 +183,8 @@ function Menu({
       <DropdownMenuTrigger asChild>
         <MenuButton animate={animate} displayText={displayText} />
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+      <DropdownMenuContent className="w-56 caret-transparent">
+        <DropdownMenuLabel className="text-sm">My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={() => console.log("navbar - user button")}>
@@ -194,7 +194,7 @@ function Menu({
           </DropdownMenuItem>
           <DropdownMenuItem>
             <Settings />
-            Settings
+            <span>Settings</span>
             <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={logout}>

@@ -1,6 +1,6 @@
 import { logOut } from "@/core/auth/authSlice";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
-import Navbar from "./allocation/components/navBar/NavBar";
+import Navbar from "./navBar/NavBar";
 import { useGetDataQuery } from "@/core/api/budgetApiSlice";
 import { Outlet } from "react-router-dom";
 
