@@ -1,5 +1,6 @@
 import { mockAccounts } from "@/mockData";
 import {
+  Column,
   ColumnDef,
   flexRender,
   getCoreRowModel,
@@ -80,44 +81,12 @@ type TableProps = {
   transactions: Transaction[];
 };
 
-// const columns = [
-//   {
-//     accessorKey: "date",
-//     header: "Date",
-//     cell: (props: any) => <p>{props.getValue}</p>,
-//   },
-//   {
-//     accessorKey: "payee",
-//     header: "Payee",
-//     cell: (props: any) => <p>{props.getValue}</p>,
-//   },
-// ];
-//
-// function Table({ transactions }: TableProps) {
-//   const table = useReactTable({
-//     data: transactions,
-//     columns,
-//     getCoreRowModel: getCoreRowModel(),
-//   });
-//
-//   return (
-//     <div>
-//       {table.getHeaderGroups().map((headerGroup) => (
-//         <div key={headerGroup.id}>
-//           {headerGroup.headers.map((header) => (
-//             <div key={header.id}>{header.column.columnDef.header}</div>
-//           ))}
-//         </div>
-//       ))}
-//     </div>
-//   );
-// }
-
 const columns: ColumnDef<Transaction>[] = [
   {
     id: "select",
-    enableResizing: true,
-    size: 40,
+    enableResizing: false,
+    // size: 20,
+    size: 30,
     header: ({ table }) => (
       <div className="flex items-center ">
         <Checkbox
@@ -143,29 +112,25 @@ const columns: ColumnDef<Transaction>[] = [
   {
     accessorKey: "date",
     enableResizing: true,
-    size: 20,
+    // size: 20,
     header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Date
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
+      return <SortButton column={column} text="Date" />;
     },
     cell: ({ row }) => {
       const date = new Date(row.getValue("date"));
-      const formattedDate = new Intl.DateTimeFormat("en-US").format(date);
+      //"en-US"
+      const formattedDate = new Intl.DateTimeFormat("en-GB").format(date);
       return <div className="text-left font-medium">{formattedDate}</div>;
     },
   },
   {
     accessorKey: "outflow",
-    header: "Outflow",
+    // header: "Outflow",
     enableResizing: true,
-    size: 20,
+    // size: 20,
+    header: ({ column }) => {
+      return <SortButton column={column} text={"Outflow"} />;
+    },
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("outflow"));
       if (amount === 0) return null; // Or return "" for an empty string
@@ -174,13 +139,15 @@ const columns: ColumnDef<Transaction>[] = [
         currency: "GBP",
       }).format(amount);
 
-      return <div className="text-left font-medium">{formatted}</div>;
+      return <div className="text-right font-medium">{formatted}</div>;
     },
   },
   {
     accessorKey: "inflow",
     enableResizing: true,
-    header: "Inflow",
+    header: ({ column }) => {
+      return <SortButton column={column} text={"Inflow"} />;
+    },
     size: 20,
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("inflow"));
@@ -190,22 +157,51 @@ const columns: ColumnDef<Transaction>[] = [
         currency: "GBP",
       }).format(amount);
 
-      return <div className="font-medium">{formatted}</div>;
+      return <div className="text-right font-medium">{formatted}</div>;
     },
   },
   {
     accessorKey: "payee",
     enableResizing: true,
-    size: 20,
-    header: "Payee",
+    header: ({ column }) => {
+      return <SortButton column={column} text={"Payee"} />;
+    },
   },
   {
     accessorKey: "memo",
     enableResizing: false,
-    size: 20,
-    header: "Memo",
+    header: ({ column }) => {
+      return <SortButton column={column} text={"Memo"} />;
+    },
   },
 ];
+
+function SortButton({
+  column,
+  text,
+}: {
+  column: Column<Transaction, unknown>;
+  text: string;
+}) {
+  const isSorted = column.getIsSorted();
+
+  return (
+    <Button
+      variant="ghost"
+      onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      className="w-full flex items-center justify-between hover:bg-transparent"
+    >
+      <span>{text}</span>
+      {isSorted == "asc" ? (
+        <ArrowUp />
+      ) : isSorted == "desc" ? (
+        <ArrowDown />
+      ) : (
+        ""
+      )}
+    </Button>
+  );
+}
 
 import {
   Table,
@@ -216,16 +212,18 @@ import {
   TableRow,
 } from "@/core/components/uiLibrary/table";
 import { useState } from "react";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { Button } from "@/core/components/uiLibrary/button";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
+import clsx from "clsx";
 
 function MyTable({ transactions }: TableProps) {
+  const [data, setData] = useState(transactions);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState({});
 
   const table = useReactTable({
-    data: transactions,
+    data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
@@ -243,20 +241,21 @@ function MyTable({ transactions }: TableProps) {
   // TODO: add resizer
 
   return (
-    <div className="w-full">
+    <div>
       <div className="flex-1 text-sm text-muted-foreground">
         {table.getFilteredSelectedRowModel().rows.length} of{" "}
         {table.getFilteredRowModel().rows.length} row(s) selected.
       </div>
       <Table style={{ width: `${table.getTotalSize()}` }}>
-        <TableHeader>
+        <TableHeader className="border border-t-gray-300/70">
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="hover:bg-transparent">
               {headerGroup.headers.map((header) => {
                 const isResizable = header.column.getCanResize();
                 return (
                   <TableHead
                     key={header.id}
+                    className="relative"
                     style={{ width: `${header.getSize()}px` }}
                   >
                     {header.isPlaceholder
@@ -265,13 +264,24 @@ function MyTable({ transactions }: TableProps) {
                           header.column.columnDef.header,
                           header.getContext(),
                         )}
+                    <div
+                      // onMouseDown={header.getResizeHandler()}
+                      // onTouchStart={header.getResizeHandler()}
+                      // className={clsx(
+                      //   isResizable ? "cursor-col-resize" : "cursor-auto",
+                      //   "absolute top-0 right-0 w-[1px] h-full bg-gray-300",
+                      // )}
+                      className={clsx(
+                        "absolute top-0 right-0 w-[1px] h-full bg-gray-300/70",
+                      )}
+                    />
                   </TableHead>
                 );
               })}
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody>
+        <TableBody className="border border-b-gray-300/70">
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow
@@ -279,7 +289,10 @@ function MyTable({ transactions }: TableProps) {
                 data-state={row.getIsSelected() && "selected"}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
+                  <TableCell
+                    key={cell.id}
+                    style={{ width: `${cell.column.getSize()}px` }}
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
