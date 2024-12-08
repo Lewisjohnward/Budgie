@@ -7,12 +7,11 @@ import {
   LoginPage,
   NotFoundPage,
 } from "@/pages";
-import { Auth } from "@/core/components";
+import { Auth, PersistLogin } from "@/core/components";
 import Signup from "@/pages/signup/Signup";
 import { Allocation } from "@/pages/budget/allocation/Allocation";
 import { Account } from "@/pages/budget/account/Account";
 import { Reflect } from "@/pages/budget/reflect/Reflect";
-import { PersistLogin } from "@/App";
 
 const router = createBrowserRouter([
   {
