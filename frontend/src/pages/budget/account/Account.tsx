@@ -148,7 +148,6 @@ const columns: ColumnDef<Transaction>[] = [
     header: ({ column }) => {
       return <SortButton column={column} text={"Inflow"} />;
     },
-    size: 20,
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("inflow"));
       if (amount === 0) return null; // Or return "" for an empty string
