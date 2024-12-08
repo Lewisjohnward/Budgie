@@ -85,12 +85,12 @@ function AuthActions() {
   return (
     <ul className="hidden md:flex items-center space-x-10">
       <li className="text-white hover:cursor-pointer hover:underline">
-        <Link to={`/users/login`}>Log In</Link>
+        <Link to={`/user/login`}>Log In</Link>
       </li>
       <li
         className={`px-4 py-2 bg-lime-400 ${bannerColorText} font-semibold rounded-md hover:cursor-pointer hover:bg-lime-500`}
       >
-        <Link to={`/users/login`}>Join Budgie</Link>
+        <Link to={`/user/login`}>Join Budgie</Link>
       </li>
     </ul>
   );
@@ -121,7 +121,7 @@ function HomeHero() {
             </p>
             <Link
               className={`block md:inline-block px-4 py-4 bg-lime-400 ${bannerColorText} text-center font-semibold rounded-md hover:cursor-pointer hover:bg-lime-500`}
-              to={`/users/login`}
+              to={`/user/login`}
             >
               Join Budgie
             </Link>
