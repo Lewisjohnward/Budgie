@@ -1,8 +1,9 @@
 import { logOut } from "@/core/auth/authSlice";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
 import Navbar from "./navBar/NavBar";
-import { useGetDataQuery } from "@/core/api/budgetApiSlice";
+import * as budgetApiSlice from "@/core/api/budgetApiSlice";
 import { Outlet } from "react-router-dom";
+import { useLogoutMutation } from "@/core/api/authApiSlice";
 
 export default function BudgetPage() {
   return <BudgetContent />;
@@ -10,25 +11,27 @@ export default function BudgetPage() {
 
 function BudgetContent() {
   const dispatch = useAppDispatch();
-  const { data, isSuccess, isLoading } = useGetDataQuery();
+  const [logout] = useLogoutMutation();
+  // const { data, isSuccess, isLoading } = useGetDataQuery();
 
-  if (isLoading) return <div>loading baby</div>;
+  // if (isLoading) return <div>loading baby</div>;
+  //
+  // if (isSuccess) {
+  //   console.log("budget content - is success block");
+  //   // console.log(data);
+  //
+  //   // console.log("accounts", data.data.accounts);
+  //   // console.log("budgets", data.budgets);
+  // }
 
-  if (isSuccess) {
-    console.log("budget content - is success block");
-    // console.log(data);
-
-    // console.log("accounts", data.data.accounts);
-    // console.log("budgets", data.budgets);
-  }
-
-  function logout() {
+  async function handleLogout() {
     dispatch(logOut());
+    logout();
   }
 
   return (
     <main className="flex h-dvh">
-      <Navbar logout={logout} />
+      <Navbar logout={handleLogout} />
       <div className="flex-grow">
         <Outlet />
       </div>
