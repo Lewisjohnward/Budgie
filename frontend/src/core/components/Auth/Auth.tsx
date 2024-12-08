@@ -9,8 +9,7 @@ const Auth = ({
   children: React.ReactNode;
   required?: boolean;
 }) => {
-  // const token = useAppSelector(selectCurrentToken);
-  const token = true;
+  const token = useAppSelector(selectCurrentToken);
   const location = useLocation();
 
   if (required) {
@@ -22,7 +21,7 @@ const Auth = ({
   }
 
   return token ? (
-    <Navigate to="/budget" state={{ from: location }} replace />
+    <Navigate to="/budget/allocation" state={{ from: location }} replace />
   ) : (
     children
   );
