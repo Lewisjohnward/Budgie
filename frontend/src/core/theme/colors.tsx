@@ -5,10 +5,11 @@ export const darkBlueText = "text-sky-950";
 export const bannerColorText = "text-sky-950";
 export const buttonBlue = "bg-blue-600";
 export const buttonBlueHover = "hover:bg-blue-600/70";
+export const buttonBlueDisabled = "bg-sky-950/80";
 export const textBlue = "text-blue-600";
 export const bgGray = "bg-gray-200";
 
-export const borderBottom = "border-b-gray-200"
+export const borderBottom = "border-b-gray-200";
 
 export const lightColors = {
   primary: "bg-sky-950",
