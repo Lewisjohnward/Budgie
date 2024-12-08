@@ -10,12 +10,12 @@ import {
   MoneyNoteIcon,
   AddIcon,
 } from "@/core/icons/icons";
-import { darkBlueBg } from "@/core/theme/colors";
+import { darkBlueBg, darkBlueText } from "@/core/theme/colors";
 import { Link } from "react-router-dom";
 import { useNavbar } from "./hooks/useNavBar";
 import useMouseOver from "@/core/hooks/useMouseOver";
 
-import { LogOut, Settings, User } from "lucide-react";
+import { LogOut, Pencil, Settings, User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +26,16 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/core/components/uiLibrary/dropdown-menu";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/core/components/uiLibrary/dialog";
+import { AddAccount } from "@/core/components/AddAccountForm";
 
 const mockAccounts = [
   {
@@ -83,8 +93,6 @@ const mockAccounts = [
 
 export default function Navbar({ logout }: { logout: () => void }) {
   const { navbar } = useNavbar();
-
-  const accounts = mockAccounts;
 
   return (
     <Layout
@@ -146,7 +154,7 @@ function Layout({
     <div
       className={clsx(
         open ? "w-64" : "w-16",
-        `flex flex-col justify-between gap-1 h-full py-4 px-2 ${darkBlueBg} text-white select-none transition-[width] duration-300`,
+        `flex flex-col justify-between gap-1 h-full py-4 px-2 caret-transparent ${darkBlueBg} text-white select-none transition-[width] duration-300`,
       )}
     >
       <div className="space-y-4">
@@ -322,17 +330,7 @@ function Accounts() {
           {open && (
             <div className="space-y-2">
               {accounts.map((account) => (
-                <Link
-                  key={account.id}
-                  to={`account/${account.id}`}
-                  className={clsx(
-                    account.selected && "bg-white/10",
-                    "flex justify-between pl-8 pr-4 py-2 text-sm rounded hover:bg-white/10",
-                  )}
-                >
-                  <p>{account.name}</p>
-                  <p>{`${currency} ${account.balance}`}</p>
-                </Link>
+                <Account account={account} currency={currency} />
               ))}
             </div>
           )}
@@ -342,6 +340,57 @@ function Accounts() {
       )}
       <AddAccountBtn />
     </div>
+  );
+}
+
+// TODO: HANDLE THE ROUTING ON THE NAVBAR WHEN EACH PAAGE IS OPEN
+// TODO: MAYBE SPLIT UP THE NAVBAR COMPONENTS
+// TODO: FIX TYPING OF Account component
+
+function Account({ account, currency }: { account: any; currency: any }) {
+  const [mouseOver, setMouseOver] = useState(false);
+  const handleMouseEnter = () => setMouseOver(true);
+  const handleMouseLeave = () => setMouseOver(false);
+
+  return (
+    <Link
+      to={`account/${account.id}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className={clsx(
+        (account.selected || mouseOver) && "bg-white/10",
+        "flex justify-between items-center gap-4 pl-4 pr-4 py-2 text-sm rounded",
+      )}
+    >
+      <div
+        onClick={(e) => {
+          e.preventDefault();
+        }}
+        className="flex justify-center items-center w-5 h-5"
+      >
+        <Dialog
+          onOpenChange={(open) => {
+            if (!open) handleMouseLeave();
+          }}
+        >
+          <DialogTrigger asChild>
+            {mouseOver && <Pencil className="w-3 h-3 hover:opacity-30" />}
+          </DialogTrigger>
+          <DialogContent className="w-80">
+            <DialogHeader className="space-y-4">
+              <DialogTitle className={`text-center ${darkBlueText}`}>
+                Edit Account
+              </DialogTitle>
+            </DialogHeader>
+            <div>placeholder Account component</div>
+          </DialogContent>
+        </Dialog>
+      </div>
+      <div className="grow flex justify-between">
+        <p>{account.name}</p>
+        <p>{`${currency} ${account.balance}`}</p>
+      </div>
+    </Link>
   );
 }
 
@@ -364,15 +413,32 @@ function NoAccountMessage() {
 function AddAccountBtn() {
   const { mouseOver, handleMouseOver } = useMouseOver();
   return (
-    <button
-      onMouseEnter={handleMouseOver}
-      className="flex items-center py-1 pl-1 pr-3 ml-2 rounded bg-white/10 hover:bg-white/20"
-    >
-      <div className="flex items-center gap-1">
-        <AddIcon className={clsx(mouseOver && "animate-shake", "h-6 w-6")} />
-        {true && <p className="text-sm">Add Account</p>}
-      </div>
-    </button>
+    <Dialog>
+      <DialogTrigger
+        onMouseEnter={handleMouseOver}
+        className="flex items-center py-1 pl-1 pr-3 ml-2 rounded bg-white/10 hover:bg-white/20"
+      >
+        <div className="flex items-center gap-1">
+          <AddIcon className={clsx(mouseOver && "animate-shake", "h-6 w-6")} />
+          {true && <p className="text-sm">Add Account</p>}
+        </div>
+      </DialogTrigger>
+      <DialogContent
+        onPointerDownOutside={(e) => e.preventDefault()}
+        className="w-80"
+      >
+        <DialogHeader className="space-y-4">
+          <DialogTitle className={`text-center ${darkBlueText}`}>
+            Add Account
+          </DialogTitle>
+          <DialogDescription>
+            Let's get started! No need to worry—if you change your mind, you can
+            always alter the information later.
+          </DialogDescription>
+        </DialogHeader>
+        <AddAccount />
+      </DialogContent>
+    </Dialog>
   );
 }
 
