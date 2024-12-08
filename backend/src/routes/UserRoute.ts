@@ -6,6 +6,7 @@ import {
   forgotPassword,
   resetPassword,
   changePassword,
+  logout,
 } from "../controllers";
 import { Authenticate } from "../middleware/CommonAuth";
 
@@ -14,6 +15,7 @@ const router = express.Router();
 /* Authentication */
 router.post("/register", register);
 router.post("/login", login);
+router.post("/logout", logout);
 router.post("/refresh", refresh);
 
 /* Password */

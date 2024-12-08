@@ -8,6 +8,8 @@ import bodyParser from "body-parser";
 import { AudioRoute, UserRoute } from "./routes";
 import morgan from "morgan";
 import helmet from "helmet";
+import cookieParser from "cookie-parser";
+
 import { BudgetRoute } from "./routes/BudgetRoute";
 
 // export const StartServer = async () => {
@@ -27,6 +29,7 @@ console.log(test);
 const app = express();
 
 app.use(bodyParser.json());
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/images", express.static(path.join(__dirname, "images")));
 app.use(morgan("dev"));

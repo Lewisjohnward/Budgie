@@ -13,6 +13,7 @@ model User {
   email    String   @unique
   password String
   salt     String
+  refreshToken String? @unique
   budgets  Budget[]
   accounts Account[]
 }

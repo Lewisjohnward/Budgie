@@ -35,29 +35,38 @@ export const ValidatePassword = async (
   return (await GeneratePassword(enteredPassword, salt)) === savedPassword;
 };
 
-export const GenerateSignature = (payload: UserPayload) => {
+export const GenerateAccessToken = (payload: UserPayload) => {
+  return jwt.sign(payload, process.env.PAYLOAD_SECRET!, { expiresIn: "10s" });
+};
+
+export const GenerateRefreshToken = (payload: UserPayload) => {
   return jwt.sign(payload, process.env.PAYLOAD_SECRET!, { expiresIn: "1d" });
 };
+
+// export const DecodeToken =  (token: string) => {
+//   jwt.verify
+//
+//
+// }
 
 export const ValidateSignature = async (req: Request) => {
   const signature = req.get("Authorization");
   console.log("validate signature");
 
-  try{
-  if (signature) {
-    const payload = jwt.verify(
-      signature.split(" ")[1],
-      process.env.PAYLOAD_SECRET!,
-    ) as AuthPayload;
+  try {
+    if (signature) {
+      const payload = jwt.verify(
+        signature.split(" ")[1],
+        process.env.PAYLOAD_SECRET!,
+      ) as AuthPayload;
 
-    req.user = payload;
+      req.user = payload;
 
-    return true;
-  }
+      return true;
+    }
 
-  return false;
-
-  }catch(error){
-    return false
+    return false;
+  } catch (error) {
+    return false;
   }
 };

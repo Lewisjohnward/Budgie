@@ -36,15 +36,25 @@ async function main() {
     },
   });
 
-  const transaction = await prisma.transaction.create({
-    data: {
-      accountId: account.id, // Link transaction to the account
-      categoryId: category.id, // Link transaction to the category
-      budgetId: budget.id, // Link transaction to the budget
-      amount: 50, // Transaction amount
-      payee: "Supermart", // Payee
-      memo: "Grocery shopping", // Memo
-    },
+  const transaction = await prisma.transaction.createMany({
+    data: [
+      {
+        accountId: account.id, // Link transaction to the account
+        categoryId: category.id, // Link transaction to the category
+        budgetId: budget.id, // Link transaction to the budget
+        amount: 12.5, // Transaction amount
+        payee: "Supermart", // Payee
+        memo: "Chicken thighs, mince", // Memo
+      },
+      {
+        accountId: account.id, // Link transaction to the account
+        categoryId: category.id, // Link transaction to the category
+        budgetId: budget.id, // Link transaction to the budget
+        amount: 0.8, // Transaction amount
+        payee: "M&S", // Payee
+        memo: "Sparkling water", // Memo
+      },
+    ],
   });
 }
 

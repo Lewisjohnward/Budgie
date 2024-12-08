@@ -8,7 +8,6 @@ export const getData = async (
   res: Response,
   next: NextFunction,
 ) => {
-
   // Be mindful of the amount of data you're fetching.
   // If your User has a lot of related data (e.g., many Budgets, Accounts, Categories, and Transactions), this query could return a lot of data. Use pagination or filtering if necessary to reduce the response size.
 
@@ -38,7 +37,32 @@ export const getData = async (
     },
   });
 
-  res.status(200).json({ data });
+  const user = await prisma.user.findUnique({
+    select: {
+      id: true,
+      email: true,
+    },
+    where: { id: req.user?._id },
+  });
+
+  const accounts = await prisma.account.findMany({
+    where: { userId: req.user?._id },
+    include: {
+      transactions: true,
+    },
+  });
+
+
+  console.log(user);
+  console.log(accounts);
+
+  // const categories = await prisma.category.findMany({
+  //   where: {}
+  // })
+
+  // res.status(200).json({ data });
+
+  res.status(200).json({ user, accounts });
 
   return;
 };
