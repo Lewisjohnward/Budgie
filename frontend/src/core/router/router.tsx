@@ -1,4 +1,4 @@
-import { createBrowserRouter, Outlet } from "react-router-dom";
+import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import {
   AccountSettingsPage,
   BudgetPage,
@@ -12,12 +12,19 @@ import Signup from "@/pages/signup/Signup";
 import { Allocation } from "@/pages/budget/allocation/Allocation";
 import { Account } from "@/pages/budget/account/Account";
 import { Reflect } from "@/pages/budget/reflect/Reflect";
+import { PersistLogin } from "@/App";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <LandingPage />,
+    element: <PersistLogin />,
     errorElement: <NotFoundPage />,
+    children: [
+      {
+        path: "/",
+        element: <LandingPage />,
+      },
+    ],
   },
   {
     path: "/users",
@@ -50,6 +57,14 @@ const router = createBrowserRouter([
     ),
     children: [
       {
+        path: "",
+        element: <Navigate to="allocation" replace />,
+      },
+      {
+        path: "*",
+        element: <Navigate to="allocation" replace />,
+      },
+      {
         path: "allocation",
         element: <Allocation />,
       },
@@ -60,7 +75,6 @@ const router = createBrowserRouter([
       {
         path: "account/all",
         element: <Account />,
-
       },
       {
         path: "account/:accountId",
