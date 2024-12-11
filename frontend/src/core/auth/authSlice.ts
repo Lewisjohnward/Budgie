@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit/react";
 import { RootState } from "../store/store";
 
-type AuthState = {
+export type AuthState = {
   email: string | null;
   token: string | null;
 };
