@@ -25,21 +25,21 @@ export default function Navbar({ logout }: { logout: () => void }) {
         <>
           <NavbarItem
             to={"allocation"}
-            open={navbar.open}
+            displayText={navbar.open}
             selected={true}
             icon={<MoneyNoteIcon />}
             text={"Budget"}
           />
           <NavbarItem
             to={"reflect"}
-            open={navbar.open}
+            displayText={navbar.open}
             selected={false}
             icon={<ClipboardIcon />}
             text={"Reflect"}
           />
           <NavbarItem
             to={"account/all"}
-            open={navbar.open}
+            displayText={navbar.open}
             selected={false}
             icon={<BankIcon />}
             text={"All Accounts"}
