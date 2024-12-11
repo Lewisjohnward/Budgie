@@ -3,12 +3,12 @@ import { cn } from "@/core/lib/utils";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
 
-type NavBarItemProps = {
+export type NavBarItemProps = {
   to: string;
   selected: boolean;
   icon: React.ReactNode;
   text: string;
-  open: boolean;
+  displayText: boolean;
   className?: string;
 };
 
@@ -18,9 +18,10 @@ export function NavbarItem({
   className,
   icon,
   text,
-  open,
+  displayText,
 }: NavBarItemProps) {
   const { mouseOver, handleMouseOver } = useMouseOver();
+  console.log(displayText);
 
   return (
     <Link
@@ -35,11 +36,16 @@ export function NavbarItem({
       )}
     >
       <div
+        data-testid="icon-container"
         className={clsx(mouseOver && !selected && "animate-shake", "min-w-fit")}
       >
         {icon}
       </div>
-      <p className="min-w-max">{open && text}</p>
+      {displayText && (
+        <p data-testid="link-text" className="min-w-max">
+          {text}
+        </p>
+      )}
     </Link>
   );
 }
