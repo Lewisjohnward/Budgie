@@ -1,0 +1,26 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Empty accounts message > Message renders correctly 1`] = `
+<DocumentFragment>
+  <div
+    class="space-y-2"
+  >
+    <div
+      class="px-2 py-2 bg-white/10 rounded text-sm"
+    >
+      <div
+        class="w-56"
+      >
+        <p
+          class="font-semibold"
+        >
+          No Accounts
+        </p>
+        <p>
+          You can't budget without adding accounts to YNAB first. How about adding one now?
+        </p>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
