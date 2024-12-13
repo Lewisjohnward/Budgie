@@ -1,21 +1,22 @@
 import { ChevronDownIcon } from "@/core/icons/icons";
 import { mockAccounts } from "@/mockData";
-import { useState } from "react";
 import { AccountCard, AddAccountBtn, EmptyAccountsMessage } from ".";
 
-export function AccountOverview() {
+export function AccountOverview({
+  expanded,
+  toggleExpanded,
+}: {
+  expanded: boolean;
+  toggleExpanded: () => void;
+}) {
   const accounts = mockAccounts;
   const currency = "£";
-  const [open, setOpen] = useState(false);
-  const toggleOpen = () => {
-    setOpen((prev) => !prev);
-  };
 
   const sum = "120.00";
 
   // TODO: need to handle mutiple accounts with sum of money
   // TODO: handle negative numbers
-  // TODO: persist open close budget state when opening navbar
+  // TODO: persist expanded close budget state when opening navbar
 
   return (
     <div className="space-y-2 w-60">
@@ -23,12 +24,13 @@ export function AccountOverview() {
       {accounts.length > 0 ? (
         <div className="space-y-2">
           <button
-            onClick={toggleOpen}
+            onClick={toggleExpanded}
             className="flex items-center justify-between px-4 gap-2 w-full"
+            data-testid="expand-accounts"
           >
             <div className="flex items-center gap-2 tracking-wider">
-              {open ? (
-                // TODO: move into own component open prop?
+              {expanded ? (
+                // TODO: move into own component expanded prop?
                 <ChevronDownIcon />
               ) : (
                 <ChevronDownIcon className="-rotate-90" />
@@ -37,7 +39,7 @@ export function AccountOverview() {
             </div>
             <p className="min-w-max">{`${currency} ${sum}`}</p>
           </button>
-          {open && (
+          {expanded && (
             <div className="space-y-2">
               {accounts.map((account) => (
                 <AccountCard account={account} currency={currency} />
