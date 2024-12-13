@@ -7,9 +7,11 @@ import {
   AccountOverview,
   ToggleMenu,
 } from "./components";
+import { useIsRoute } from "./hooks/useIsRoute";
 
 export default function Navbar() {
   const { navbar } = useNavbar();
+  const isRoute = useIsRoute();
 
   return (
     <Layout
@@ -20,21 +22,21 @@ export default function Navbar() {
           <NavbarItem
             to={"allocation"}
             displayText={navbar.open}
-            selected={true}
+            selected={isRoute("/budget/allocation")}
             icon={<MoneyNoteIcon />}
             text={"Budget"}
           />
           <NavbarItem
             to={"reflect"}
             displayText={navbar.open}
-            selected={false}
+            selected={isRoute("/budget/reflect")}
             icon={<ClipboardIcon />}
             text={"Reflect"}
           />
           <NavbarItem
             to={"account/all"}
             displayText={navbar.open}
-            selected={false}
+            selected={isRoute("/budget/account/all")}
             icon={<BankIcon />}
             text={"All Accounts"}
           />
