@@ -14,6 +14,7 @@ import clsx from "clsx";
 import { Pencil } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useIsRoute } from "../hooks/useIsRoute";
 
 export function AccountCard({
   account,
@@ -25,6 +26,7 @@ export function AccountCard({
   const [mouseOver, setMouseOver] = useState(false);
   const handleMouseEnter = () => setMouseOver(true);
   const handleMouseLeave = () => setMouseOver(false);
+  const isRoute = useIsRoute();
 
   return (
     <Link
@@ -32,7 +34,9 @@ export function AccountCard({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={clsx(
-        (account.selected || mouseOver) && "bg-white/10",
+        // TODO: Would it be better to have selected as a property on the array from server?
+        (isRoute(`/budget/account/${account.id}`) || mouseOver) &&
+          "bg-white/10",
         "flex justify-between items-center gap-4 pl-4 pr-4 py-2 text-sm rounded",
       )}
     >
