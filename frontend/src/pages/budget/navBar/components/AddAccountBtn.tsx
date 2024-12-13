@@ -19,16 +19,18 @@ export function AddAccountBtn() {
     <Dialog>
       <DialogTrigger
         onMouseEnter={handleMouseOver}
-        className="flex items-center py-1 pl-1 pr-3 ml-2 rounded bg-white/10 hover:bg-white/20"
+        className="flex items-center gap-1 py-1 pl-1 pr-3 ml-2 rounded bg-white/10 hover:bg-white/20"
       >
-        <div className="flex items-center gap-1">
-          <AddIcon className={clsx(mouseOver && "animate-shake", "h-6 w-6")} />
-          {true && <p className="text-sm">Add Account</p>}
-        </div>
+        <AddIcon
+          className={clsx(mouseOver && "animate-shake", "h-6 w-6")}
+          data-testid="icon"
+        />
+        <p className="text-sm">Add Account</p>
       </DialogTrigger>
       <DialogContent
         onPointerDownOutside={(e) => e.preventDefault()}
         className="w-80"
+        data-testid="add-account-dialog"
       >
         <DialogHeader className="space-y-4">
           <DialogTitle className={`text-center ${darkBlueText}`}>
