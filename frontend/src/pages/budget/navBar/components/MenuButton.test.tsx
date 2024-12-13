@@ -16,7 +16,7 @@ describe("MenuButton Component", () => {
 
   const renderComponent = ({
     displayText,
-    animate = true,
+    animate = false,
     authState,
   }: {
     displayText: boolean;
@@ -24,7 +24,7 @@ describe("MenuButton Component", () => {
     authState: AuthState;
   }) => {
     renderWithProviders(
-      <MenuButton displayText={displayText} animate={animate || false} />,
+      <MenuButton displayText={displayText} animate={animate} />,
       authState,
     );
     return {
