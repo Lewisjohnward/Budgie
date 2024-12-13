@@ -21,7 +21,6 @@ export function NavbarItem({
   displayText,
 }: NavBarItemProps) {
   const { mouseOver, handleMouseOver } = useMouseOver();
-  console.log(displayText);
 
   return (
     <Link
