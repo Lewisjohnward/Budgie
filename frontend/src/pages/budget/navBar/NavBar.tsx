@@ -8,19 +8,13 @@ import {
   ToggleMenu,
 } from "./components";
 
-export default function Navbar({ logout }: { logout: () => void }) {
+export default function Navbar() {
   const { navbar } = useNavbar();
 
   return (
     <Layout
       open={navbar.open}
-      menu={
-        <Menu
-          displayText={navbar.open}
-          animate={navbar.animateIcon}
-          logout={logout}
-        />
-      }
+      menu={<Menu displayText={navbar.open} animate={navbar.animateIcon} />}
       items={
         <>
           <NavbarItem
