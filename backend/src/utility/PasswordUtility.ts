@@ -35,30 +35,26 @@ export const ValidatePassword = async (
   return (await GeneratePassword(enteredPassword, salt)) === savedPassword;
 };
 
+// TODO: decrease access token time
 export const GenerateAccessToken = (payload: UserPayload) => {
-  return jwt.sign(payload, process.env.PAYLOAD_SECRET!, { expiresIn: "10s" });
+  return jwt.sign(payload, process.env.PAYLOAD_SECRET!, { expiresIn: "10m" });
 };
 
 export const GenerateRefreshToken = (payload: UserPayload) => {
   return jwt.sign(payload, process.env.PAYLOAD_SECRET!, { expiresIn: "1d" });
 };
 
-// export const DecodeToken =  (token: string) => {
-//   jwt.verify
-//
-//
-// }
+export const DecodeToken = (token: string) => {
+  return jwt.verify(token, process.env.PAYLOAD_SECRET!) as UserPayload;
+};
 
 export const ValidateSignature = async (req: Request) => {
   const signature = req.get("Authorization");
-  console.log("validate signature");
 
   try {
     if (signature) {
-      const payload = jwt.verify(
-        signature.split(" ")[1],
-        process.env.PAYLOAD_SECRET!,
-      ) as AuthPayload;
+      const token = signature.split(" ")[1];
+      const payload = DecodeToken(token);
 
       req.user = payload;
 
