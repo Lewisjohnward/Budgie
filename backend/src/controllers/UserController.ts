@@ -21,8 +21,10 @@ export const register = async (
 ) => {
   const { email, password } = <RegisterUserInput>req.body;
 
+  // TODO: replace with zod
   const validEmail = EmailValidator.validate(email);
   const inValidPassword = !PasswordSchema().validate(password);
+
 
   if (inValidPassword) {
     res.status(422).json({ message: "Password invalid" });
@@ -30,6 +32,7 @@ export const register = async (
   }
 
   if (!email || !password || !validEmail) {
+    console.log("Missing field");
     res.status(422).json({ message: "There has been an error signing up" });
     return;
   }

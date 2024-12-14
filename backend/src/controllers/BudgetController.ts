@@ -1,13 +1,10 @@
 import { Request, Response, NextFunction } from "express";
-import { PrismaClient } from "@prisma/client";
+import { AccountType, PrismaClient } from "@prisma/client";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
 
-export const getData = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const data = async (req: Request, res: Response, next: NextFunction) => {
   // Be mindful of the amount of data you're fetching.
   // If your User has a lot of related data (e.g., many Budgets, Accounts, Categories, and Transactions), this query could return a lot of data. Use pagination or filtering if necessary to reduce the response size.
 
@@ -52,7 +49,6 @@ export const getData = async (
     },
   });
 
-
   console.log(user);
   console.log(accounts);
 
@@ -63,6 +59,63 @@ export const getData = async (
   // res.status(200).json({ data });
 
   res.status(200).json({ user, accounts });
+};
 
-  return;
+export const addAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const AccountTypeEnum = z.enum(["BANK", "CREDIT_CARD"]);
+
+  const { name, type, balance } = req.body;
+
+  if (!name || !type || !balance) {
+    res.status(400).json({ message: "Malformed data" });
+    return;
+  }
+
+  const accountSchema = z.object({
+    userId: z.string().uuid(),
+    name: z.string().min(1, { message: "Account name is required" }),
+    type: AccountTypeEnum,
+    // TODO: test that this is valid
+    balance: z.coerce.number(),
+  });
+
+  // TODO: is this correct
+  if (!req.user?._id) {
+    res.status(401).json({ message: "user not authorized" });
+    return;
+    // throw new Error("User ID is required");
+  }
+
+  try {
+    const newAccount = {
+      userId: req.user._id,
+      name,
+      type,
+      balance,
+    };
+
+    const validatedAccount = accountSchema.parse(newAccount);
+
+    const data = {
+      ...validatedAccount,
+    };
+
+    const account = await prisma.account.create({
+      data: {
+        ...validatedAccount,
+      },
+    });
+
+    res.status(200).json({ message: "Account added" });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: "Malformed data" });
+      return;
+    }
+    res.status(400).json({ message: "Error adding account" });
+  }
 };
