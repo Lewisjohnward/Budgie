@@ -61,12 +61,20 @@ export const data = async (req: Request, res: Response, next: NextFunction) => {
   res.status(200).json({ user, accounts });
 };
 
+  const AccountTypeEnum = z.enum(["BANK", "CREDIT_CARD"]);
+
+export const accountSchema = z.object({
+  userId: z.string().uuid(),
+  name: z.string().min(1, { message: "Account name is required" }),
+  type: AccountTypeEnum,
+  balance: z.coerce.number(),
+});
+
 export const addAccount = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const AccountTypeEnum = z.enum(["BANK", "CREDIT_CARD"]);
 
   const { name, type, balance } = req.body;
 
@@ -75,36 +83,15 @@ export const addAccount = async (
     return;
   }
 
-  const accountSchema = z.object({
-    userId: z.string().uuid(),
-    name: z.string().min(1, { message: "Account name is required" }),
-    type: AccountTypeEnum,
-    // TODO: test that this is valid
-    balance: z.coerce.number(),
-  });
-
-  // TODO: is this correct
-  if (!req.user?._id) {
-    res.status(401).json({ message: "user not authorized" });
-    return;
-    // throw new Error("User ID is required");
-  }
-
   try {
-    const newAccount = {
-      userId: req.user._id,
+    const validatedAccount = accountSchema.parse({
+      userId: req.user!._id,
       name,
       type,
       balance,
-    };
+    });
 
-    const validatedAccount = accountSchema.parse(newAccount);
-
-    const data = {
-      ...validatedAccount,
-    };
-
-    const account = await prisma.account.create({
+    await prisma.account.create({
       data: {
         ...validatedAccount,
       },
