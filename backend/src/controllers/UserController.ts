@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { PrismaClient } from "@prisma/client";
 import { RegisterUserInput, UserLoginInput } from "../dto";
-import * as EmailValidator from "email-validator";
+// import * as EmailValidator from "email-validator";
 import {
   GeneratePassword,
   GenerateSalt,
@@ -10,9 +10,30 @@ import {
   ValidatePassword,
   GenerateRefreshToken,
 } from "../utility/PasswordUtility";
+import { z } from "zod";
 import jwt from "jsonwebtoken";
+import { createUser, userExists } from "../utility/UserUtility";
 
 const prisma = new PrismaClient();
+
+export const emailSchema = z
+  .string()
+  .email({ message: "Invalid email address" });
+
+export const passwordSchema = z
+  .string()
+  .min(8, { message: "Password must be at least 8 characters long" })
+  .max(64, { message: "Password must be no more than 64 characters long" })
+  .regex(/[A-Z]/, {
+    message: "Password must contain at least one uppercase letter",
+  })
+  .regex(/[a-z]/, {
+    message: "Password must contain at least one lowercase letter",
+  })
+  .regex(/[0-9]/, { message: "Password must contain at least one number" })
+  .regex(/[\W_]/, {
+    message: "Password must contain at least one special character",
+  });
 
 export const register = async (
   req: Request,
@@ -21,45 +42,44 @@ export const register = async (
 ) => {
   const { email, password } = <RegisterUserInput>req.body;
 
-  // TODO: replace with zod
-  const validEmail = EmailValidator.validate(email);
-  const inValidPassword = !PasswordSchema().validate(password);
+  if (!email || !password) {
+    res.status(400).json({ message: "There has been an error signing up" });
+    return;
+  }
 
-
-  if (inValidPassword) {
+  try {
+    passwordSchema.parse(password);
+  } catch (error) {
     res.status(422).json({ message: "Password invalid" });
     return;
   }
 
-  if (!email || !password || !validEmail) {
-    console.log("Missing field");
-    res.status(422).json({ message: "There has been an error signing up" });
+  try {
+    emailSchema.parse(email);
+  } catch (error) {
+    res.status(422).json({ message: "Email invalid" });
     return;
   }
 
-  const userAlreadyExists = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-  });
+  const userAlreadyExists = await userExists(email);
 
   if (userAlreadyExists) {
-    res.status(422).json({ message: "There has been an error signing up" });
+    res.status(400).json({ message: "There has been an error signing up" });
     return;
   }
 
   const salt = await GenerateSalt();
   const passwordHash = await GeneratePassword(password, salt);
 
-  const newUser = await prisma.user.create({
-    data: {
-      email,
-      password: passwordHash,
-      salt,
-    },
-  });
-
-  res.status(200).json({ message: "register" });
+  try {
+    await createUser({ email, password: passwordHash, salt });
+    res.status(200).json({ message: "User registered successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "There has been an error creating the user" });
+  }
+  return;
 };
 
 export const login = async (
