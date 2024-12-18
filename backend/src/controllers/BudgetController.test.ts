@@ -1,11 +1,9 @@
 import request from "supertest";
 import app from "../app"; // Import your app
 import { PrismaClient } from "@prisma/client"; // Added Prisma imports
-import { ValidateSignature } from "../utility";
-import { Authenticate } from "../middleware/CommonAuth";
 
 jest.mock("../utility", () => ({
-  ValidateSignature: jest.fn((req, res, next) => {
+  ValidateSignature: jest.fn((req) => {
     req.user = {
       _id: "dbfbbeb4-89d9-4b08-b627-1be5b4748107",
       email: "test@test.com",
@@ -14,7 +12,6 @@ jest.mock("../utility", () => ({
   }),
 }));
 
-// Mock Prisma Client
 jest.mock("@prisma/client", () => {
   const actualPrisma = jest.requireActual("@prisma/client");
   return {
@@ -33,7 +30,7 @@ jest.mock("@prisma/client", () => {
   };
 });
 
-const prisma = new PrismaClient(); // Initialize Prisma client
+const prisma = new PrismaClient();
 
 describe("Budget Controller", () => {
   describe("add Account", () => {
@@ -41,7 +38,7 @@ describe("Budget Controller", () => {
       const response = await request(app)
         .post("/budget/account")
         .send({})
-        .set("Authorization", "Bearer mock-token"); // Include your Authorization header if needed
+        .set("Authorization", "Bearer mock-token");
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe("Malformed data");
@@ -64,35 +61,29 @@ describe("Budget Controller", () => {
         .post("/budget/account")
         .send({
           name: "Invalid Type Account",
-          type: "INVALID_TYPE", // Invalid type
+          type: "INVALID_TYPE",
           balance: 1000.0,
         })
         .set("Authorization", "Bearer mock-token");
 
-      expect(response.status).toBe(400); // Assuming the z.enum validation catches this and returns a 400 error
+      expect(response.status).toBe(400);
       expect(response.body.message).toBe("Malformed data");
     });
 
-    //
     it("should validate input and create an account", async () => {
-      // (ValidateSignature as jest.Mock).mockResolvedValue(true);
-
-      // Mock Prisma responses
+      
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({
         id: "mock-user-id",
       });
 
       (prisma.account.create as jest.Mock).mockResolvedValue({
-        // id: "mock-account-id",
-        // userId: "mock-user-id",
         name: "Personal Bank Account",
         type: "BANK",
         balance: 1000.0,
       });
 
-      // Test the /addAccount endpoint
       const response = await request(app)
-        .post("/budget/account") // Make sure the endpoint matches the route
+        .post("/budget/account")
         .send({
           name: "Personal Bank Account",
           type: "BANK",
@@ -100,11 +91,11 @@ describe("Budget Controller", () => {
         })
         .set("Authorization", "Bearer mock-token");
 
-      // Expect the correct status and response body
       expect(response.status).toBe(200);
       expect(response.body).toEqual({ message: "Account added" });
 
       // TODO: get this working
+
       // Check that the account creation was called with the correct data
       // expect(prisma.account.create).toHaveBeenCalledTimes(1);
       // expect(prisma.account.create).toHaveBeenCalledWith({
