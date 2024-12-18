@@ -1,11 +1,19 @@
 import app from "../app";
 import request from "supertest";
-import emailValidator, { validate } from "email-validator";
-import { NextFunction } from "express";
-import { PrismaClient } from "@prisma/client";
-import { createUser, userExists } from "../utility/UserUtility";
+import {
+  createUser,
+  getUser,
+  updateRefreshToken,
+  userExists,
+} from "../utility/UserUtility";
+import {
+  GenerateAccessToken,
+  GenerateRefreshToken,
+  ValidatePassword,
+} from "../utility";
 
 jest.mock("../utility/UserUtility");
+jest.mock("../utility/PasswordUtility");
 
 describe("User Controller", () => {
   describe("register", () => {
@@ -84,7 +92,6 @@ describe("User Controller", () => {
 
     it("Should return 500 if unable to create user", async () => {
       (userExists as jest.Mock).mockResolvedValue(true);
-      // Mock the password schema to throw an error
       (createUser as jest.Mock).mockImplementationOnce(() => {
         throw new Error("Test placeholder");
       });
@@ -97,6 +104,84 @@ describe("User Controller", () => {
       expect(response.status).toBe(400);
     });
   });
+  describe("Login", () => {
 
+    it("Should return 400 if both email and password are missing", async () => {
+      const response = await request(app)
+        .post("/user/register")
+        .send({})
+        .set("Authorization", "Bearer mock-token");
 
+      expect(response.status).toBe(400);
+    });
+
+    it("Should return 400 if either email or password are missing", async () => {
+
+      const noEmailReponse = await request(app)
+        .post("/user/register")
+        .send({ password: "abcdefgG8£" })
+        .set("Authorization", "Bearer mock-token");
+
+      const noPasswordReponse = await request(app)
+        .post("/user/register")
+        .send({ email: "test@email.com" })
+        .set("Authorization", "Bearer mock-token");
+
+      expect(noEmailReponse.status).toBe(400);
+      expect(noPasswordReponse.status).toBe(400);
+    });
+
+    it("should return 400 if user does not exist", async () => {
+
+      (getUser as jest.Mock).mockResolvedValue(null);
+
+      const response = await request(app)
+        .post("/user/login")
+        .send({ email: "test@example.com", password: "password" });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe("There has been an error logging in");
+    });
+
+    it("should return 400 if password is invalid", async () => {
+
+      const mockUser = {
+        email: "test@example.com",
+        password: "hashedPassword",
+        salt: "salt",
+      };
+      (getUser as jest.Mock).mockResolvedValue(mockUser);
+      (ValidatePassword as jest.Mock).mockResolvedValue(false);
+
+      const response = await request(app)
+        .post("/user/login")
+        .send({ email: "test@example.com", password: "wrongPassword" });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe("There has been an error logging in");
+    });
+
+    it("should return 200 and access token on successful login", async () => {
+
+      const mockUser = {
+        email: "test@example.com",
+        password: "hashedPassword",
+        salt: "salt",
+        id: "userId",
+      };
+      (getUser as jest.Mock).mockResolvedValue(mockUser); // Simulate user found
+      (ValidatePassword as jest.Mock).mockResolvedValue(true); // Simulate valid password
+      (GenerateAccessToken as jest.Mock).mockReturnValue("accessToken");
+      (GenerateRefreshToken as jest.Mock).mockReturnValue("refreshToken");
+      updateRefreshToken as jest.Mock;
+
+      const response = await request(app)
+        .post("/user/login")
+        .send({ email: "test@example.com", password: "password" });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toBe("accessToken");
+      expect(response.headers["set-cookie"][0]).toContain("jwt=refreshToken");
+    });
+  });
 });
