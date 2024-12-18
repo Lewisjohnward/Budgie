@@ -12,7 +12,12 @@ import {
 } from "../utility/PasswordUtility";
 import { z } from "zod";
 import jwt from "jsonwebtoken";
-import { createUser, userExists } from "../utility/UserUtility";
+import {
+  createUser,
+  getUser,
+  updateRefreshToken,
+  userExists,
+} from "../utility/UserUtility";
 
 const prisma = new PrismaClient();
 
@@ -49,15 +54,9 @@ export const register = async (
 
   try {
     passwordSchema.parse(password);
-  } catch (error) {
-    res.status(422).json({ message: "Password invalid" });
-    return;
-  }
-
-  try {
     emailSchema.parse(email);
   } catch (error) {
-    res.status(422).json({ message: "Email invalid" });
+    res.status(422).json({ message: "Invalid credentials" });
     return;
   }
 
@@ -90,55 +89,52 @@ export const login = async (
   const { email, password } = <UserLoginInput>req.body;
 
   if (!email || !password) {
-    res.status(422).json({ message: "There has been an error logging in" });
+    res.status(400).json({ message: "There has been an error logging in" });
     return;
   }
 
-  const user = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-  });
+  try {
+    const user = await getUser(email);
 
-  if (!user) {
-    res.status(422).json({ message: "There has been an error logging in" });
-    return;
+    if (!user) {
+      res.status(400).json({ message: "There has been an error logging in" });
+      return;
+    }
+
+    const validPassword = await ValidatePassword(
+      password,
+      user.password,
+      user.salt,
+    );
+
+    if (!validPassword) {
+      res.status(400).json({ message: "There has been an error logging in" });
+      return;
+    }
+
+    const accessToken = GenerateAccessToken({
+      _id: user.id,
+      email: user.email,
+    });
+
+    const refreshToken = GenerateRefreshToken({
+      _id: user.id,
+      email: user.email,
+    });
+
+    await updateRefreshToken(email, refreshToken);
+
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV == "production",
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    res.status(200).json(accessToken);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "An unexpected error occurred" });
   }
-
-  const validPassword = await ValidatePassword(
-    password,
-    user.password,
-    user.salt,
-  );
-
-  if (!validPassword) {
-    res.status(422).json({ message: "There has been an error logging in" });
-    return;
-  }
-
-  const accessToken = GenerateAccessToken({
-    _id: user.id,
-    email: user.email,
-  });
-
-  const refreshToken = GenerateRefreshToken({
-    _id: user.id,
-    email: user.email,
-  });
-
-  user.refreshToken = refreshToken;
-  const result = await prisma.user.update({
-    where: { email },
-    data: { refreshToken: refreshToken },
-  });
-
-  res.cookie("jwt", refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV == "production",
-    sameSite: "lax",
-    maxAge: 24 * 60 * 60 * 1000,
-  });
-  res.status(200).json(accessToken);
 
   return;
 };
