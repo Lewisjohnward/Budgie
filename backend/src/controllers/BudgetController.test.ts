@@ -1,6 +1,8 @@
 import request from "supertest";
 import app from "../app"; // Import your app
 import { PrismaClient } from "@prisma/client"; // Added Prisma imports
+import { isValidAccount } from "../utility/AccountUtility";
+import { isValidCategory } from "../utility/CategoryUtility";
 
 jest.mock("../utility", () => ({
   ValidateSignature: jest.fn((req) => {
@@ -26,9 +28,15 @@ jest.mock("@prisma/client", () => {
           return "hello";
         }),
       },
+      transaction: {
+        create: jest.fn(() => {}),
+      },
     })),
   };
 });
+
+jest.mock("../utility/CategoryUtility");
+jest.mock("../utility/AccountUtility.ts");
 
 const prisma = new PrismaClient();
 
@@ -71,7 +79,6 @@ describe("Budget Controller", () => {
     });
 
     it("should validate input and create an account", async () => {
-      
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({
         id: "mock-user-id",
       });
@@ -105,6 +112,48 @@ describe("Budget Controller", () => {
       //     balance: 1000.0,
       //   },
       // });
+    });
+  });
+
+  describe("Add transaction", () => {
+    // date,
+    // outflow,
+    // inflow,
+    // payee,
+    // memo
+
+    it("Should return 400 when both inflow and outflow missing", async () => {
+      const response = await request(app)
+        .post("/budget/transaction")
+        .send({ date: "10-10-2024" })
+        .set("Authorization", "Bearer mock-token");
+
+      expect(response.status).toBe(400);
+    });
+
+    it("Should return 400 if transactionSchema validation fails", async () => {
+      (isValidAccount as jest.Mock).mockReturnValue({ id: "5" });
+      (isValidCategory as jest.Mock).mockReturnValue({ id: "5" });
+
+      const response = await request(app).post("/budget/transaction").send({
+        inflow: "not-a-number",
+      });
+      expect(response.status).toBe(400);
+    });
+
+    it("Should return 200 if correct data sent", async () => {
+      (isValidAccount as jest.Mock).mockReturnValue({
+        id: "a3e1f9f0-09e2-4d94-8c89-12b50f8d8f2e",
+      });
+
+      (isValidCategory as jest.Mock).mockReturnValue({
+        id: "7c5a7df3-bd02-4576-b9e5-c2c8d6cf4d21",
+      });
+
+      const response = await request(app).post("/budget/transaction").send({
+        inflow: 120,
+      });
+      expect(response.status).toBe(200);
     });
   });
 });
