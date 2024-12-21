@@ -2,10 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import { AccountType, CategoryType, PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { TransactionPayload } from "../dto";
-import { insertTransaction } from "../utility/TransactionUtility";
 import { transactionSchema } from "../schemas";
-import { isValidAccount } from "../utility/AccountUtility";
-import { isValidCategory } from "../utility/CategoryUtility";
+import { insertTransaction, isValidAccount, isValidCategory } from "../utility";
 
 const prisma = new PrismaClient();
 
@@ -118,7 +116,7 @@ export const addTransaction = async (
 ) => {
   const { accountId, categoryId, date, inflow, outflow, payee, memo } = <
     TransactionPayload
-    >req.body;
+  >req.body;
 
   if (!inflow && !outflow) {
     res.status(400).json({ message: "Malformed data" });
@@ -147,7 +145,7 @@ export const addTransaction = async (
       res.status(400).json({ message: "Malformed data" });
       return;
     }
-    res.status(503).json({ message: "Unable to add transaction" });
+    res.status(503).json({ message: error });
     return;
   }
 };
