@@ -1,6 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import { AccountType, PrismaClient } from "@prisma/client";
+import { AccountType, CategoryType, PrismaClient } from "@prisma/client";
 import { z } from "zod";
+import { TransactionPayload } from "../dto";
+import { insertTransaction } from "../utility/TransactionUtility";
+import { transactionSchema } from "../schemas";
+import { isValidAccount } from "../utility/AccountUtility";
+import { isValidCategory } from "../utility/CategoryUtility";
 
 const prisma = new PrismaClient();
 
@@ -16,16 +21,16 @@ export const data = async (req: Request, res: Response, next: NextFunction) => {
   const data = await prisma.user.findUnique({
     where: { id: req.user?._id }, // Use the user ID to find the specific user
     include: {
-      budgets: {
-        include: {
-          categories: {
-            include: {
-              transactions: true, // Include transactions for each category
-            },
-          },
-          transactions: true, // Include transactions for the budget
-        },
-      },
+      // budgets: {
+      //   include: {
+      //     categories: {
+      //       include: {
+      //         transactions: true, // Include transactions for each category
+      //       },
+      //     },
+      //     transactions: true, // Include transactions for the budget
+      //   },
+      // },
       accounts: {
         include: {
           transactions: true, // Include transactions for each account
@@ -61,7 +66,7 @@ export const data = async (req: Request, res: Response, next: NextFunction) => {
   res.status(200).json({ user, accounts });
 };
 
-  const AccountTypeEnum = z.enum(["BANK", "CREDIT_CARD"]);
+const AccountTypeEnum = z.enum(["BANK", "CREDIT_CARD"]);
 
 export const accountSchema = z.object({
   userId: z.string().uuid(),
@@ -75,7 +80,6 @@ export const addAccount = async (
   res: Response,
   next: NextFunction,
 ) => {
-
   const { name, type, balance } = req.body;
 
   if (!name || !type || !balance) {
@@ -104,5 +108,46 @@ export const addAccount = async (
       return;
     }
     res.status(400).json({ message: "Error adding account" });
+  }
+};
+
+export const addTransaction = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { accountId, categoryId, date, inflow, outflow, payee, memo } = <
+    TransactionPayload
+    >req.body;
+
+  if (!inflow && !outflow) {
+    res.status(400).json({ message: "Malformed data" });
+    return;
+  }
+
+  try {
+    const { id: accId } = await isValidAccount(accountId);
+    const { id: catId } = await isValidCategory(categoryId);
+
+    const validTransaction = transactionSchema.parse({
+      accountId: accId,
+      categoryId: catId,
+      date,
+      inflow,
+      outflow,
+      payee,
+      memo,
+    });
+
+    await insertTransaction(validTransaction);
+    res.status(200).json({ message: "Transaction added" });
+    return;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: "Malformed data" });
+      return;
+    }
+    res.status(503).json({ message: "Unable to add transaction" });
+    return;
   }
 };
