@@ -1,18 +1,7 @@
 import request from "supertest";
 import app from "../app"; // Import your app
 import { PrismaClient } from "@prisma/client"; // Added Prisma imports
-import { isValidAccount } from "../utility/AccountUtility";
-import { isValidCategory } from "../utility/CategoryUtility";
-
-jest.mock("../utility", () => ({
-  ValidateSignature: jest.fn((req) => {
-    req.user = {
-      _id: "dbfbbeb4-89d9-4b08-b627-1be5b4748107",
-      email: "test@test.com",
-    };
-    return true;
-  }),
-}));
+import { insertTransaction, isValidAccount, isValidCategory } from "../utility";
 
 jest.mock("@prisma/client", () => {
   const actualPrisma = jest.requireActual("@prisma/client");
@@ -28,15 +17,22 @@ jest.mock("@prisma/client", () => {
           return "hello";
         }),
       },
-      transaction: {
-        create: jest.fn(() => {}),
-      },
     })),
   };
 });
 
-jest.mock("../utility/CategoryUtility");
-jest.mock("../utility/AccountUtility.ts");
+jest.mock("../utility", () => ({
+  ValidateSignature: jest.fn((req) => {
+    req.user = {
+      _id: "dbfbbeb4-89d9-4b08-b627-1be5b4748107",
+      email: "test@test.com",
+    };
+    return true;
+  }),
+  isValidAccount: jest.fn(),
+  isValidCategory: jest.fn(),
+  insertTransaction: jest.fn(),
+}));
 
 const prisma = new PrismaClient();
 
@@ -154,6 +150,7 @@ describe("Budget Controller", () => {
         inflow: 120,
       });
       expect(response.status).toBe(200);
+      expect(insertTransaction).toHaveBeenCalledTimes(1);
     });
   });
 });
