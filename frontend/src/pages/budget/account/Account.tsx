@@ -34,35 +34,66 @@ type Account = {
 };
 
 export function Account() {
+  // TODO: GET TRANSACTION DATA
+  const { data, isLoading, isError } = useGetAccountsQuery();
+
+  if (isLoading) return <div>...loading</div>;
+  if (isError) return <div>...error</div>;
+  console.log("data", data);
+
   const { accountId } = useParams();
+
   const location = useLocation();
+  console.log("I am remounted");
 
-  let account: Account;
+  if (isLoading) return <div>loading</div>;
+  console.log("data", data);
 
-  if (accountId) {
-    const foundAccount = mockAccounts.find((acc) => acc.id === accountId);
-    if (!foundAccount) {
-      return <h1>Account not found</h1>;
-    }
+  const [chosenAccount] = Object.values(data.data.accounts).filter(
+    ({ id }) => id === accountId,
+  );
 
-    account = {
-      name: foundAccount.name,
-      clearedBalance: 0,
-      unclearedBalance: 0,
-      transactions: foundAccount.transactions,
-    };
-  } else if (location.pathname === "/budget/account/all") {
-    const transactions = mockAccounts.flatMap(
-      (account) => account.transactions,
-    );
+  console.log(chosenAccount);
 
-    account = {
-      name: "All accounts",
-      clearedBalance: 0,
-      unclearedBalance: 0,
-      transactions,
-    };
-  }
+  // return <div>temp</div>;
+
+  const transactions = Object.values(data.data.transactions).filter(
+    (transaction) => transaction.accountId === accountId,
+  );
+
+  console.log(transactions);
+  const account = {
+    name: chosenAccount.name,
+    clearedBalance: 0,
+    unclearedBalance: 0,
+    transactions,
+  };
+  // let account: Account;
+  //
+  // if (accountId) {
+  //   const foundAccount = mockAccounts.find((acc) => acc.id === accountId);
+  //   if (!foundAccount) {
+  //     return <h1>Account not found</h1>;
+  //   }
+  //
+  //   account = {
+  //     name: foundAccount.name,
+  //     clearedBalance: 0,
+  //     unclearedBalance: 0,
+  //     transactions: foundAccount.transactions,
+  //   };
+  // } else if (location.pathname === "/budget/account/all") {
+  //   const transactions = mockAccounts.flatMap(
+  //     (account) => account.transactions,
+  //   );
+  //
+  //   account = {
+  //     name: "All accounts",
+  //     clearedBalance: 0,
+  //     unclearedBalance: 0,
+  //     transactions,
+  //   };
+  // }
 
   // TODO: remove the ! for unassigned below
 
@@ -72,6 +103,7 @@ export function Account() {
         <div className="font-bold text-2xl tracking-tight">{account!.name}</div>
       </div>
       <div className="w-full h-[1px] bg-black/20" />
+      {account.transactions.length}
       <MyTable transactions={account!.transactions} />
     </div>
   );
@@ -215,14 +247,14 @@ import { ArrowDown, ArrowUp } from "lucide-react";
 import { Button } from "@/core/components/uiLibrary/button";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
 import clsx from "clsx";
+import { useGetAccountsQuery } from "@/core/api/budgetApiSlice";
 
 function MyTable({ transactions }: TableProps) {
-  const [data, setData] = useState(transactions);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [rowSelection, setRowSelection] = useState({});
 
   const table = useReactTable({
-    data,
+    data: transactions,
     columns,
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
@@ -236,8 +268,6 @@ function MyTable({ transactions }: TableProps) {
       rowSelection,
     },
   });
-
-  // TODO: add resizer
 
   return (
     <div>

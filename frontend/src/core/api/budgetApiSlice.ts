@@ -9,7 +9,14 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
+    // TODO: this needs typing
+    getAccounts: builder.query<any, void>({
+      query: () => ({
+        url: "budget/accounts",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
-export const { useGetDataQuery } = budgetApiSlice;
+export const { useGetDataQuery, useGetAccountsQuery } = budgetApiSlice;
