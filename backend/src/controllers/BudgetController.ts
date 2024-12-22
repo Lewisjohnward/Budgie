@@ -3,10 +3,15 @@ import { AccountType, CategoryType, PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { TransactionPayload } from "../dto";
 import { transactionSchema } from "../schemas";
-import { insertTransaction, isValidAccount, isValidCategory } from "../utility";
+import {
+  insertTransaction,
+  isValidAccount,
+  isValidCategory,
+  validateCategoryAccountId,
+} from "../utility";
+import { Decimal } from "@prisma/client/runtime/library";
 
 const prisma = new PrismaClient();
-
 export const data = async (req: Request, res: Response, next: NextFunction) => {
   // Be mindful of the amount of data you're fetching.
   // If your User has a lot of related data (e.g., many Budgets, Accounts, Categories, and Transactions), this query could return a lot of data. Use pagination or filtering if necessary to reduce the response size.
@@ -109,14 +114,66 @@ export const addAccount = async (
   }
 };
 
+// TODO: THIS NEEDS TESTING
+export const getAccounts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  // TODO: Get all accounts with transactions, sort on FE?
+
+  try {
+    const accountsWithTransactions = await prisma.account.findMany({
+      where: {
+        userId: req.user?._id,
+      },
+      include: {
+        transactions: true,
+      },
+    });
+
+    const data = normalizeData({ accounts: accountsWithTransactions });
+
+    res.status(200).json({ data });
+  } catch (error) {
+    res.status(500).json({ message: "There has been an error" });
+  }
+};
+
+export const editAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  // TODO: use req query param to edit transaction
+};
+
+export const editTransaction = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  // TODO: use req query param to edit transaction
+};
+
+export const deleteTransaction = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  // TODO: use req query param to delete transaction
+};
+
 export const addTransaction = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
+  // TODO: need to calculate new account balance on addition
+
   const { accountId, categoryId, date, inflow, outflow, payee, memo } = <
     TransactionPayload
-  >req.body;
+    >req.body;
 
   if (!inflow && !outflow) {
     res.status(400).json({ message: "Malformed data" });
@@ -124,12 +181,16 @@ export const addTransaction = async (
   }
 
   try {
-    const { id: accId } = await isValidAccount(accountId);
-    const { id: catId } = await isValidCategory(categoryId);
+    const [account, category] = await validateCategoryAccountId(
+      accountId,
+      categoryId,
+      // TODO: remove the !
+      req.user!._id,
+    );
 
     const validTransaction = transactionSchema.parse({
-      accountId: accId,
-      categoryId: catId,
+      accountId: account.id,
+      categoryId: category.id,
       date,
       inflow,
       outflow,
@@ -145,7 +206,35 @@ export const addTransaction = async (
       res.status(400).json({ message: "Malformed data" });
       return;
     }
-    res.status(503).json({ message: error });
+    // res.status(503).json({ message: error.message });
+    res.status(503).json({ message: "there has been an error" });
     return;
   }
 };
+function normalizeData(arg0: {
+  accounts: ({
+    transactions: {
+      id: string;
+      createdAt: Date;
+      updatedAt: Date;
+      accountId: string;
+      categoryId: string;
+      date: Date;
+      inflow: Decimal | null;
+      outflow: Decimal | null;
+      payee: string | null;
+      memo: string | null;
+      cleared: boolean;
+    }[];
+  } & {
+    id: string;
+    name: string;
+    type: import(".prisma/client").$Enums.AccountType;
+    userId: string;
+    balance: Decimal;
+    createdAt: Date;
+    updatedAt: Date;
+  })[];
+}) {
+  throw new Error("Function not implemented.");
+}

@@ -1,6 +1,6 @@
 import { AccountType, CategoryType } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
-const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 async function main() {
@@ -13,18 +13,19 @@ async function main() {
     },
   });
 
-  const budget = await prisma.budget.create({
-    data: {
-      userId: user.id,
-      name: "Starting budget",
-    },
-  });
+  // const budget = await prisma.budget.create({
+  //   data: {
+  //     userId: user.id,
+  //     name: "Starting budget",
+  //   },
+  // });
 
   const category = await prisma.category.create({
     data: {
       name: "Rent",
+      userId: user.id,
       type: CategoryType.EXPENSE, // Choose from CategoryType (EXPENSE/INCOME)
-      budgetId: budget.id, // Link category to the budget
+      // budgetId: budget.id, // Link category to the budget
     },
   });
 
@@ -41,16 +42,16 @@ async function main() {
       {
         accountId: account.id, // Link transaction to the account
         categoryId: category.id, // Link transaction to the category
-        budgetId: budget.id, // Link transaction to the budget
-        amount: 12.5, // Transaction amount
+        // budgetId: budget.id, // Link transaction to the budget
+        outflow: 12.5, // Transaction amount
         payee: "Supermart", // Payee
         memo: "Chicken thighs, mince", // Memo
       },
       {
         accountId: account.id, // Link transaction to the account
         categoryId: category.id, // Link transaction to the category
-        budgetId: budget.id, // Link transaction to the budget
-        amount: 0.8, // Transaction amount
+        // budgetId: budget.id, // Link transaction to the budget
+        outflow: 0.8, // Transaction amount
         payee: "M&S", // Payee
         memo: "Sparkling water", // Memo
       },

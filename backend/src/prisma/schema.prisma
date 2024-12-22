@@ -14,25 +14,26 @@ model User {
   password String
   salt     String
   refreshToken String? @unique
-  budgets  Budget[]
+  // budgets  Budget[]
   accounts Account[]
 }
 
-model Budget {
-  id           String      @id @default(uuid())
-  userId       String
-  name         String
-  user         User        @relation(fields: [userId], references: [id])
-  categories   Category[]
-  transactions Transaction[]
-}
+// model Budget {
+//   id           String      @id @default(uuid())
+//   userId       String
+//   name         String
+//   user         User        @relation(fields: [userId], references: [id])
+//   categories   Category[]
+//   transactions Transaction[]
+// }
 
 model Category {
   id           String        @id @default(uuid())
-  budgetId     String
+  userId       String
+  // budgetId     String
   type         CategoryType
   name         String
-  budget       Budget        @relation(fields: [budgetId], references: [id])
+  // budget       Budget        @relation(fields: [budgetId], references: [id])
   transactions Transaction[]
 }
 
@@ -62,9 +63,10 @@ model Transaction {
   id          String      @id @default(uuid())
   accountId   String
   categoryId  String
-  budgetId    String
-  amount      Decimal
+  // budgetId    String
   date        DateTime    @default(now())
+  inflow      Decimal?    @default(0)
+  outflow     Decimal?    @default(0)
   payee       String?
   memo        String?
   cleared     Boolean     @default(false)
@@ -72,5 +74,5 @@ model Transaction {
   updatedAt   DateTime    @updatedAt
   account     Account     @relation(fields: [accountId], references: [id])
   category    Category    @relation(fields: [categoryId], references: [id])
-  budget      Budget      @relation(fields: [budgetId], references: [id])
+  // budget      Budget      @relation(fields: [budgetId], references: [id])
 }
