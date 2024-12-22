@@ -1,6 +1,7 @@
 import { ChevronDownIcon } from "@/core/icons/icons";
 import { mockAccounts } from "@/mockData";
 import { AccountCard, AddAccountBtn, EmptyAccountsMessage } from ".";
+import { useGetAccountsQuery } from "@/core/api/budgetApiSlice";
 
 export function AccountOverview({
   expanded,
@@ -9,7 +10,8 @@ export function AccountOverview({
   expanded: boolean;
   toggleExpanded: () => void;
 }) {
-  const accounts = mockAccounts;
+  const { data, isLoading, isError } = useGetAccountsQuery();
+  // const accounts = mockAccounts;
   const currency = "£";
 
   const sum = "120.00";
@@ -17,6 +19,19 @@ export function AccountOverview({
   // TODO: need to handle mutiple accounts with sum of money
   // TODO: handle negative numbers
   // TODO: persist expanded close budget state when opening navbar
+
+  if (isLoading) {
+    return <div>loading</div>;
+  }
+  const accounts = Object.values(data.data.accounts);
+  // console.log(accounts);
+  // console.log(accountNames);
+
+  // return (
+  //   <div>
+  //     <div>wip</div>
+  //   </div>
+  // );
 
   return (
     <div className="space-y-2 w-60">
