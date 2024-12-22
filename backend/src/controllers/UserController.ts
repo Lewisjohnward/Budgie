@@ -53,6 +53,7 @@ export const register = async (
   }
 
   try {
+    // TODO: change this to a zod object
     passwordSchema.parse(password);
     emailSchema.parse(email);
   } catch (error) {
@@ -71,6 +72,7 @@ export const register = async (
   const passwordHash = await GeneratePassword(password, salt);
 
   try {
+    // TODO: extract this into function
     await createUser({ email, password: passwordHash, salt });
     res.status(200).json({ message: "User registered successfully" });
   } catch (error) {
@@ -145,6 +147,7 @@ export const logout = async (
   next: NextFunction,
 ) => {
   // TODO: remove refresh token
+  // TODO: test
 
   const cookies = req.cookies;
   if (!cookies?.jwt) {

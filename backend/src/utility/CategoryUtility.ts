@@ -9,7 +9,8 @@ export const isValidCategory = async (categoryId: string) => {
     },
   });
   if (category == null) {
-    throw new Error();
+    // TODO: Needs testing
+    throw new Error("Invalid category");
   }
 
   return category;

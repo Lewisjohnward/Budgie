@@ -1,21 +1,19 @@
-/*
-  Warnings:
-
-  - The primary key for the `User` table will be changed. If it partially fails, the table could be left without primary key constraint.
-
-*/
 -- CreateEnum
 CREATE TYPE "CategoryType" AS ENUM ('EXPENSE', 'INCOME');
 
 -- CreateEnum
 CREATE TYPE "AccountType" AS ENUM ('BANK', 'CREDIT_CARD');
 
--- AlterTable
-ALTER TABLE "User" DROP CONSTRAINT "User_pkey",
-ALTER COLUMN "id" DROP DEFAULT,
-ALTER COLUMN "id" SET DATA TYPE TEXT,
-ADD CONSTRAINT "User_pkey" PRIMARY KEY ("id");
-DROP SEQUENCE "User_id_seq";
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "salt" TEXT NOT NULL,
+    "refreshToken" TEXT,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "Budget" (
@@ -55,8 +53,9 @@ CREATE TABLE "Transaction" (
     "accountId" TEXT NOT NULL,
     "categoryId" TEXT NOT NULL,
     "budgetId" TEXT NOT NULL,
-    "amount" DECIMAL(65,30) NOT NULL,
-    "date" TIMESTAMP(3) NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "inflow" DECIMAL(65,30) NOT NULL,
+    "outflow" DECIMAL(65,30) NOT NULL,
     "payee" TEXT,
     "memo" TEXT,
     "cleared" BOOLEAN NOT NULL DEFAULT false,
@@ -65,6 +64,12 @@ CREATE TABLE "Transaction" (
 
     CONSTRAINT "Transaction_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_refreshToken_key" ON "User"("refreshToken");
 
 -- AddForeignKey
 ALTER TABLE "Budget" ADD CONSTRAINT "Budget_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
