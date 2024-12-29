@@ -1,29 +1,30 @@
 import app from "../app";
 import request from "supertest";
+
+// TODO: Why am I unable to use jest.mock("../utility")?
 import {
   createUser,
   getUser,
   updateRefreshToken,
   userExists,
+  validateCredentials,
 } from "../utility/UserUtility";
 import {
   GenerateAccessToken,
   GenerateRefreshToken,
   ValidatePassword,
 } from "../utility";
+import { registerUserSchema } from "../schemas";
+import { z } from "zod";
 
 jest.mock("../utility/UserUtility");
 jest.mock("../utility/PasswordUtility");
+jest.mock("../schemas");
 
 describe("User Controller", () => {
   describe("register", () => {
-    it("Should return 400 if both email and password are missing", async () => {
-      const response = await request(app)
-        .post("/user/register")
-        .send({})
-        .set("Authorization", "Bearer mock-token");
-
-      expect(response.status).toBe(400);
+    beforeEach(() => {
+      jest.resetAllMocks();
     });
 
     it("Should return 400 if either email or password are missing", async () => {
@@ -42,28 +43,23 @@ describe("User Controller", () => {
       expect(noPasswordReponse.status).toBe(400);
     });
 
-    it("Should return 422 if email is invalid", async () => {
+    it("Should return 422 if credentials validation fails", async () => {
+      const zodError = new z.ZodError([
+        {
+          message: "Invalid email address",
+          path: ["email"],
+          code: "invalid_type",
+          expected: "string",
+          received: "undefined",
+        },
+      ]);
+      (validateCredentials as jest.Mock).mockImplementation(() => {
+        throw zodError;
+      });
+
       const response = await request(app)
         .post("/user/register")
-        .send({ email: "invalid", password: "abcdefgG8£" })
-        .set("Authorization", "Bearer mock-token");
-
-      expect(response.status).toBe(422);
-    });
-
-    it("Should return 422 if password is invalid", async () => {
-      const response = await request(app)
-        .post("/user/register")
-        .send({ email: "test@email.com", password: "test" })
-        .set("Authorization", "Bearer mock-token");
-
-      expect(response.status).toBe(422);
-    });
-
-    it("Should return 422 if password is invalid", async () => {
-      const response = await request(app)
-        .post("/user/register")
-        .send({ email: "test@email.com", password: "test" })
+        .send({ email: "test", password: "test" })
         .set("Authorization", "Bearer mock-token");
 
       expect(response.status).toBe(422);
@@ -79,19 +75,8 @@ describe("User Controller", () => {
 
       expect(response.status).toBe(400);
     });
-    it("Should return 200 and register user", async () => {
-      (userExists as jest.Mock).mockResolvedValue(true);
-
-      const response = await request(app)
-        .post("/user/register")
-        .send({ email: "test@email.com", password: "abdegh745K!" })
-        .set("Authorization", "Bearer mock-token");
-
-      expect(response.status).toBe(400);
-    });
 
     it("Should return 500 if unable to create user", async () => {
-      (userExists as jest.Mock).mockResolvedValue(true);
       (createUser as jest.Mock).mockImplementationOnce(() => {
         throw new Error("Test placeholder");
       });
@@ -101,11 +86,20 @@ describe("User Controller", () => {
         .send({ email: "test@email.com", password: "abdegh745K!" })
         .set("Authorization", "Bearer mock-token");
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(500);
+    });
+
+    it("Should return 200 and register user", async () => {
+      const response = await request(app)
+        .post("/user/register")
+        .send({ email: "test@email.com", password: "abdegh745K!" })
+        .set("Authorization", "Bearer mock-token");
+
+      expect(response.status).toBe(200);
     });
   });
-  describe("Login", () => {
 
+  describe("Login", () => {
     it("Should return 400 if both email and password are missing", async () => {
       const response = await request(app)
         .post("/user/register")
@@ -116,7 +110,6 @@ describe("User Controller", () => {
     });
 
     it("Should return 400 if either email or password are missing", async () => {
-
       const noEmailReponse = await request(app)
         .post("/user/register")
         .send({ password: "abcdefgG8£" })
@@ -132,7 +125,6 @@ describe("User Controller", () => {
     });
 
     it("should return 400 if user does not exist", async () => {
-
       (getUser as jest.Mock).mockResolvedValue(null);
 
       const response = await request(app)
@@ -144,7 +136,6 @@ describe("User Controller", () => {
     });
 
     it("should return 400 if password is invalid", async () => {
-
       const mockUser = {
         email: "test@example.com",
         password: "hashedPassword",
@@ -162,15 +153,14 @@ describe("User Controller", () => {
     });
 
     it("should return 200 and access token on successful login", async () => {
-
       const mockUser = {
         email: "test@example.com",
         password: "hashedPassword",
         salt: "salt",
         id: "userId",
       };
-      (getUser as jest.Mock).mockResolvedValue(mockUser); // Simulate user found
-      (ValidatePassword as jest.Mock).mockResolvedValue(true); // Simulate valid password
+      (getUser as jest.Mock).mockResolvedValue(mockUser);
+      (ValidatePassword as jest.Mock).mockResolvedValue(true);
       (GenerateAccessToken as jest.Mock).mockReturnValue("accessToken");
       (GenerateRefreshToken as jest.Mock).mockReturnValue("refreshToken");
       updateRefreshToken as jest.Mock;
