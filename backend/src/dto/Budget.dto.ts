@@ -9,6 +9,9 @@
 //   // password: string;
 // }
 
+import { z } from "zod";
+import { AccountTypeEnum } from "../schemas";
+
 // export interface UserLoginInput {
 //   email: string;
 //   password: string;
@@ -30,6 +33,12 @@ export interface TransactionPayload {
   outflow?: number;
   payee?: string;
   memo?: string;
+}
+
+export interface AddAccountInput {
+  name: string;
+  type: z.infer<typeof AccountTypeEnum>;
+  balance: number;
 }
 //
 // export interface VandorPayload {
