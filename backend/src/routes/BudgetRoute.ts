@@ -3,6 +3,7 @@ import { Authenticate } from "../middleware/CommonAuth";
 import {
   addAccount,
   addTransaction,
+  deleteAccount,
   deleteTransaction,
   editAccount,
   editTransaction,
@@ -13,16 +14,13 @@ const router = express.Router();
 
 router.use(Authenticate);
 
-router.get("/accounts", getAccounts);
-router.post("/accounts", addAccount);
-router.patch("/accounts/:id", editAccount);
-router.delete("/accounts/:id");
+router.get("/account", getAccounts);
+router.post("/account", addAccount);
+router.patch("/account/:id", editAccount);
+router.delete("/account/:id", deleteAccount);
 
-router.post("/transactions", addTransaction);
-router.patch("/transactions/:id", editTransaction);
-router.delete("/transactions/:id", deleteTransaction);
-// Edit transaction
-
-// Delete transaction
+router.post("/transaction", addTransaction);
+router.patch("/transaction/:id", editTransaction);
+router.delete("/transaction/:id", deleteTransaction);
 
 export { router as BudgetRoute };
