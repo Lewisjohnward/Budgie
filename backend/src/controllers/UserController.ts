@@ -1,44 +1,22 @@
 import { Request, Response, NextFunction } from "express";
 import { PrismaClient } from "@prisma/client";
+import jwt from "jsonwebtoken";
 import { RegisterUserInput, UserLoginInput } from "../dto";
-// import * as EmailValidator from "email-validator";
 import {
   GeneratePassword,
   GenerateSalt,
   GenerateAccessToken,
-  PasswordSchema,
-  ValidatePassword,
-  GenerateRefreshToken,
-} from "../utility/PasswordUtility";
-import { z } from "zod";
-import jwt from "jsonwebtoken";
-import {
   createUser,
   getUser,
   updateRefreshToken,
   userExists,
-} from "../utility/UserUtility";
+  validateCredentials,
+  ValidatePassword,
+  GenerateRefreshToken,
+} from "../utility";
+import { z } from "zod";
 
 const prisma = new PrismaClient();
-
-export const emailSchema = z
-  .string()
-  .email({ message: "Invalid email address" });
-
-export const passwordSchema = z
-  .string()
-  .min(8, { message: "Password must be at least 8 characters long" })
-  .max(64, { message: "Password must be no more than 64 characters long" })
-  .regex(/[A-Z]/, {
-    message: "Password must contain at least one uppercase letter",
-  })
-  .regex(/[a-z]/, {
-    message: "Password must contain at least one lowercase letter",
-  })
-  .regex(/[0-9]/, { message: "Password must contain at least one number" })
-  .regex(/[\W_]/, {
-    message: "Password must contain at least one special character",
-  });
 
 export const register = async (
   req: Request,
@@ -48,34 +26,29 @@ export const register = async (
   const { email, password } = <RegisterUserInput>req.body;
 
   if (!email || !password) {
-    res.status(400).json({ message: "There has been an error signing up" });
+    res.status(400).json({ message: "Missing credentials" });
     return;
   }
 
   try {
-    // TODO: change this to a zod object
-    passwordSchema.parse(password);
-    emailSchema.parse(email);
-  } catch (error) {
-    res.status(422).json({ message: "Invalid credentials" });
-    return;
-  }
+    validateCredentials({ email, password });
+    const userAlreadyExists = await userExists(email);
 
-  const userAlreadyExists = await userExists(email);
+    if (userAlreadyExists) {
+      res.status(400).json({ message: "There has been an error signing up" });
+      return;
+    }
 
-  if (userAlreadyExists) {
-    res.status(400).json({ message: "There has been an error signing up" });
-    return;
-  }
+    const salt = await GenerateSalt();
+    const passwordHash = await GeneratePassword(password, salt);
 
-  const salt = await GenerateSalt();
-  const passwordHash = await GeneratePassword(password, salt);
-
-  try {
-    // TODO: extract this into function
     await createUser({ email, password: passwordHash, salt });
     res.status(200).json({ message: "User registered successfully" });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(422).json({ message: "Invalid credentials" });
+      return;
+    }
     res
       .status(500)
       .json({ message: "There has been an error creating the user" });
@@ -146,9 +119,6 @@ export const logout = async (
   res: Response,
   next: NextFunction,
 ) => {
-  // TODO: remove refresh token
-  // TODO: test
-
   const cookies = req.cookies;
   if (!cookies?.jwt) {
     console.log("no cookies found");
