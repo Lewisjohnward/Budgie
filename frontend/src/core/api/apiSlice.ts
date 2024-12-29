@@ -49,10 +49,9 @@ const baseQueryWithReauth: BaseQueryFn<
   console.log("base query with reauth");
   let result = await baseQuery(args, api, extraOptions);
 
-  // If server returns a 403 when sending a request refresh token
-  if (result?.error?.status === 403) {
-    console.log("resulst.error && status === 403");
-    const refreshResult = await baseQuery("/refresh", api, extraOptions);
+  // If server returns a 401 when sending a request refresh token
+  if (result?.error?.status === 401) {
+    const refreshResult = await baseQuery("user/refresh", api, extraOptions);
     if (refreshResult.data) {
       const email = (api.getState() as RootState).auth.email;
       api.dispatch(setCredentials({ ...refreshResult.data, email }));
