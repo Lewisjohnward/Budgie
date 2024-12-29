@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { registerUserSchema } from "../schemas";
 
 const prisma = new PrismaClient();
 
@@ -43,4 +44,14 @@ export const updateRefreshToken = async (
     console.error("Error updating refresh token for user:", email, error);
     throw new Error("Could not update refresh token");
   }
+};
+
+export const validateCredentials = ({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}) => {
+  return registerUserSchema.parse({ email, password });
 };
