@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { accountSchema } from "../schemas";
 
 const prisma = new PrismaClient();
 
@@ -17,29 +18,42 @@ export const isValidAccount = async (accountId: string) => {
   return account;
 };
 
-export const validateCategoryAccountId = async (
-  accountId: string,
-  categoryId: string,
-  userId: string,
-) => {
-  const [account, category] = await prisma.$transaction([
-    prisma.account.findUnique({
-      where: {
-        id: accountId,
-        userId: userId,
-      },
-    }),
-    prisma.category.findUnique({
-      where: {
-        id: categoryId,
-        userId: userId,
-      },
-    }),
-  ]);
+export const userOwnsAccount = async (accountId: string, userId: string) => {
+  const account = await prisma.account.findUnique({
+    where: {
+      id: accountId,
+      userId: userId,
+    },
+  });
 
-  if (!account || !category) {
+  if (!account) {
     throw new Error("Unable to add transaction");
   }
+};
 
-  return [account, category];
+export const selectAccounts = async (userId: string) => {
+  const accountsWithTransactions = await prisma.account.findMany({
+    where: {
+      userId,
+    },
+    include: {
+      transactions: true,
+    },
+  });
+
+  return accountsWithTransactions;
+};
+
+export const validateAccount = ({
+  userId,
+  name,
+  type,
+  balance,
+}: {
+  userId: string;
+  name: string;
+  type: string;
+  balance: number;
+}) => {
+  return accountSchema.parse({ userId, name, type, balance });
 };
