@@ -1,18 +1,18 @@
 import { Request, Response, NextFunction } from "express";
 import { AccountType, CategoryType, PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import { TransactionPayload } from "../dto";
-import { transactionSchema } from "../schemas";
+import { AddAccountInput, TransactionPayload } from "../dto";
+import { accountSchema, transactionSchema } from "../schemas";
 import {
   insertTransaction,
-  isValidAccount,
-  isValidCategory,
-  validateCategoryAccountId,
+  normalizeData,
+  selectAccounts,
+  userOwnsAccount,
+  validateAccount,
 } from "../utility";
-import { Decimal } from "@prisma/client/runtime/library";
 
 const prisma = new PrismaClient();
-export const data = async (req: Request, res: Response, next: NextFunction) => {
+export const data = async (req: Request, res: Response) => {
   // Be mindful of the amount of data you're fetching.
   // If your User has a lot of related data (e.g., many Budgets, Accounts, Categories, and Transactions), this query could return a lot of data. Use pagination or filtering if necessary to reduce the response size.
 
@@ -69,21 +69,23 @@ export const data = async (req: Request, res: Response, next: NextFunction) => {
   res.status(200).json({ user, accounts });
 };
 
-const AccountTypeEnum = z.enum(["BANK", "CREDIT_CARD"]);
+export const getAccounts = async (req: Request, res: Response) => {
+  // TODO: what about pagination if there's loads of transactions?
 
-export const accountSchema = z.object({
-  userId: z.string().uuid(),
-  name: z.string().min(1, { message: "Account name is required" }),
-  type: AccountTypeEnum,
-  balance: z.coerce.number(),
-});
+  try {
+    const accountsWithTransactions = await selectAccounts(req.user?._id!);
 
-export const addAccount = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  const { name, type, balance } = req.body;
+    const data = normalizeData({ accounts: accountsWithTransactions });
+
+    res.status(200).json({ data });
+  } catch (error) {
+    res.status(500).json({ message: "There has been an error" });
+  }
+  return;
+};
+
+export const addAccount = async (req: Request, res: Response) => {
+  const { name, type, balance } = <AddAccountInput>req.body;
 
   if (!name || !type || !balance) {
     res.status(400).json({ message: "Malformed data" });
@@ -91,13 +93,14 @@ export const addAccount = async (
   }
 
   try {
-    const validatedAccount = accountSchema.parse({
+    const validatedAccount = validateAccount({
       userId: req.user!._id,
       name,
       type,
       balance,
     });
 
+    // TODO: EXTRACT INTO OWN FUNCTION
     await prisma.account.create({
       data: {
         ...validatedAccount,
@@ -114,37 +117,11 @@ export const addAccount = async (
   }
 };
 
-// TODO: THIS NEEDS TESTING
-export const getAccounts = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  // TODO: Get all accounts with transactions, sort on FE?
-
-  try {
-    const accountsWithTransactions = await prisma.account.findMany({
-      where: {
-        userId: req.user?._id,
-      },
-      include: {
-        transactions: true,
-      },
-    });
-
-    const data = normalizeData({ accounts: accountsWithTransactions });
-
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).json({ message: "There has been an error" });
-  }
+export const editAccount = async (req: Request, res: Response) => {
+  // TODO: use req query param to edit transaction
 };
 
-export const editAccount = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const deleteAccount = async (req: Request, res: Response) => {
   // TODO: use req query param to edit transaction
 };
 
@@ -181,22 +158,22 @@ export const addTransaction = async (
   }
 
   try {
-    const [account, category] = await validateCategoryAccountId(
+    const validTransaction = transactionSchema.parse({
       accountId,
       categoryId,
-      // TODO: remove the !
-      req.user!._id,
-    );
-
-    const validTransaction = transactionSchema.parse({
-      accountId: account.id,
-      categoryId: category.id,
       date,
       inflow,
       outflow,
       payee,
       memo,
     });
+
+    // TODO: this can probably go into middleware before account routes?
+    await userOwnsAccount(
+      accountId,
+      // TODO: remove the !
+      req.user!._id,
+    );
 
     await insertTransaction(validTransaction);
     res.status(200).json({ message: "Transaction added" });
@@ -206,35 +183,7 @@ export const addTransaction = async (
       res.status(400).json({ message: "Malformed data" });
       return;
     }
-    // res.status(503).json({ message: error.message });
     res.status(503).json({ message: "there has been an error" });
     return;
   }
 };
-function normalizeData(arg0: {
-  accounts: ({
-    transactions: {
-      id: string;
-      createdAt: Date;
-      updatedAt: Date;
-      accountId: string;
-      categoryId: string;
-      date: Date;
-      inflow: Decimal | null;
-      outflow: Decimal | null;
-      payee: string | null;
-      memo: string | null;
-      cleared: boolean;
-    }[];
-  } & {
-    id: string;
-    name: string;
-    type: import(".prisma/client").$Enums.AccountType;
-    userId: string;
-    balance: Decimal;
-    createdAt: Date;
-    updatedAt: Date;
-  })[];
-}) {
-  throw new Error("Function not implemented.");
-}
