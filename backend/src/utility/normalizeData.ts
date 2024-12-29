@@ -37,7 +37,7 @@ type NormalizedData = {
   categories: { [key: string]: Category };
 };
 
-function normalizeData(data: { accounts: Account[] }): NormalizedData {
+export function normalizeData(data: { accounts: Account[] }): NormalizedData {
   const normalizedData: NormalizedData = {
     accounts: {},
     transactions: {},
