@@ -3,7 +3,7 @@ import { z } from "zod";
 export const transactionSchema = z
   .object({
     accountId: z.string().uuid(),
-    categoryId: z.string().uuid(),
+    categoryId: z.string().uuid().optional(),
     date: z
       .string()
       .refine((value) => !isNaN(new Date(value).getTime()), {
