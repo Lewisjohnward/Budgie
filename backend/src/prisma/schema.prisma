@@ -31,7 +31,6 @@ model Category {
   id           String        @id @default(uuid())
   userId       String
   // budgetId     String
-  type         CategoryType
   name         String
   // budget       Budget        @relation(fields: [budgetId], references: [id])
   transactions Transaction[]
