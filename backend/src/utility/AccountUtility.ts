@@ -81,8 +81,7 @@ export const initialiseAccount = async (account: AccountPayload) => {
     accountId: createdAccount.id,
     categoryId: defaultCategory.id,
     inflow: account.balance,
-  })
-
+  });
 };
 
 export const insertTransaction = async (transaction: TransactionPayload) => {
