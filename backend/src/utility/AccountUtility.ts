@@ -87,6 +87,12 @@ export const initialiseAccount = async (account: AccountPayload) => {
 
 export const insertTransaction = async (transaction: TransactionPayload) => {
   const insertedTransaction = await prisma.transaction.create({
-    data: { ...transaction },
+
+export const initialiseCategories = async (userId: string) => {
+  await prisma.category.createMany({
+    data: [
+      { userId, name: "Inflow: ready to assign" },
+      { userId, name: "This needs a category" },
+    ],
   });
 };
