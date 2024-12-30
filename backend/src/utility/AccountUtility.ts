@@ -86,7 +86,35 @@ export const initialiseAccount = async (account: AccountPayload) => {
 };
 
 export const insertTransaction = async (transaction: TransactionPayload) => {
+  if (transaction.categoryId === undefined) {
+    const defaultCategory = await prisma.category.findFirstOrThrow({
+      where: {
+        name: "This needs a category",
+      },
+    });
+
+    const newTransaction = {
+      ...transaction,
+      categoryId: defaultCategory.id,
+    };
+
+    await prisma.transaction.create({
+      data: newTransaction,
+    });
+  } else {
+    const { categoryId, ...rest } = transaction;
+
+    if (!categoryId) {
+      throw new Error("No categoryId provided");
+    }
+
+    const newTransaction = { categoryId, ...rest };
+
   const insertedTransaction = await prisma.transaction.create({
+      data: newTransaction,
+    });
+  }
+};
 
 export const initialiseCategories = async (userId: string) => {
   await prisma.category.createMany({
