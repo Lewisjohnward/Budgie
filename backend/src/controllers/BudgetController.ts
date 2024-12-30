@@ -4,6 +4,7 @@ import { z } from "zod";
 import { AddAccountInput, TransactionPayload } from "../dto";
 import { accountSchema, transactionSchema } from "../schemas";
 import {
+  initialiseAccount,
   insertTransaction,
   normalizeData,
   selectAccounts,
@@ -100,12 +101,7 @@ export const addAccount = async (req: Request, res: Response) => {
       balance,
     });
 
-    // TODO: EXTRACT INTO OWN FUNCTION
-    await prisma.account.create({
-      data: {
-        ...validatedAccount,
-      },
-    });
+    await initialiseAccount(validatedAccount);
 
     res.status(200).json({ message: "Account added" });
   } catch (error) {
@@ -113,7 +109,7 @@ export const addAccount = async (req: Request, res: Response) => {
       res.status(400).json({ message: "Malformed data" });
       return;
     }
-    res.status(400).json({ message: "Error adding account" });
+    res.status(500).json({ message: "Error adding account" });
   }
 };
 
