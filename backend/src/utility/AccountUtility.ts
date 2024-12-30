@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { accountSchema } from "../schemas";
+import { AccountPayload, TransactionPayload } from "../dto";
 
 const prisma = new PrismaClient();
 
@@ -56,4 +57,36 @@ export const validateAccount = ({
   balance: number;
 }) => {
   return accountSchema.parse({ userId, name, type, balance });
+};
+
+export const createAccount = async (account: AccountPayload) => {
+  return await prisma.account.create({
+    data: {
+      ...account,
+    },
+  });
+};
+
+export const initialiseAccount = async (account: AccountPayload) => {
+  const createdAccount = await createAccount(account);
+
+  // TODO: THE NAME needs to be protected
+  const defaultCategory = await prisma.category.findFirstOrThrow({
+    where: {
+      name: "Inflow: Ready to Assign",
+    },
+  });
+
+  await insertTransaction({
+    accountId: createdAccount.id,
+    categoryId: defaultCategory.id,
+    inflow: account.balance,
+  })
+
+};
+
+export const insertTransaction = async (transaction: TransactionPayload) => {
+  const insertedTransaction = await prisma.transaction.create({
+    data: { ...transaction },
+  });
 };
