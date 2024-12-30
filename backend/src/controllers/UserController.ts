@@ -13,6 +13,7 @@ import {
   validateCredentials,
   ValidatePassword,
   GenerateRefreshToken,
+  initialiseCategories,
 } from "../utility";
 import { z } from "zod";
 
@@ -42,7 +43,8 @@ export const register = async (
     const salt = await GenerateSalt();
     const passwordHash = await GeneratePassword(password, salt);
 
-    await createUser({ email, password: passwordHash, salt });
+    const user = await createUser({ email, password: passwordHash, salt });
+    await initialiseCategories(user.id);
     res.status(200).json({ message: "User registered successfully" });
   } catch (error) {
     if (error instanceof z.ZodError) {
