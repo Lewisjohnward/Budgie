@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const AccountTypeEnum = z.enum(["BANK", "CREDIT_CARD"]);
+export const AccountTypeEnum = z.enum(["BANK", "CREDIT_CARD"]);
 
 export const accountSchema = z.object({
   userId: z.string().uuid(),
