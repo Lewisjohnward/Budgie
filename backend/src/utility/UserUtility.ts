@@ -26,7 +26,7 @@ export const createUser = async (user: {
   password: string;
   salt: string;
 }) => {
-  await prisma.user.create({
+  return await prisma.user.create({
     data: { ...user },
   });
 };
