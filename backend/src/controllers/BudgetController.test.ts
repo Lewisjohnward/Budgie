@@ -2,6 +2,7 @@ import request from "supertest";
 import { PrismaClient } from "@prisma/client"; // Added Prisma imports
 import app from "../app"; // Import your app
 import {
+  initialiseAccount,
   insertTransaction,
   selectAccounts,
   userOwnsAccount,
@@ -26,12 +27,14 @@ jest.mock("@prisma/client", () => {
   };
 });
 
+const mockId = "dbfbbeb4-89d9-4b08-b627-1be5b4748107";
+
 jest.mock("../utility", () => {
   const actualModule = jest.requireActual("../utility");
   return {
     ValidateSignature: jest.fn((req) => {
       req.user = {
-        _id: "dbfbbeb4-89d9-4b08-b627-1be5b4748107",
+        _id: mockId,
         email: "test@test.com",
       };
       return true;
@@ -41,6 +44,7 @@ jest.mock("../utility", () => {
     selectAccounts: jest.fn(),
     normalizeData: jest.fn(),
     validateAccount: actualModule.validateAccount,
+    initialiseAccount: jest.fn(),
   };
 });
 
@@ -85,39 +89,24 @@ describe("Budget Controller", () => {
     });
 
     it("should validate input and create an account", async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
-        id: "mock-user-id",
-      });
-
-      (prisma.account.create as jest.Mock).mockResolvedValue({
+      const mockData = {
         name: "Personal Bank Account",
         type: "BANK",
         balance: 1000.0,
-      });
+      };
 
       const response = await request(app)
         .post("/budget/account")
-        .send({
-          name: "Personal Bank Account",
-          type: "BANK",
-          balance: 1000.0,
-        })
+        .send(mockData)
         .set("Authorization", "Bearer mock-token");
 
       expect(response.status).toBe(200);
+      expect(initialiseAccount as jest.Mock).toHaveBeenCalledTimes(1);
+      expect(initialiseAccount as jest.Mock).toHaveBeenCalledWith({
+        userId: mockId,
+        ...mockData,
+      });
       expect(response.body).toEqual({ message: "Account added" });
-
-      // TODO: get this working
-
-      // Check that the account creation was called with the correct data
-      // expect(prisma.account.create).toHaveBeenCalledTimes(1);
-      // expect(prisma.account.create).toHaveBeenCalledWith({
-      //   data: {
-      //     name: "Personal Bank Account",
-      //     type: "BANK",
-      //     balance: 1000.0,
-      //   },
-      // });
     });
   });
 
@@ -141,7 +130,6 @@ describe("Budget Controller", () => {
   });
 
   describe("Add transaction", () => {
-
     it("Should return 400 when both inflow and outflow missing", async () => {
       const response = await request(app)
         .post("/budget/transaction")
