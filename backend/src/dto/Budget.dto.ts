@@ -40,6 +40,10 @@ export interface AddAccountInput {
   type: z.infer<typeof AccountTypeEnum>;
   balance: number;
 }
+
+export interface AccountPayload extends AddAccountInput {
+  userId: string;
+}
 //
 // export interface VandorPayload {
 //   _id: string;
