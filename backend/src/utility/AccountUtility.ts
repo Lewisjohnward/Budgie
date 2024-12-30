@@ -109,7 +109,7 @@ export const insertTransaction = async (transaction: TransactionPayload) => {
 
     const newTransaction = { categoryId, ...rest };
 
-  const insertedTransaction = await prisma.transaction.create({
+    const insertedTransaction = await prisma.transaction.create({
       data: newTransaction,
     });
   }
