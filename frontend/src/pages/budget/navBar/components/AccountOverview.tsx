@@ -24,14 +24,6 @@ export function AccountOverview({
     return <div>loading</div>;
   }
   const accounts = Object.values(data.data.accounts);
-  // console.log(accounts);
-  // console.log(accountNames);
-
-  // return (
-  //   <div>
-  //     <div>wip</div>
-  //   </div>
-  // );
 
   return (
     <div className="space-y-2 w-60">
