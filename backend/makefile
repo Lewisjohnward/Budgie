@@ -22,6 +22,9 @@ db-remove:
 db-remove-data:
 	docker volume rm pgdata
 
+wipe-db-reset-be: db-remove db-remove-data setup-db 
+	npm run start
+
 
 # prisma-create-tables:
 	# npx prisma migrate dev --name init
