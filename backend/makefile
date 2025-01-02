@@ -25,6 +25,9 @@ db-remove-data:
 wipe-db-reset-be: db-remove db-remove-data setup-db 
 	npm run start
 
+prisma-gui:
+	npx prisma studio --schema=src/prisma/schema.prisma
+
 
 # prisma-create-tables:
 	# npx prisma migrate dev --name init
