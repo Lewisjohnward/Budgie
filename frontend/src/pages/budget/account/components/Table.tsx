@@ -62,11 +62,7 @@ const columns: ColumnDef<Transaction>[] = [
     cell: ({ row }) => {
       const date = new Date(row.getValue("date"));
       const formattedDate = new Intl.DateTimeFormat("en-GB").format(date);
-      return (
-        <div className="text-left font-medium text-nowrap text-ellipsis overflow-hidden">
-          {formattedDate}
-        </div>
-      );
+      return <TextCell> {formattedDate} </TextCell>;
     },
   },
 
@@ -78,7 +74,7 @@ const columns: ColumnDef<Transaction>[] = [
       return <SortButton column={column} text={"Payee"} />;
     },
     cell: ({ row }) => {
-      return <Cell>{row.getValue("payee")}</Cell>;
+      return <TextCell>{row.getValue("payee")}</TextCell>;
     },
   },
   {
@@ -89,9 +85,7 @@ const columns: ColumnDef<Transaction>[] = [
     },
     cell: ({ row }) => {
       const category = row.getValue("category");
-      return (
-        <div className="text-right font-medium">{category.name}</div>
-      );
+      return <TextCell>{category.name}</TextCell>;
     },
   },
   {
@@ -102,7 +96,7 @@ const columns: ColumnDef<Transaction>[] = [
       return <SortButton column={column} text={"Memo"} />;
     },
     cell: ({ row }) => {
-      return <Cell>{row.getValue("memo")}</Cell>;
+      return <TextCell>{row.getValue("memo")}</TextCell>;
     },
   },
   {
@@ -120,7 +114,7 @@ const columns: ColumnDef<Transaction>[] = [
         currency: "GBP",
       }).format(amount);
 
-      return <div className="text-right font-medium">{formatted}</div>;
+      return <TextCell>{formatted}</TextCell>;
     },
   },
   {
@@ -138,12 +132,12 @@ const columns: ColumnDef<Transaction>[] = [
         currency: "GBP",
       }).format(amount);
 
-      return <div className="text-right font-medium">{formatted}</div>;
+      return <TextCell>{formatted}</TextCell>;
     },
   },
 ];
 
-function Cell({ children }: { children: ReactNode }) {
+function TextCell({ children }: { children: ReactNode }) {
   return (
     <div className="text-nowrap overflow-hidden text-ellipsis">{children}</div>
   );
