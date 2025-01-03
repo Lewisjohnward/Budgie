@@ -1,16 +1,12 @@
-import { mockAccounts } from "@/mockData";
-import {
-  Column,
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  SortingState,
-  useReactTable,
-} from "@tanstack/react-table";
+import { CirclePlus } from "lucide-react";
 import { useLocation, useParams } from "react-router-dom";
+import { MyTable } from "./components/Table";
+import {
+  useAddTransactionMutation,
+  useGetAccountsQuery,
+} from "@/core/api/budgetApiSlice";
 
-type Transaction = {
+export type Transaction = {
   id: string;
   accountId: string;
   categoryId: string;
@@ -26,7 +22,7 @@ type Transaction = {
   updatedAt: string;
 };
 
-type Account = {
+export type Account = {
   name: string;
   clearedBalance?: number;
   unclearedBalance?: number;
@@ -36,10 +32,10 @@ type Account = {
 export function Account() {
   // TODO: GET TRANSACTION DATA
   const { data, isLoading, isError } = useGetAccountsQuery();
+  const [addTransaction] = useAddTransactionMutation();
 
   if (isLoading) return <div>...loading</div>;
   if (isError) return <div>...error</div>;
-  console.log("data", data);
 
   const { accountId } = useParams();
 
@@ -57,16 +53,21 @@ export function Account() {
 
   // return <div>temp</div>;
 
-  const transactions = Object.values(data.data.transactions).filter(
-    (transaction) => transaction.accountId === accountId,
-  );
+  const transactions = Object.values(data.data.transactions)
+    .filter((transaction) => transaction.accountId === accountId)
+    .map((transaction) => {
+      const category = data.data.categories[transaction.categoryId];
+      return { ...transaction, category };
+    });
 
-  console.log(transactions);
   const account = {
     name: chosenAccount.name,
     clearedBalance: 0,
     unclearedBalance: 0,
     transactions,
+    // transactions: formattedTransactions
+  };
+
   const handleSubmitTransaction = async () => {
   };
 
