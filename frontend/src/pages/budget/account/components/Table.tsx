@@ -82,6 +82,19 @@ const columns: ColumnDef<Transaction>[] = [
     },
   },
   {
+    accessorKey: "category",
+    size: 200,
+    header: ({ column }) => {
+      return <SortButton column={column} text={"Category"} />;
+    },
+    cell: ({ row }) => {
+      const category = row.getValue("category");
+      return (
+        <div className="text-right font-medium">{category.name}</div>
+      );
+    },
+  },
+  {
     accessorKey: "memo",
     enableResizing: true,
     size: 300,
