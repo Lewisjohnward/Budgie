@@ -38,7 +38,11 @@ export const selectAccounts = async (userId: string) => {
       userId,
     },
     include: {
-      transactions: true,
+      transactions: {
+        include: {
+          category: true,
+        },
+      },
     },
   });
 
@@ -101,6 +105,7 @@ export const insertTransaction = async (transaction: TransactionPayload) => {
       data: newTransaction,
     });
   } else {
+    // TODO: should I check that categoryId exists in the db before adding it, probably
     const { categoryId, ...rest } = transaction;
 
     if (!categoryId) {
