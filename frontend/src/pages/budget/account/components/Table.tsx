@@ -247,7 +247,7 @@ export function MyTable({ transactions }: TableProps) {
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody>
+        <TableBody className="border border-r-neutral-300">
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <>
