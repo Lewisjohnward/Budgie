@@ -57,7 +57,7 @@ const columns: ColumnDef<Transaction>[] = [
     enableResizing: true,
     size: 200,
     header: ({ column }) => {
-      return <SortButton column={column} text="Date" />;
+      return <SortButton column={column}>Date</SortButton>;
     },
     cell: ({ row }) => {
       const date = new Date(row.getValue("date"));
@@ -71,7 +71,7 @@ const columns: ColumnDef<Transaction>[] = [
     enableResizing: true,
     size: 300,
     header: ({ column }) => {
-      return <SortButton column={column} text={"Payee"} />;
+      return <SortButton column={column}>Payee</SortButton>;
     },
     cell: ({ row }) => {
       return <TextCell>{row.getValue("payee")}</TextCell>;
@@ -81,7 +81,7 @@ const columns: ColumnDef<Transaction>[] = [
     accessorKey: "category",
     size: 200,
     header: ({ column }) => {
-      return <SortButton column={column} text={"Category"} />;
+      return <SortButton column={column}>Category</SortButton>;
     },
     cell: ({ row }) => {
       const category = row.getValue("category");
@@ -93,7 +93,7 @@ const columns: ColumnDef<Transaction>[] = [
     enableResizing: true,
     size: 300,
     header: ({ column }) => {
-      return <SortButton column={column} text={"Memo"} />;
+      return <SortButton column={column}>Memo</SortButton>;
     },
     cell: ({ row }) => {
       return <TextCell>{row.getValue("memo")}</TextCell>;
@@ -104,11 +104,11 @@ const columns: ColumnDef<Transaction>[] = [
     enableResizing: true,
     size: 200,
     header: ({ column }) => {
-      return <SortButton column={column} text={"Outflow"} />;
+      return <SortButton column={column}>Outflow</SortButton>;
     },
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("outflow"));
-      if (amount === 0) return null; // Or return "" for an empty string
+      if (amount === 0) return null;
       const formatted = new Intl.NumberFormat("en-GB", {
         style: "currency",
         currency: "GBP",
@@ -122,7 +122,7 @@ const columns: ColumnDef<Transaction>[] = [
     enableResizing: false,
     size: 200,
     header: ({ column }) => {
-      return <SortButton column={column} text={"Inflow"} />;
+      return <SortButton column={column}>Inflow</SortButton>;
     },
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("inflow"));
@@ -145,10 +145,10 @@ function TextCell({ children }: { children: ReactNode }) {
 
 function SortButton({
   column,
-  text,
+  children,
 }: {
   column: Column<Transaction, unknown>;
-  text: string;
+  children: React.ReactNode;
 }) {
   const isSorted = column.getIsSorted();
 
@@ -158,7 +158,7 @@ function SortButton({
       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       className="w-full flex items-center justify-between hover:bg-transparent"
     >
-      <span>{text}</span>
+      <span>{children}</span>
       {isSorted == "asc" ? (
         <ArrowUp />
       ) : isSorted == "desc" ? (
