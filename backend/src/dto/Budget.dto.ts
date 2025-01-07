@@ -41,7 +41,11 @@ export interface AddAccountPayload {
   balance: number;
 }
 
-export interface AccountPayload extends AddAccountInput {
+export interface DeleteTransactionPayload {
+  transactionId: string[];
+}
+
+export interface AccountPayload extends AddAccountPayload {
   userId: string;
 }
 //
