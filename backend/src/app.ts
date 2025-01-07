@@ -16,15 +16,15 @@ if (!process.env.PAYLOAD_SECRET) {
 }
 console.clear();
 
-
-
 const app = express();
 
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/images", express.static(path.join(__dirname, "images")));
-app.use(morgan("dev"));
+if (process.env.NODE_ENV !== "test") {
+  app.use(morgan("dev"));
+}
 app.use(
   cors({
     origin: "http://localhost:5173",
