@@ -49,8 +49,6 @@ jest.mock("../utility", () => {
   };
 });
 
-const prisma = new PrismaClient();
-
 describe("Budget Controller", () => {
   describe("Add account", () => {
     it("should return 400 for missing required fields", async () => {
