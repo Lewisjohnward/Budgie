@@ -33,6 +33,7 @@ const mockId = "dbfbbeb4-89d9-4b08-b627-1be5b4748107";
 jest.mock("../utility", () => {
   const actualModule = jest.requireActual("../utility");
   return {
+    ...actualModule,
     ValidateSignature: jest.fn((req) => {
       req.user = {
         _id: mockId,
@@ -44,7 +45,6 @@ jest.mock("../utility", () => {
     userOwnsAccount: jest.fn(),
     selectAccounts: jest.fn(),
     normalizeData: jest.fn(),
-    validateAccount: actualModule.validateAccount,
     initialiseAccount: jest.fn(),
     deleteTransactions: jest.fn(),
   };
