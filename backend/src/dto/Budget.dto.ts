@@ -35,7 +35,7 @@ export interface TransactionPayload {
   memo?: string;
 }
 
-export interface AddAccountInput {
+export interface AddAccountPayload {
   name: string;
   type: z.infer<typeof AccountTypeEnum>;
   balance: number;
