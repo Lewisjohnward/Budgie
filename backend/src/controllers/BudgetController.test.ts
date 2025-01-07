@@ -2,6 +2,7 @@ import request from "supertest";
 import { PrismaClient } from "@prisma/client"; // Added Prisma imports
 import app from "../app"; // Import your app
 import {
+  deleteTransactions,
   initialiseAccount,
   insertTransaction,
   selectAccounts,
@@ -45,6 +46,7 @@ jest.mock("../utility", () => {
     normalizeData: jest.fn(),
     validateAccount: actualModule.validateAccount,
     initialiseAccount: jest.fn(),
+    deleteTransactions: jest.fn(),
   };
 });
 
@@ -175,6 +177,46 @@ describe("Budget Controller", () => {
       });
       expect(response.status).toBe(200);
       expect(insertTransaction).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("deleteTransaction", () => {
+    it("Should return 400 when no transcationId[] is provided", async () => {
+      const response = await request(app)
+        .delete("/budget/transaction")
+        .send({ userId: "test-id" });
+
+      expect(response.status).toBe(400);
+      expect.hasAssertions();
+    });
+
+    it("Should return 400 when empty transcationId[] is provided", async () => {
+      const response = await request(app)
+        .delete("/budget/transaction")
+        .send({ userId: "test-id", transactionId: [] });
+
+      expect(response.status).toBe(400);
+      expect.hasAssertions();
+    });
+
+    it("Should return 500 when db throws an error", async () => {
+      (deleteTransactions as jest.Mock).mockRejectedValueOnce(
+        new Error("DB failed error"),
+      );
+
+      const response = await request(app)
+        .delete("/budget/transaction")
+        .send({ transactionId: ["test-id"] });
+
+      expect(response.status).toBe(500);
+    });
+
+    it("Should return 200 when transaction delete success", async () => {
+      const response = await request(app)
+        .delete("/budget/transaction")
+        .send({ transactionId: ["test-id"] });
+
+      expect(response.status).toBe(200);
     });
   });
 });
