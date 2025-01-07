@@ -20,7 +20,7 @@ router.patch("/account/:id", editAccount);
 router.delete("/account/:id", deleteAccount);
 
 router.post("/transaction", addTransaction);
-router.patch("/transaction/:id", editTransaction);
-router.delete("/transaction/:id", deleteTransaction);
+router.patch("/transaction", editTransaction);
+router.delete("/transaction", deleteTransaction);
 
 export { router as BudgetRoute };
