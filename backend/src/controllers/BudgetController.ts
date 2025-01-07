@@ -1,9 +1,14 @@
 import { Request, Response, NextFunction } from "express";
-import { AccountType, CategoryType, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
-import { AddAccountInput, TransactionPayload } from "../dto";
+import {
+  AddAccountPayload,
+  DeleteTransactionPayload,
+  TransactionPayload,
+} from "../dto";
 import { accountSchema, transactionSchema } from "../schemas";
 import {
+  deleteTransactions,
   initialiseAccount,
   insertTransaction,
   normalizeData,
@@ -134,7 +139,20 @@ export const deleteTransaction = async (
   res: Response,
   next: NextFunction,
 ) => {
-  // TODO: use req query param to delete transaction
+  const { transactionId } = <DeleteTransactionPayload>req.body;
+
+  if (!transactionId || transactionId.length === 0) {
+    res.status(400).json({ message: "No id provided" });
+    return;
+  }
+
+  try {
+    await deleteTransactions(req.user?._id!, transactionId);
+
+    res.status(200).json({ message: "Success" });
+  } catch (error) {
+    res.status(500).json({ message: "There has been an error" });
+  }
 };
 
 export const addTransaction = async (
