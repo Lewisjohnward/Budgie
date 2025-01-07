@@ -7,7 +7,6 @@ import {
   insertTransaction,
   selectAccounts,
   userOwnsAccount,
-  validateAccount,
 } from "../utility";
 
 jest.mock("@prisma/client", () => {
