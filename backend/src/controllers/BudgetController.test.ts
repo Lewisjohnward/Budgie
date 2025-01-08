@@ -1,13 +1,14 @@
 import request from "supertest";
-import { PrismaClient } from "@prisma/client"; // Added Prisma imports
 import app from "../app"; // Import your app
 import {
   deleteTransactions,
   initialiseAccount,
   insertTransaction,
   selectAccounts,
+  updateTransactions,
   userOwnsAccount,
 } from "../utility";
+import { editTransactionArraySchema } from "../schemas";
 
 jest.mock("@prisma/client", () => {
   const actualPrisma = jest.requireActual("@prisma/client");
@@ -46,6 +47,7 @@ jest.mock("../utility", () => {
     normalizeData: jest.fn(),
     initialiseAccount: jest.fn(),
     deleteTransactions: jest.fn(),
+    updateTransactions: jest.fn(),
   };
 });
 
@@ -214,6 +216,44 @@ describe("Budget Controller", () => {
         .send({ transactionId: ["test-id"] });
 
       expect(response.status).toBe(200);
+    });
+  });
+
+  describe("editTransaction", () => {
+    it("Should return 400 when data malformed", async () => {
+      const response = await request(app)
+        .patch("/budget/transaction")
+        .send([
+          {
+            transactionId: "Not uuid",
+          },
+        ]);
+
+      expect(response.status).toBe(400);
+    });
+
+    it("Should return 500 if db throws error", async () => {
+      jest
+        .spyOn(editTransactionArraySchema, "parse")
+        .mockReturnValueOnce([{ transactionId: "1" }]);
+
+      (updateTransactions as jest.Mock).mockRejectedValueOnce(
+        new Error("Mock db error"),
+      );
+
+      const response = await request(app).patch("/budget/transaction").send();
+
+      expect(response.statusCode).toBe(500);
+    });
+
+    it("Should return 200 when transaction is edited success", async () => {
+      jest
+        .spyOn(editTransactionArraySchema, "parse")
+        .mockReturnValueOnce([{ transactionId: "1" }]);
+
+      const response = await request(app).patch("/budget/transaction").send();
+
+      expect(response.statusCode).toBe(200);
     });
   });
 });
