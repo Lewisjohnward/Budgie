@@ -6,13 +6,14 @@ import {
   DeleteTransactionPayload,
   TransactionPayload,
 } from "../dto";
-import { accountSchema, transactionSchema } from "../schemas";
+import { editTransactionArraySchema, transactionSchema } from "../schemas";
 import {
   deleteTransactions,
   initialiseAccount,
   insertTransaction,
   normalizeData,
   selectAccounts,
+  updateTransactions,
   userOwnsAccount,
   validateAccount,
 } from "../utility";
@@ -75,6 +76,7 @@ export const data = async (req: Request, res: Response) => {
   res.status(200).json({ user, accounts });
 };
 
+// DONE
 export const getAccounts = async (req: Request, res: Response) => {
   // TODO: what about pagination if there's loads of transactions?
 
@@ -90,6 +92,7 @@ export const getAccounts = async (req: Request, res: Response) => {
   return;
 };
 
+// DONE
 export const addAccount = async (req: Request, res: Response) => {
   const { name, type, balance } = <AddAccountPayload>req.body;
 
@@ -131,7 +134,25 @@ export const editTransaction = async (
   res: Response,
   next: NextFunction,
 ) => {
-  // TODO: use req query param to edit transaction
+  try {
+    const validatedTransactions = editTransactionArraySchema.parse(req.body);
+
+    // TODO: MAYBE WRAP IN A TRANSACTION??
+    for (const transaction of validatedTransactions) {
+      console.log("Hello, World!");
+      await updateTransactions(req.user?._id!, transaction);
+    }
+
+    res.status(200).json({ message: "Transaction updated" });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: "Malformed data" });
+      return;
+    }
+    res
+      .status(500)
+      .json({ message: "There has been an error editing transaction" });
+  }
 };
 
 export const deleteTransaction = async (
@@ -162,6 +183,8 @@ export const addTransaction = async (
 ) => {
   // TODO: need to calculate new account balance on addition
 
+  // IF NO CATEGORY ASSIGN TO THIS NEEDS A CATEGORY
+
   const { accountId, categoryId, date, inflow, outflow, payee, memo } = <
     TransactionPayload
     >req.body;
@@ -182,7 +205,7 @@ export const addTransaction = async (
       memo,
     });
 
-    // TODO: this can probably go into middleware before account routes?
+    // TODO: - remove? insert where id = userId
     await userOwnsAccount(
       accountId,
       // TODO: remove the !
@@ -197,7 +220,7 @@ export const addTransaction = async (
       res.status(400).json({ message: "Malformed data" });
       return;
     }
-    res.status(503).json({ message: "there has been an error" });
+    res.status(503).json({ message: error });
     return;
   }
 };

@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { accountSchema } from "../schemas";
+import { accountSchema, UpdatedTransaction } from "../schemas";
 import { AccountPayload, TransactionPayload } from "../dto";
 
 const prisma = new PrismaClient();
@@ -147,3 +147,21 @@ export const deleteTransactions = async (
   return deletedTransactions;
 };
 
+export const updateTransactions = async (
+  userId: string,
+  updatedTransaction: UpdatedTransaction,
+) => {
+  const { transactionId: id, ...fields } = updatedTransaction;
+
+  await prisma.transaction.update({
+    where: {
+      id: id,
+      account: {
+        userId,
+      },
+    },
+    data: {
+      ...fields,
+    },
+  });
+};
