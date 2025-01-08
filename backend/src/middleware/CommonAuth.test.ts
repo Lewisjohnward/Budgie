@@ -18,10 +18,10 @@ describe("CommonAuth", () => {
     mockResponse = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
-    } as unknown as Response;
+    } as Partial<Response>;
   });
 
-  test("Should call next() when the user is authorized", async () => {
+  test("Should call next() when the user is authorised", async () => {
     mockedValidateSignature.mockResolvedValue(true);
 
     await Authenticate(
@@ -34,7 +34,7 @@ describe("CommonAuth", () => {
     expect(nextFunction).toHaveBeenCalled();
   });
 
-  test("Should return 401 with message: user not authorized", async () => {
+  test("Should return 401 with message: user not authorised", async () => {
     mockedValidateSignature.mockResolvedValue(false);
 
     await Authenticate(
@@ -46,7 +46,7 @@ describe("CommonAuth", () => {
     expect(ValidateSignature).toHaveBeenCalledWith(mockRequest);
     expect(mockResponse.status).toHaveBeenCalledWith(401);
     expect(mockResponse.json).toHaveBeenCalledWith({
-      message: "user not authorized",
+      message: "User not authorised",
     });
     expect(nextFunction).not.toHaveBeenCalled();
   });
