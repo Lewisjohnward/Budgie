@@ -35,15 +35,10 @@ export const updateRefreshToken = async (
   email: string,
   refreshToken: string,
 ) => {
-  try {
-    return await prisma.user.update({
-      where: { email },
-      data: { refreshToken },
-    });
-  } catch (error) {
-    console.error("Error updating refresh token for user:", email, error);
-    throw new Error("Could not update refresh token");
-  }
+  return await prisma.user.update({
+    where: { email },
+    data: { refreshToken },
+  });
 };
 
 export const validateCredentials = ({
