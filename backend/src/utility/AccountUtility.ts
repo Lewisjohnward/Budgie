@@ -128,3 +128,22 @@ export const initialiseCategories = async (userId: string) => {
     ],
   });
 };
+
+export const deleteTransactions = async (
+  userId: string,
+  transactionIds: string[],
+) => {
+  const deletedTransactions = await prisma.transaction.deleteMany({
+    where: {
+      id: {
+        in: transactionIds,
+      },
+      account: {
+        userId: userId,
+      },
+    },
+  });
+
+  return deletedTransactions;
+};
+
