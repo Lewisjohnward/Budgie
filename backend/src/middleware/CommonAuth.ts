@@ -20,6 +20,6 @@ export const Authenticate = async (
   if (validate) {
     next();
   } else {
-    res.status(401).json({ message: "user not authorized" });
+    res.status(401).json({ message: "User not authorised" });
   }
 };
