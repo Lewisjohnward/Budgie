@@ -144,9 +144,14 @@ const columns: ColumnDef<Transaction>[] = [
   },
 ];
 
-function TextCell({ children }: { children: ReactNode }) {
+function TextCell({
+  children,
+  ...props
+}: { children: ReactNode } & React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className="text-nowrap overflow-hidden text-ellipsis">{children}</div>
+    <div className="text-nowrap overflow-hidden text-ellipsis" {...props}>
+      {children}
+    </div>
   );
 }
 
