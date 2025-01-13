@@ -10,8 +10,8 @@ const commonTransactionSchema = z.object({
     .optional(),
   inflow: z.number().optional(),
   outflow: z.number().optional(),
-  payee: z.string().max(100).optional(),
-  memo: z.string().max(100).optional(),
+  payee: z.string().max(100).nullish(),
+  memo: z.string().max(100).nullish(),
 });
 
 type CommonTransaction = z.infer<typeof commonTransactionSchema>;
