@@ -26,13 +26,13 @@ import { AccountTypeEnum } from "../schemas";
 //
 export interface TransactionPayload {
   accountId: string;
-  categoryId?: string;
+  categoryId?: string | null;
   // budgetId:
   date?: string;
-  inflow?: number;
-  outflow?: number;
-  payee?: string;
-  memo?: string;
+  inflow?: number | null;
+  outflow?: number | null;
+  payee?: string | null;
+  memo?: string | null;
 }
 
 export interface AddAccountPayload {
