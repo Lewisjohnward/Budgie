@@ -33,7 +33,7 @@ export const transactionSchema = commonTransactionSchema
 
 export const editTransactionSchema = commonTransactionSchema
   .extend({
-    transactionId: z.string().uuid("Invalid tranactionId"),
+    id: z.string().uuid("Invalid tranactionId"),
     accountId: z.string().uuid().optional(),
   })
   .refine(atLeastOneField, {

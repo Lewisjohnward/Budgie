@@ -235,7 +235,7 @@ describe("Budget Controller", () => {
     it("Should return 500 if db throws error", async () => {
       jest
         .spyOn(editTransactionArraySchema, "parse")
-        .mockReturnValueOnce([{ transactionId: "1" }]);
+        .mockReturnValueOnce([{ id: "1" }]);
 
       (updateTransactions as jest.Mock).mockRejectedValueOnce(
         new Error("Mock db error"),
@@ -249,7 +249,7 @@ describe("Budget Controller", () => {
     it("Should return 200 when transaction is edited success", async () => {
       jest
         .spyOn(editTransactionArraySchema, "parse")
-        .mockReturnValueOnce([{ transactionId: "1" }]);
+        .mockReturnValueOnce([{ id: "1" }]);
 
       const response = await request(app).patch("/budget/transaction").send();
 
