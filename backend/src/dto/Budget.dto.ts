@@ -42,7 +42,7 @@ export interface AddAccountPayload {
 }
 
 export interface DeleteTransactionPayload {
-  transactionId: string[];
+  transactionIds: string[];
 }
 
 export interface AccountPayload extends AddAccountPayload {
