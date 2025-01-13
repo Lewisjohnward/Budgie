@@ -29,7 +29,7 @@ app.use(
   cors({
     origin: "http://localhost:5173",
     credentials: true,
-    methods: ["GET", "POST", "OPTIONS"], // Allow GET, POST, and OPTIONS
+    methods: ["GET", "POST", "OPTIONS", "DELETE", "PATCH"], // Allow GET, POST, and OPTIONS
   }),
 );
 app.use(helmet());
