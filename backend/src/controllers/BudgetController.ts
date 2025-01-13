@@ -160,15 +160,15 @@ export const deleteTransaction = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const { transactionId } = <DeleteTransactionPayload>req.body;
+  const { transactionIds } = <DeleteTransactionPayload>req.body;
 
-  if (!transactionId || transactionId.length === 0) {
+  if (!transactionIds || transactionIds.length === 0) {
     res.status(400).json({ message: "No id provided" });
     return;
   }
 
   try {
-    await deleteTransactions(req.user?._id!, transactionId);
+    await deleteTransactions(req.user?._id!, transactionIds);
 
     res.status(200).json({ message: "Success" });
   } catch (error) {

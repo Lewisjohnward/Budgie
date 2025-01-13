@@ -192,7 +192,7 @@ describe("Budget Controller", () => {
     it("Should return 400 when empty transcationId[] is provided", async () => {
       const response = await request(app)
         .delete("/budget/transaction")
-        .send({ userId: "test-id", transactionId: [] });
+        .send({ userId: "test-id", transactionIds: [] });
 
       expect(response.status).toBe(400);
       expect.hasAssertions();
@@ -205,7 +205,7 @@ describe("Budget Controller", () => {
 
       const response = await request(app)
         .delete("/budget/transaction")
-        .send({ transactionId: ["test-id"] });
+        .send({ transactionIds: ["test-id"] });
 
       expect(response.status).toBe(500);
     });
@@ -213,7 +213,7 @@ describe("Budget Controller", () => {
     it("Should return 200 when transaction delete success", async () => {
       const response = await request(app)
         .delete("/budget/transaction")
-        .send({ transactionId: ["test-id"] });
+        .send({ transactionIds: ["test-id"] });
 
       expect(response.status).toBe(200);
     });
