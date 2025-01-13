@@ -5,7 +5,7 @@ type Account = {
   userId: string;
   name: string;
   type: "BANK" | "CREDIT_CARD";
-  balance: Decimal;
+  balance: number;
   createdAt: Date;
   updatedAt: Date;
   transactions: Transaction[];
@@ -16,8 +16,8 @@ type Transaction = {
   accountId: string;
   categoryId: string;
   date: Date;
-  inflow: Decimal | null;
-  outflow: Decimal | null;
+  inflow: number | null;
+  outflow: number | null;
   payee: string | null;
   memo: string | null;
   cleared: boolean;
