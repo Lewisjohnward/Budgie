@@ -7,11 +7,9 @@ import { Toaster } from "sonner";
 
 export default function App() {
   return (
-    <>
-      <Provider store={store}>
-        <Toaster position="top-center" richColors />
-        <RouterProvider router={router} />
-      </Provider>
-    </>
+    <Provider store={store}>
+      <Toaster position="top-center" richColors />
+      <RouterProvider router={router} />
+    </Provider>
   );
 }
