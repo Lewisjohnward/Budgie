@@ -1,10 +1,10 @@
 import { CirclePlus } from "lucide-react";
-import { useLocation, useParams } from "react-router-dom";
-import { MyTable } from "./components/Table";
+import { useParams } from "react-router-dom";
 import {
   useAddTransactionMutation,
   useGetAccountsQuery,
 } from "@/core/api/budgetApiSlice";
+import { MyTable } from "./components/Table";
 
 export type Transaction = {
   id: string;
@@ -39,19 +39,11 @@ export function Account() {
 
   const { accountId } = useParams();
 
-  const location = useLocation();
-  console.log("I am remounted");
-
   if (isLoading) return <div>loading</div>;
-  console.log("data", data);
 
   const [chosenAccount] = Object.values(data.data.accounts).filter(
     ({ id }) => id === accountId,
   );
-
-  console.log(chosenAccount);
-
-  // return <div>temp</div>;
 
   const transactions = Object.values(data.data.transactions)
     .filter((transaction) => transaction.accountId === accountId)
@@ -69,6 +61,20 @@ export function Account() {
   };
 
   const handleSubmitTransaction = async () => {
+    const dummyTransaction = {
+      accountId,
+      // categoryId, doesn't need to be sent, by default will be this needs a category
+      // date, default is today
+      // inflow: 0.31,
+      outflow: 5.69,
+      // payee, not needed
+      // TODO: FIX BUG BELOW
+      // date: "2024-12-31", SENDING THIS will pass zod but fail db BUG!!!
+      date: "2025-01-03T00:00:00.000Z",
+      memo: "Sainsbury's hyper cheese bargs",
+    };
+    const result = await addTransaction(dummyTransaction);
+    console.log(result);
   };
 
   // TODO: remove the ! for unassigned below
