@@ -1,0 +1,228 @@
+import { FieldError, UseFormRegister } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Input } from "@/core/components/uiLibrary/input";
+import { darkBlueBg, darkBlueText } from "@/core/theme/colors";
+import { Button } from "@/core/components/uiLibrary/button";
+import { useAddAccountMutation } from "@/core/api/budgetApiSlice";
+import { ChevronLeft, CreditCard } from "lucide-react";
+import clsx from "clsx";
+import { BankIcon, TickIcon } from "@/core/icons/icons";
+
+export type FormData = {
+  name: string;
+  accountType: string;
+  balance?: number;
+  showSelection: boolean;
+  selectOption: string;
+};
+
+type ValidNames = "name" | "accountType" | "balance";
+
+export type ValidLabels =
+  | "Give it a nickname"
+  | "What type of account are you adding?"
+  | "What is your current account balance?";
+
+const AccountTypeEnum = z.enum(["Bank Account", "Credit Account"]);
+
+const accountTypeIcons = {
+  "Bank Account": <BankIcon />,
+  "Credit Account": <CreditCard />,
+};
+
+// TODO: this needs to be shared between fe and be
+const AccountSchema = z.object({
+  name: z.string().min(1, { message: "Account name is required" }),
+  accountType: AccountTypeEnum,
+  balance: z
+    .string()
+    .refine((val) => val.trim() !== "", {
+      message: "Cannot be empty",
+    })
+    .transform((val) => Number(val) || 0),
+});
+
+export type FormFieldProps = {
+  type: string;
+  name: ValidNames;
+  label: ValidLabels;
+  register: UseFormRegister<FormData>;
+  error: FieldError | undefined;
+  isDirty: boolean | undefined;
+};
+
+const FormField: React.FC<FormFieldProps> = ({
+  type,
+  label,
+  name,
+  register,
+  error,
+  isDirty,
+}) => (
+  <div className="flex flex-col gap-2">
+    <label htmlFor={name} className="text-sm font-bold text-sky-950">
+      {label}
+    </label>
+    <div className="flex items-center border border-sky-800 rounded pr-2">
+      <Input
+        id={name}
+        type={type}
+        className={clsx(
+          "border-0 py-6 shadow-transparent focus-visible:ring-0",
+        )}
+        {...register(name)}
+      />
+      {isDirty && !error && <TickIco />}
+    </div>
+  </div>
+);
+
+export function AddAccountForm() {
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isValid, dirtyFields },
+    setValue,
+  } = useForm<FormData>({
+    defaultValues: {
+      showSelection: false,
+    },
+    mode: "onChange",
+    resolver: zodResolver(AccountSchema),
+  });
+  const [addAccount] = useAddAccountMutation();
+
+  const onSubmit = async (data: FormData) => {
+    console.log("SUCCESS", data);
+    addAccount(data);
+  };
+
+  const showSelection = watch("showSelection");
+  const accountType = watch("accountType");
+
+  return (
+    <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
+      {showSelection ? (
+        <>
+          <div className="space-y-4">
+            <div
+              className={`relative flex justify-center items-center text-center ${darkBlueText}`}
+            >
+              <Button
+                variant={"ghost"}
+                size={"icon"}
+                className="absolute left-0 hover:bg-transparent"
+                onClick={() => setValue("showSelection", !showSelection)}
+              >
+                <ChevronLeft
+                  aria-label="back-arrow"
+                  className="text-sky-950"
+                  onClick={() => setValue("showSelection", !showSelection)}
+                />
+              </Button>
+              <h1 className="font-bold">Select Account Type</h1>
+            </div>
+            <Separator />
+          </div>
+          <div className="p-2 space-y-2">
+            {AccountTypeEnum.options.map((type) => (
+              <Button
+                aria-label={type}
+                key={type}
+                variant="outline"
+                className={`flex w-full justify-between py-6 ${darkBlueText} text-lg shadow-none`}
+                onClick={() => {
+                  setValue("accountType", type);
+                  setValue("showSelection", !showSelection);
+                }}
+              >
+                {type}
+                <span className="opacity-60">{accountTypeIcons[type]}</span>
+              </Button>
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="space-y-4">
+            <h1 className={`font-bold text-center ${darkBlueText}`}>
+              Add Account
+            </h1>
+            <Separator />
+          </div>
+          <div className="grow p-4 space-y-4">
+            <p className="text-sm text-gray-700">
+              <span className="font-bold">Let's get started!</span> No need to
+              worry—if you change your mind, you can always alter the
+              information later.
+            </p>
+            <FormField
+              type="text"
+              name="name"
+              label="Give it a nickname"
+              register={register}
+              error={errors.name}
+              isDirty={dirtyFields.name}
+            />
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-sky-950">
+                What type of account are you adding?
+              </label>
+              <Button
+                type="button"
+                className="w-full pl-3 pr-2 py-6 text-left border border-sky-800"
+                variant={"ghost"}
+                onClick={() => setValue("showSelection", !showSelection)}
+                data-testid="select-account-type"
+              >
+                <p className="w-full font-normal text-left">
+                  {!accountType ? "Select account type..." : accountType}
+                </p>
+                {accountType && <TickIco />}
+              </Button>
+            </div>
+            <FormField
+              type="text"
+              name="balance"
+              label="What is your current account balance?"
+              register={register}
+              error={errors.balance}
+              isDirty={dirtyFields.balance}
+            />
+          </div>
+          <Separator />
+          <div className="p-4">
+            <Button
+              type="submit"
+              className={`w-full py-6 ${darkBlueBg} hover:bg-sky-950/80 disabled:opacity-20`}
+              disabled={!isValid}
+            >
+              Next
+            </Button>
+          </div>
+        </>
+      )}
+    </form>
+  );
+}
+
+function Separator() {
+  return (
+    <div className="relative">
+      <div className="absolute inset-0 flex items-center">
+        <div className="w-full border-t border-gray-300 dark:border-gray-800" />
+      </div>
+    </div>
+  );
+}
+
+function TickIco() {
+  return (
+    <div className="h-9 w-9 flex items-center justify-center px-2 bg-green-500/5 rounded-full">
+      <TickIcon aria-label="tick icon" className="text-green-500" />
+    </div>
+  );
+}

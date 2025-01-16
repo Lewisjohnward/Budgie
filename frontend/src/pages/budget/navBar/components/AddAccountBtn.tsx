@@ -1,20 +1,17 @@
 import clsx from "clsx";
 import { AddIcon } from "@/core/icons/icons";
-import { darkBlueText } from "@/core/theme/colors";
 import useMouseOver from "@/core/hooks/useMouseOver";
 
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from "@/core/components/uiLibrary/dialog";
-import { AddAccount } from "@/core/components/AddAccountForm";
+import { AddAccountForm } from "@/pages/budget/navBar/components/AddAccountForm";
 
 export function AddAccountBtn() {
   const { mouseOver, handleMouseOver } = useMouseOver();
+
   return (
     <Dialog>
       <DialogTrigger
@@ -29,19 +26,10 @@ export function AddAccountBtn() {
       </DialogTrigger>
       <DialogContent
         onPointerDownOutside={(e) => e.preventDefault()}
-        className="w-80"
+        className="w-[360px] min-h-[600px] px-0 pb-0"
         data-testid="add-account-dialog"
       >
-        <DialogHeader className="space-y-4">
-          <DialogTitle className={`text-center ${darkBlueText}`}>
-            Add Account
-          </DialogTitle>
-          <DialogDescription>
-            Let's get started! No need to worry—if you change your mind, you can
-            always alter the information later.
-          </DialogDescription>
-        </DialogHeader>
-        <AddAccount />
+        <AddAccountForm />
       </DialogContent>
     </Dialog>
   );
