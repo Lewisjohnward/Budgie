@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/core/components/uiLibrary/table";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Copy, MoveRight, Trash2 } from "lucide-react";
 import { Button } from "@/core/components/uiLibrary/button";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
@@ -27,131 +27,151 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/core/components/uiLibrary/context-menu";
-import { useDeleteTransactionMutation } from "@/core/api/budgetApiSlice";
+import {
+  useDeleteTransactionMutation,
+  useEditTransactionMutation,
+} from "@/core/api/budgetApiSlice";
+import { toast } from "sonner";
+import { DatePickerDemo } from "@/core/components/uiLibrary/datePicker";
 
 type TableProps = {
   transactions: Transaction[];
 };
-const columns: ColumnDef<Transaction>[] = [
-  {
-    id: "select",
-    enableResizing: false,
-    size: 40,
-    header: ({ table }) => (
-      <div className="flex items-center ">
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      </div>
-    ),
-    cell: ({ row }) => (
-      <div className="flex items-center">
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      </div>
-    ),
-  },
-  {
-    accessorKey: "date",
-    enableResizing: true,
-    size: 200,
-    header: ({ column }) => {
-      return <SortButton column={column}>Date</SortButton>;
-    },
-    cell: ({ row }) => {
-      const date = new Date(row.getValue("date"));
-      const formattedDate = new Intl.DateTimeFormat("en-GB").format(date);
-      return <TextCell> {formattedDate} </TextCell>;
-    },
-  },
 
-  {
-    accessorKey: "payee",
-    enableResizing: true,
-    size: 300,
-    header: ({ column }) => {
-      return <SortButton column={column}>Payee</SortButton>;
-    },
-    cell: ({ row }) => {
-      return <TextCell>{row.getValue("payee")}</TextCell>;
-    },
-  },
-  {
-    accessorKey: "category",
-    size: 200,
-    header: ({ column }) => {
-      return <SortButton column={column}>Category</SortButton>;
-    },
-    cell: ({ row }) => {
-      const category = row.getValue("category");
-      return <TextCell>{category.name}</TextCell>;
-    },
-  },
-  {
-    accessorKey: "memo",
-    enableResizing: true,
-    size: 300,
-    header: ({ column }) => {
-      return <SortButton column={column}>Memo</SortButton>;
-    },
-    cell: ({ row }) => {
-      return <TextCell>{row.getValue("memo")}</TextCell>;
-    },
-  },
-  {
-    accessorKey: "outflow",
-    enableResizing: true,
-    size: 200,
-    header: ({ column }) => {
-      return <SortButton column={column}>Outflow</SortButton>;
-    },
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("outflow"));
-      if (amount === 0) return null;
-      const formatted = new Intl.NumberFormat("en-GB", {
-        style: "currency",
-        currency: "GBP",
-      }).format(amount);
+const generateColumns = (
+  editingRow: number | null,
+): ColumnDef<Transaction>[] => {
+  return [
+    // {
+    //   id: "select",
+    //   enableResizing: false,
+    //   size: 40,
+    //   header: ({ table }) => (
+    //     <div className="flex items-center ">
+    //       <Checkbox
+    //         checked={
+    //           table.getIsAllPageRowsSelected() ||
+    //           (table.getIsSomePageRowsSelected() && "indeterminate")
+    //         }
+    //         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+    //         aria-label="Select all"
+    //       />
+    //     </div>
+    //   ),
+    //   cell: ({ row }) => (
+    //     <div className="flex items-center">
+    //       <Checkbox
+    //         checked={row.getIsSelected()}
+    //         onCheckedChange={(value) => row.toggleSelected(!!value)}
+    //         aria-label="Select row"
+    //       />
+    //     </div>
+    //   ),
+    // },
+    {
+      accessorKey: "date",
+      enableResizing: true,
+      size: 200,
+      header: ({ column }) => {
+        return <SortButton column={column}>Date</SortButton>;
+      },
+      cell: ({ row, column, table }) => {
+        const date = new Date(row.getValue("date"));
+        const formattedDate = new Intl.DateTimeFormat("en-GB").format(date);
+        const { updateData } = table.options.meta;
 
-      return <TextCell>{formatted}</TextCell>;
+        return (
+          <>
+            {row.index === editingRow ? (
+              <DatePickerDemo
+                date={date}
+                setDate={(date) => updateData(row.index, column.id, date)}
+              />
+            ) : (
+              <TextCell>{formattedDate}</TextCell>
+            )}
+          </>
+        );
+      },
     },
-  },
-  {
-    accessorKey: "inflow",
-    enableResizing: false,
-    size: 200,
-    header: ({ column }) => {
-      return <SortButton column={column}>Inflow</SortButton>;
-    },
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("inflow"));
-      if (amount === 0) return null;
-      const formatted = new Intl.NumberFormat("en-GB", {
-        style: "currency",
-        currency: "GBP",
-      }).format(amount);
+    //
+    // {
+    //   accessorKey: "payee",
+    //   enableResizing: true,
+    //   size: 300,
+    //   header: ({ column }) => {
+    //     return <SortButton column={column}>Payee</SortButton>;
+    //   },
+    //   cell: ({ row }) => {
+    //     return <TextCell>{row.getValue("payee")}</TextCell>;
+    //   },
+    // },
+    // {
+    //   accessorKey: "category",
+    //   size: 200,
+    //   header: ({ column }) => {
+    //     return <SortButton column={column}>Category</SortButton>;
+    //   },
+    //   cell: ({ row }) => {
+    //     const category = row.getValue("category");
+    //     return <TextCell>{category.name}</TextCell>;
+    //   },
+    // },
+    // {
+    //   accessorKey: "memo",
+    //   enableResizing: true,
+    //   size: 300,
+    //   header: ({ column }) => {
+    //     return <SortButton column={column}>Memo</SortButton>;
+    //   },
+    //   cell: ({ row }) => {
+    //     return <TextCell>{row.getValue("memo")}</TextCell>;
+    //   },
+    // },
+    // {
+    //   accessorKey: "outflow",
+    //   enableResizing: true,
+    //   size: 200,
+    //   header: ({ column }) => {
+    //     return <SortButton column={column}>Outflow</SortButton>;
+    //   },
+    //   cell: ({ row, column, table }) => {
+    //     const amount = parseFloat(row.getValue("outflow"));
+    //     if (amount === 0) return null; // Or return "" for an empty string
+    //     const formatted = new Intl.NumberFormat("en-GB", {
+    //       style: "currency",
+    //       currency: "GBP",
+    //     }).format(amount);
+    //
+    //     const { updateData } = table.options.meta;
+    //
+    //     return <TextCell>{formatted}</TextCell>;
+    //   },
+    // },
+    // {
+    //   accessorKey: "inflow",
+    //   enableResizing: false,
+    //   size: 200,
+    //   header: ({ column }) => {
+    //     return <SortButton column={column}>Inflow</SortButton>;
+    //   },
+    //   cell: ({ row }) => {
+    //     const amount = parseFloat(row.getValue("inflow"));
+    //     if (amount === 0) return null;
+    //     const formatted = new Intl.NumberFormat("en-GB", {
+    //       style: "currency",
+    //       currency: "GBP",
+    //     }).format(amount);
+    //
+    //     return <TextCell>{formatted}</TextCell>;
+    //   },
+    // },
+  ];
+};
 
-      return <TextCell>{formatted}</TextCell>;
-    },
-  },
-];
-
-function TextCell({
-  children,
-  ...props
-}: { children: ReactNode } & React.HTMLAttributes<HTMLDivElement>) {
+function TextCell({ children }: { children: ReactNode }) {
   return (
-    <div className="text-nowrap overflow-hidden text-ellipsis" {...props}>
-      {children}
-    </div>
+    <div className="text-nowrap overflow-hidden text-ellipsis">{children}</div>
   );
 }
 
@@ -183,7 +203,7 @@ function SortButton({
 }
 
 const useTransactionManager = () => {
-  const [deleteTransaction] = useDeleteTransactionMutation();
+  const [deleteTransaction, { isSuccess }] = useDeleteTransactionMutation();
 
   const handleDeleteTranscation = (id: string) => {
     deleteTransaction({ transactionIds: [id] });
@@ -193,9 +213,16 @@ const useTransactionManager = () => {
     console.log("dup");
   };
 
+  // TODO: need to move to somewhere
   const handleMoveTransaction = (id: string) => {
     console.log("move");
   };
+
+  // useEffect(() => {
+  //   if (isSuccess) {
+  //     toast.success("Successfully deleted!");
+  //   }
+  // }, [isSuccess]);
 
   return {
     handleDeleteTranscation,
@@ -205,19 +232,39 @@ const useTransactionManager = () => {
 };
 
 export function MyTable({ transactions }: TableProps) {
+  const [editTransaction] = useEditTransactionMutation();
+
+  // Tanstack table
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [highlightedRow, setHighlightedRow] = useState<number | null>(null);
   const [rowSelection, setRowSelection] = useState({});
+
+  // Tracks the open/editing row
+  const [highlightedRow, setHighlightedRow] = useState<number | null>(null);
   const [editingRow, setEditingRow] = useState<number | null>(null);
   const [disableContextMenu, setDisableContextMenu] = useState<boolean>(false);
+
+  // Visual display when user has edited and interacting with another row
+  const [isFlashing, setIsFlashing] = useState<boolean>(false);
+
+  // Contains the edited row
+  const [editedRow, setEditedRow] = useState<Transaction | null>(null);
+
   const {
     handleDeleteTranscation,
     handleDuplicateTransaction,
     handleMoveTransaction,
   } = useTransactionManager();
 
+  const columns = generateColumns(editingRow);
+
+  const derivedTransactions = useMemo(() => {
+    return editedRow != null
+      ? [editedRow, ...transactions.slice(1)]
+      : transactions;
+  }, [editedRow, transactions]);
+
   const table = useReactTable({
-    data: transactions,
+    data: derivedTransactions,
     columns,
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
@@ -229,23 +276,60 @@ export function MyTable({ transactions }: TableProps) {
     enableRowSelection: true,
     state: {
       sorting,
-      rowSelection,
+      rowSelection: rowSelection,
+    },
+    meta: {
+      updateData: (rowIndex: number, columnId: string, value: Date) => {
+        setEditedRow({ ...transactions[rowIndex], date: value.toISOString() });
+      },
     },
   });
+
+  const clearEditingRow = () => {
+    setEditedRow(null);
+    setEditingRow(null);
+    setDisableContextMenu(false);
+  };
 
   const handleRowClick = (
     e: React.MouseEvent<HTMLTableRowElement, MouseEvent>,
     rowIndex: number,
   ) => {
+    // TODO: handle shift select
     console.log(e.shiftKey);
     if (highlightedRow === rowIndex) {
       setDisableContextMenu(true);
       setEditingRow(rowIndex);
+    } else if (editedRow != null) {
+      editFlash();
     } else {
       setDisableContextMenu(false);
       setHighlightedRow(rowIndex);
       setEditingRow(null);
     }
+  };
+
+  const editFlash = () => {
+    setIsFlashing(true);
+    setTimeout(() => {
+      setIsFlashing(false);
+    }, 300);
+
+    setTimeout(() => {
+      setIsFlashing(true);
+    }, 600);
+
+    setTimeout(() => {
+      setIsFlashing(false);
+    }, 900);
+  };
+
+  const confirmEdit = () => {
+    console.log(editedRow);
+    if (editedRow != null) {
+      editTransaction([editedRow]);
+    }
+    clearEditingRow();
   };
 
   return (
@@ -254,8 +338,12 @@ export function MyTable({ transactions }: TableProps) {
       style={{ width: `${table.getTotalSize()}px` }}
       onContextMenu={(e) => {
         e.preventDefault();
-        setEditingRow(null);
-        setDisableContextMenu(false);
+        console.log("Hello, World!");
+        if (editedRow) {
+          editFlash();
+        } else {
+          setEditingRow(null);
+        }
       }}
     >
       <TableHeader>
@@ -272,9 +360,9 @@ export function MyTable({ transactions }: TableProps) {
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
                   <div
                     onMouseDown={header.getResizeHandler()}
                     onTouchStart={header.getResizeHandler()}
@@ -350,20 +438,25 @@ export function MyTable({ transactions }: TableProps) {
                 </ContextMenuContent>
               </ContextMenu>
               {highlightedRow === row.index && editingRow === row.index && (
-                <TableCell
-                  colSpan={7}
-                  className="bg-sky-950/20"
-                  onClick={() => setEditingRow(null)}
-                >
+                <TableCell colSpan={7} className={clsx("bg-sky-950/20")}>
                   <div className="flex justify-end">
                     <div className="space-x-2">
                       <Button
                         variant={"outline"}
-                        className="text-sky-950/80 bg-transparent border-blue-950/80 hover:bg-sky-950/30"
+                        className={clsx(
+                          "bg-transparent text-sky-950/80 border-blue-950/80 hover:bg-sky-950/30",
+                        )}
+                        onClick={clearEditingRow}
                       >
                         Cancel
                       </Button>
-                      <Button className="text-white bg-sky-950/80 hover:bg-sky-950/30">
+                      <Button
+                        className={clsx(
+                          isFlashing ? "bg-sky-950/10" : "bg-sky-950/80",
+                          "text-white hover:bg-sky-950/30",
+                        )}
+                        onClick={confirmEdit}
+                      >
                         Save
                       </Button>
                     </div>
