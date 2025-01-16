@@ -27,10 +27,26 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["Accounts"],
     }),
     addTransaction: builder.mutation<any, any>({
-      query: (newTransaction) => ({
+      query: (transaction) => ({
         url: "budget/transaction",
         method: "POST",
-        body: newTransaction,
+        body: transaction,
+      }),
+      invalidatesTags: ["Accounts"],
+    }),
+    deleteTransaction: builder.mutation<any, any>({
+      query: (transaction) => ({
+        url: "budget/transaction",
+        method: "DELETE",
+        body: transaction,
+      }),
+      invalidatesTags: ["Accounts"],
+    }),
+    editTransaction: builder.mutation<any, any>({
+      query: (transaction) => ({
+        url: "budget/transaction",
+        method: "PATCH",
+        body: transaction,
       }),
       invalidatesTags: ["Accounts"],
     }),
@@ -42,4 +58,6 @@ export const {
   useGetAccountsQuery,
   useAddAccountMutation,
   useAddTransactionMutation,
+  useDeleteTransactionMutation,
+  useEditTransactionMutation,
 } = budgetApiSlice;
