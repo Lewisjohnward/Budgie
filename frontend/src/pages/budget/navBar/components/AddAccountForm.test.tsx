@@ -88,7 +88,7 @@ describe("Add Account Form", () => {
 
   it.todo(
     "Should display question mark icon when name balance is not a number",
-    () => {},
+    () => { },
   );
 
   it("NextButton should be enabled when name, type and balance are entered", async () => {
@@ -117,10 +117,11 @@ describe("Add Account Form", () => {
     fireEvent.click(nextButton);
     await waitFor(() => {
       expect(addAccountMock).toHaveBeenCalledOnce();
+
       expect(addAccountMock).toHaveBeenCalledWith({
         name: "test name",
         balance: 65,
-        accountType: "Bank Account",
+        type: "BANK",
       });
     });
   });
