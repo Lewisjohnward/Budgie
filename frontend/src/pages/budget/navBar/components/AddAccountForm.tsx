@@ -12,30 +12,36 @@ import { BankIcon, TickIcon } from "@/core/icons/icons";
 
 export type FormData = {
   name: string;
-  accountType: string;
+  type: "BANK" | "CREDIT_CARD";
   balance?: number;
   showSelection: boolean;
   selectOption: string;
 };
 
-type ValidNames = "name" | "accountType" | "balance";
+type ValidNames = "name" | "type" | "balance";
 
 export type ValidLabels =
   | "Give it a nickname"
   | "What type of account are you adding?"
   | "What is your current account balance?";
 
-const AccountTypeEnum = z.enum(["Bank Account", "Credit Account"]);
+const AccountTypeEnum = z.enum(["BANK", "CREDIT_CARD"]);
 
-const accountTypeIcons = {
-  "Bank Account": <BankIcon />,
-  "Credit Account": <CreditCard />,
+const accountTypeMapper = {
+  BANK: {
+    icon: <BankIcon />,
+    text: "Bank Account",
+  },
+  CREDIT_CARD: {
+    icon: <CreditCard />,
+    text: "Credit Account",
+  },
 };
 
 // TODO: this needs to be shared between fe and be
 const AccountSchema = z.object({
   name: z.string().min(1, { message: "Account name is required" }),
-  accountType: AccountTypeEnum,
+  type: AccountTypeEnum,
   balance: z
     .string()
     .refine((val) => val.trim() !== "", {
@@ -101,7 +107,7 @@ export function AddAccountForm() {
   };
 
   const showSelection = watch("showSelection");
-  const accountType = watch("accountType");
+  const accountType = watch("type");
 
   return (
     <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
@@ -130,17 +136,19 @@ export function AddAccountForm() {
           <div className="p-2 space-y-2">
             {AccountTypeEnum.options.map((type) => (
               <Button
-                aria-label={type}
+                aria-label={accountTypeMapper[type].text}
                 key={type}
                 variant="outline"
                 className={`flex w-full justify-between py-6 ${darkBlueText} text-lg shadow-none`}
                 onClick={() => {
-                  setValue("accountType", type);
+                  setValue("type", type);
                   setValue("showSelection", !showSelection);
                 }}
               >
-                {type}
-                <span className="opacity-60">{accountTypeIcons[type]}</span>
+                {accountTypeMapper[type].text}
+                <span className="opacity-60">
+                  {accountTypeMapper[type].icon}
+                </span>
               </Button>
             ))}
           </div>
@@ -179,7 +187,9 @@ export function AddAccountForm() {
                 data-testid="select-account-type"
               >
                 <p className="w-full font-normal text-left">
-                  {!accountType ? "Select account type..." : accountType}
+                  {!accountType
+                    ? "Select account type..."
+                    : accountTypeMapper[accountType].text}
                 </p>
                 {accountType && <TickIco />}
               </Button>
