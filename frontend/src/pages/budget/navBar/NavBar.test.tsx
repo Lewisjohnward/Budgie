@@ -4,6 +4,7 @@ import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit/react";
 import authReducer, { AuthState } from "@/core/auth/authSlice";
 import { BrowserRouter } from "react-router-dom";
+import { apiSlice } from "@/core/api/apiSlice";
 
 describe("Navbar component", () => {
   const loggedInAuthState = {
@@ -20,10 +21,13 @@ describe("Navbar component", () => {
     configureStore({
       reducer: {
         auth: authReducer,
+        [apiSlice.reducerPath]: apiSlice.reducer,
       },
       preloadedState: {
         auth: initialAuthState,
       },
+      middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware().concat(apiSlice.middleware), // Add RTK Query middleware
     });
 
   const renderWithProviders = (
@@ -38,7 +42,5 @@ describe("Navbar component", () => {
 
   it("Renders", () => {
     renderWithProviders(<Navbar />, loggedInAuthState);
-
-    screen.debug(undefined, 1000000);
   });
 });
