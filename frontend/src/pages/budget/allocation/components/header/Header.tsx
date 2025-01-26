@@ -69,7 +69,7 @@ function MonthSelector() {
         </button>
       </div>
       <button
-        className={`px-2 py-1 bg-sky-950/30 rounded hover:${darkBlueBgHoverDark}`}
+        className={`px-2 py-1 bg-sky-950/30 rounded hover:${darkBlueBgHoverDark} hover:text-white`}
       >
         Today
       </button>
