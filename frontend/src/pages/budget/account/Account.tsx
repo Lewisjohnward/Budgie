@@ -13,6 +13,7 @@ export function Account() {
 
   if (isLoading) return <div>...loading</div>;
   if (isError) return <div>...error</div>;
+  if (!data) return <div>There has been an error</div>;
 
   const { accountId } = useParams();
 
