@@ -6,29 +6,6 @@ import {
 } from "@/core/api/budgetApiSlice";
 import { MyTable } from "./components/Table";
 
-export type Transaction = {
-  id: string;
-  accountId: string;
-  categoryId: string;
-  budgetId: string;
-  date: string;
-  payee: string;
-  memo: string;
-  outflow: number;
-  inflow: number;
-  cleared: boolean;
-  // TODO: don't need these two
-  createdAt: string;
-  updatedAt: string;
-};
-
-export type Account = {
-  name: string;
-  clearedBalance?: number;
-  unclearedBalance?: number;
-  transactions: Transaction[];
-};
-
 export function Account() {
   // TODO: GET TRANSACTION DATA
   const { data, isLoading, isError } = useGetAccountsQuery();
