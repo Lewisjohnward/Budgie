@@ -69,10 +69,10 @@ export function Account() {
       <div className="h-[1px] bg-black/20" />
       <div className="px-2">
         <button
-          className="flex items-center gap-2 hover:bg-sky-950/10 px-4 py-2 rounded"
+          className="flex items-center gap-2 px-2 py-2 text-sky-950 border border-sky-950/40 rounded text-sm hover:bg-sky-950/10"
           onClick={handleSubmitTransaction}
         >
-          <CirclePlus className="text-sky-950" size={20} />
+          <CirclePlus size={15} />
           Add Transaction
         </button>
       </div>
