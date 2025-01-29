@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { AddIcon } from "@/core/icons/icons";
-import useMouseOver from "@/core/hooks/useMouseOver";
+import useMouseOverTimeout from "@/core/hooks/useMouseOverTimeout";
 
 import {
   Dialog,
@@ -10,7 +10,7 @@ import {
 import { AddAccountForm } from "@/pages/budget/navBar/components/AddAccountForm";
 
 export function AddAccountBtn() {
-  const { mouseOver, handleMouseOver } = useMouseOver();
+  const { mouseOver, handleMouseOver } = useMouseOverTimeout();
 
   return (
     <Dialog>
