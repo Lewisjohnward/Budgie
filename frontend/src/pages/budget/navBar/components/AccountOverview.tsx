@@ -14,8 +14,6 @@ export function AccountOverview({
   // const accounts = mockAccounts;
   const currency = "£";
 
-  const sum = "120.00";
-
   // TODO: need to handle mutiple accounts with sum of money
   // TODO: handle negative numbers
   // TODO: persist expanded close budget state when opening navbar
@@ -23,7 +21,17 @@ export function AccountOverview({
   if (isLoading) {
     return <div>loading</div>;
   }
-  const accounts = Object.values(data.data.accounts);
+
+  if (!data) {
+    return <div>There has been an error</div>;
+  }
+
+  const accounts = Object.values(data.accounts);
+  const sum = accounts
+    .map((account) => account.balance)
+    .reduce((sum, balance) => {
+      return sum + balance;
+    }, 0);
 
   return (
     <div className="space-y-2 w-60">
