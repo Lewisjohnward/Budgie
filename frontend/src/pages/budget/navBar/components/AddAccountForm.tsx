@@ -1,19 +1,20 @@
 import { FieldError, UseFormRegister } from "react-hook-form";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/core/components/uiLibrary/input";
 import { darkBlueBg, darkBlueText } from "@/core/theme/colors";
 import { Button } from "@/core/components/uiLibrary/button";
 import { useAddAccountMutation } from "@/core/api/budgetApiSlice";
-import { ChevronLeft, CreditCard } from "lucide-react";
+import { ArrowRight, ChevronLeft, CreditCard } from "lucide-react";
 import clsx from "clsx";
 import { BankIcon, TickIcon } from "@/core/icons/icons";
+import { ReactNode } from "react";
+import { AccountSchema, AccountTypeEnum } from "@/core/types/AccountSchema";
 
 export type FormData = {
   name: string;
   type: "BANK" | "CREDIT_CARD";
-  balance?: number;
+  balance: number;
   showSelection: boolean;
   selectOption: string;
 };
@@ -25,8 +26,6 @@ export type ValidLabels =
   | "What type of account are you adding?"
   | "What is your current account balance?";
 
-const AccountTypeEnum = z.enum(["BANK", "CREDIT_CARD"]);
-
 const accountTypeMapper = {
   BANK: {
     icon: <BankIcon />,
@@ -37,18 +36,6 @@ const accountTypeMapper = {
     text: "Credit Account",
   },
 };
-
-// TODO: this needs to be shared between fe and be
-const AccountSchema = z.object({
-  name: z.string().min(1, { message: "Account name is required" }),
-  type: AccountTypeEnum,
-  balance: z
-    .string()
-    .refine((val) => val.trim() !== "", {
-      message: "Cannot be empty",
-    })
-    .transform((val) => Number(val) || 0),
-});
 
 export type FormFieldProps = {
   type: string;
@@ -71,7 +58,7 @@ const FormField: React.FC<FormFieldProps> = ({
     <label htmlFor={name} className="text-sm font-bold text-sky-950">
       {label}
     </label>
-    <div className="flex items-center border border-sky-800 rounded pr-2">
+    <div className="flex items-center border rounded pr-2 border-sky-800/40 focus-within:border-transparent focus-within:ring-1 focus-within:ring-sky-950">
       <Input
         id={name}
         type={type}
@@ -102,7 +89,6 @@ export function AddAccountForm() {
   const [addAccount] = useAddAccountMutation();
 
   const onSubmit = async (data: FormData) => {
-    console.log("SUCCESS", data);
     addAccount(data);
   };
 
@@ -113,14 +99,14 @@ export function AddAccountForm() {
     <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
       {showSelection ? (
         <>
-          <div className="space-y-4">
+          <Header>
             <div
-              className={`relative flex justify-center items-center text-center ${darkBlueText}`}
+              className={`relative px-8 flex justify-center items-center ${darkBlueText}`}
             >
               <Button
                 variant={"ghost"}
-                size={"icon"}
-                className="absolute left-0 hover:bg-transparent"
+                size={"icon-sm"}
+                className="absolute left-5 hover:bg-transparent rounded-full"
                 onClick={() => setValue("showSelection", !showSelection)}
               >
                 <ChevronLeft
@@ -129,17 +115,16 @@ export function AddAccountForm() {
                   onClick={() => setValue("showSelection", !showSelection)}
                 />
               </Button>
-              <h1 className="font-bold">Select Account Type</h1>
+              <h1 className="text-lg font-bold">Select Account Type</h1>
             </div>
-            <Separator />
-          </div>
+          </Header>
           <div className="p-2 space-y-2">
             {AccountTypeEnum.options.map((type) => (
               <Button
                 aria-label={accountTypeMapper[type].text}
                 key={type}
                 variant="outline"
-                className={`flex w-full justify-between py-6 ${darkBlueText} text-lg shadow-none`}
+                className={`flex w-full justify-between py-6 ${darkBlueText} text-lg shadow-none border-sky-800/20`}
                 onClick={() => {
                   setValue("type", type);
                   setValue("showSelection", !showSelection);
@@ -155,12 +140,11 @@ export function AddAccountForm() {
         </>
       ) : (
         <>
-          <div className="space-y-4">
-            <h1 className={`font-bold text-center ${darkBlueText}`}>
+          <Header>
+            <h1 className={`text-xl font-bold text-center ${darkBlueText}`}>
               Add Account
             </h1>
-            <Separator />
-          </div>
+          </Header>
           <div className="grow p-4 space-y-4">
             <p className="text-sm text-gray-700">
               <span className="font-bold">Let's get started!</span> No need to
@@ -181,7 +165,7 @@ export function AddAccountForm() {
               </label>
               <Button
                 type="button"
-                className="w-full pl-3 pr-2 py-6 text-left border border-sky-800"
+                className="w-full pl-3 pr-2 py-6 text-left border border-sky-800/40 focus-visible:ring-sky-950"
                 variant={"ghost"}
                 onClick={() => setValue("showSelection", !showSelection)}
                 data-testid="select-account-type"
@@ -191,7 +175,11 @@ export function AddAccountForm() {
                     ? "Select account type..."
                     : accountTypeMapper[accountType].text}
                 </p>
-                {accountType && <TickIco />}
+                {accountType ? (
+                  <TickIco />
+                ) : (
+                  <ArrowRight className="text-sky-950" />
+                )}
               </Button>
             </div>
             <FormField
@@ -203,8 +191,7 @@ export function AddAccountForm() {
               isDirty={dirtyFields.balance}
             />
           </div>
-          <Separator />
-          <div className="p-4">
+          <Footer>
             <Button
               type="submit"
               className={`w-full py-6 ${darkBlueBg} hover:bg-sky-950/80 disabled:opacity-20`}
@@ -212,10 +199,28 @@ export function AddAccountForm() {
             >
               Next
             </Button>
-          </div>
+          </Footer>
         </>
       )}
     </form>
+  );
+}
+
+export function Header({ children }: { children: ReactNode }) {
+  return (
+    <div className="space-y-4">
+      {children}
+      <Separator />
+    </div>
+  );
+}
+
+export function Footer({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <Separator />
+      <div className="p-4">{children}</div>
+    </>
   );
 }
 
