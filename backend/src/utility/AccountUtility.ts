@@ -32,6 +32,10 @@ export const userOwnsAccount = async (accountId: string, userId: string) => {
   }
 };
 
+function convertDecimalToNumber(value: Decimal | null | undefined): number {
+  return value ? value.toNumber() : 0;
+}
+
 export const selectAccounts = async (userId: string) => {
   const accountsWithTransactions = await prisma.account.findMany({
     where: {
@@ -46,7 +50,17 @@ export const selectAccounts = async (userId: string) => {
     },
   });
 
-  return accountsWithTransactions;
+  const accounts = accountsWithTransactions.map((account) => ({
+    ...account,
+    balance: convertDecimalToNumber(account.balance),
+    transactions: account.transactions.map((transaction) => ({
+      ...transaction,
+      inflow: convertDecimalToNumber(transaction.inflow),
+      outflow: convertDecimalToNumber(transaction.outflow),
+    })),
+  }));
+
+  return accounts;
 };
 
 export const validateAccount = ({
