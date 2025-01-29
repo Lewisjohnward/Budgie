@@ -1,4 +1,4 @@
-import useMouseOver from "@/core/hooks/useMouseOver";
+import useMouseOverTimeout from "@/core/hooks/useMouseOverTimeout";
 import { cn } from "@/core/lib/utils";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
@@ -20,7 +20,7 @@ export function NavbarItem({
   text,
   displayText,
 }: NavBarItemProps) {
-  const { mouseOver, handleMouseOver } = useMouseOver();
+  const { mouseOver, handleMouseOver } = useMouseOverTimeout();
 
   return (
     <Link

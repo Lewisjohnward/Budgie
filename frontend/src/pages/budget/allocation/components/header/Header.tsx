@@ -8,7 +8,7 @@ import { TickIcon, AddCircleIcon } from "@/core/icons/icons";
 import clsx from "clsx";
 import { ReactNode } from "react";
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
-import useMouseOver from "@/core/hooks/useMouseOver";
+import useMouseOverTimeout from "@/core/hooks/useMouseOverTimeout";
 
 export default function Header() {
   const categories = ["All", "Underfunded", "Money available", "Snoozed"];
@@ -104,7 +104,7 @@ function Category({ text }: { text: string }) {
 }
 
 function AddCategoryButton() {
-  const { mouseOver, handleMouseOver } = useMouseOver();
+  const { mouseOver, handleMouseOver } = useMouseOverTimeout();
 
   return (
     <button onMouseOver={handleMouseOver}>

@@ -2,7 +2,7 @@ import { forwardRef } from "react";
 import clsx from "clsx";
 import { selectCurrentUser } from "@/core/auth/authSlice";
 import { BirdIcon, ChevronDownIcon } from "@/core/icons/icons";
-import useMouseOver from "@/core/hooks/useMouseOver";
+import useMouseOverTimeout from "@/core/hooks/useMouseOverTimeout";
 import { useAppSelector } from "@/core/hooks/reduxHooks";
 
 type MenuBottonProps = {
@@ -12,7 +12,7 @@ type MenuBottonProps = {
 
 export const MenuButton = forwardRef<HTMLButtonElement, MenuBottonProps>(
   ({ displayText, animate, ...props }, ref) => {
-    const { mouseOver, handleMouseOver } = useMouseOver();
+    const { mouseOver, handleMouseOver } = useMouseOverTimeout();
     const email = useAppSelector(selectCurrentUser);
 
     return (
