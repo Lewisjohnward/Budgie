@@ -15,20 +15,16 @@ vi.mock("@/core/api/budgetApiSlice", () => ({
 
 const mockPopulatedData = {
   data: {
-    data: {
-      accounts: [
-        { id: 1, name: "Account 1" },
-        { id: 2, name: "Account 2" },
-      ],
-    },
+    accounts: [
+      { id: 1, name: "Account 1" },
+      { id: 2, name: "Account 2" },
+    ],
   },
 };
 
 const mockEmptyData = {
   data: {
-    data: {
-      accounts: [],
-    },
+    accounts: [],
   },
 };
 
@@ -67,7 +63,7 @@ describe("Account overview", () => {
 
     expect(await screen.findByText("BUDGET")).toBeInTheDocument();
 
-    mockPopulatedData.data.data.accounts.forEach((account) => {
+    mockPopulatedData.data.accounts.forEach((account) => {
       expect(screen.queryByText(account.name)).not.toBeInTheDocument();
     });
 
@@ -103,7 +99,7 @@ describe("Account overview", () => {
       <AccountOverview expanded={true} toggleExpanded={mockToggleExpanded} />,
     );
 
-    mockPopulatedData.data.data.accounts.forEach((account) => {
+    mockPopulatedData.data.accounts.forEach((account) => {
       expect(screen.getByText(account.name)).toBeInTheDocument();
     });
   });
