@@ -96,11 +96,6 @@ export const getAccounts = async (req: Request, res: Response) => {
 export const addAccount = async (req: Request, res: Response) => {
   const { name, type, balance } = <AddAccountPayload>req.body;
 
-  if (!name || !type || !balance) {
-    res.status(400).json({ message: "Malformed data" });
-    return;
-  }
-
   try {
     const validatedAccount = validateAccount({
       userId: req.user!._id,
