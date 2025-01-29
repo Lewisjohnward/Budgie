@@ -89,6 +89,27 @@ describe("Budget Controller", () => {
       expect(response.body.message).toBe("Malformed data");
     });
 
+    it("should validate input and create an account even with zero balance", async () => {
+      const mockData = {
+        name: "Personal Bank Account",
+        type: "BANK",
+        balance: 0,
+      };
+
+      const response = await request(app)
+        .post("/budget/account")
+        .send(mockData)
+        .set("Authorization", "Bearer mock-token");
+
+      expect(response.status).toBe(200);
+      expect(initialiseAccount as jest.Mock).toHaveBeenCalledTimes(1);
+      expect(initialiseAccount as jest.Mock).toHaveBeenCalledWith({
+        userId: mockId,
+        ...mockData,
+      });
+      expect(response.body).toEqual({ message: "Account added" });
+    });
+
     it("should validate input and create an account", async () => {
       const mockData = {
         name: "Personal Bank Account",
