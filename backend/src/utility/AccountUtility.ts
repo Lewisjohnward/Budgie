@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { accountSchema, UpdatedTransaction } from "../schemas";
 import { AccountPayload, TransactionPayload } from "../dto";
+import { Decimal } from "@prisma/client/runtime/library";
 
 const prisma = new PrismaClient();
 
@@ -165,7 +166,7 @@ export const updateTransactions = async (
   userId: string,
   updatedTransaction: UpdatedTransaction,
 ) => {
-  const { transactionId: id, ...fields } = updatedTransaction;
+  const { id: id, ...fields } = updatedTransaction;
 
   await prisma.transaction.update({
     where: {
