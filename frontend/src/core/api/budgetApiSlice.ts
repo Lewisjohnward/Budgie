@@ -1,24 +1,17 @@
+import { AddAccountPayload } from "../types/AccountSchema";
+import { NormalizedData } from "../types/NormalizedData";
 import { apiSlice } from "./apiSlice";
 
 export const budgetApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    // TODO: this needs typing correctly
-    getData: builder.query<any, void>({
-      query: () => ({
-        url: "budget/data",
-        method: "GET",
-      }),
-    }),
-    // TODO: this needs typing
-    getAccounts: builder.query<any, void>({
+    getAccounts: builder.query<NormalizedData, void>({
       query: () => ({
         url: "budget/account",
         method: "GET",
       }),
       providesTags: ["Accounts"],
     }),
-    // TODO: TYPING
-    addAccount: builder.mutation<any, any>({
+    addAccount: builder.mutation<void, AddAccountPayload>({
       query: (newAccount) => ({
         url: "budget/account",
         method: "POST",
@@ -26,6 +19,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Accounts"],
     }),
+    // TODO: TYPING
     addTransaction: builder.mutation<any, any>({
       query: (transaction) => ({
         url: "budget/transaction",
