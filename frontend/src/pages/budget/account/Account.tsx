@@ -28,7 +28,7 @@ export function Account() {
   const transactions = Object.values(data.transactions)
     .filter((transaction) => transaction.accountId === accountId)
     .map((transaction) => {
-      const category = data.categories[transaction.categoryId];
+      const category = data.subCategories[transaction.subCategoryId];
       return { ...transaction, category };
     });
 

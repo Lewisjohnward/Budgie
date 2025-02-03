@@ -45,7 +45,7 @@ export const selectAccounts = async (userId: string) => {
     include: {
       transactions: {
         include: {
-          category: true,
+          subCategory: true,
         },
       },
     },
@@ -90,7 +90,7 @@ export const initialiseAccount = async (account: AccountPayload) => {
   const createdAccount = await createAccount(account);
 
   // TODO: THE NAME needs to be protected
-  const defaultCategory = await prisma.category.findFirstOrThrow({
+  const defaultSubCategory = await prisma.subCategory.findFirstOrThrow({
     where: {
       name: "Inflow: Ready to Assign",
     },
@@ -98,14 +98,14 @@ export const initialiseAccount = async (account: AccountPayload) => {
 
   await insertTransaction({
     accountId: createdAccount.id,
-    categoryId: defaultCategory.id,
+    subCategoryId: defaultSubCategory.id,
     inflow: account.balance,
   });
 };
 
 export const insertTransaction = async (transaction: TransactionPayload) => {
-  if (transaction.categoryId === undefined) {
-    const defaultCategory = await prisma.category.findFirstOrThrow({
+  if (transaction.subCategoryId === undefined) {
+    const defaultSubCategory = await prisma.subCategory.findFirstOrThrow({
       where: {
         name: "This needs a category",
       },
@@ -113,7 +113,7 @@ export const insertTransaction = async (transaction: TransactionPayload) => {
 
     const newTransaction = {
       ...transaction,
-      categoryId: defaultCategory.id,
+      subCategoryId: defaultSubCategory.id,
     };
 
     await prisma.transaction.create({
@@ -121,13 +121,13 @@ export const insertTransaction = async (transaction: TransactionPayload) => {
     });
   } else {
     // TODO: should I check that categoryId exists in the db before adding it, probably
-    const { categoryId, ...rest } = transaction;
+    const { subCategoryId, ...rest } = transaction;
 
-    if (!categoryId) {
+    if (!subCategoryId) {
       throw new Error("No categoryId provided");
     }
 
-    const newTransaction = { categoryId, ...rest };
+    const newTransaction = { subCategoryId, ...rest };
 
     const insertedTransaction = await prisma.transaction.create({
       data: newTransaction,
