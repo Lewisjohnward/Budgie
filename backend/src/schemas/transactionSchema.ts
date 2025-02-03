@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const commonTransactionSchema = z.object({
-  categoryId: z.string().uuid().optional(),
+  subCategoryId: z.string().uuid().optional(),
   date: z
     .string()
     .refine((value) => !isNaN(new Date(value).getTime()), {

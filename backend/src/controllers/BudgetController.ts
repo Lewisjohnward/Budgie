@@ -179,9 +179,9 @@ export const addTransaction = async (
 
   // IF NO CATEGORY ASSIGN TO THIS NEEDS A CATEGORY
 
-  const { accountId, categoryId, date, inflow, outflow, payee, memo } = <
+  const { accountId, subCategoryId, date, inflow, outflow, payee, memo } = <
     TransactionPayload
-  >req.body;
+    >req.body;
 
   if (!inflow && !outflow) {
     res.status(400).json({ message: "Malformed data" });
@@ -191,7 +191,7 @@ export const addTransaction = async (
   try {
     const validTransaction = transactionSchema.parse({
       accountId,
-      categoryId,
+      subCategoryId,
       date,
       inflow,
       outflow,

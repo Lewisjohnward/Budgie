@@ -14,7 +14,7 @@ type Account = {
 type Transaction = {
   id: string;
   accountId: string;
-  categoryId: string;
+  subCategoryId: string;
   date: Date;
   inflow: number | null;
   outflow: number | null;
@@ -23,10 +23,10 @@ type Transaction = {
   cleared: boolean;
   createdAt: Date;
   updatedAt: Date;
-  category: Category;
+  subCategory: SubCategory;
 };
 
-type Category = {
+type SubCategory = {
   id: string;
   userId: string;
   // type: "EXPENSE" | "INCOME";
@@ -36,14 +36,14 @@ type Category = {
 type NormalizedData = {
   accounts: { [key: string]: Account };
   transactions: { [key: string]: Transaction };
-  categories: { [key: string]: Category };
+  subCategories: { [key: string]: SubCategory };
 };
 
 export function normalizeData(data: { accounts: Account[] }): NormalizedData {
   const normalizedData: NormalizedData = {
     accounts: {},
     transactions: {},
-    categories: {},
+    subCategories: {},
   };
 
   data.accounts.forEach((account) => {
@@ -63,12 +63,12 @@ export function normalizeData(data: { accounts: Account[] }): NormalizedData {
         ...transaction,
       };
 
-      if (!normalizedData.categories[transaction.categoryId]) {
-        normalizedData.categories[transaction.categoryId] = {
-          id: transaction.categoryId,
-          userId: transaction.category.userId,
+      if (!normalizedData.subCategories[transaction.subCategoryId]) {
+        normalizedData.subCategories[transaction.subCategoryId] = {
+          id: transaction.subCategoryId,
+          userId: transaction.subCategory.userId,
           // type: "EXPENSE",
-          name: transaction.category.name,
+          name: transaction.subCategory.name,
         };
       }
     });
