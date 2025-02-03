@@ -85,7 +85,7 @@ export const getAccounts = async (req: Request, res: Response) => {
 
     const data = normalizeData({ accounts: accountsWithTransactions });
 
-    res.status(200).json({ data });
+    res.status(200).json({ ...data });
   } catch (error) {
     res.status(500).json({ message: "There has been an error" });
   }
@@ -134,7 +134,6 @@ export const editTransaction = async (
 
     // TODO: MAYBE WRAP IN A TRANSACTION??
     for (const transaction of validatedTransactions) {
-      console.log("Hello, World!");
       await updateTransactions(req.user?._id!, transaction);
     }
 
@@ -182,7 +181,7 @@ export const addTransaction = async (
 
   const { accountId, categoryId, date, inflow, outflow, payee, memo } = <
     TransactionPayload
-    >req.body;
+  >req.body;
 
   if (!inflow && !outflow) {
     res.status(400).json({ message: "Malformed data" });
