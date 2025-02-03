@@ -1,16 +1,9 @@
 import { useState } from "react";
 
-export default function useMouseOver(time?: number) {
+export default function useMouseOver() {
   const [mouseOver, setMouseOver] = useState(false);
-  const timeout = time || 500;
+  const handleMouseEnter = () => setMouseOver(true);
+  const handleMouseLeave = () => setMouseOver(false);
 
-  const handleMouseOver = () => {
-    setMouseOver(true);
-
-    setTimeout(() => {
-      setMouseOver(false);
-    }, timeout);
-  };
-
-  return { mouseOver, handleMouseOver };
+  return { mouseOver, handleMouseEnter, handleMouseLeave };
 }
