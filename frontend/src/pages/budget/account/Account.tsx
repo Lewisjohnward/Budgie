@@ -19,14 +19,16 @@ export function Account() {
 
   if (isLoading) return <div>loading</div>;
 
-  const [chosenAccount] = Object.values(data.data.accounts).filter(
+  console.log(data);
+
+  const [chosenAccount] = Object.values(data.accounts).filter(
     ({ id }) => id === accountId,
   );
 
-  const transactions = Object.values(data.data.transactions)
+  const transactions = Object.values(data.transactions)
     .filter((transaction) => transaction.accountId === accountId)
     .map((transaction) => {
-      const category = data.data.categories[transaction.categoryId];
+      const category = data.categories[transaction.categoryId];
       return { ...transaction, category };
     });
 
