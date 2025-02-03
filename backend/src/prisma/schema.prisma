@@ -30,10 +30,21 @@ model User {
 model Category {
   id           String        @id @default(uuid())
   userId       String
+  name         String
+  subCategories SubCategory[]
+}
+
+model SubCategory {
+  id           String        @id @default(uuid())
+  userId       String
+  categoryId   String
+  assigned     Decimal
+  activity     Decimal
   // budgetId     String
   name         String
   // budget       Budget        @relation(fields: [budgetId], references: [id])
   transactions Transaction[]
+  category     Category      @relation(fields: [categoryId], references: [id] )
 }
 
 enum CategoryType {
@@ -61,7 +72,7 @@ enum AccountType {
 model Transaction {
   id          String      @id @default(uuid())
   accountId   String
-  categoryId  String
+  subCategoryId  String
   // budgetId    String
   date        DateTime    @default(now())
   inflow      Decimal?    @default(0)
@@ -72,6 +83,6 @@ model Transaction {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   account     Account     @relation(fields: [accountId], references: [id])
-  category    Category    @relation(fields: [categoryId], references: [id])
+  subCategory SubCategory @relation(fields: [subCategoryId], references: [id])
   // budget      Budget      @relation(fields: [budgetId], references: [id])
 }
