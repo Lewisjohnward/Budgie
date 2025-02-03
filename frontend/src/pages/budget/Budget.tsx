@@ -1,3 +1,4 @@
+import { CirclePlus } from "lucide-react";
 import Navbar from "./navBar/NavBar";
 import { Outlet } from "react-router-dom";
 
@@ -6,19 +7,6 @@ export default function BudgetPage() {
 }
 
 function BudgetContent() {
-  // const { data, isSuccess, isLoading } = useGetDataQuery();
-
-  // if (isLoading) return <div>loading baby</div>;
-  //
-  // if (isSuccess) {
-  //   console.log("budget content - is success block");
-  //   // console.log(data);
-  //
-  //   // console.log("accounts", data.data.accounts);
-  //   // console.log("budgets", data.budgets);
-  // }
-
-
   return (
     <main className="flex h-dvh">
       <Navbar />
@@ -32,7 +20,13 @@ function BudgetContent() {
 export function Menu() {
   return (
     <div className="px-2">
-      <div>menu component budget</div>
+      <button
+        className="flex items-center gap-2 px-2 py-2 text-sky-950 rounded text-sm hover:bg-sky-950/10"
+        onClick={() => {}}
+      >
+        <CirclePlus size={15} />
+        Category Group
+      </button>
     </div>
   );
 }
