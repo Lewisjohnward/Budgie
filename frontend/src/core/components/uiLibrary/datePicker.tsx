@@ -16,7 +16,7 @@ export function DatePickerDemo({
   setDate,
 }: {
   date: Date | undefined;
-  setDate: Dispatch<SetStateAction<Date | undefined>>;
+  setDate: (date: Date | undefined) => void;
 }) {
   return (
     <Popover>
@@ -24,7 +24,7 @@ export function DatePickerDemo({
         <Button
           variant={"outline"}
           className={cn(
-            "w-full justify-start text-left font-normal overflow-hidden",
+            "shadow-none w-full justify-start text-left font-normal overflow-hidden",
             !date && "text-muted-foreground",
           )}
         >
