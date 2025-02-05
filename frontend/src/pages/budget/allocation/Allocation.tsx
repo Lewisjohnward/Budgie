@@ -4,19 +4,31 @@ import { ReactNode } from "react";
 import { bgGray, borderBottom } from "@/core/theme/colors";
 import Assign from "./components/assign/Assign";
 import { Menu } from "../Budget";
-
+import {
+  useGetAccountsQuery,
+  useGetCategoriesQuery,
+} from "@/core/api/budgetApiSlice";
 
 export function Allocation() {
+  const { isLoading: isLoadingAccounts } = useGetAccountsQuery();
+  const { isLoading: isLoadingCategories } = useGetCategoriesQuery();
+
+  if (isLoadingCategories || isLoadingAccounts) return "...Loading";
+
   return (
     <AllocationLayout
       header={<Header />}
       menu={<Menu />}
       categories={<Body />}
-      assign={<Assign />} />
+      assign={<Assign />}
+    />
   );
 }
 function AllocationLayout({
-  header, menu, categories, assign,
+  header,
+  menu,
+  categories,
+  assign,
 }: {
   header: ReactNode;
   menu?: ReactNode;
@@ -29,7 +41,7 @@ function AllocationLayout({
       <div className="overflow-hidden flex-grow flex">
         <div className="flex-grow-2 flex flex-col">
           <div className="border-r border-r-gray-300">
-            <div className="py-2 border-b border-b-gray-200">{menu}</div>
+            <div className="py-1 border-b border-b-gray-200">{menu}</div>
             {categories}
           </div>
         </div>
