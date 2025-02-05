@@ -1,5 +1,8 @@
 import { AddAccountPayload } from "../types/AccountSchema";
-import { NormalizedData } from "../types/NormalizedData";
+import {
+  CategoriesNormalizedData,
+  NormalizedData,
+} from "../types/NormalizedData";
 import { apiSlice } from "./apiSlice";
 
 export const budgetApiSlice = apiSlice.injectEndpoints({
@@ -44,6 +47,13 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Accounts"],
     }),
+    getCategories: builder.query<CategoriesNormalizedData, void>({
+      query: () => ({
+        url: "budget/categories",
+        method: "GET",
+      }),
+      // invalidatesTags: ["Accounts"],
+    }),
   }),
 });
 
@@ -54,4 +64,5 @@ export const {
   useAddTransactionMutation,
   useDeleteTransactionMutation,
   useEditTransactionMutation,
+  useGetCategoriesQuery,
 } = budgetApiSlice;

@@ -218,3 +218,21 @@ export const addTransaction = async (
     return;
   }
 };
+
+// TODO: NEEDS TESTING
+export const getCategories = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const categories = await selectCategories(req.user?._id!);
+    const normalizedCategories = normalizeCategories(categories);
+
+    res.status(200).json({ ...normalizedCategories });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error });
+  }
+  return;
+};

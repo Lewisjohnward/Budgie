@@ -76,3 +76,51 @@ export function normalizeData(data: { accounts: Account[] }): NormalizedData {
 
   return normalizedData;
 }
+
+type Category = {
+  id: string;
+  name: string;
+  subCategories: SubCategoryT[];
+};
+
+type SubCategoryT = {
+  id: string;
+  userId: string;
+  categoryId: string;
+  // type: "EXPENSE" | "INCOME";
+  name: string;
+  assigned: number;
+  activity: number;
+};
+
+// TODO: FIX TYPING
+export function normalizeCategories(categories: Category[]) {
+  const normalizedData = categories.reduce(
+    (acc, category) => {
+      // @ts-ignore
+      acc.categories[category.id] = {
+        id: category.id,
+        name: category.name,
+
+        // @ts-ignore
+        subCategories: category.subCategories.map((sub) => sub.id),
+      };
+
+      category.subCategories.forEach((sub) => {
+        // @ts-ignore
+        acc.subCategories[sub.id] = {
+          id: sub.id,
+          userId: sub.userId,
+          categoryId: sub.categoryId,
+          name: sub.name,
+          assigned: sub.assigned,
+          activity: sub.activity,
+        };
+      });
+
+      return acc;
+    },
+    { categories: {}, subCategories: {} },
+  );
+  return normalizedData;
+}

@@ -1,155 +1,83 @@
+import { useGetCategoriesQuery } from "@/core/api/budgetApiSlice";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
 import { Progress } from "@/core/components/uiLibrary/progress";
 import { AddCircleIcon, ChevronDownIcon } from "@/core/icons/icons";
-import { bgGray, borderBottom, darkBlueText } from "@/core/theme/colors";
+import { borderBottom, darkBlueText } from "@/core/theme/colors";
 import clsx from "clsx";
+import {
+  forwardRef,
+  HTMLAttributes,
+  ReactNode,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 
-import { forwardRef, HTMLAttributes, ReactNode, useRef, useState } from "react";
-
-const data: Data = {
-  entities: {
-    categories: {
-      1: { id: 1, name: "Bills", open: true, subCategories: [1, 2] },
-      2: { id: 2, name: "Needs", open: true, subCategories: [3, 4] },
-      3: { id: 3, name: "Wants", open: true, subCategories: [5, 6, 7, 8] },
-    },
-    subCategories: {
-      1: { id: 1, name: "Rent", assigned: 200, activity: 50, available: 20 },
-      2: {
-        id: 2,
-        name: "Utilities",
-        assigned: 100,
-        activity: 30,
-        available: 10,
-      },
-      3: {
-        id: 3,
-        name: "Groceries",
-        assigned: 300,
-        activity: 80,
-        available: 50,
-      },
-      4: {
-        id: 4,
-        name: "Retirement",
-        assigned: 150,
-        activity: 60,
-        available: 40,
-      },
-      5: { id: 5, name: "Hobbies", assigned: 50, activity: 20, available: 10 },
-      6: {
-        id: 6,
-        name: "Budgie subscription",
-        assigned: 75,
-        activity: 25,
-        available: 15,
-      },
-      7: {
-        id: 7,
-        name: "Other",
-        assigned: 75,
-        activity: 25,
-        available: 15,
-      },
-      8: {
-        id: 8,
-        name: "Left overs",
-        assigned: 75,
-        activity: 25,
-        available: 15,
-      },
-    },
-  },
-  result: [1, 2, 3],
-};
-
-type Category = {
-  id: number;
-  name: string;
-  open: boolean;
-  subCategories: number[];
-};
-
-type SubCategory = {
-  id: number;
-  name: string;
-  assigned: number;
-  activity: number;
-  available: number;
-};
-
-type Entities = {
-  categories: { [key: string]: Category };
-  subCategories: Record<string | number, SubCategory>;
-};
-
-type Data = {
-  entities: Entities;
-  result: number[];
-};
-
-function useCategories(data: Data) {
-  const [state, setState] = useState(data);
-
-  const subCategories = state.entities.subCategories;
-  const categories = Object.values(state.entities.categories);
-
-  const atLeastOneCategoryExpanded = categories.some(
-    (category) => category.open,
-  );
-
-  const toggleDisplaySubcategories = (id: number | undefined) => {
-    if (id === undefined) {
-      setState((prevState) => ({
-        ...prevState,
-        entities: {
-          ...prevState.entities,
-          categories: Object.keys(prevState.entities.categories).reduce<
-            Record<string, (typeof prevState.entities.categories)[string]>
-          >((acc, key) => {
-            acc[key] = {
-              ...prevState.entities.categories[key],
-              open: !atLeastOneCategoryExpanded,
-            };
-            return acc;
-          }, {}),
-        },
-      }));
-    } else {
-      const categoryToUpdate = state.entities.categories[id];
-
-      const updatedCategory = {
-        ...categoryToUpdate,
-        open: !categoryToUpdate.open,
-      };
-
-      setState((prevState) => ({
-        ...prevState,
-        entities: {
-          ...prevState.entities,
-          categories: {
-            ...prevState.entities.categories,
-            [id]: updatedCategory,
-          },
-        },
-      }));
-    }
-  };
-  return {
-    toggleDisplaySubcategories,
-    categories,
-    subCategories,
-    atLeastOneCategoryExpanded,
-  };
-}
+// function useCategories(data: Data) {
+//   const [state, setState] = useState(data);
+//
+//   const subCategories = state.subCategories;
+//   const categories = Object.values(state.categories);
+//
+//   const atLeastOneCategoryExpanded = categories.some(
+//     (category) => category.open,
+//   );
+//
+//   const toggleDisplaySubcategories = (id: number | undefined) => {
+//     if (id === undefined) {
+//       setState((prevState) => ({
+//         ...prevState,
+//         categories: Object.keys(prevState.categories).reduce<
+//           Record<string, (typeof prevState.categories)[string]>
+//         >((acc, key) => {
+//           acc[key] = {
+//             ...prevState.categories[key],
+//             open: !atLeastOneCategoryExpanded,
+//           };
+//           return acc;
+//         }, {}),
+//       }));
+//     } else {
+//       const categoryToUpdate = state.categories[id];
+//
+//       const updatedCategory = {
+//         ...categoryToUpdate,
+//         open: !categoryToUpdate.open,
+//       };
+//
+//       setState((prevState) => ({
+//         ...prevState,
+//         categories: {
+//           ...prevState.categories,
+//           [id]: updatedCategory,
+//         },
+//       }));
+//     }
+//   };
+//   return {
+//     toggleDisplaySubcategories,
+//     categories,
+//     subCategories,
+//     atLeastOneCategoryExpanded,
+//   };
+// }
 
 export default function Categories() {
-  const {
-    atLeastOneCategoryExpanded,
-    toggleDisplaySubcategories,
-    categories,
-    subCategories,
-  } = useCategories(data);
+  const { data } = useGetCategoriesQuery();
+
+  const categories = Object.values(data?.categories).map((category) => ({
+    ...category,
+    open: true,
+  }));
+
+  // return <div>temp</div>;
+  // const {
+  //   atLeastOneCategoryExpanded,
+  //   toggleDisplaySubcategories,
+  //   categories,
+  //   subCategories,
+  // } = useCategories(mockData);
 
   return (
     <div>
@@ -157,7 +85,8 @@ export default function Categories() {
         <button>
           <ChevronDownIcon
             className={clsx(
-              atLeastOneCategoryExpanded ? "" : "-rotate-90",
+              // atLeastOneCategoryExpanded ? "" : "-rotate-90",
+              false ? "" : "-rotate-90",
               `h-4 w-4 ${darkBlueText}`,
             )}
             onClick={() => toggleDisplaySubcategories(undefined)}
@@ -178,8 +107,9 @@ export default function Categories() {
               }
             />
             <SubCategories display={category.open}>
-              {category.subCategories.map((subCat) => {
-                const { id, name, assigned, activity } = subCategories[subCat];
+              {category.subCategories.map((subCategoryId) => {
+                const { id, name, assigned, activity } =
+                  data.subCategories[subCategoryId];
 
                 const available = assigned - activity;
 
