@@ -64,6 +64,28 @@ export const selectAccounts = async (userId: string) => {
   return accounts;
 };
 
+export const selectCategories = async (userId: string) => {
+  const categoriesWithSubcategories = await prisma.category.findMany({
+    where: {
+      userId,
+    },
+    include: {
+      subCategories: true,
+    },
+  });
+
+  const categories = categoriesWithSubcategories.map((category) => ({
+    ...category,
+    subCategories: category.subCategories.map((subCategory) => ({
+      ...subCategory,
+      assigned: convertDecimalToNumber(subCategory.assigned),
+      activity: convertDecimalToNumber(subCategory.activity),
+    })),
+  }));
+
+  return categories;
+};
+
 export const validateAccount = ({
   userId,
   name,

@@ -36,3 +36,24 @@ export type NormalizedData = {
   transactions: { [key: string]: Transaction };
   categories: { [key: string]: Category };
 };
+
+type CategoryT = {
+  id: string;
+  name: string;
+  subCategories: SubCategoryT[];
+};
+
+type SubCategoryT = {
+  id: string;
+  userId: string;
+  categoryId: string;
+  // type: "EXPENSE" | "INCOME";
+  name: string;
+  assigned: number;
+  activity: number;
+};
+
+export type CategoriesNormalizedData = {
+  categories: { [key: string]: CategoryT };
+  subCategories: { [key: string]: SubCategoryT };
+};

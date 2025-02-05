@@ -8,6 +8,7 @@ import {
   editAccount,
   editTransaction,
   getAccounts,
+  getCategories,
 } from "../controllers";
 
 const router = express.Router();
@@ -22,5 +23,7 @@ router.delete("/account/:id", deleteAccount);
 router.post("/transaction", addTransaction);
 router.patch("/transaction", editTransaction);
 router.delete("/transaction", deleteTransaction);
+
+router.get("/categories", getCategories);
 
 export { router as BudgetRoute };
