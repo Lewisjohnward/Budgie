@@ -6,78 +6,82 @@ import { borderBottom, darkBlueText } from "@/core/theme/colors";
 import clsx from "clsx";
 import {
   forwardRef,
-  HTMLAttributes,
   ReactNode,
+  RefObject,
   useEffect,
   useImperativeHandle,
   useRef,
   useState,
 } from "react";
 
-// function useCategories(data: Data) {
-//   const [state, setState] = useState(data);
-//
-//   const subCategories = state.subCategories;
-//   const categories = Object.values(state.categories);
-//
-//   const atLeastOneCategoryExpanded = categories.some(
-//     (category) => category.open,
-//   );
-//
-//   const toggleDisplaySubcategories = (id: number | undefined) => {
-//     if (id === undefined) {
-//       setState((prevState) => ({
-//         ...prevState,
-//         categories: Object.keys(prevState.categories).reduce<
-//           Record<string, (typeof prevState.categories)[string]>
-//         >((acc, key) => {
-//           acc[key] = {
-//             ...prevState.categories[key],
-//             open: !atLeastOneCategoryExpanded,
-//           };
-//           return acc;
-//         }, {}),
-//       }));
-//     } else {
-//       const categoryToUpdate = state.categories[id];
-//
-//       const updatedCategory = {
-//         ...categoryToUpdate,
-//         open: !categoryToUpdate.open,
-//       };
-//
-//       setState((prevState) => ({
-//         ...prevState,
-//         categories: {
-//           ...prevState.categories,
-//           [id]: updatedCategory,
-//         },
-//       }));
-//     }
-//   };
-//   return {
-//     toggleDisplaySubcategories,
-//     categories,
-//     subCategories,
-//     atLeastOneCategoryExpanded,
-//   };
-// }
-
-export default function Categories() {
+function useCategories() {
   const { data } = useGetCategoriesQuery();
 
-  const categories = Object.values(data?.categories).map((category) => ({
-    ...category,
-    open: true,
-  }));
+  const mappedData = {
+    ...data,
+    categories: Object.fromEntries(
+      Object.entries(data?.categories).map(([key, value]) => [
+        key,
+        { ...value, open: true },
+      ]),
+    ),
+  };
 
-  // return <div>temp</div>;
-  // const {
-  //   atLeastOneCategoryExpanded,
-  //   toggleDisplaySubcategories,
-  //   categories,
-  //   subCategories,
-  // } = useCategories(mockData);
+  const [state, setState] = useState(mappedData);
+
+  const subCategories = state.subCategories;
+  const categories = Object.values(state.categories);
+
+  const atLeastOneCategoryExpanded = categories.some(
+    (category) => category.open,
+  );
+
+  const toggleDisplaySubcategories = (id: string | undefined) => {
+    if (id === undefined) {
+      setState((prevState) => ({
+        ...prevState,
+        categories: Object.keys(prevState.categories).reduce<
+          Record<string, (typeof prevState.categories)[string]>
+        >((acc, key) => {
+          acc[key] = {
+            ...prevState.categories[key],
+            open: !atLeastOneCategoryExpanded,
+          };
+          return acc;
+        }, {}),
+      }));
+    } else {
+      const categoryToUpdate = state.categories[id];
+
+      const updatedCategory = {
+        ...categoryToUpdate,
+        open: !categoryToUpdate.open,
+      };
+
+      setState((prevState) => ({
+        ...prevState,
+        categories: {
+          ...prevState.categories,
+          [id]: updatedCategory,
+        },
+      }));
+    }
+  };
+  return {
+    toggleDisplaySubcategories,
+    categories,
+    subCategories,
+    atLeastOneCategoryExpanded,
+  };
+}
+
+export default function Categories() {
+  const {
+    atLeastOneCategoryExpanded,
+    toggleDisplaySubcategories,
+    categories,
+    subCategories,
+  } = useCategories();
 
   return (
     <div>
@@ -85,8 +89,7 @@ export default function Categories() {
         <button>
           <ChevronDownIcon
             className={clsx(
-              // atLeastOneCategoryExpanded ? "" : "-rotate-90",
-              false ? "" : "-rotate-90",
+              atLeastOneCategoryExpanded ? "" : "-rotate-90",
               `h-4 w-4 ${darkBlueText}`,
             )}
             onClick={() => toggleDisplaySubcategories(undefined)}
@@ -97,7 +100,6 @@ export default function Categories() {
 
       {categories.map((category) => {
         return (
-          // TODO: FLATTEN CATEGORY?
           <Category key={category.id}>
             <CategoryHeader
               name={category.name}
@@ -107,38 +109,38 @@ export default function Categories() {
               }
             />
             <SubCategories display={category.open}>
-              {category.subCategories.map((subCategoryId) => {
-                const { id, name, assigned, activity } =
-                  data.subCategories[subCategoryId];
+              {category.subCategories.length > 0
+                ? category.subCategories.map((subCategoryId) => {
+                    const { id, name, assigned, activity } =
+                      subCategories[subCategoryId];
 
-                const available = assigned - activity;
+                    const available = assigned - activity;
 
-                const inputRef = useRef<HTMLInputElement | null>(null);
-
-                const handleInputFocus = () => {
-                  inputRef.current?.focus();
-                };
-
-                return (
-                  <SubCategoryContent onClick={handleInputFocus} key={id}>
-                    <Checkbox className="size-3 rounded-[2px] shadow-none" />
-                    <SubCategoryNameContainer>
-                      <SubCategoryName>{name}</SubCategoryName>
-                      <ProgressBar
-                        assigned={assigned}
-                        activity={activity}
-                        available={available}
-                      />
-                    </SubCategoryNameContainer>
-                    <EditAssigned
-                      ref={inputRef}
-                      assigned={assigned.toFixed(2)}
-                    />
-                    <Activity>{activity.toFixed(2)}</Activity>
-                    <Available>{available.toFixed(2)}</Available>
-                  </SubCategoryContent>
-                );
-              })}
+                    return (
+                      <SubCategoryContent key={id}>
+                        {(ref) => (
+                          <>
+                            <Checkbox className="size-3 rounded-[2px] shadow-none" />
+                            <SubCategoryNameContainer>
+                              <SubCategoryName>{name}</SubCategoryName>
+                              <ProgressBar
+                                assigned={assigned}
+                                activity={activity}
+                                available={available}
+                              />
+                            </SubCategoryNameContainer>
+                            <EditAssigned
+                              ref={ref}
+                              assigned={assigned.toFixed(2)}
+                            />
+                            <Activity>{activity.toFixed(2)}</Activity>
+                            <Available>{available.toFixed(2)}</Available>
+                          </>
+                        )}
+                      </SubCategoryContent>
+                    );
+                  })
+                : null}
             </SubCategories>
           </Category>
         );
@@ -228,16 +230,21 @@ function SubCategoryNameContainer({ children }: { children: ReactNode }) {
 
 function SubCategoryContent({
   children,
-  ...props
 }: {
-  children: ReactNode;
-} & HTMLAttributes<HTMLDivElement>) {
+  children: (ref: RefObject<HTMLInputElement>) => ReactNode;
+}) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleInputFocus = () => {
+    inputRef.current?.focus();
+  };
+
   return (
     <div
       className={`flex items-center gap-2 py-2 pl-8 pr-2 border-b ${borderBottom} focus-within:bg-gray-100/80`}
-      {...props}
+      onClick={handleInputFocus}
     >
-      {children}
+      {children(inputRef)}
     </div>
   );
 }
