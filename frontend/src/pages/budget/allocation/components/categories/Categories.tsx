@@ -30,8 +30,8 @@ function useCategories() {
 
   const mappedData = {
     ...data,
-    categories: Object.fromEntries(
-      Object.entries(data?.categories).map(([key, value]) => [
+    categoryGroups: Object.fromEntries(
+      Object.entries(data?.categoryGroups).map(([key, value]) => [
         key,
         { ...value, open: true },
       ]),
@@ -40,29 +40,27 @@ function useCategories() {
 
   const [state, setState] = useState(mappedData);
 
-  const subCategories = state.subCategories;
-  const categories = Object.values(state.categories);
+  const categories = state.categories;
+  const categoryGroups = Object.values(state.categoryGroups);
 
-  const atLeastOneCategoryExpanded = categories.some(
-    (category) => category.open,
-  );
+  const atLeastOneCategoryExpanded = categoryGroups.some((group) => group.open);
 
-  const toggleDisplaySubcategories = (id: string | undefined) => {
+  const toggleDisplayCategories = (id: string | undefined) => {
     if (id === undefined) {
       setState((prevState) => ({
         ...prevState,
-        categories: Object.keys(prevState.categories).reduce<
-          Record<string, (typeof prevState.categories)[string]>
+        categoryGroups: Object.keys(prevState.categoryGroups).reduce<
+          Record<string, (typeof prevState.categoryGroups)[string]>
         >((acc, key) => {
           acc[key] = {
-            ...prevState.categories[key],
+            ...prevState.categoryGroups[key],
             open: !atLeastOneCategoryExpanded,
           };
           return acc;
         }, {}),
       }));
     } else {
-      const categoryToUpdate = state.categories[id];
+      const categoryToUpdate = state.categoryGroups[id];
 
       const updatedCategory = {
         ...categoryToUpdate,
@@ -71,17 +69,17 @@ function useCategories() {
 
       setState((prevState) => ({
         ...prevState,
-        categories: {
-          ...prevState.categories,
+        categoryGroups: {
+          ...prevState.categoryGroups,
           [id]: updatedCategory,
         },
       }));
     }
   };
   return {
-    toggleDisplaySubcategories,
+    toggleDisplayCategories,
     categories,
-    subCategories,
+    categoryGroups,
     atLeastOneCategoryExpanded,
   };
 }
@@ -89,9 +87,9 @@ function useCategories() {
 export default function Categories() {
   const {
     atLeastOneCategoryExpanded,
-    toggleDisplaySubcategories,
+    toggleDisplayCategories,
+    categoryGroups,
     categories,
-    subCategories,
   } = useCategories();
 
   return (
@@ -103,28 +101,25 @@ export default function Categories() {
               atLeastOneCategoryExpanded ? "" : "-rotate-90",
               `h-4 w-4 ${darkBlueText}`,
             )}
-            onClick={() => toggleDisplaySubcategories(undefined)}
+            onClick={() => toggleDisplayCategories(undefined)}
           />
         </button>
         <div className={`${darkBlueText} font-thin`}>CATEGORY</div>
       </div>
-
-      {categories.map((category) => {
+      {categoryGroups.map((group) => {
         return (
-          <Category key={category.id}>
+          <Category key={group.id}>
             <CategoryHeader
-              id={category.id}
-              name={category.name}
-              display={category.open}
-              toggleSubCategories={() =>
-                toggleDisplaySubcategories(category.id)
-              }
+              id={group.id}
+              name={group.name}
+              display={group.open}
+              toggleSubCategories={() => toggleDisplayCategories(group.id)}
             />
-            <SubCategories display={category.open}>
-              {category.subCategories.length > 0
-                ? category.subCategories.map((subCategoryId) => {
+            <SubCategories display={group.open}>
+              {group.categories.length > 0
+                ? group.categories.map((categoryId) => {
                     const { id, name, assigned, activity } =
-                      subCategories[subCategoryId];
+                      categories[categoryId];
 
                     const available = assigned - activity;
 

@@ -37,13 +37,13 @@ export type NormalizedData = {
   categories: { [key: string]: Category };
 };
 
-type CategoryT = {
+type CategoryGroup = {
   id: string;
   name: string;
-  subCategories: SubCategoryT[];
+  categories: CategoryT[];
 };
 
-type SubCategoryT = {
+type CategoryT = {
   id: string;
   userId: string;
   categoryId: string;
@@ -54,6 +54,6 @@ type SubCategoryT = {
 };
 
 export type CategoriesNormalizedData = {
+  categoryGroups: { [key: string]: CategoryGroup };
   categories: { [key: string]: CategoryT };
-  subCategories: { [key: string]: SubCategoryT };
 };

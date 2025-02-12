@@ -45,7 +45,7 @@ export const selectAccounts = async (userId: string) => {
     include: {
       transactions: {
         include: {
-          subCategory: true,
+          category: true,
         },
       },
     },
@@ -65,21 +65,21 @@ export const selectAccounts = async (userId: string) => {
 };
 
 export const selectCategories = async (userId: string) => {
-  const categoriesWithSubcategories = await prisma.category.findMany({
+  const categoryGroups = await prisma.categoryGroup.findMany({
     where: {
       userId,
     },
     include: {
-      subCategories: true,
+      categories: true,
     },
   });
 
-  const categories = categoriesWithSubcategories.map((category) => ({
-    ...category,
-    subCategories: category.subCategories.map((subCategory) => ({
-      ...subCategory,
-      assigned: convertDecimalToNumber(subCategory.assigned),
-      activity: convertDecimalToNumber(subCategory.activity),
+  const categories = categoryGroups.map((group) => ({
+    ...group,
+    categories: group.categories.map((category) => ({
+      ...category,
+      assigned: convertDecimalToNumber(category.assigned),
+      activity: convertDecimalToNumber(category.activity),
     })),
   }));
 
@@ -112,7 +112,7 @@ export const initialiseAccount = async (account: AccountPayload) => {
   const createdAccount = await createAccount(account);
 
   // TODO: THE NAME needs to be protected
-  const defaultSubCategory = await prisma.subCategory.findFirstOrThrow({
+  const defaultCategory = await prisma.category.findFirstOrThrow({
     where: {
       name: "Inflow: Ready to Assign",
     },
@@ -120,14 +120,14 @@ export const initialiseAccount = async (account: AccountPayload) => {
 
   await insertTransaction({
     accountId: createdAccount.id,
-    subCategoryId: defaultSubCategory.id,
+    categoryId: defaultCategory.id,
     inflow: account.balance,
   });
 };
 
 export const insertTransaction = async (transaction: TransactionPayload) => {
-  if (transaction.subCategoryId === undefined) {
-    const defaultSubCategory = await prisma.subCategory.findFirstOrThrow({
+  if (transaction.categoryId === undefined) {
+    const defaultCategory = await prisma.category.findFirstOrThrow({
       where: {
         name: "This needs a category",
       },
@@ -135,7 +135,7 @@ export const insertTransaction = async (transaction: TransactionPayload) => {
 
     const newTransaction = {
       ...transaction,
-      subCategoryId: defaultSubCategory.id,
+      categoryId: defaultCategory.id,
     };
 
     await prisma.transaction.create({
@@ -143,13 +143,13 @@ export const insertTransaction = async (transaction: TransactionPayload) => {
     });
   } else {
     // TODO: should I check that categoryId exists in the db before adding it, probably
-    const { subCategoryId, ...rest } = transaction;
+    const { categoryId, ...rest } = transaction;
 
-    if (!subCategoryId) {
+    if (!categoryId) {
       throw new Error("No categoryId provided");
     }
 
-    const newTransaction = { subCategoryId, ...rest };
+    const newTransaction = { categoryId, ...rest };
 
     const insertedTransaction = await prisma.transaction.create({
       data: newTransaction,
@@ -158,10 +158,28 @@ export const insertTransaction = async (transaction: TransactionPayload) => {
 };
 
 export const initialiseCategories = async (userId: string) => {
+  const inflow = await prisma.categoryGroup.create({
+    data: {
+      userId,
+      name: "Inflow",
+    },
+  });
+
+  const needsCategory = await prisma.categoryGroup.create({
+    data: {
+      userId,
+      name: "",
+    },
+  });
+
   await prisma.category.createMany({
     data: [
-      { userId, name: "Inflow: ready to assign" },
-      { userId, name: "This needs a category" },
+      { userId, categoryGroupId: inflow.id, name: "Inflow: ready to assign" },
+      {
+        userId,
+        categoryGroupId: needsCategory.id,
+        name: "This needs a category",
+      },
     ],
   });
 };
@@ -200,5 +218,11 @@ export const updateTransactions = async (
     data: {
       ...fields,
     },
+  });
+};
+
+export const createCategory = async (category: CategoryPayload) => {
+  await prisma.category.create({
+    data: category,
   });
 };
