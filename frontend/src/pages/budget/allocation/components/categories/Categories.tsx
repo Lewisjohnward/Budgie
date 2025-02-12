@@ -3,6 +3,11 @@ import { Checkbox } from "@/core/components/uiLibrary/checkbox";
 import { Progress } from "@/core/components/uiLibrary/progress";
 import { AddCircleIcon, ChevronDownIcon } from "@/core/icons/icons";
 import { borderBottom, darkBlueText } from "@/core/theme/colors";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/core/components/uiLibrary/popover";
 import clsx from "clsx";
 import {
   forwardRef,
@@ -13,6 +18,12 @@ import {
   useRef,
   useState,
 } from "react";
+import { PopoverArrow, PopoverPortal } from "@radix-ui/react-popover";
+import { Input } from "@/core/components/uiLibrary/input";
+import { Button } from "@/core/components/uiLibrary/button";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 function useCategories() {
   const { data } = useGetCategoriesQuery();
@@ -102,6 +113,7 @@ export default function Categories() {
         return (
           <Category key={category.id}>
             <CategoryHeader
+              id={category.id}
               name={category.name}
               display={category.open}
               toggleSubCategories={() =>
@@ -153,26 +165,52 @@ function Category({ children }: { children: ReactNode }) {
   return <div className="min-w-[600px]">{children}</div>;
 }
 
+const AddCategorySchema = z.object({
+  categoryGroupId: z.string().optional(),
+  name: z.string(),
+});
+type AddCategoryData = z.infer<typeof AddCategorySchema>;
+
+type AddCategoryForm = {
+  categoryGroupId: string;
+  name: string;
+};
+
 function CategoryHeader({
+  id,
   name,
   display,
   toggleSubCategories,
 }: {
+  id: string;
   name: string;
   display: boolean;
   toggleSubCategories: () => void;
 }) {
-  const [hover, setHover] = useState(false);
+  const [displayAddCategory, setDisplayAddCategory] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const close = () => setDisplayAddCategory(false);
+  const open = () => setDisplayAddCategory(true);
 
-  const handleMouseEnter = () => setHover(true);
-  const handleMouseExit = () => setHover(false);
+  const createCategory = (data) => {
+    console.log("Hello, World!");
+    console.log(data);
+    close();
+  };
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid, dirtyFields },
+  } = useForm<AddCategoryForm>({
+    defaultValues: {
+      categoryGroupId: id,
+    },
+    resolver: zodResolver(AddCategorySchema),
+  });
 
   return (
-    <div
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseExit}
-      className={`flex items-center gap-2 px-2 bg-gray-400/20`}
-    >
+    <div className={`group flex items-center gap-2 px-2 bg-gray-400/20`}>
       <button className="w-4" onClick={toggleSubCategories}>
         <ChevronDownIcon
           className={clsx(
@@ -185,11 +223,56 @@ function CategoryHeader({
       <Checkbox className="size-3 rounded-[2px] shadow-none" />
       <div className="flex-grow flex-shrink basis-48 flex items-center gap-4 py-2">
         <p className={`${darkBlueText} font-bold`}>{name}</p>
-        {hover && (
-          <button>
-            <AddCircleIcon className={`${darkBlueText}`} />
-          </button>
-        )}
+        <Popover open={displayAddCategory} modal={true}>
+          <PopoverTrigger>
+            <button onClick={open}>
+              <AddCircleIcon
+                className={`${darkBlueText} invisible group-hover:visible`}
+              />
+            </button>
+          </PopoverTrigger>
+          <PopoverPortal>
+            <PopoverContent
+              onPointerDownOutside={close}
+              avoidCollisions={false}
+              side={"right"}
+              className="w-[200px] p-0 shadow-lg"
+            >
+              <PopoverArrow className="w-8 h-2 fill-white" />
+              <form
+                className="px-2 py-2 space-y-2"
+                onSubmit={handleSubmit(createCategory)}
+              >
+                {loading ? (
+                  <div>...Loading</div>
+                ) : (
+                  <>
+                    <Input
+                      className="shadow-none focus-visible:ring-sky-950"
+                      placeholder="New Category"
+                      {...register("name")}
+                    />
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        onClick={close}
+                        className="bg-gray-400/80 hover:bg-gray-400/60"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="bg-sky-900 hover:bg-sky-950/80"
+                        disabled={!isValid}
+                      >
+                        Okay
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </form>
+            </PopoverContent>
+          </PopoverPortal>
+        </Popover>
       </div>
 
       <div className="flex-1 text-right">
