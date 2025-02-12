@@ -27,24 +27,24 @@ model User {
 //   transactions Transaction[]
 // }
 
-model Category {
-  id           String        @id @default(uuid())
-  userId       String
-  name         String
-  subCategories SubCategory[]
+model CategoryGroup {
+  id         String     @id @default(uuid())
+  userId     String
+  name       String
+  categories Category[]
 }
 
-model SubCategory {
-  id           String        @id @default(uuid())
-  userId       String
-  categoryId   String
-  assigned     Decimal
-  activity     Decimal
+model Category {
+  id              String        @id @default(uuid())
+  userId          String
+  categoryGroupId String
+  assigned        Decimal?      @default(0)
+  activity        Decimal?      @default(0)
   // budgetId     String
-  name         String
+  name            String
   // budget       Budget        @relation(fields: [budgetId], references: [id])
-  transactions Transaction[]
-  category     Category      @relation(fields: [categoryId], references: [id] )
+  transactions    Transaction[]
+  category        CategoryGroup @relation(fields: [categoryGroupId], references: [id])
 }
 
 enum CategoryType {

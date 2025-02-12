@@ -26,7 +26,7 @@ import { AccountTypeEnum } from "../schemas";
 //
 export interface TransactionPayload {
   accountId: string;
-  subCategoryId?: string | null;
+  categoryId?: string | null;
   // budgetId:
   date?: string;
   inflow?: number | null;
