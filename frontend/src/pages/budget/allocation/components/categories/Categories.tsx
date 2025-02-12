@@ -1,4 +1,7 @@
-import { useGetCategoriesQuery } from "@/core/api/budgetApiSlice";
+import {
+  useAddCategoryMutation,
+  useGetCategoriesQuery,
+} from "@/core/api/budgetApiSlice";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
 import { Progress } from "@/core/components/uiLibrary/progress";
 import { AddCircleIcon, ChevronDownIcon } from "@/core/icons/icons";
@@ -24,26 +27,39 @@ import { Button } from "@/core/components/uiLibrary/button";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  CategoriesDataMapped,
+  MappedCategoryGroups,
+} from "@/core/types/NormalizedData";
 
 function useCategories() {
   const { data } = useGetCategoriesQuery();
 
-  const mappedData = {
-    ...data,
-    categoryGroups: Object.fromEntries(
-      Object.entries(data?.categoryGroups).map(([key, value]) => [
-        key,
-        { ...value, open: true },
-      ]),
-    ),
-  };
+  const [state, setState] = useState<CategoriesDataMapped | null>(null);
 
-  const [state, setState] = useState(mappedData);
+  useEffect(() => {
+    if (data != null) {
+      const mappedData = {
+        ...data,
+        categoryGroups: Object.fromEntries(
+          Object.entries(data?.categoryGroups).map(([key, value]) => [
+            key,
+            { ...value, open: true },
+          ]),
+        ),
+      };
+      setState(mappedData);
+    }
+  }, [data]);
 
-  const categories = state.categories;
-  const categoryGroups = Object.values(state.categoryGroups);
-
-  const atLeastOneCategoryExpanded = categoryGroups.some((group) => group.open);
+  let categories = {};
+  let categoryGroups: MappedCategoryGroups[] = [];
+  let atLeastOneCategoryExpanded = false;
+  if (state != null) {
+    categories = state.categories;
+    categoryGroups = Object.values(state?.categoryGroups);
+    atLeastOneCategoryExpanded = categoryGroups.some((group) => group.open);
+  }
 
   const toggleDisplayCategories = (id: string | undefined) => {
     if (id === undefined) {
@@ -95,15 +111,17 @@ export default function Categories() {
   return (
     <div>
       <div className="flex items-center gap-2 py-2 px-2">
-        <button>
-          <ChevronDownIcon
-            className={clsx(
-              atLeastOneCategoryExpanded ? "" : "-rotate-90",
-              `h-4 w-4 ${darkBlueText}`,
-            )}
-            onClick={() => toggleDisplayCategories(undefined)}
-          />
-        </button>
+        {categoryGroups.length > 0 ? (
+          <button>
+            <ChevronDownIcon
+              className={clsx(
+                atLeastOneCategoryExpanded ? "" : "-rotate-90",
+                `h-4 w-4 ${darkBlueText}`,
+              )}
+              onClick={() => toggleDisplayCategories(undefined)}
+            />
+          </button>
+        ) : null}
         <div className={`${darkBlueText} font-thin`}>CATEGORY</div>
       </div>
       {categoryGroups.map((group) => {
@@ -182,6 +200,7 @@ function CategoryHeader({
   display: boolean;
   toggleSubCategories: () => void;
 }) {
+  const [addCategory] = useAddCategoryMutation();
   const [displayAddCategory, setDisplayAddCategory] = useState(false);
   const [loading, setLoading] = useState(false);
   const close = () => setDisplayAddCategory(false);
@@ -190,6 +209,7 @@ function CategoryHeader({
   const createCategory = (data) => {
     console.log("Hello, World!");
     console.log(data);
+    addCategory(data);
     close();
   };
 
