@@ -72,7 +72,7 @@ const FormField: React.FC<FormFieldProps> = ({
   </div>
 );
 
-export function AddAccountForm() {
+export function AddAccountForm({ close }: { close: () => void }) {
   const {
     register,
     handleSubmit,
@@ -90,6 +90,7 @@ export function AddAccountForm() {
 
   const onSubmit = async (data: FormData) => {
     addAccount(data);
+    close();
   };
 
   const showSelection = watch("showSelection");

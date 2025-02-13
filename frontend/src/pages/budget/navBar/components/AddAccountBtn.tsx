@@ -8,13 +8,19 @@ import {
   DialogTrigger,
 } from "@/core/components/uiLibrary/dialog";
 import { AddAccountForm } from "@/pages/budget/navBar/components/AddAccountForm";
+import { useState } from "react";
 
 export function AddAccountBtn() {
   const { mouseOver, handleMouseOver } = useMouseOverTimeout();
+  const [displayModal, setDisplayModal] = useState(false);
+
+  const closeModal = () => setDisplayModal(false);
+  const openModal = () => setDisplayModal(true);
 
   return (
-    <Dialog>
+    <Dialog open={displayModal} onOpenChange={setDisplayModal}>
       <DialogTrigger
+        onClick={openModal}
         onMouseEnter={handleMouseOver}
         className="flex items-center gap-1 py-1 pl-1 pr-3 ml-2 rounded bg-white/10 hover:bg-white/20"
       >
@@ -25,11 +31,10 @@ export function AddAccountBtn() {
         <p className="text-sm">Add Account</p>
       </DialogTrigger>
       <DialogContent
-        onPointerDownOutside={(e) => e.preventDefault()}
         className="w-[360px] min-h-[600px] px-0 pb-0"
         data-testid="add-account-dialog"
       >
-        <AddAccountForm />
+        <AddAccountForm close={closeModal} />
       </DialogContent>
     </Dialog>
   );
