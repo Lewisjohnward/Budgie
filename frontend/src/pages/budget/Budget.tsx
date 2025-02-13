@@ -1,6 +1,14 @@
 import { CirclePlus } from "lucide-react";
 import Navbar from "./navBar/NavBar";
 import { Outlet } from "react-router-dom";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/core/components/uiLibrary/popover";
+import { PopoverArrow, PopoverPortal } from "@radix-ui/react-popover";
+import { Input } from "@/core/components/uiLibrary/input";
+import { Button } from "@/core/components/uiLibrary/button";
 
 export default function BudgetPage() {
   return <BudgetContent />;
@@ -41,9 +49,10 @@ export function Menu() {
               <Input
                 className="shadow-none focus-visible:ring-sky-950"
                 placeholder="New Category Group"
+                autoComplete="off"
               />
               <div className="flex justify-end gap-2">
-                <Button className="bg-gray-400/80 hover:bg-gray-400/60">
+                <Button className="bg-gray-400 hover:bg-gray-400/80">
                   Cancel
                 </Button>
                 <Button className="bg-sky-900 hover:bg-sky-950/80">Okay</Button>
