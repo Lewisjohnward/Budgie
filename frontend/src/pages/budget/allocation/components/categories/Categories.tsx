@@ -179,15 +179,11 @@ function Category({ children }: { children: ReactNode }) {
 }
 
 const AddCategorySchema = z.object({
-  categoryGroupId: z.string().optional(),
-  name: z.string(),
+  categoryGroupId: z.string(),
+  name: z.string().min(1),
 });
-type AddCategoryData = z.infer<typeof AddCategorySchema>;
 
-type AddCategoryForm = {
-  categoryGroupId: string;
-  name: string;
-};
+type AddCategoryFormData = z.infer<typeof AddCategorySchema>;
 
 function CategoryHeader({
   id,
@@ -202,27 +198,29 @@ function CategoryHeader({
 }) {
   const [addCategory] = useAddCategoryMutation();
   const [displayAddCategory, setDisplayAddCategory] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const close = () => setDisplayAddCategory(false);
-  const open = () => setDisplayAddCategory(true);
-
-  const createCategory = (data) => {
-    console.log("Hello, World!");
-    console.log(data);
-    addCategory(data);
-    close();
+  const close = () => {
+    setDisplayAddCategory(false);
+    reset();
   };
+  const open = () => setDisplayAddCategory(true);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid, dirtyFields },
-  } = useForm<AddCategoryForm>({
+    formState: { isValid },
+    reset,
+  } = useForm<AddCategoryFormData>({
     defaultValues: {
       categoryGroupId: id,
     },
     resolver: zodResolver(AddCategorySchema),
   });
+
+  const createCategory = (data: AddCategoryFormData) => {
+    addCategory(data);
+    close();
+    reset();
+  };
 
   return (
     <div className={`group flex items-center gap-2 px-2 bg-gray-400/20`}>
@@ -258,32 +256,28 @@ function CategoryHeader({
                 className="px-2 py-2 space-y-2"
                 onSubmit={handleSubmit(createCategory)}
               >
-                {loading ? (
-                  <div>...Loading</div>
-                ) : (
-                  <>
-                    <Input
-                      className="shadow-none focus-visible:ring-sky-950"
-                      placeholder="New Category"
-                      {...register("name")}
-                    />
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        onClick={close}
-                        className="bg-gray-400/80 hover:bg-gray-400/60"
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="submit"
-                        className="bg-sky-900 hover:bg-sky-950/80"
-                        disabled={!isValid}
-                      >
-                        Okay
-                      </Button>
-                    </div>
-                  </>
-                )}
+                <Input
+                  className="shadow-none focus-visible:ring-sky-950"
+                  placeholder="New Category"
+                  autoComplete="off"
+                  {...register("name")}
+                />
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="reset"
+                    onClick={close}
+                    className="bg-gray-400 hover:bg-gray-400/80"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-sky-900 hover:bg-sky-950/80"
+                    disabled={!isValid}
+                  >
+                    Okay
+                  </Button>
+                </div>
               </form>
             </PopoverContent>
           </PopoverPortal>
