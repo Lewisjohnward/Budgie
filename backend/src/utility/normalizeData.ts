@@ -12,7 +12,7 @@ type Account = {
 type Transaction = {
   id: string;
   accountId: string;
-  categoryId: string;
+  categoryId: string | null;
   date: Date;
   inflow: number | null;
   outflow: number | null;
@@ -21,7 +21,7 @@ type Transaction = {
   cleared: boolean;
   createdAt: Date;
   updatedAt: Date;
-  category: Category;
+  category: Category | null;
 };
 
 type Category = {
@@ -32,12 +32,19 @@ type Category = {
 };
 
 type NormalizedData = {
-  accounts: { [key: string]: Account };
-  transactions: { [key: string]: Transaction };
+  accounts: { [key: string]: NormalizedAccount };
+  transactions: { [key: string]: NormalizedTransaction };
   categories: { [key: string]: Category };
 };
 
-export function normalizeData(data: { accounts: Account[] }): NormalizedData {
+type NormalizedAccount = Omit<Account, "transactions"> & {
+  transactions: string[];
+};
+type NormalizedTransaction = Omit<Transaction, "category"> & {
+  category: string | null;
+};
+
+export function normalizeData(data: { accounts: Account[] }) {
   const normalizedData: NormalizedData = {
     accounts: {},
     transactions: {},
@@ -57,11 +64,20 @@ export function normalizeData(data: { accounts: Account[] }): NormalizedData {
     };
 
     account.transactions.forEach((transaction) => {
+      const transactionId = transaction.id;
+      const categoryId = transaction.category ? transaction.category.id : null;
+
       normalizedData.transactions[transaction.id] = {
         ...transaction,
+        category: categoryId,
       };
+      normalizedData.accounts[account.id].transactions.push(transactionId);
 
-      if (!normalizedData.categories[transaction.categoryId]) {
+      if (
+        transaction.category &&
+        transaction.categoryId != null &&
+        !normalizedData.categories[transaction.categoryId]
+      ) {
         normalizedData.categories[transaction.categoryId] = {
           id: transaction.categoryId,
           userId: transaction.category.userId,
