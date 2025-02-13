@@ -32,33 +32,54 @@ import {
   MappedCategoryGroups,
 } from "@/core/types/NormalizedData";
 
+const AddCategorySchema = z.object({
+  categoryGroupId: z.string(),
+  name: z.string().min(1),
+});
+
+type AddCategoryFormData = z.infer<typeof AddCategorySchema>;
+
 function useCategories() {
   const { data } = useGetCategoriesQuery();
+  const [addCategory] = useAddCategoryMutation();
 
   const [state, setState] = useState<CategoriesDataMapped | null>(null);
+  const appendedCategoryGroupId = useRef<string | null>(null);
 
   useEffect(() => {
-    if (data != null) {
-      const mappedData = {
-        ...data,
-        categoryGroups: Object.fromEntries(
-          Object.entries(data?.categoryGroups).map(([key, value]) => [
-            key,
-            { ...value, open: true },
-          ]),
-        ),
-      };
-      setState(mappedData);
-    }
+    if (data === null || data === undefined) return;
+
+    const previousOpenState =
+      state != null
+        ? Object.values(state?.categoryGroups).map((group) => group.open)
+        : [];
+
+    const mappedData = {
+      ...data,
+      categoryGroups: Object.fromEntries(
+        Object.entries(data?.categoryGroups).map(([key, value], i) => {
+          const open =
+            previousOpenState[i] ||
+            appendedCategoryGroupId.current === key ||
+            appendedCategoryGroupId.current === null;
+
+          return [key, { ...value, open }];
+        }),
+      ),
+    };
+    appendedCategoryGroupId.current = null;
+    setState(mappedData);
   }, [data]);
 
   let categories = {};
   let categoryGroups: MappedCategoryGroups[] = [];
-  let atLeastOneCategoryExpanded = false;
+  let atLeastOneCategoryGroupExpanded = false;
   if (state != null) {
     categories = state.categories;
     categoryGroups = Object.values(state?.categoryGroups);
-    atLeastOneCategoryExpanded = categoryGroups.some((group) => group.open);
+    atLeastOneCategoryGroupExpanded = categoryGroups.some(
+      (group) => group.open,
+    );
   }
 
   const toggleDisplayCategories = (id: string | undefined) => {
@@ -70,7 +91,7 @@ function useCategories() {
         >((acc, key) => {
           acc[key] = {
             ...prevState.categoryGroups[key],
-            open: !atLeastOneCategoryExpanded,
+            open: !atLeastOneCategoryGroupExpanded,
           };
           return acc;
         }, {}),
@@ -92,20 +113,30 @@ function useCategories() {
       }));
     }
   };
+
+  const handleAddCategory = (data: AddCategoryFormData) => {
+    addCategory(data);
+    appendedCategoryGroupId.current = data.categoryGroupId;
+  };
+
   return {
     toggleDisplayCategories,
     categories,
     categoryGroups,
-    atLeastOneCategoryExpanded,
+    atLeastOneCategoryGroupExpanded,
+    handleAddCategory,
+    addCategorygroup: () => {},
   };
 }
 
 export default function Categories() {
   const {
-    atLeastOneCategoryExpanded,
+    atLeastOneCategoryGroupExpanded,
     toggleDisplayCategories,
     categoryGroups,
     categories,
+    handleAddCategory,
+    addCategoryGroup,
   } = useCategories();
 
   return (
@@ -115,7 +146,7 @@ export default function Categories() {
           <button>
             <ChevronDownIcon
               className={clsx(
-                atLeastOneCategoryExpanded ? "" : "-rotate-90",
+                atLeastOneCategoryGroupExpanded ? "" : "-rotate-90",
                 `h-4 w-4 ${darkBlueText}`,
               )}
               onClick={() => toggleDisplayCategories(undefined)}
@@ -126,14 +157,21 @@ export default function Categories() {
       </div>
       {categoryGroups.map((group) => {
         return (
-          <Category key={group.id}>
-            <CategoryHeader
-              id={group.id}
-              name={group.name}
-              display={group.open}
-              toggleSubCategories={() => toggleDisplayCategories(group.id)}
-            />
-            <SubCategories display={group.open}>
+          <Container key={group.id}>
+            <CategoryGroupContainer>
+              <ExpandCategoryGroup
+                onClick={() => toggleDisplayCategories(group.id)}
+                open={group.open}
+              />
+              <Checkbox className="size-3 rounded-[2px] shadow-none" />
+              <CategoryGroupName>{group.name}</CategoryGroupName>
+              <AddCategoryButton
+                id={group.id}
+                handleAddCategory={handleAddCategory}
+              />
+            </CategoryGroupContainer>
+
+            <CategoriesContainer display={group.open}>
               {group.categories.length > 0
                 ? group.categories.map((categoryId) => {
                     const { id, name, assigned, activity } =
@@ -142,18 +180,18 @@ export default function Categories() {
                     const available = assigned - activity;
 
                     return (
-                      <SubCategoryContent key={id}>
+                      <CategoryContent key={id}>
                         {(ref) => (
                           <>
                             <Checkbox className="size-3 rounded-[2px] shadow-none" />
-                            <SubCategoryNameContainer>
-                              <SubCategoryName>{name}</SubCategoryName>
+                            <CategoryNameContainer>
+                              <CategoryName>{name}</CategoryName>
                               <ProgressBar
                                 assigned={assigned}
                                 activity={activity}
                                 available={available}
                               />
-                            </SubCategoryNameContainer>
+                            </CategoryNameContainer>
                             <EditAssigned
                               ref={ref}
                               assigned={assigned.toFixed(2)}
@@ -162,41 +200,52 @@ export default function Categories() {
                             <Available>{available.toFixed(2)}</Available>
                           </>
                         )}
-                      </SubCategoryContent>
+                      </CategoryContent>
                     );
                   })
                 : null}
-            </SubCategories>
-          </Category>
+            </CategoriesContainer>
+          </Container>
         );
       })}
     </div>
   );
 }
 
-function Category({ children }: { children: ReactNode }) {
+function Container({ children }: { children: ReactNode }) {
   return <div className="min-w-[600px]">{children}</div>;
 }
 
-const AddCategorySchema = z.object({
-  categoryGroupId: z.string(),
-  name: z.string().min(1),
-});
+function CategoryGroupContainer({ children }: { children: ReactNode }) {
+  return (
+    <div className={`group flex items-center gap-0 pl-2 bg-gray-400/20`}>
+      <div className="flex-grow flex-shrink basis-56 flex items-center gap-4 py-2">
+        {children}
+      </div>
+      <div className="flex-1 text-right">
+        <p>Assigned</p>
+      </div>
+      <div className="flex-1 text-right">
+        <p>Activity</p>
+      </div>
+      <div className="flex-1 text-right">
+        <p>Available</p>
+      </div>
+    </div>
+  );
+}
 
-type AddCategoryFormData = z.infer<typeof AddCategorySchema>;
+function CategoryGroupName({ children }: { children: ReactNode }) {
+  return <p className={`${darkBlueText} font-bold`}>{children}</p>;
+}
 
-function CategoryHeader({
+function AddCategoryButton({
   id,
-  name,
-  display,
-  toggleSubCategories,
+  handleAddCategory,
 }: {
   id: string;
-  name: string;
-  display: boolean;
-  toggleSubCategories: () => void;
+  handleAddCategory: (data: AddCategoryFormData) => void;
 }) {
-  const [addCategory] = useAddCategoryMutation();
   const [displayAddCategory, setDisplayAddCategory] = useState(false);
   const close = () => {
     setDisplayAddCategory(false);
@@ -217,87 +266,79 @@ function CategoryHeader({
   });
 
   const createCategory = (data: AddCategoryFormData) => {
-    addCategory(data);
+    handleAddCategory(data);
     close();
     reset();
   };
 
   return (
-    <div className={`group flex items-center gap-2 px-2 bg-gray-400/20`}>
-      <button className="w-4" onClick={toggleSubCategories}>
-        <ChevronDownIcon
-          className={clsx(
-            display ? "rotate-0" : "-rotate-90",
-            `h-4 w-4 ${darkBlueText}`,
-          )}
+    <Popover open={displayAddCategory} modal={true}>
+      <PopoverTrigger onClick={open}>
+        <AddCircleIcon
+          className={`${darkBlueText} invisible group-hover:visible`}
         />
-      </button>
-
-      <Checkbox className="size-3 rounded-[2px] shadow-none" />
-      <div className="flex-grow flex-shrink basis-48 flex items-center gap-4 py-2">
-        <p className={`${darkBlueText} font-bold`}>{name}</p>
-        <Popover open={displayAddCategory} modal={true}>
-          <PopoverTrigger>
-            <button onClick={open}>
-              <AddCircleIcon
-                className={`${darkBlueText} invisible group-hover:visible`}
-              />
-            </button>
-          </PopoverTrigger>
-          <PopoverPortal>
-            <PopoverContent
-              onPointerDownOutside={close}
-              avoidCollisions={false}
-              side={"right"}
-              className="w-[200px] p-0 shadow-lg"
-            >
-              <PopoverArrow className="w-8 h-2 fill-white" />
-              <form
-                className="px-2 py-2 space-y-2"
-                onSubmit={handleSubmit(createCategory)}
+      </PopoverTrigger>
+      <PopoverPortal>
+        <PopoverContent
+          onPointerDownOutside={close}
+          avoidCollisions={false}
+          side={"right"}
+          className="w-[200px] p-0 shadow-lg"
+        >
+          <PopoverArrow className="w-8 h-2 fill-white" />
+          <form
+            className="px-2 py-2 space-y-2"
+            onSubmit={handleSubmit(createCategory)}
+          >
+            <Input
+              className="shadow-none focus-visible:ring-sky-950"
+              placeholder="New Category"
+              autoComplete="off"
+              {...register("name")}
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                type="reset"
+                onClick={close}
+                className="bg-gray-400 hover:bg-gray-400/80"
               >
-                <Input
-                  className="shadow-none focus-visible:ring-sky-950"
-                  placeholder="New Category"
-                  autoComplete="off"
-                  {...register("name")}
-                />
-                <div className="flex justify-end gap-2">
-                  <Button
-                    type="reset"
-                    onClick={close}
-                    className="bg-gray-400 hover:bg-gray-400/80"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="bg-sky-900 hover:bg-sky-950/80"
-                    disabled={!isValid}
-                  >
-                    Okay
-                  </Button>
-                </div>
-              </form>
-            </PopoverContent>
-          </PopoverPortal>
-        </Popover>
-      </div>
-
-      <div className="flex-1 text-right">
-        <p>Assigned</p>
-      </div>
-      <div className="flex-1 text-right">
-        <p>Activity</p>
-      </div>
-      <div className="flex-1 text-right">
-        <p>Available</p>
-      </div>
-    </div>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-sky-900 hover:bg-sky-950/80"
+                disabled={!isValid}
+              >
+                Okay
+              </Button>
+            </div>
+          </form>
+        </PopoverContent>
+      </PopoverPortal>
+    </Popover>
   );
 }
 
-function SubCategories({
+function ExpandCategoryGroup({
+  onClick,
+  open,
+}: {
+  onClick: () => void;
+  open: boolean;
+}) {
+  return (
+    <button className="w-4" onClick={onClick}>
+      <ChevronDownIcon
+        className={clsx(
+          open ? "rotate-0" : "-rotate-90",
+          `h-4 w-4 ${darkBlueText}`,
+        )}
+      />
+    </button>
+  );
+}
+
+function CategoriesContainer({
   children,
   display,
 }: {
@@ -308,11 +349,11 @@ function SubCategories({
   return null;
 }
 
-function SubCategoryName({ children }: { children: ReactNode }) {
+function CategoryName({ children }: { children: ReactNode }) {
   return children;
 }
 
-function SubCategoryNameContainer({ children }: { children: ReactNode }) {
+function CategoryNameContainer({ children }: { children: ReactNode }) {
   return (
     <div className="flex-grow basis-48 text-ellipsis whitespace-nowrap">
       {children}
@@ -320,7 +361,7 @@ function SubCategoryNameContainer({ children }: { children: ReactNode }) {
   );
 }
 
-function SubCategoryContent({
+function CategoryContent({
   children,
 }: {
   children: (ref: RefObject<HTMLInputElement>) => ReactNode;
@@ -333,7 +374,7 @@ function SubCategoryContent({
 
   return (
     <div
-      className={`flex items-center gap-2 py-2 pl-8 pr-2 border-b ${borderBottom} focus-within:bg-gray-100/80`}
+      className={`flex items-center gap-4 py-2 pl-10 pr-2 border-b ${borderBottom} focus-within:bg-gray-100/80`}
       onClick={handleInputFocus}
     >
       {children(inputRef)}
