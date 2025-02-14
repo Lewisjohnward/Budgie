@@ -72,7 +72,7 @@ export function AccountCard({
       className={clsx(
         // TODO: Would it be better to have selected as a property on the array from server?
         (active || mouseOver) && "bg-white/10",
-        "flex justify-between items-center gap-4 pl-4 pr-4 py-2 text-sm rounded",
+        "flex justify-between items-center gap-4 pl-4 pr-2 py-2 text-sm rounded",
       )}
     >
       <div
