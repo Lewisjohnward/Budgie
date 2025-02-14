@@ -9,6 +9,7 @@ import clsx from "clsx";
 import { ReactNode } from "react";
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 import useMouseOverTimeout from "@/core/hooks/useMouseOverTimeout";
+import { useGetCategoriesQuery } from "@/core/api/budgetApiSlice";
 
 export default function Header() {
   const categories = ["All", "Underfunded", "Money available", "Snoozed"];
@@ -78,16 +79,38 @@ function MonthSelector() {
 }
 
 function AssignedMoney() {
+  const { data } = useGetCategoriesQuery();
+
+  const inflowGroup = Object.values(data.categoryGroups).find(
+    (group) => group.name === "Inflow",
+  );
+  const categoryId = inflowGroup.categories[0];
+  const inflowCategory = data.categories[categoryId];
+  const assignedValue = inflowCategory?.assigned ?? null;
+
+  const state =
+    assignedValue > 0
+      ? { bg: "bg-lime-300", message: "Ready to Assign" }
+      : assignedValue < 0
+        ? { bg: "bg-red-200", message: "You assigned more than you have" }
+        : {
+          bg: "bg-gray-200",
+          message: "All money assigned",
+          icon: <TickIcon className="h-8 w-8 text-black/40" />,
+        };
+
   return (
     <div className="min-w-max">
       <div
-        className={`flex items-center gap-8 max-w-fit ${bgGray} rounded px-4 py-2`}
+        className={`flex items-center gap-8 w-56 ${state.bg} rounded px-4 py-2`}
       >
         <div>
-          <p className="text-black/40 text-xl font-bold">£0.00</p>
-          <p className="text-sm">All money assigned</p>
+          <p className="text-black text-xl font-bold">
+            £{assignedValue.toFixed(2)}
+          </p>
+          <p className="text-sm">{state.message}</p>
         </div>
-        <TickIcon className="h-8 w-8 text-black/40" />
+        {state.icon}
       </div>
     </div>
   );
