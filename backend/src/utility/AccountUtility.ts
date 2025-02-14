@@ -42,6 +42,9 @@ export const selectAccounts = async (userId: string) => {
     where: {
       userId,
     },
+    orderBy: {
+      position: "asc",
+    },
     include: {
       transactions: {
         include: {
