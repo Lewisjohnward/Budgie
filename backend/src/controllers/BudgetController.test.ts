@@ -277,4 +277,32 @@ describe("Budget Controller", () => {
       expect(response.statusCode).toBe(200);
     });
   });
+
+  describe("getCategories", () => {
+    it.todo("");
+  });
+
+  describe("addCategoryGroup", () => {
+    it.todo("");
+  });
+
+  describe("editCategoryGroup", () => {
+    it.todo("");
+  });
+
+  describe("deleteCategoryGroup", () => {
+    it.todo("");
+  });
+
+  describe("addCategory", () => {
+    it.todo("");
+  });
+
+  describe("editCategory", () => {
+    it.todo("");
+  });
+
+  describe("deleteCategory", () => {
+    it.todo("");
+  });
 });
