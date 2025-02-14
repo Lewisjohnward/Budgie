@@ -52,7 +52,17 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
         url: "budget/categories",
         method: "GET",
       }),
-      // invalidatesTags: ["Accounts"],
+      providesTags: ["Categories"],
+    }),
+    addCategory: builder.mutation<void, any>({
+      query: (category) => {
+        return {
+          url: "budget/category",
+          method: "POST",
+          body: category,
+        };
+      },
+      invalidatesTags: ["Categories"],
     }),
   }),
 });
@@ -65,4 +75,5 @@ export const {
   useDeleteTransactionMutation,
   useEditTransactionMutation,
   useGetCategoriesQuery,
+  useAddCategoryMutation,
 } = budgetApiSlice;
