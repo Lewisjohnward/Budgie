@@ -161,22 +161,24 @@ export const initialiseCategories = async (userId: string) => {
     },
   });
 
-  const needsCategory = await prisma.categoryGroup.create({
+  // const needsCategory = await prisma.categoryGroup.create({
+  //   data: {
+  //     userId,
+  //     name: "",
+  //   },
+  // });
+
+  await prisma.category.create({
     data: {
       userId,
-      name: "",
+      categoryGroupId: inflow.id,
+      name: "Ready to Assign",
     },
-  });
-
-  await prisma.category.createMany({
-    data: [
-      { userId, categoryGroupId: inflow.id, name: "Inflow: ready to assign" },
-      {
-        userId,
-        categoryGroupId: needsCategory.id,
-        name: "This needs a category",
-      },
-    ],
+    //   {
+    //   userId,
+    //   categoryGroupId: needsCategory.id,
+    //   name: "This needs a category",
+    // },
   });
 };
 
