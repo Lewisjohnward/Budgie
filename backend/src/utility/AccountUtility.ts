@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { accountSchema, UpdatedTransaction } from "../schemas";
 import { AccountPayload, TransactionPayload } from "../dto";
 import { Decimal } from "@prisma/client/runtime/library";
+import { CategoryPayload } from "../schemas/CategorySchema";
 
 const prisma = new PrismaClient();
 
