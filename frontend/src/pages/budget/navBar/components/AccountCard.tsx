@@ -32,6 +32,7 @@ import {
 import { Button } from "@/core/components/uiLibrary/button";
 import { Textarea } from "@/core/components/uiLibrary/textarea";
 import { Account } from "@/core/types/NormalizedData";
+import { Balance } from "./Balance";
 
 export function AccountCard({
   account,
@@ -191,7 +192,7 @@ export function AccountCard({
       </div>
       <div className="relative grow flex justify-between">
         <p>{account.name}</p>
-        <p>{`${currency} ${account.balance}`}</p>
+        <Balance balance={account.balance} />
       </div>
     </Link>
   );

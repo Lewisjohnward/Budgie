@@ -2,6 +2,7 @@ import { ChevronDownIcon } from "@/core/icons/icons";
 import { mockAccounts } from "@/mockData";
 import { AccountCard, AddAccountBtn, EmptyAccountsMessage } from ".";
 import { useGetAccountsQuery } from "@/core/api/budgetApiSlice";
+import { Balance } from "./Balance";
 
 export function AccountOverview({
   expanded,
@@ -27,12 +28,11 @@ export function AccountOverview({
   }
 
   const accounts = Object.values(data.accounts);
-  const sum = accounts
+  const balance = accounts
     .map((account) => account.balance)
     .reduce((sum, balance) => {
       return sum + balance;
     }, 0);
-
   return (
     <div className="space-y-2 w-60">
       <div className="flex flex-col"></div>
@@ -40,7 +40,7 @@ export function AccountOverview({
         <div className="space-y-2">
           <button
             onClick={toggleExpanded}
-            className="flex items-center justify-between px-4 gap-2 w-full"
+            className="flex items-center justify-between pr-2 gap-2 w-full"
             data-testid="expand-accounts"
           >
             <div className="flex items-center gap-2 tracking-wider">
@@ -52,7 +52,7 @@ export function AccountOverview({
               )}
               <p>BUDGET</p>
             </div>
-            <p className="min-w-max">{`${currency} ${sum}`}</p>
+            <Balance balance={balance} />
           </button>
           {expanded && (
             <div className="space-y-2">
