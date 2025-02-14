@@ -179,7 +179,7 @@ export const addTransaction = async (
 
   // IF NO CATEGORY ASSIGN TO THIS NEEDS A CATEGORY
 
-  const { accountId, subCategoryId, date, inflow, outflow, payee, memo } = <
+  const { accountId, categoryId, date, inflow, outflow, payee, memo } = <
     TransactionPayload
     >req.body;
 
@@ -191,7 +191,7 @@ export const addTransaction = async (
   try {
     const validTransaction = transactionSchema.parse({
       accountId,
-      subCategoryId,
+      categoryId,
       date,
       inflow,
       outflow,
