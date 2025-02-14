@@ -8,15 +8,19 @@ import {
 } from "../dto";
 import { editTransactionArraySchema, transactionSchema } from "../schemas";
 import {
+  createCategory,
   deleteTransactions,
   initialiseAccount,
   insertTransaction,
+  normalizeCategories,
   normalizeData,
   selectAccounts,
+  selectCategories,
   updateTransactions,
   userOwnsAccount,
   validateAccount,
 } from "../utility";
+import { CategorySchema } from "../schemas/CategorySchema";
 
 const prisma = new PrismaClient();
 export const data = async (req: Request, res: Response) => {
