@@ -5,6 +5,7 @@ import {
   useGetAccountsQuery,
 } from "@/core/api/budgetApiSlice";
 import { MyTable } from "./components/Table";
+import { ReactNode } from "react";
 
 export function Account() {
   // TODO: GET TRANSACTION DATA
@@ -34,8 +35,9 @@ export function Account() {
 
   const account = {
     name: chosenAccount.name,
-    clearedBalance: 0,
-    unclearedBalance: 0,
+    balance: chosenAccount.balance,
+    // clearedBalance: 0,
+    // unclearedBalance: 0,
     transactions,
     // transactions: formattedTransactions
   };
@@ -66,7 +68,7 @@ export function Account() {
       </div>
       <div className="h-[1px] bg-black/20" />
       <div className="px-4">
-        <p>Balance</p>
+        <Balance balance={account.balance} />
       </div>
       <div className="h-[1px] bg-black/20" />
       <div className="px-2">
@@ -79,6 +81,18 @@ export function Account() {
         </button>
       </div>
       <MyTable transactions={account!.transactions} />
+    </div>
+  );
+}
+
+function Balance({ balance }: { balance: number }) {
+  const color = balance > 0 ? "text-green-600" : "text-red-600";
+  const formattedBalance = balance.toFixed(2);
+
+  return (
+    <div>
+      <p className={`${color} font-semibold`}>£{formattedBalance}</p>
+      <p className="text-gray-600">Balance</p>
     </div>
   );
 }
