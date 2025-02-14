@@ -104,6 +104,7 @@ export const createAccount = async (account: AccountPayload) => {
   return await prisma.account.create({
     data: {
       ...account,
+      balance: 0,
     },
   });
 };
