@@ -70,6 +70,6 @@ const baseQueryWithReauth: BaseQueryFn<
 export const apiSlice = createApi({
   // baseQuery: baseQuery /* baseQueryWithReauth */,
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Accounts"],
+  tagTypes: ["Accounts", "Categories"],
   endpoints: () => ({}),
 });
