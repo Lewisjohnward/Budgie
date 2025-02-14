@@ -43,7 +43,7 @@ type CategoryGroup = {
   categories: CategoryT[];
 };
 
-type CategoryT = {
+export type CategoryT = {
   id: string;
   userId: string;
   categoryId: string;
@@ -55,5 +55,12 @@ type CategoryT = {
 
 export type CategoriesNormalizedData = {
   categoryGroups: { [key: string]: CategoryGroup };
+  categories: { [key: string]: CategoryT };
+};
+
+export type MappedCategoryGroups = { open: boolean } & CategoryGroup;
+
+export type CategoriesDataMapped = {
+  categoryGroups: { [key: string]: MappedCategoryGroups };
   categories: { [key: string]: CategoryT };
 };
