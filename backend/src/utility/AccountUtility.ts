@@ -127,35 +127,30 @@ export const initialiseAccount = async (account: AccountPayload) => {
 };
 
 export const insertTransaction = async (transaction: TransactionPayload) => {
-  if (transaction.categoryId === undefined) {
-    const defaultCategory = await prisma.category.findFirstOrThrow({
-      where: {
-        name: "This needs a category",
-      },
-    });
+  // TODO: check that if a categoryId is given it exists to prevent bug
 
-    const newTransaction = {
-      ...transaction,
-      categoryId: defaultCategory.id,
-    };
+  const account = await prisma.account.findUniqueOrThrow({
+    where: {
+      id: transaction.accountId,
+    },
+  });
 
+  const { inflow, outflow } = transaction;
+
+  const balanceModifier = 0 - (outflow ? outflow : 0) + (inflow ? inflow : 0);
+
+  const updatedBalance =
+    convertDecimalToNumber(account.balance) + balanceModifier;
+
+  await prisma.$transaction(async (tx) => {
     await prisma.transaction.create({
-      data: newTransaction,
+      data: transaction,
     });
-  } else {
-    // TODO: should I check that categoryId exists in the db before adding it, probably
-    const { categoryId, ...rest } = transaction;
-
-    if (!categoryId) {
-      throw new Error("No categoryId provided");
-    }
-
-    const newTransaction = { categoryId, ...rest };
-
-    const insertedTransaction = await prisma.transaction.create({
-      data: newTransaction,
+    await prisma.account.update({
+      where: { id: account.id },
+      data: { ...account, balance: updatedBalance },
     });
-  }
+  });
 };
 
 export const initialiseCategories = async (userId: string) => {
