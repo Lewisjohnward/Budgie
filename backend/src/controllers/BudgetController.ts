@@ -236,3 +236,72 @@ export const getCategories = async (
   }
   return;
 };
+
+export const addCategoryGroup = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  res.sendStatus(200);
+};
+
+export const editCategoryGroup = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  res.sendStatus(200);
+};
+
+export const deleteCategoryGroup = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  res.sendStatus(200);
+};
+
+// TODO: NEEDS TESTING
+export const addCategory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { name, categoryGroupId } = req.body;
+
+  try {
+    const validatedSubCategory = CategorySchema.parse({
+      userId: req.user!._id,
+      categoryGroupId,
+      name,
+    });
+
+    await createCategory(validatedSubCategory);
+    res.status(200).json({ message: "SubCategory added" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: error });
+  }
+  return;
+};
+
+// TODO: NEEDS TESTING
+export const editCategory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+  } catch (error) { }
+  return;
+};
+
+export const deleteCategory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+  } catch (error) { }
+  return;
+};
