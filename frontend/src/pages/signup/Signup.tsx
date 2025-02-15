@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/core/components/uiLibrary/button";
 import { buttonBlue, buttonBlueHover, textBlue } from "@/core/theme/colors";
 import {
@@ -16,6 +16,10 @@ import { PasswordInput } from "@/core/components/uiLibrary/PasswordInput";
 import { Copyright } from "@/core/components";
 import { LockIcon, MailIcon } from "lucide-react";
 import { signupSchema, SignUpType } from "@/core/schemas/signupSchema";
+import { useSignupMutation } from "@/core/api/authApiSlice";
+import { useEffect } from "react";
+import { setCredentials } from "@/core/auth/authSlice";
+import { useAppDispatch } from "@/core/hooks/reduxHooks";
 
 export default function SignupPage() {
   return <SignupPageContent />;
@@ -103,6 +107,7 @@ function SocialAuth() {
 }
 
 function MyForm() {
+  const [signUp, { isLoading, isSuccess }] = useSignupMutation();
   const form = useForm<SignUpType>({
     defaultValues: {
       email: "",
@@ -182,8 +187,9 @@ function MyForm() {
           <Button
             type="submit"
             className={`${buttonBlue} w-full ${buttonBlueHover}`}
+            disabled={isLoading}
           >
-            Sign Up
+            {isLoading ? "Signing up..." : "Sign Up"}
           </Button>
         </form>
       </Form>
