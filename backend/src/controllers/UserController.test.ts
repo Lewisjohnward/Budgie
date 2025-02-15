@@ -71,7 +71,7 @@ describe("User Controller", () => {
 
       const response = await request(app)
         .post("/user/register")
-        .send({ email: "test@email.com", password: "abdegh745K!" })
+        .send({ email: "test@email.com", password: "abdegh745K!k" })
         .set("Authorization", "Bearer mock-token");
 
       expect(response.status).toBe(400);
@@ -84,7 +84,7 @@ describe("User Controller", () => {
 
       const response = await request(app)
         .post("/user/register")
-        .send({ email: "test@email.com", password: "abdegh745K!" })
+        .send({ email: "test@email.com", password: "abdegh745K!a" })
         .set("Authorization", "Bearer mock-token");
 
       expect(response.status).toBe(500);
@@ -94,7 +94,7 @@ describe("User Controller", () => {
       (createUser as jest.Mock).mockReturnValue({ id: "test" });
       const response = await request(app)
         .post("/user/register")
-        .send({ email: "test@email.com", password: "abdegh745K!" })
+        .send({ email: "test@email.com", password: "abdegh745K!a" })
         .set("Authorization", "Bearer mock-token");
 
       expect(response.status).toBe(200);
