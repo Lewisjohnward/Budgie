@@ -1,9 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
-import { selectCurrentToken, setCredentials } from "@/core/auth/authSlice";
-import { useAppDispatch, useAppSelector } from "@/core/hooks/reduxHooks";
-import { useEffect } from "react";
-import { useLoginMutation } from "@/core/api/authApiSlice";
-import { Checkbox } from "@/core/components/uiLibrary/checkbox";
+import { Link } from "react-router-dom";
 import { Button } from "@/core/components/uiLibrary/button";
 import { buttonBlue, buttonBlueHover, textBlue } from "@/core/theme/colors";
 import {
@@ -11,16 +6,15 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/core/components/uiLibrary/form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Input } from "@/core/components/uiLibrary/input";
 import { FaGithub, FcGoogle, IoMdArrowBack } from "@/core/icons/icons";
 import { PasswordInput } from "@/core/components/uiLibrary/PasswordInput";
 import { Copyright } from "@/core/components";
+import { LockIcon, MailIcon } from "lucide-react";
 
 export default function SignupPage() {
   return <SignupPageContent />;
@@ -113,11 +107,15 @@ function SocialAuth() {
 }
 
 function MyForm() {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<SignUpType>({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    resolver: zodResolver(signupSchema),
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function onSubmit(values: SignUpType) {
     try {
       console.log(values);
       // toast(
@@ -132,7 +130,7 @@ function MyForm() {
   }
 
   return (
-    <div className="w-full xs:max-w-[500px] py-8 px-6 space-y-0 rounded-lg bg-white">
+    <div className="w-full xs:max-w-[500px] py-8 px-6 space-y-4 rounded-lg bg-white">
       <div className="space-y-5">
         <h1 className="text-center text-4xl font-bold">Sign Up</h1>
         <p className="text-center">
@@ -143,17 +141,25 @@ function MyForm() {
         </p>
       </div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 py-5">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-5">
           <FormField
             control={form.control}
-            name="username"
+            name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
                 <FormControl>
-                  <Input placeholder="Email Address" type="text" {...field} />
+                  <div className="flex items-center gap-2 overflow-hidden border border-gray-300 rounded focus-within:ring-[2px] focus-within:ring-blue-600">
+                    <MailIcon size={20} className="ml-2 text-gray-500" />
+                    <Input
+                      placeholder="Email Address"
+                      type="text"
+                      className="flex-1 py-6 border-0 rounded-none focus-visible:ring-0"
+                      {...field}
+                      autoComplete="new-password"
+                    />
+                  </div>
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="px-6 font-bold text-center" />
               </FormItem>
             )}
           />
@@ -162,23 +168,33 @@ function MyForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <PasswordInput placeholder="password" {...field} />
+                  <div className="flex items-center gap-2 overflow-hidden border border-gray-300 rounded focus-within:ring-[2px] focus-within:ring-blue-600">
+                    <LockIcon size={20} className="ml-2 text-gray-500" />
+                    <PasswordInput
+                      placeholder="password"
+                      className="flex-1 py-6 border-0 rounded-none focus-visible:ring-0"
+                      {...field}
+                      autoComplete="new-password"
+                    />
+                  </div>
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="px-6 font-bold text-center" />
               </FormItem>
             )}
           />
-
           <Button
             type="submit"
             className={`${buttonBlue} w-full ${buttonBlueHover}`}
           >
-            Log In
+            Sign Up
           </Button>
         </form>
       </Form>
+      <p className="text-sm">
+        By creating an account, you agree to the Budgie Privacy Policy and Terms
+        of Service.
+      </p>
       <Separator />
       <SocialAuth />
     </div>
