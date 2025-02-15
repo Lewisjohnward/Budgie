@@ -165,6 +165,70 @@ export const initialiseCategories = async (userId: string) => {
     },
   });
 
+  await prisma.category.create({
+    data: {
+      userId,
+      categoryGroupId: inflow.id,
+      name: "Ready to Assign",
+    },
+  });
+
+  const BillsCategoryGroup = await prisma.categoryGroup.create({
+    data: {
+      userId: userId,
+      name: "Bills",
+    },
+  });
+
+  const bills = await prisma.category.createMany({
+    data: [
+      {
+        userId: userId,
+        categoryGroupId: BillsCategoryGroup.id,
+        name: "Rent/Mortgage",
+      },
+      {
+        userId: userId,
+        categoryGroupId: BillsCategoryGroup.id,
+        name: "Gas and Electricity",
+      },
+      {
+        userId: userId,
+        categoryGroupId: BillsCategoryGroup.id,
+        name: "Broadband",
+      },
+      {
+        userId: userId,
+        categoryGroupId: BillsCategoryGroup.id,
+        name: "Water",
+      },
+    ],
+  });
+
+  const NeedsCategoryGroup = await prisma.categoryGroup.create({
+    data: {
+      userId: userId,
+      name: "Needs",
+    },
+  });
+
+  const groceriesCategoryGroup = await prisma.category.create({
+    data: {
+      categoryGroupId: NeedsCategoryGroup.id,
+      userId: userId,
+      name: "Groceries",
+      assigned: 0,
+      activity: 0,
+    },
+  });
+
+  const WantsCategoryGroup = await prisma.categoryGroup.create({
+    data: {
+      userId: userId,
+      name: "Wants",
+    },
+  });
+
   // const needsCategory = await prisma.categoryGroup.create({
   //   data: {
   //     userId,
