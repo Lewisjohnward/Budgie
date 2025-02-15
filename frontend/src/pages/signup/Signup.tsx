@@ -108,6 +108,8 @@ function SocialAuth() {
 
 function MyForm() {
   const [signUp, { isLoading, isSuccess }] = useSignupMutation();
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const form = useForm<SignUpType>({
     defaultValues: {
       email: "",
@@ -116,9 +118,10 @@ function MyForm() {
     resolver: zodResolver(signupSchema),
   });
 
-  function onSubmit(values: SignUpType) {
+  async function onSubmit(data: SignUpType) {
     try {
-      console.log(values);
+      const token = await signUp(data).unwrap();
+      dispatch(setCredentials({ token, email: data.email }));
       // toast(
       //   <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
       //     <code className="text-white">{JSON.stringify(values, null, 2)}</code>
@@ -129,6 +132,10 @@ function MyForm() {
       // toast.error("Failed to submit the form. Please try again.");
     }
   }
+
+  useEffect(() => {
+    if (isSuccess) navigate("/budget", { replace: true });
+  }, [isSuccess]);
 
   return (
     <div className="w-full xs:max-w-[500px] py-8 px-6 space-y-4 rounded-lg bg-white">
