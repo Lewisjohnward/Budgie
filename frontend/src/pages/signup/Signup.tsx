@@ -15,6 +15,7 @@ import { FaGithub, FcGoogle, IoMdArrowBack } from "@/core/icons/icons";
 import { PasswordInput } from "@/core/components/uiLibrary/PasswordInput";
 import { Copyright } from "@/core/components";
 import { LockIcon, MailIcon } from "lucide-react";
+import { signupSchema, SignUpType } from "@/core/schemas/signupSchema";
 
 export default function SignupPage() {
   return <SignupPageContent />;
@@ -75,11 +76,6 @@ function LogoLink() {
     </Link>
   );
 }
-
-const formSchema = z.object({
-  username: z.string(),
-  password: z.string(),
-});
 
 function SocialAuth() {
   return (
