@@ -13,7 +13,7 @@ const PasswordInput = forwardRef<
     props.value === "" || props.value === undefined || props.disabled;
 
   return (
-    <div className="relative">
+    <div className="flex-1 relative">
       <Input
         type={showPassword ? "text" : "password"}
         className={cn("hide-password-toggle pr-10", className)}
@@ -24,9 +24,9 @@ const PasswordInput = forwardRef<
         type="button"
         variant="ghost"
         size="sm"
-        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+        className="absolute right-0 top-0 h-full bg-gray-200 px-3 hover:bg-gray-300 rounded-none"
         onClick={() => {
-          setShowPassword((prev) => !prev)
+          setShowPassword((prev) => !prev);
         }}
         disabled={disabled}
       >
