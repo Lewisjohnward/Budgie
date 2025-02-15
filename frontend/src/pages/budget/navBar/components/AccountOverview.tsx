@@ -35,7 +35,6 @@ export function AccountOverview({
     }, 0);
   return (
     <div className="space-y-2 w-60">
-      <div className="flex flex-col"></div>
       {accounts.length > 0 ? (
         <div className="space-y-2">
           <button
