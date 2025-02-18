@@ -24,4 +24,4 @@ const customErrorMap: z.ZodErrorMap = (issue, ctx) => {
 
 z.setErrorMap(customErrorMap);
 
-export type SignUpType = z.infer<typeof signupSchema>;
+export type SignupPayload = z.infer<typeof signupSchema>;
