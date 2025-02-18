@@ -1,7 +1,16 @@
 import { apiSlice } from "./apiSlice";
+import { SignupPayload } from "../schemas/signupSchema";
 
 export const authApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    signup: builder.mutation<void, SignupPayload>({
+      query: (credentials) => ({
+        url: "user/register",
+        method: "POST",
+        body: { ...credentials },
+      }),
+    }),
+
     // TODO: this needs typing <res, req>
     login: builder.mutation({
       query: (credentials) => ({
@@ -25,5 +34,9 @@ export const authApiSlice = apiSlice.injectEndpoints({
   }),
 });
 
-export const { useLoginMutation, useLogoutMutation, useRefreshTokenMutation } =
-  authApiSlice;
+export const {
+  useSignupMutation,
+  useLoginMutation,
+  useLogoutMutation,
+  useRefreshTokenMutation,
+} = authApiSlice;
