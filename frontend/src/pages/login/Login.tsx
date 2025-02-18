@@ -21,6 +21,7 @@ import { Input } from "@/core/components/uiLibrary/input";
 import { FaGithub, FcGoogle, IoMdArrowBack } from "@/core/icons/icons";
 import { PasswordInput } from "@/core/components/uiLibrary/PasswordInput";
 import { Copyright } from "@/core/components";
+import { LockIcon, MailIcon } from "lucide-react";
 
 const formSchema = z.object({
   email: z.string(),
@@ -147,7 +148,7 @@ function SocialAuth() {
         className="w-full"
         variant={"outline"}
         type="button"
-        onClick={() => {}}
+        onClick={() => { }}
       >
         <FcGoogle className="mr-2 size-5" />
         Continue with Google
@@ -156,7 +157,7 @@ function SocialAuth() {
         className="w-full"
         variant={"outline"}
         type="button"
-        onClick={() => {}}
+        onClick={() => { }}
       >
         <FaGithub />
         Continue with Github
@@ -184,16 +185,24 @@ function LoginForm({ handleLogin }: { handleLogin: (formValues) => void }) {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(handleLogin)}
-          className="space-y-8 py-5"
+          className="space-y-4 py-5"
         >
           <FormField
             control={form.control}
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
                 <FormControl>
-                  <Input placeholder="Email Address" type="text" {...field} />
+                  <div className="flex items-center gap-2 overflow-hidden border border-gray-300 rounded focus-within:ring-[2px] focus-within:ring-blue-600">
+                    <MailIcon size={20} className="ml-2 text-gray-500" />
+                    <Input
+                      placeholder="Email Address"
+                      type="text"
+                      className="flex-1 py-6 border-0 rounded-none focus-visible:ring-0"
+                      {...field}
+                      autoComplete="new-password"
+                    />
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -204,9 +213,16 @@ function LoginForm({ handleLogin }: { handleLogin: (formValues) => void }) {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <PasswordInput placeholder="password" {...field} />
+                  <div className="flex items-center gap-2 overflow-hidden border border-gray-300 rounded focus-within:ring-[2px] focus-within:ring-blue-600">
+                    <LockIcon size={20} className="ml-2 text-gray-500" />
+                    <PasswordInput
+                      placeholder="password"
+                      className="flex-1 py-6 border-0 rounded-none focus-visible:ring-0"
+                      {...field}
+                      autoComplete="new-password"
+                    />
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
