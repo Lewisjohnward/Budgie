@@ -14,10 +14,10 @@ import { Input } from "@/core/components/uiLibrary/input";
 import { FaGithub, FcGoogle, IoMdArrowBack } from "@/core/icons/icons";
 import { PasswordInput } from "@/core/components/uiLibrary/PasswordInput";
 import { Copyright } from "@/core/components";
-import { LockIcon, MailIcon } from "lucide-react";
-import { signupSchema, SignUpType } from "@/core/schemas/signupSchema";
+import { LockIcon, MailIcon, Unplug } from "lucide-react";
+import { signupSchema, SignupPayload } from "@/core/schemas/signupSchema";
 import { useSignupMutation } from "@/core/api/authApiSlice";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { setCredentials } from "@/core/auth/authSlice";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
 
@@ -88,7 +88,7 @@ function SocialAuth() {
         className="w-full"
         variant={"outline"}
         type="button"
-        onClick={() => {}}
+        onClick={() => { }}
       >
         <FcGoogle className="mr-2 size-5" />
         Continue with Google
@@ -97,7 +97,7 @@ function SocialAuth() {
         className="w-full"
         variant={"outline"}
         type="button"
-        onClick={() => {}}
+        onClick={() => { }}
       >
         <FaGithub />
         Continue with Github
@@ -108,9 +108,10 @@ function SocialAuth() {
 
 function MyForm() {
   const [signUp, { isLoading, isSuccess }] = useSignupMutation();
+  const [connectionError, setConnectionError] = useState(false);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const form = useForm<SignUpType>({
+  const form = useForm<SignupPayload>({
     defaultValues: {
       email: "",
       password: "",
@@ -118,20 +119,33 @@ function MyForm() {
     resolver: zodResolver(signupSchema),
   });
 
-  async function onSubmit(data: SignUpType) {
+  const { handleSubmit, control, setError } = form;
+
+  async function onSubmit(data: SignupPayload) {
     try {
       const token = await signUp(data).unwrap();
       dispatch(setCredentials({ token, email: data.email }));
-      // toast(
-      //   <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-      //     <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-      //   </pre>,
-      // );
     } catch (error) {
-      console.error("Form submission error", error);
-      // toast.error("Failed to submit the form. Please try again.");
+      // if (
+      //   error &&
+      //   (error as { data?: { errors?: { email?: string } } }).data?.errors
+      //     ?.email
+      // ) {
+      //   setError("email", {
+      //     type: "server",
+      //     message: (error as { data: { errors: { email: string } } }).data
+      //       .errors.email,
+      //   });
+      // }
+      if (error?.data?.errors?.email) {
+        setError("email", { type: "server", message: error.data.errors.email });
+      }
     }
   }
+
+  const toggleConnectionError = () => {
+    setConnectionError((prev) => !prev);
+  };
 
   useEffect(() => {
     if (isSuccess) navigate("/budget", { replace: true });
@@ -139,73 +153,93 @@ function MyForm() {
 
   return (
     <div className="w-full xs:max-w-[500px] py-8 px-6 space-y-4 rounded-lg bg-white">
-      <div className="space-y-5">
-        <h1 className="text-center text-4xl font-bold">Sign Up</h1>
-        <p className="text-center">
-          Have an account?
-          <Link to="../login" className={`ml-2 ${textBlue}`}>
-            Log in
-          </Link>
-        </p>
-      </div>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-5">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <div className="flex items-center gap-2 overflow-hidden border border-gray-300 rounded focus-within:ring-[2px] focus-within:ring-blue-600">
-                    <MailIcon size={20} className="ml-2 text-gray-500" />
-                    <Input
-                      placeholder="Email Address"
-                      type="text"
-                      className="flex-1 py-6 border-0 rounded-none focus-visible:ring-0"
-                      {...field}
-                      autoComplete="new-password"
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage className="px-6 font-bold text-center" />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <div className="flex items-center gap-2 overflow-hidden border border-gray-300 rounded focus-within:ring-[2px] focus-within:ring-blue-600">
-                    <LockIcon size={20} className="ml-2 text-gray-500" />
-                    <PasswordInput
-                      placeholder="password"
-                      className="flex-1 py-6 border-0 rounded-none focus-visible:ring-0"
-                      {...field}
-                      autoComplete="new-password"
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage className="px-6 font-bold text-center" />
-              </FormItem>
-            )}
-          />
+      {connectionError ? (
+        <div className="flex flex-col items-center space-y-8">
+          <Unplug size={200} className="text-gray-800" />
+          <div className="space-y-2">
+            <p className="text-center text-xl font-bold">Lost Connection</p>
+            <p className="text-center">
+              Whoops...it looks you're unable to reach us. Check your connection
+            </p>
+          </div>
           <Button
-            type="submit"
+            onClick={toggleConnectionError}
             className={`${buttonBlue} w-full ${buttonBlueHover}`}
-            disabled={isLoading}
           >
-            {isLoading ? "Signing up..." : "Sign Up"}
+            Try Again
           </Button>
-        </form>
-      </Form>
-      <p className="text-sm">
-        By creating an account, you agree to the Budgie Privacy Policy and Terms
-        of Service.
-      </p>
-      <Separator />
-      <SocialAuth />
+        </div>
+      ) : (
+        <>
+          <div className="space-y-5">
+            <h1 className="text-center text-4xl font-bold">Sign Up</h1>
+            <p className="text-center">
+              Have an account?
+              <Link to="../login" className={`ml-2 ${textBlue}`}>
+                Log in
+              </Link>
+            </p>
+          </div>
+          <Form {...form}>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-5">
+              <FormField
+                control={control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <div className="flex items-center gap-2 overflow-hidden border border-gray-300 rounded focus-within:ring-[2px] focus-within:ring-blue-600">
+                        <MailIcon size={20} className="ml-2 text-gray-500" />
+                        <Input
+                          placeholder="Email Address"
+                          type="text"
+                          className="flex-1 py-6 border-0 rounded-none focus-visible:ring-0"
+                          {...field}
+                          autoComplete="email"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage className="px-6 font-bold text-center" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <div className="flex items-center gap-2 overflow-hidden border border-gray-300 rounded focus-within:ring-[2px] focus-within:ring-blue-600">
+                        <LockIcon size={20} className="ml-2 text-gray-500" />
+                        <PasswordInput
+                          placeholder="password"
+                          className="flex-1 py-6 border-0 rounded-none focus-visible:ring-0"
+                          {...field}
+                          autoComplete="new-password"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage className="px-6 font-bold text-center" />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                className={`${buttonBlue} w-full ${buttonBlueHover}`}
+                disabled={isLoading}
+              >
+                {isLoading ? "Signing up..." : "Sign Up"}
+              </Button>
+            </form>
+          </Form>
+          <p className="text-sm">
+            By creating an account, you agree to the Budgie Privacy Policy and
+            Terms of Service.
+          </p>
+          <Separator />
+          <SocialAuth />
+        </>
+      )}
     </div>
   );
 }
