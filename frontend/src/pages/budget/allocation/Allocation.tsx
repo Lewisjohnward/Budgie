@@ -1,11 +1,24 @@
+import { AssignedMoney, MonthSelector } from "./components/header/Header";
 import { ReactNode, useEffect, useState } from "react";
+import {
+  bgGray,
+  borderBottom,
+  darkBlueBgHoverDark,
+  darkBlueText,
+} from "@/core/theme/colors";
 import Assign from "./components/assign/Assign";
 import { Menu } from "../Budget";
 import {
   useGetAccountsQuery,
   useGetCategoriesQuery,
 } from "@/core/api/budgetApiSlice";
+import Categories from "./components/categories/Categories";
 import { normalizedBudgetData } from "./mockData";
+import { produce } from "immer";
+import useMouseOverTimeout from "@/core/hooks/useMouseOverTimeout";
+import { AddCircleIcon } from "@/core/icons/icons";
+import clsx from "clsx";
+
 function formatDate(isoString: string) {
   return new Date(isoString).toLocaleDateString("en-US", {
     year: "2-digit",
@@ -66,6 +79,8 @@ function useAllocation() {
 export function Allocation() {
   const { isLoading: isLoadingAccounts } = useGetAccountsQuery();
   const { isLoading: isLoadingCategories } = useGetCategoriesQuery();
+  //
+
   const {
     categoriesSelector,
     currentMonth,
@@ -76,43 +91,110 @@ export function Allocation() {
   } = useAllocation();
 
   if (isLoadingCategories || isLoadingAccounts) return "...Loading";
-
   return (
-    <AllocationLayout
-      header={<Header />}
-      menu={<Menu />}
-      categories={<Body />}
-      assign={<Assign />}
-    />
+    <AllocationContainer>
+      {/* <div className="flex gap-2"> */}
+      {/*   <button onClick={prevMonth}>p</button> */}
+      {/*   <div className="text-xl font-bold">{currentMonth.formatted}</div> */}
+      {/*   <button onClick={nextMonth}>n</button> */}
+      {/* </div> */}
+      {/* {categoryGroups.map((categoryGroup) => { */}
+      {/*   // @ts-ignore */}
+      {/*   const { name, categoryIds } = categoryGroup; */}
+      {/*   // @ts-ignore */}
+      {/*   return ( */}
+      {/*     <div> */}
+      {/*       <div>{name}</div> */}
+      {/*       <div> */}
+      {/*         {categoryGroup.categoryIds.map((categoryId) => { */}
+      {/*           return ( */}
+      {/*             <div> */}
+      {/*               <p>{categories[categoryId].name}</p> */}
+      {/*               <p>{categories[categoryId].amounts[currentMonth.month]}</p> */}
+      {/*             </div> */}
+      {/*           ); */}
+      {/*         })} */}
+      {/*       </div> */}
+      {/*     </div> */}
+      {/*   ); */}
+      {/* })} */}
+      <HeaderContainer>
+        <div className="flex gap-8 py-4">
+          <MonthSelector
+            prevMonth={prevMonth}
+            nextMonth={nextMonth}
+            month={currentMonth?.formattedName || "?"}
+          />
+          <AssignedMoney />
+        </div>
+        <CategorySelectorContainer>
+          {categoriesSelector.map((catSelector) => (
+            <Category key={catSelector} text={catSelector} />
+          ))}
+          <AddCategoryButton />
+        </CategorySelectorContainer>
+      </HeaderContainer>
+
+      <BodyContainer>
+        <CategoriesContainer>
+          <Menu />
+          <Categories />
+        </CategoriesContainer>
+        <AssignContainer>
+          <Assign />
+        </AssignContainer>
+      </BodyContainer>
+    </AllocationContainer>
   );
 }
-function AllocationLayout({
-  header,
-  menu,
-  categories,
-  assign,
-}: {
-  header: ReactNode;
-  menu?: ReactNode;
-  categories: ReactNode;
-  assign: ReactNode;
-}) {
+
+function AllocationContainer({ children }: { children: ReactNode }) {
+  return <div className="flex-grow flex flex-col">{children}</div>;
+}
+
+function BodyContainer({ children }: { children: ReactNode }) {
+  return <div className="flex">{children}</div>;
+}
+
+function CategoriesContainer({ children }: { children: ReactNode }) {
+  return <div className="flex-grow-2"> {children}</div>;
+}
+
+function AssignContainer({ children }: { children: ReactNode }) {
   return (
-    <div className="flex-grow flex flex-col">
-      <div className={`px-4 py-2 border-b ${borderBottom}`}>{header}</div>
-      <div className="overflow-hidden flex-grow flex">
-        <div className="flex-grow-2 flex flex-col">
-          <div className="border-r border-r-gray-300">
-            <div className="py-1 border-b border-b-gray-200">{menu}</div>
-            {categories}
-          </div>
-        </div>
-        <div
-          className={`overflow-scroll hidden flex-grow xl:flex p-4 ${bgGray}`}
-        >
-          {assign}
-        </div>
-      </div>
-    </div>
+    <div className={`hidden flex-grow xl:flex p-4 ${bgGray}`}>{children}</div>
+  );
+}
+
+function HeaderContainer({ children }: { children: ReactNode }) {
+  return <div className={`px-4 py-2 border-b ${borderBottom}`}>{children}</div>;
+}
+
+function CategorySelectorContainer({ children }: { children: ReactNode }) {
+  return <div className="gap-2 hidden md:flex"> {children}</div>;
+}
+
+function Category({ text }: { text: string }) {
+  return (
+    <button
+      className={`px-2 py-1 ${bgGray} rounded hover:${darkBlueBgHoverDark}`}
+    >
+      <p className="text-xs">{text}</p>
+    </button>
+  );
+}
+
+function AddCategoryButton() {
+  const { mouseOver, handleMouseOver } = useMouseOverTimeout();
+
+  return (
+    <button onMouseOver={handleMouseOver}>
+      <AddCircleIcon
+        className={clsx(
+          mouseOver ? "rotate-180" : "",
+          `h-4 w-4 ${darkBlueText} transition duration-500`,
+        )}
+      />
+    </button>
   );
 }
