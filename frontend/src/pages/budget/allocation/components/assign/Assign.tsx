@@ -75,6 +75,7 @@ function AutoAssign() {
       <div className="flex flex-col gap-2 p-4">
         {data.map((d) => (
           <button
+            key={d.text}
             className={`py-1 px-2 flex-grow flex justify-between ${bgGray} rounded`}
           >
             <p>{d.text}</p>
