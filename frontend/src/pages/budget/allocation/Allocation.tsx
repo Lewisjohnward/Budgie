@@ -38,6 +38,12 @@ import { useForm } from "react-hook-form";
 import { Checkbox } from "@radix-ui/react-checkbox";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Progress } from "@/core/components/uiLibrary/progress";
+import {
+  AllocationData,
+  MappedAllocationData,
+  MappedCategoryGroup,
+  MappedMonthData,
+} from "@/core/types/Allocation";
 
 function formatDate(isoString: string) {
   return new Date(isoString).toLocaleDateString("en-US", {
@@ -46,32 +52,42 @@ function formatDate(isoString: string) {
   });
 }
 
+function mapAllocationData(data: AllocationData): MappedAllocationData {
+  const mappedData = produce(data, (draft) => {
+    Object.values(draft.months).forEach((month) => {
+      (month as MappedMonthData).current = false;
+      (month as MappedMonthData).formattedDate = formatDate(month.month);
+    });
+    Object.values(draft.categoryGroups).forEach((group) => {
+      (group as MappedCategoryGroup).open = true;
+    });
+  });
+
+  return mappedData as MappedAllocationData;
+}
+
 function useAllocation() {
   useEffect(() => {}, []);
 
   const [allocationData, setAllocationData] = useState(
-    produce(normalizedBudgetData, (draft) => {
-      Object.values(draft.months).forEach((month) => {
-        month.current = false;
-      });
-    }),
+    mapAllocationData(normalizedBudgetData),
   );
 
   const [selector, setSelector] = useState(0);
   const [state, setState] = useState();
-  const maxSelector = Object.keys(normalizedBudgetData).length - 1;
-  const minSelector = 0;
+  const maxMonthSelector = Object.keys(allocationData.months).length;
+  const minMonthSelector = 0;
 
-  const { categoryGroups, categories } = allocationData;
-  const months = Object.values(normalizedBudgetData.months).map((month, i) => ({
+  const { categoryGroups, categories, months } = allocationData;
+
+  const mappedMonths = Object.values(months).map((month, i) => ({
     ...month,
-    current: i === selector ? true : false,
-    formattedName: formatDate(month.month),
+    current: i === selector,
   }));
 
-  const currentMonth = months.find((month) => month.current);
+  const currentMonth = mappedMonths.find((month) => month.current);
 
-  const derivedCategoryGroups = currentMonth.categoryGroupIds.map(
+  const derivedCategoryGroups = currentMonth!.categoryGroupIds.map(
     (catGroupId) => categoryGroups[catGroupId],
   );
 
@@ -83,14 +99,37 @@ function useAllocation() {
   ];
 
   const nextMonth = () =>
-    setSelector((prev) => (prev + 1 < maxSelector ? prev + 1 : prev));
+    setSelector((prev) => (prev + 1 < maxMonthSelector ? prev + 1 : prev));
   const prevMonth = () =>
-    setSelector((prev) => (prev - 1 >= minSelector ? prev - 1 : prev));
+    setSelector((prev) => (prev - 1 >= minMonthSelector ? prev - 1 : prev));
 
   const handleAddCategory = (data: AddCategoryFormData) => {
     // addCategory(data);
     // appendedCategoryGroupId.current = data.categoryGroupId;
   };
+
+  const expandAllCategoryGroups = () => {
+    setAllocationData((prev) =>
+      produce(prev, (draft) => {
+        Object.values(draft.categoryGroups).forEach((group) => {
+          group.open = !group.open;
+        });
+      }),
+    );
+  };
+
+  const expandCategoryGroup = (groupId: string) => {
+    setAllocationData((prev) =>
+      produce(prev, (draft) => {
+        draft.categoryGroups[groupId].open =
+          !draft.categoryGroups[groupId].open;
+      }),
+    );
+  };
+
+  const atLeastOneGroupOpen = Object.values(allocationData.categoryGroups).some(
+    (group) => group.open === true,
+  );
 
   return {
     handleAddCategory,
@@ -100,6 +139,9 @@ function useAllocation() {
     categories,
     nextMonth,
     prevMonth,
+    expandAllCategoryGroups,
+    expandCategoryGroup,
+    atLeastOneGroupOpen,
   };
 }
 
@@ -116,6 +158,9 @@ export function Allocation() {
     nextMonth,
     prevMonth,
     handleAddCategory,
+    expandAllCategoryGroups,
+    expandCategoryGroup,
+    atLeastOneGroupOpen,
   } = useAllocation();
 
   if (isLoadingCategories || isLoadingAccounts) return "...Loading";
@@ -126,7 +171,7 @@ export function Allocation() {
           <MonthSelector
             prevMonth={prevMonth}
             nextMonth={nextMonth}
-            month={currentMonth?.formattedName || "?"}
+            month={currentMonth?.formattedDate || "?"}
           />
           <AssignedMoney />
         </div>
@@ -146,12 +191,11 @@ export function Allocation() {
               <button>
                 <ChevronDownIcon
                   className={clsx(
-                    // atLeastOneCategoryGroupExpanded ? "" : "-rotate-90",
-                    false ? "" : "-rotate-90",
+                    atLeastOneGroupOpen ? "" : "-rotate-90",
                     `h-4 w-4 ${darkBlueText}`,
                   )}
                   // onClick={() => toggleDisplayCategories(undefined)}
-                  onClick={() => {}}
+                  onClick={expandAllCategoryGroups}
                 />
               </button>
             ) : null}
@@ -159,33 +203,29 @@ export function Allocation() {
           </div>
           {categoryGroups.map((group) => {
             const { categoryIds } = group;
-            console.log("hello", categoryIds);
             return (
               <Container key={group.id}>
                 <CategoryGroupContainer>
                   <ExpandCategoryGroup
                     // onClick={() => toggleDisplayCategories(group.id)}
-                    onClick={() => {}}
+                    onClick={() => expandCategoryGroup(group.id)}
                     // open={group.open}
-                    open={true}
+                    open={group.open}
                   />
                   <Checkbox className="size-3 rounded-[2px] shadow-none" />
                   <CategoryGroupName>{group.name}</CategoryGroupName>
                   <AddCategoryButton
                     id={group.id}
-                    handleAddCategory={handleAddCategory}
+                    handleAddCategory={expandAllCategoryGroups}
                   />
                 </CategoryGroupContainer>
 
-                <CategoriesContainer
-                  display={true}
-                  // display={group.open}
-                >
+                <CategoriesContainer display={group.open}>
                   {categoryIds.length > 0
                     ? categoryIds.map((categoryId) => {
                         const category = categories[categoryId];
                         const { id, name } = category;
-                        const activity = category.amounts[currentMonth.month];
+                        const activity = category.amounts[currentMonth!.month];
 
                         // const available = assigned - activity;
 
