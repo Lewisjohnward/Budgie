@@ -27,8 +27,8 @@ export default function SignupPage() {
 
 function SignupPageContent() {
   return (
-    <div className="min-h-screen min-w-96 bg-[radial-gradient(rgba(53,87,129)_0%,rgba(28,65,72,1)_100%)]">
-      <main className="flex flex-col space-y-10 pt-10 pb-2 px-4 md:px-10">
+    <div className="flex min-h-screen min-w-96 bg-[radial-gradient(rgba(53,87,129)_0%,rgba(28,65,72,1)_100%)]">
+      <main className="flex-grow flex flex-col space-y-10 pt-10 pb-2 px-4 md:px-10">
         <LogoLink />
         <div className="flex-grow flex flex-col lg:flex-row items-center lg:justify-center pt-20 lg:gap-20 space-y-10 lg:space-y-0">
           <Aside />
