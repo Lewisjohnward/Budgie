@@ -105,10 +105,10 @@ type CategoryT = {
   name: string;
   assigned: number;
   activity: number;
-  monthlySummaries: monthlySummary[];
+  months: month[];
 };
 
-type monthlySummary = {
+type month = {
   id: string;
   month: Date;
   totalSpent: number;
@@ -137,12 +137,12 @@ export function normalizeCategories(categoryGroups: CategoryGroup[]) {
           name: cat.name,
           assigned: cat.assigned,
           activity: cat.activity,
-          monthlySummaries: cat.monthlySummaries.map((summary) => summary.id),
+          months: cat.months.map((summary) => summary.id),
         };
 
-        cat.monthlySummaries.forEach((summary) => {
+        cat.months.forEach((summary) => {
           //@ts-ignore
-          acc.monthlySummaries[summary.id] = {
+          acc.months[summary.id] = {
             id: summary.id,
             categoryId: cat.id,
             month: summary.month,
@@ -153,7 +153,7 @@ export function normalizeCategories(categoryGroups: CategoryGroup[]) {
 
       return acc;
     },
-    { categoryGroups: {}, categories: {}, monthlySummaries: {} },
+    { categoryGroups: {}, categories: {}, months: {} },
   );
   return normalizedData;
 }

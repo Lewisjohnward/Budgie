@@ -76,7 +76,7 @@ export const selectCategories = async (userId: string) => {
     include: {
       categories: {
         include: {
-          monthlySummaries: true,
+          months: true,
         },
       },
     },
@@ -88,7 +88,7 @@ export const selectCategories = async (userId: string) => {
       ...category,
       assigned: convertDecimalToNumber(category.assigned),
       activity: convertDecimalToNumber(category.activity),
-      monthlySummaries: category.monthlySummaries.map((month) => ({
+      months: category.months.map((month) => ({
         ...month,
         totalSpent: convertDecimalToNumber(month.totalSpent),
       })),
@@ -201,7 +201,7 @@ export const initialiseCategories = async (userId: string) => {
     },
   });
 
-  const summary = await prisma.monthlySummary.create({
+  const summary = await prisma.month.create({
     data: {
       categoryId: housingCategory.id,
       month: roundToStartOfMonth(new Date()),
