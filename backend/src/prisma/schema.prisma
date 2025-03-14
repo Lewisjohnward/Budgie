@@ -9,13 +9,13 @@ datasource db {
 }
 
 model User {
-  id       String   @id @default(uuid())
-  email    String   @unique
-  password String
-  salt     String
-  refreshToken String? @unique
+  id           String    @id @default(uuid())
+  email        String    @unique
+  password     String
+  salt         String
+  refreshToken String?   @unique
   // budgets  Budget[]
-  accounts Account[]
+  accounts     Account[]
 }
 
 // model Budget {
@@ -35,6 +35,9 @@ model CategoryGroup {
 }
 
 model Category {
+  // TODO: Each subcategory will need a due date/reoccurance etc
+  // TODO: overspent
+  // Snooze target for month
   id              String        @id @default(uuid())
   userId          String
   categoryGroupId String
@@ -45,6 +48,18 @@ model Category {
   // budget       Budget        @relation(fields: [budgetId], references: [id])
   transactions    Transaction[]
   category        CategoryGroup @relation(fields: [categoryGroupId], references: [id])
+  monthlySummaries MonthlySummary[]
+}
+
+model MonthlySummary {
+  id         String       @id @default(uuid())
+  categoryId String
+  month      DateTime  
+  totalSpent Decimal   @default(0)
+
+  category  Category  @relation(fields: [categoryId], references: [id])
+
+  @@unique([ categoryId, month])
 }
 
 enum CategoryType {
@@ -53,7 +68,15 @@ enum CategoryType {
 }
 
 model Account {
+  id           String        @id @default(uuid())
   position     Int        @default (autoincrement())
+  userId       String
+  name         String
+  type         AccountType
+  balance      Decimal       @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  user         User          @relation(fields: [userId], references: [id])
   transactions Transaction[]
 }
 
@@ -63,19 +86,19 @@ enum AccountType {
 }
 
 model Transaction {
-  id          String      @id @default(uuid())
-  accountId   String
+  id         String   @id @default(uuid())
+  accountId  String
   categoryId String?
   // budgetId    String
-  date        DateTime    @default(now())
-  inflow      Decimal?    @default(0)
-  outflow     Decimal?    @default(0)
-  payee       String?
-  memo        String?
-  cleared     Boolean     @default(false)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  account     Account     @relation(fields: [accountId], references: [id])
+  date       DateTime @default(now())
+  inflow     Decimal? @default(0)
+  outflow    Decimal? @default(0)
+  payee      String?
+  memo       String?
+  cleared    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  account    Account  @relation(fields: [accountId], references: [id])
   category   Category? @relation(fields: [categoryId], references: [id])
   // budget      Budget      @relation(fields: [budgetId], references: [id])
 }
