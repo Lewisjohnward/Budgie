@@ -48,10 +48,10 @@ model Category {
   // budget       Budget        @relation(fields: [budgetId], references: [id])
   transactions    Transaction[]
   category        CategoryGroup @relation(fields: [categoryGroupId], references: [id])
-  monthlySummaries MonthlySummary[]
+  months Month[]
 }
 
-model MonthlySummary {
+model Month {
   id         String       @id @default(uuid())
   categoryId String
   month      DateTime  
