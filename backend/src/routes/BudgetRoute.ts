@@ -9,6 +9,8 @@ import {
   editTransaction,
   getAccounts,
   getCategories,
+  addCategory,
+  addCategoryGroup,
 } from "../controllers";
 
 const router = express.Router();
@@ -25,5 +27,8 @@ router.patch("/transaction", editTransaction);
 router.delete("/transaction", deleteTransaction);
 
 router.get("/categories", getCategories);
+
+router.post("/categoryGroup", addCategoryGroup);
+router.post("/category", addCategory);
 
 export { router as BudgetRoute };

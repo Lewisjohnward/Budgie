@@ -37,7 +37,7 @@ export const ValidatePassword = async (
 
 // TODO: decrease access token time
 export const GenerateAccessToken = (payload: UserPayload) => {
-  return jwt.sign(payload, process.env.PAYLOAD_SECRET!, { expiresIn: "10m" });
+  return jwt.sign(payload, process.env.PAYLOAD_SECRET!, { expiresIn: "1d" });
 };
 
 export const GenerateRefreshToken = (payload: UserPayload) => {

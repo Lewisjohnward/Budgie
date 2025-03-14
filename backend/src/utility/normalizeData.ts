@@ -105,6 +105,13 @@ type CategoryT = {
   name: string;
   assigned: number;
   activity: number;
+  monthlySummaries: monthlySummary[];
+};
+
+type monthlySummary = {
+  id: string;
+  month: Date;
+  totalSpent: number;
 };
 
 // TODO: FIX TYPING
@@ -130,12 +137,23 @@ export function normalizeCategories(categoryGroups: CategoryGroup[]) {
           name: cat.name,
           assigned: cat.assigned,
           activity: cat.activity,
+          monthlySummaries: cat.monthlySummaries.map((summary) => summary.id),
         };
+
+        cat.monthlySummaries.forEach((summary) => {
+          //@ts-ignore
+          acc.monthlySummaries[summary.id] = {
+            id: summary.id,
+            categoryId: cat.id,
+            month: summary.month,
+            totalSpent: summary.totalSpent,
+          };
+        });
       });
 
       return acc;
     },
-    { categoryGroups: {}, categories: {} },
+    { categoryGroups: {}, categories: {}, monthlySummaries: {} },
   );
   return normalizedData;
 }
