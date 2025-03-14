@@ -36,7 +36,10 @@ export const register = async (
     const userAlreadyExists = await userExists(email);
 
     if (userAlreadyExists) {
-      res.status(400).json({ message: "There has been an error signing up" });
+      res.status(400).json({
+        success: false,
+        errors: { email: "This email address is already registered" },
+      });
       return;
     }
 
@@ -45,7 +48,29 @@ export const register = async (
 
     const user = await createUser({ email, password: passwordHash, salt });
     await initialiseCategories(user.id);
-    res.status(200).json({ message: "User registered successfully" });
+
+    // TODO: THIS CAN BE ABSTRACTED OUT
+    const accessToken = GenerateAccessToken({
+      _id: user.id,
+      email: user.email,
+    });
+
+    const refreshToken = GenerateRefreshToken({
+      _id: user.id,
+      email: user.email,
+    });
+
+    await updateRefreshToken(email, refreshToken);
+
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV == "production",
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json(accessToken);
+    ///////
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(422).json({ message: "Invalid credentials" });
@@ -89,6 +114,7 @@ export const login = async (
       return;
     }
 
+    //// TODO: THIS CAN BE ABSTRACTED OUT
     const accessToken = GenerateAccessToken({
       _id: user.id,
       email: user.email,
@@ -108,6 +134,7 @@ export const login = async (
       maxAge: 24 * 60 * 60 * 1000,
     });
     res.status(200).json(accessToken);
+    /////
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "An unexpected error occurred" });
