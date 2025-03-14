@@ -51,7 +51,7 @@ export default function PersistLogin() {
       {!persist ? (
         <Outlet />
       ) : isLoading && isOnBudgetPage ? (
-        <p>Loading...</p>
+        <div className="h-screen bg-red-400">Loading...</div>
       ) : (
         <Outlet />
       )}
