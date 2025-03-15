@@ -55,7 +55,7 @@ model Month {
   id         String       @id @default(uuid())
   categoryId String
   month      DateTime  
-  totalSpent Decimal   @default(0)
+  activity Decimal   @default(0)
 
   category  Category  @relation(fields: [categoryId], references: [id])
 
