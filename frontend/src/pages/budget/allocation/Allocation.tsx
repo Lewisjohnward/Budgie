@@ -45,18 +45,19 @@ import {
   MappedMonthData,
 } from "@/core/types/Allocation";
 
-function formatDate(isoString: string) {
-  return new Date(isoString).toLocaleDateString("en-US", {
-    year: "2-digit",
+function formatDate(dateStr: string) {
+  const date = new Date(dateStr + "-01");
+
+  return new Intl.DateTimeFormat("en-US", {
     month: "short",
-  });
+    year: "numeric",
+  }).format(date);
 }
 
 function mapAllocationData(data: AllocationData): MappedAllocationData {
   const mappedData = produce(data, (draft) => {
     Object.values(draft.months).forEach((month) => {
       (month as MappedMonthData).current = false;
-      (month as MappedMonthData).formattedDate = formatDate(month.month);
     });
     Object.values(draft.categoryGroups).forEach((group) => {
       (group as MappedCategoryGroup).open = true;
@@ -67,28 +68,31 @@ function mapAllocationData(data: AllocationData): MappedAllocationData {
 }
 
 function useAllocation() {
+  const { data } = useGetCategoriesQuery();
   useEffect(() => {}, []);
 
-  const [allocationData, setAllocationData] = useState(
-    mapAllocationData(normalizedBudgetData),
-  );
+  const [allocationData, setAllocationData] = useState(mapAllocationData(data));
+  const [monthSelector, setMonthSelector] = useState(0);
 
-  const [selector, setSelector] = useState(0);
-  const [state, setState] = useState();
-  const maxMonthSelector = Object.keys(allocationData.months).length;
+  const uniqueMonths = new Set(
+    Object.values(allocationData.months).map((m) => m.month.slice(0, 7)),
+  );
+  const formattedMonths = [...uniqueMonths].map((month) => formatDate(month));
+  const currentMonth = formattedMonths[monthSelector];
+
+  const maxMonthSelector = uniqueMonths.size;
   const minMonthSelector = 0;
 
   const { categoryGroups, categories, months } = allocationData;
+  const inflowId = Object.keys(categoryGroups).find(
+    (key) => categoryGroups[key].name === "Inflow",
+  );
+  const inflow = categoryGroups[inflowId!];
 
-  const mappedMonths = Object.values(months).map((month, i) => ({
-    ...month,
-    current: i === selector,
-  }));
-
-  const currentMonth = mappedMonths.find((month) => month.current);
-
-  const derivedCategoryGroups = currentMonth!.categoryGroupIds.map(
-    (catGroupId) => categoryGroups[catGroupId],
+  const derivedCategoryGroups = Object.values(
+    Object.fromEntries(
+      Object.entries(categoryGroups).filter(([key]) => key !== inflowId),
+    ),
   );
 
   const categoriesSelector = [
@@ -99,14 +103,17 @@ function useAllocation() {
   ];
 
   const nextMonth = () =>
-    setSelector((prev) => (prev + 1 < maxMonthSelector ? prev + 1 : prev));
+    setMonthSelector((prev) => (prev + 1 < maxMonthSelector ? prev + 1 : prev));
   const prevMonth = () =>
-    setSelector((prev) => (prev - 1 >= minMonthSelector ? prev - 1 : prev));
+    setMonthSelector((prev) =>
+      prev - 1 >= minMonthSelector ? prev - 1 : prev,
+    );
 
   const handleAddCategory = (data: AddCategoryFormData) => {
     // addCategory(data);
     // appendedCategoryGroupId.current = data.categoryGroupId;
   };
+  console.log(categories);
 
   const expandAllCategoryGroups = () => {
     setAllocationData((prev) =>
@@ -127,21 +134,23 @@ function useAllocation() {
     );
   };
 
-  const atLeastOneGroupOpen = Object.values(allocationData.categoryGroups).some(
+  const atLeastOneGroupOpen = Object.values(derivedCategoryGroups).some(
     (group) => group.open === true,
   );
 
   return {
     handleAddCategory,
-    currentMonth,
+    monthSelector,
     categoriesSelector,
     categoryGroups: derivedCategoryGroups,
     categories,
+    currentMonth,
     nextMonth,
     prevMonth,
     expandAllCategoryGroups,
     expandCategoryGroup,
     atLeastOneGroupOpen,
+    months,
   };
 }
 
@@ -152,18 +161,21 @@ export function Allocation() {
 
   const {
     categoriesSelector,
-    currentMonth,
+    monthSelector,
     categoryGroups,
     categories,
+    currentMonth,
     nextMonth,
     prevMonth,
     handleAddCategory,
     expandAllCategoryGroups,
     expandCategoryGroup,
     atLeastOneGroupOpen,
+    months,
   } = useAllocation();
 
   if (isLoadingCategories || isLoadingAccounts) return "...Loading";
+
   return (
     <AllocationContainer>
       <HeaderContainer>
@@ -171,7 +183,7 @@ export function Allocation() {
           <MonthSelector
             prevMonth={prevMonth}
             nextMonth={nextMonth}
-            month={currentMonth?.formattedDate || "?"}
+            month={currentMonth}
           />
           <AssignedMoney />
         </div>
@@ -202,7 +214,6 @@ export function Allocation() {
             <div className={`${darkBlueText} font-thin`}>CATEGORY</div>
           </div>
           {categoryGroups.map((group) => {
-            const { categoryIds } = group;
             return (
               <Container key={group.id}>
                 <CategoryGroupContainer>
@@ -221,11 +232,14 @@ export function Allocation() {
                 </CategoryGroupContainer>
 
                 <CategoriesContainer display={group.open}>
-                  {categoryIds.length > 0
-                    ? categoryIds.map((categoryId) => {
-                        const category = categories[categoryId];
+                  {group.categories.length > 0
+                    ? group.categories.map((cat) => {
+                        const category = categories[cat];
                         const { id, name } = category;
-                        const activity = category.amounts[currentMonth!.month];
+                        const activity =
+                          category.months.length > 0
+                            ? months[category.months[monthSelector]].activity
+                            : 0;
 
                         // const available = assigned - activity;
 
@@ -407,7 +421,7 @@ function AddCategoryButton({
             onSubmit={handleSubmit(createCategory)}
           >
             <Input
-              className="shadow-none focus-visible:ring-sky-950"
+              className="shadow-none focus-visible:ring-sky-50"
               placeholder="New Category"
               autoComplete="off"
               {...register("name")}
