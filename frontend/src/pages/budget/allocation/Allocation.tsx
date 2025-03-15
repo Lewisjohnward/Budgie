@@ -113,13 +113,16 @@ function useAllocation() {
     // addCategory(data);
     // appendedCategoryGroupId.current = data.categoryGroupId;
   };
-  console.log(categories);
+
+  const atLeastOneGroupOpen = Object.values(derivedCategoryGroups).some(
+    (group) => group.open === true,
+  );
 
   const expandAllCategoryGroups = () => {
     setAllocationData((prev) =>
       produce(prev, (draft) => {
         Object.values(draft.categoryGroups).forEach((group) => {
-          group.open = !group.open;
+          group.open = !atLeastOneGroupOpen;
         });
       }),
     );
@@ -133,10 +136,6 @@ function useAllocation() {
       }),
     );
   };
-
-  const atLeastOneGroupOpen = Object.values(derivedCategoryGroups).some(
-    (group) => group.open === true,
-  );
 
   return {
     handleAddCategory,
