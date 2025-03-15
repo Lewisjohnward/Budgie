@@ -30,12 +30,10 @@ import {
   useGetAccountsQuery,
   useGetCategoriesQuery,
 } from "@/core/api/budgetApiSlice";
-import { normalizedBudgetData } from "./mockData";
 import { produce } from "immer";
 import useMouseOverTimeout from "@/core/hooks/useMouseOverTimeout";
 import clsx from "clsx";
 import { useForm } from "react-hook-form";
-import { Checkbox } from "@radix-ui/react-checkbox";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Progress } from "@/core/components/uiLibrary/progress";
 import {
@@ -44,6 +42,7 @@ import {
   MappedCategoryGroup,
   MappedMonthData,
 } from "@/core/types/Allocation";
+import { Checkbox } from "@/core/components/uiLibrary/checkbox";
 
 function formatDate(dateStr: string) {
   const date = new Date(dateStr + "-01");
