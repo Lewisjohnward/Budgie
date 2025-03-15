@@ -203,6 +203,37 @@ export const initialiseCategories = async (userId: string) => {
     },
   });
 
+  const otherCategoryGroup = await prisma.categoryGroup.create({
+    data: {
+      userId: userId,
+      name: "Other",
+    },
+  });
+
+  const forgotToBudgetCategory = await prisma.category.create({
+    data: {
+      userId: userId,
+      categoryGroupId: otherCategoryGroup.id,
+      name: "Stuff I forgot to budget for",
+    },
+  });
+
+  const forgotToBudgetMonth = await prisma.month.create({
+    data: {
+      categoryId: forgotToBudgetCategory.id,
+      month: startOfCurrentMonth,
+      activity: 0,
+    },
+  });
+
+  const forgotToBudgetMonthNext = await prisma.month.create({
+    data: {
+      categoryId: forgotToBudgetCategory.id,
+      month: nextMonth,
+      activity: 0,
+    },
+  });
+
   const housingCategory = await prisma.category.create({
     data: {
       userId: userId,
