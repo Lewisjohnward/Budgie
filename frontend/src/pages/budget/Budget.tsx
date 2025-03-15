@@ -9,8 +9,18 @@ import {
 import { PopoverArrow, PopoverPortal } from "@radix-ui/react-popover";
 import { Input } from "@/core/components/uiLibrary/input";
 import { Button } from "@/core/components/uiLibrary/button";
+import {
+  useGetAccountsQuery,
+  useGetCategoriesQuery,
+} from "@/core/api/budgetApiSlice";
 
 export default function BudgetPage() {
+  const { isLoading: isLoadingAccounts } = useGetAccountsQuery();
+  const { isLoading: isLoadingCategories } = useGetCategoriesQuery();
+
+  if (isLoadingAccounts || isLoadingCategories) {
+    return <div className="h-screen bg-blue-400">...Getting data</div>;
+  }
   return <BudgetContent />;
 }
 
@@ -31,7 +41,7 @@ export function Menu() {
   };
 
   return (
-    <div className="px-2">
+    <div className="px-2 py-1 border-b border-r border-b-gray-200 border-r-gray-200">
       <Popover modal={true}>
         <PopoverTrigger>
           <button
