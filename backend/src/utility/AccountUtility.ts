@@ -186,6 +186,16 @@ export const initialiseCategories = async (userId: string) => {
     },
   });
 
+  // TODO: EXTRACT INTO OWN FUNCTION
+  const today = new Date();
+  const startOfCurrentMonth = roundToStartOfMonth(today);
+  const nextMonth = new Date(
+    startOfCurrentMonth.getFullYear(),
+    startOfCurrentMonth.getMonth() + 1,
+    1,
+    1,
+  );
+
   const billsCategoryGroup = await prisma.categoryGroup.create({
     data: {
       userId: userId,
@@ -201,10 +211,41 @@ export const initialiseCategories = async (userId: string) => {
     },
   });
 
-  const summary = await prisma.month.create({
+  const utilitiesCategory = await prisma.category.create({
+    data: {
+      userId: userId,
+      categoryGroupId: billsCategoryGroup.id,
+      name: "Utilities",
+    },
+  });
+
+  const housingMonths = await prisma.month.create({
     data: {
       categoryId: housingCategory.id,
-      month: roundToStartOfMonth(new Date()),
+      month: startOfCurrentMonth,
+      activity: 45,
+    },
+  });
+
+  const housingMonthsNext = await prisma.month.create({
+    data: {
+      categoryId: housingCategory.id,
+      month: nextMonth,
+    },
+  });
+
+  const utilitiesMonths = await prisma.month.create({
+    data: {
+      categoryId: utilitiesCategory.id,
+      month: startOfCurrentMonth,
+      activity: 69,
+    },
+  });
+
+  const utilitiesMonthsNext = await prisma.month.create({
+    data: {
+      categoryId: utilitiesCategory.id,
+      month: nextMonth,
     },
   });
 
