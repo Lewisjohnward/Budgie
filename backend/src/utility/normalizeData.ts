@@ -111,7 +111,7 @@ type CategoryT = {
 type month = {
   id: string;
   month: Date;
-  totalSpent: number;
+  activity: number;
 };
 
 // TODO: FIX TYPING
@@ -146,7 +146,7 @@ export function normalizeCategories(categoryGroups: CategoryGroup[]) {
             id: summary.id,
             categoryId: cat.id,
             month: summary.month,
-            totalSpent: summary.totalSpent,
+            activity: summary.activity,
           };
         });
       });

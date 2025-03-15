@@ -90,7 +90,7 @@ export const selectCategories = async (userId: string) => {
       activity: convertDecimalToNumber(category.activity),
       months: category.months.map((month) => ({
         ...month,
-        totalSpent: convertDecimalToNumber(month.totalSpent),
+        activity: convertDecimalToNumber(month.activity),
       })),
     })),
   }));
