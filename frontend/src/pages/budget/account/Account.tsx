@@ -1,11 +1,33 @@
-import { CirclePlus } from "lucide-react";
+import { ArrowDown, ArrowUp, CirclePlus } from "lucide-react";
 import { useParams } from "react-router-dom";
 import {
   useAddTransactionMutation,
   useGetAccountsQuery,
 } from "@/core/api/budgetApiSlice";
 import { MyTable } from "./components/Table";
-import { ReactNode } from "react";
+import { ReactNode, useMemo, useState } from "react";
+import {
+  Column,
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/core/components/uiLibrary/table";
+import clsx from "clsx";
+import { Transaction } from "@/core/types/NormalizedData";
+import { Button } from "@/core/components/uiLibrary/button";
+import { Input } from "@/core/components/uiLibrary/input";
+import { DatePickerDemo } from "@/core/components/uiLibrary/datePicker";
 
 export function Account() {
   // TODO: GET TRANSACTION DATA
@@ -19,8 +41,6 @@ export function Account() {
   const { accountId } = useParams();
 
   if (isLoading) return <div>loading</div>;
-
-  console.log(data);
 
   const [chosenAccount] = Object.values(data.accounts).filter(
     ({ id }) => id === accountId,
@@ -59,32 +79,36 @@ export function Account() {
     console.log(result);
   };
 
+  const handleOpenAddTransaction = () => {
+    setAddingTransaction(true);
+  };
+
+  const [addingTransaction, setAddingTransaction] = useState(false);
+
   // TODO: remove the ! for unassigned below
 
   return (
-    <div className="h-full flex flex-col space-y-2">
-      <div className="p-4 font-bold text-2xl tracking-tight">
-        {account!.name}
-      </div>
-      <div className="h-[1px] bg-black/20" />
-      <div className="px-4">
+    <div className="space-y-2 pt-4">
+      <Container>
+        <AccountName>{account!.name}</AccountName>
+      </Container>
+      <Separator />
+      <Container>
         <Balance balance={account.balance} />
-      </div>
-      <div className="h-[1px] bg-black/20" />
-      <div className="px-2">
-        <button
-          className="flex items-center gap-2 px-2 py-2 text-sky-950 border border-sky-950/40 rounded text-sm hover:bg-sky-950/10"
-          onClick={handleSubmitTransaction}
-        >
-          <CirclePlus size={15} />
-          Add Transaction
-        </button>
-      </div>
-      <MyTable transactions={account!.transactions} />
+      </Container>
+      <Separator />
+      <Container>
+        <AddTransactionButton onClick={handleOpenAddTransaction} />
+      </Container>
+      <MyTable
+        transactions={account!.transactions}
+        addingTransaction={addingTransaction}
+      />
     </div>
   );
 }
 
+// COMPONENTS
 function Balance({ balance }: { balance: number }) {
   const color = balance > 0 ? "text-green-600" : "text-red-600";
   const formattedBalance = balance.toFixed(2);
@@ -94,5 +118,29 @@ function Balance({ balance }: { balance: number }) {
       <p className={`${color} font-semibold`}>£{formattedBalance}</p>
       <p className="text-gray-600">Balance</p>
     </div>
+  );
+}
+
+function AccountName({ children }: { children: ReactNode }) {
+  return <h1 className="font-bold text-2xl tracking-tight">{children}</h1>;
+}
+
+function Container({ children }: { children: ReactNode }) {
+  return <div className="px-4 py-2">{children}</div>;
+}
+
+function Separator() {
+  return <div className="h-[1px] bg-black/20" />;
+}
+
+function AddTransactionButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      className="flex items-center gap-2 px-2 py-2 text-sky-950 border border-sky-950/40 rounded text-sm hover:bg-sky-950/10"
+      onClick={onClick}
+    >
+      <CirclePlus size={15} />
+      Add Transaction
+    </button>
   );
 }
