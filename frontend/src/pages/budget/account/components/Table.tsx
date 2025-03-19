@@ -29,11 +29,12 @@ import {
 import {
   useDeleteTransactionMutation,
   useEditTransactionMutation,
+  useGetCategoriesQuery,
 } from "@/core/api/budgetApiSlice";
 import { toast } from "sonner";
 import { DatePickerDemo } from "@/core/components/uiLibrary/datePicker";
 import { Input } from "@/core/components/uiLibrary/input";
-import { Transaction } from "@/core/types/NormalizedData";
+import { CategoryT, Transaction } from "@/core/types/NormalizedData";
 import { Popover, PopoverContent } from "@/core/components/uiLibrary/popover";
 import {
   PopoverArrow,
@@ -616,9 +617,16 @@ const AddCategorySchema = z.object({
   // categoryGroups: z.string().uuid(),
 });
 
+// SELECT CATEGORY COMPONENTS
+
 function SelectCategory() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [createNewCategory, setCreateNewCategory] = useState(true);
+  const { data } = useGetCategoriesQuery();
+
+  const categories = data?.categories || {};
+  const categoryGroupsOb = data?.categoryGroups || {};
+  const categoryGroups = Object.values(categoryGroupsOb);
 
   const form = useForm<SelectCategoryForm>({
     defaultValues: {
@@ -631,8 +639,8 @@ function SelectCategory() {
 
   const { control, register, handleSubmit, watch, formState, setValue } = form;
 
-  const handleSelectCategory = (category: string) => {
-    setSelectedCategory(category);
+  const handleSelectCategory = (categoryName: string) => {
+    setSelectedCategory(categoryName);
   };
 
   const showAddCategoryForm = watch("showAddCategoryForm");
@@ -660,7 +668,8 @@ function SelectCategory() {
           <PopoverContent className="w-[400px] p-0 overflow-scroll shadow-lg">
             <PopoverArrow className="w-8 h-2 fill-white" />
             <div className="px-4 py-3">
-              <p className="font-bold">Add Category</p>
+              {/*// TODO: ADD BACK BUTTON HERE */}
+              <p className="font-bold text-sky-950">Add Category</p>
             </div>
             <Separator />
             <div className="px-4 py-2">
@@ -703,15 +712,11 @@ function SelectCategory() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="m@example.com">
-                              m@example.com
-                            </SelectItem>
-                            <SelectItem value="m@google.com">
-                              m@google.com
-                            </SelectItem>
-                            <SelectItem value="m@support.com">
-                              m@support.com
-                            </SelectItem>
+                            {categoryGroups.map((categoryGroup) => (
+                              <SelectItem value={categoryGroup.id}>
+                                {categoryGroup.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -755,40 +760,23 @@ function SelectCategory() {
 
             <div>
               <div className="py-2">
-                <CategoryGroup>Inflow</CategoryGroup>
-                <CategoryContainer
-                  onClick={() => handleSelectCategory("Ready to Assign")}
-                >
-                  <Category>Ready to Assign</Category>
-                  <CategoryAllocation value={500} />
-                </CategoryContainer>
-                <CategoryGroup>Bills</CategoryGroup>
-                <CategoryContainer>
-                  <Category> 🏠 Rent</Category>
-                  <CategoryAllocation value={0} />
-                </CategoryContainer>
-                <CategoryContainer>
-                  <Category> 🔌 Utilities</Category>
-                  <CategoryAllocation value={0} />
-                </CategoryContainer>
+                {categoryGroups.map((categoryGroup) => (
+                  <div key={categoryGroup.id}>
+                    <CategoryGroup>{categoryGroup.name}</CategoryGroup>
+                    {categoryGroup.categories.map((categoryId) => {
+                      const { id, name } = categories[categoryId];
 
-                <CategoryGroup>Other</CategoryGroup>
-                <CategoryContainer>
-                  <Category>🎊 Celebrations</Category>
-                  <CategoryAllocation value={0} />
-                </CategoryContainer>
-                <CategoryContainer>
-                  <Category>🌳Budgie subscription</Category>
-                  <CategoryAllocation value={0} />
-                </CategoryContainer>
-                <CategoryContainer>
-                  <Category>❗️Pet insurance</Category>
-                  <CategoryAllocation value={0} />
-                </CategoryContainer>
-                <CategoryContainer>
-                  <Category> 😀 Stuff I forgot about</Category>
-                  <CategoryAllocation value={0} />
-                </CategoryContainer>
+                      return (
+                        <CategoryContainer
+                          onClick={() => handleSelectCategory(name)}
+                        >
+                          <Category>{name}</Category>
+                          <CategoryAllocation value={50} />
+                        </CategoryContainer>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
             </div>
           </PopoverContent>
@@ -834,4 +822,17 @@ function CategoryAllocation({ value }: { value: number }) {
   const textColor =
     value < 0 ? "text-red-400" : value > 0 ? "text-green-600" : "text-black ";
   return <p className={`${textColor}`}>£{value.toFixed(2)}</p>;
+}
+
+/// SELECT PAYEE COMPONENTS
+
+function SelectPayee() {
+  return (
+    <Popover>
+      <PopoverTrigger>
+        <InputOutline placeholder="Payee" />
+      </PopoverTrigger>
+      <PopoverContent>Place content for the popover here.</PopoverContent>
+    </Popover>
+  );
 }
