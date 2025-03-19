@@ -40,7 +40,7 @@ export type NormalizedData = {
 type CategoryGroup = {
   id: string;
   name: string;
-  categories: CategoryT[];
+  categories: string[];
 };
 
 export type CategoryT = {
