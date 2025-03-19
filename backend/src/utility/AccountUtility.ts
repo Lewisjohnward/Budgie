@@ -214,7 +214,7 @@ export const initialiseCategories = async (userId: string) => {
     data: {
       userId: userId,
       categoryGroupId: otherCategoryGroup.id,
-      name: "Stuff I forgot to budget for",
+      name: "❗️ Stuff I forgot to budget for",
     },
   });
 
@@ -238,7 +238,7 @@ export const initialiseCategories = async (userId: string) => {
     data: {
       userId: userId,
       categoryGroupId: billsCategoryGroup.id,
-      name: "Rent/Mortgage",
+      name: "🏠 Rent/Mortgage",
     },
   });
 
@@ -246,7 +246,7 @@ export const initialiseCategories = async (userId: string) => {
     data: {
       userId: userId,
       categoryGroupId: billsCategoryGroup.id,
-      name: "Utilities",
+      name: "🔌 Utilities",
     },
   });
 
