@@ -544,7 +544,7 @@ function AddTransactionRow() {
           <DatePickerDemo />
         </TableCell>
         <TableCell>
-          <DatePickerDemo />
+          <SelectPayee />
         </TableCell>
         <TableCell>
           <SelectCategory />
@@ -593,7 +593,10 @@ interface InputOutlineProps
 function InputOutline({ className, ...props }: InputOutlineProps) {
   return (
     <Input
-      className={cn("bg-white ring-[1px] ring-sky-700", className)}
+      className={cn(
+        "bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 overflow-ellipsis",
+        className,
+      )}
       {...props}
     />
   );
@@ -668,7 +671,9 @@ function SelectCategory() {
                     name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Category Name</FormLabel>
+                        <FormLabel className="text-sky-950">
+                          Category Name
+                        </FormLabel>
                         <FormControl>
                           <Input
                             className="focus-visible:ring-sky-700 shadow-none"
@@ -685,7 +690,9 @@ function SelectCategory() {
                     name="categoryGroup"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>In Category Group</FormLabel>
+                        <FormLabel className="text-sky-950">
+                          In Category Group
+                        </FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           defaultValue={field.value}
@@ -734,12 +741,12 @@ function SelectCategory() {
             onPointerDownOutside={close}
             avoidCollisions={false}
             side={"bottom"}
-            className="w-[400px] h-[300px] p-0 overflow-scroll shadow-lg text-sm"
+            className="w-[400px] max-h-[300px] p-0 overflow-scroll shadow-lg text-sm"
           >
             <PopoverArrow className="w-8 h-2 fill-white" />
             <button
               onClick={toggleShowAddCategoryForm}
-              className="px-4 py-3 flex items-center gap-2"
+              className="px-4 py-3 flex items-center gap-2 text-sky-950"
             >
               <AddCircleIcon />
               <p>New Category</p>
