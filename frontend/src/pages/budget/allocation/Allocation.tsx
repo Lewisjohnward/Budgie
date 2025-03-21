@@ -158,10 +158,6 @@ function useAllocation() {
 }
 
 export function Allocation() {
-  const { isLoading: isLoadingAccounts } = useGetAccountsQuery();
-  const { isLoading: isLoadingCategories } = useGetCategoriesQuery();
-  //
-
   const {
     categoriesSelector,
     monthSelector,
@@ -176,8 +172,6 @@ export function Allocation() {
     atLeastOneGroupOpen,
     months,
   } = useAllocation();
-
-  if (isLoadingCategories || isLoadingAccounts) return "...Loading";
 
   return (
     <AllocationContainer>
