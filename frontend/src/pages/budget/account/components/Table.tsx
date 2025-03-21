@@ -690,7 +690,7 @@ function SelectCategory() {
                             {...field}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-center" />
                       </FormItem>
                     )}
                   />
