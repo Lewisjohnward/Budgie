@@ -676,8 +676,11 @@ function SelectCategory() {
         {showAddCategoryForm ? (
           <PopoverContent className="w-[400px] overflow-scroll">
             <PopoverArrow className="w-8 h-2 fill-white" />
-            <div className="px-4 py-3">
+            <div className="flex items-center gap-2 px-4 py-3">
               {/*// TODO: ADD BACK BUTTON HERE */}
+              <button onClick={toggleShowAddCategoryForm}>
+                <ChevronLeft className="size-4 text-sky-950" />
+              </button>
               <p className="font-bold text-sky-950">Add Category</p>
             </div>
             <Separator />
