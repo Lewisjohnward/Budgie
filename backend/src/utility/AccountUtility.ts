@@ -170,23 +170,7 @@ const roundToStartOfMonth = (date: Date) => {
   return startOfMonth;
 };
 
-export const initialiseCategories = async (userId: string) => {
-  const inflow = await prisma.categoryGroup.create({
-    data: {
-      userId,
-      name: "Inflow",
-    },
-  });
-
-  await prisma.category.create({
-    data: {
-      userId,
-      categoryGroupId: inflow.id,
-      name: "Ready to Assign",
-    },
-  });
-
-  // TODO: EXTRACT INTO OWN FUNCTION
+const getMonth = () => {
   const today = new Date();
   const startOfCurrentMonth = roundToStartOfMonth(today);
   const nextMonth = new Date(
@@ -195,6 +179,17 @@ export const initialiseCategories = async (userId: string) => {
     1,
     1,
   );
+
+  return { current: startOfCurrentMonth, next: nextMonth };
+};
+
+export const initialiseCategories = async (userId: string) => {
+  const inflow = await prisma.categoryGroup.create({
+    data: {
+      userId,
+      name: "Inflow",
+    },
+  });
 
   const billsCategoryGroup = await prisma.categoryGroup.create({
     data: {
@@ -210,137 +205,26 @@ export const initialiseCategories = async (userId: string) => {
     },
   });
 
-  const forgotToBudgetCategory = await prisma.category.create({
-    data: {
-      userId: userId,
-      categoryGroupId: otherCategoryGroup.id,
-      name: "❗️ Stuff I forgot to budget for",
-    },
+  createCategory({
+    userId,
+    categoryGroupId: inflow.id,
+    name: "Ready to Assign",
   });
-
-  const forgotToBudgetMonth = await prisma.month.create({
-    data: {
-      categoryId: forgotToBudgetCategory.id,
-      month: startOfCurrentMonth,
-      activity: 0,
-    },
+  createCategory({
+    userId,
+    categoryGroupId: billsCategoryGroup.id,
+    name: "🏠 Rent/Mortgage",
   });
-
-  const forgotToBudgetMonthNext = await prisma.month.create({
-    data: {
-      categoryId: forgotToBudgetCategory.id,
-      month: nextMonth,
-      activity: 0,
-    },
+  createCategory({
+    userId,
+    categoryGroupId: billsCategoryGroup.id,
+    name: "🔌 Utilities",
   });
-
-  const housingCategory = await prisma.category.create({
-    data: {
-      userId: userId,
-      categoryGroupId: billsCategoryGroup.id,
-      name: "🏠 Rent/Mortgage",
-    },
+  createCategory({
+    userId,
+    categoryGroupId: otherCategoryGroup.id,
+    name: "❗️ Stuff I forgot to budget for",
   });
-
-  const utilitiesCategory = await prisma.category.create({
-    data: {
-      userId: userId,
-      categoryGroupId: billsCategoryGroup.id,
-      name: "🔌 Utilities",
-    },
-  });
-
-  const housingMonths = await prisma.month.create({
-    data: {
-      categoryId: housingCategory.id,
-      month: startOfCurrentMonth,
-      activity: 45,
-    },
-  });
-
-  const housingMonthsNext = await prisma.month.create({
-    data: {
-      categoryId: housingCategory.id,
-      month: nextMonth,
-    },
-  });
-
-  const utilitiesMonths = await prisma.month.create({
-    data: {
-      categoryId: utilitiesCategory.id,
-      month: startOfCurrentMonth,
-      activity: 69,
-    },
-  });
-
-  const utilitiesMonthsNext = await prisma.month.create({
-    data: {
-      categoryId: utilitiesCategory.id,
-      month: nextMonth,
-    },
-  });
-
-  // const bills = await prisma.category.createMany({
-  //   data: [
-  //     {
-  //       userId: userId,
-  //       categoryGroupId: BillsCategoryGroup.id,
-  //       name: "Rent/Mortgage",
-  //     },
-  //     {
-  //       userId: userId,
-  //       categoryGroupId: BillsCategoryGroup.id,
-  //       name: "Gas and Electricity",
-  //     },
-  //     {
-  //       userId: userId,
-  //       categoryGroupId: BillsCategoryGroup.id,
-  //       name: "Broadband",
-  //     },
-  //     {
-  //       userId: userId,
-  //       categoryGroupId: BillsCategoryGroup.id,
-  //       name: "Water",
-  //     },
-  //   ],
-  // });
-  //
-  // const NeedsCategoryGroup = await prisma.categoryGroup.create({
-  //   data: {
-  //     userId: userId,
-  //     name: "Needs",
-  //   },
-  // });
-  //
-  // const groceriesCategoryGroup = await prisma.category.create({
-  //   data: {
-  //     categoryGroupId: NeedsCategoryGroup.id,
-  //     userId: userId,
-  //     name: "Groceries",
-  //     assigned: 0,
-  //     activity: 0,
-  //   },
-  // });
-  //
-  // const WantsCategoryGroup = await prisma.categoryGroup.create({
-  //   data: {
-  //     userId: userId,
-  //     name: "Wants",
-  //   },
-  // });
-
-  // const needsCategory = await prisma.categoryGroup.create({
-  //   data: {
-  //     userId,
-  //     name: "",
-  //   },
-  // });
-
-  //   {
-  //   userId,
-  //   categoryGroupId: needsCategory.id,
-  //   name: "This needs a category",
-  // },
 };
 
 export const deleteTransactions = async (
@@ -381,7 +265,23 @@ export const updateTransactions = async (
 };
 
 export const createCategory = async (category: CategoryPayload) => {
-  await prisma.category.create({
+  const newCategory = await prisma.category.create({
     data: category,
+  });
+
+  const month = getMonth();
+
+  await prisma.month.create({
+    data: {
+      categoryId: newCategory.id,
+      month: month.current,
+    },
+  });
+
+  await prisma.month.create({
+    data: {
+      categoryId: newCategory.id,
+      month: month.next,
+    },
   });
 };
