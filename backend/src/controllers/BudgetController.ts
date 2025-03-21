@@ -9,6 +9,7 @@ import {
 import { editTransactionArraySchema, transactionSchema } from "../schemas";
 import {
   createCategory,
+  createCategoryGroup,
   deleteTransactions,
   initialiseAccount,
   insertTransaction,
@@ -20,7 +21,7 @@ import {
   userOwnsAccount,
   validateAccount,
 } from "../utility";
-import { CategorySchema } from "../schemas/CategorySchema";
+import { CategoryGroupSchema, CategorySchema } from "../schemas/CategorySchema";
 
 const prisma = new PrismaClient();
 export const data = async (req: Request, res: Response) => {
@@ -246,7 +247,22 @@ export const addCategoryGroup = async (
   res: Response,
   next: NextFunction,
 ) => {
-  res.sendStatus(200);
+  const { name } = req.body;
+
+  // TODO: when adding a category need to add current month and next month
+
+  try {
+    const validatedCategoryGroup = CategoryGroupSchema.parse({
+      userId: req.user!._id,
+      name,
+    });
+
+    await createCategoryGroup(validatedCategoryGroup);
+    res.status(200).json({ message: "Category group added" });
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+  return;
 };
 
 export const editCategoryGroup = async (
