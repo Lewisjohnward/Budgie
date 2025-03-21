@@ -27,6 +27,7 @@ import {
 import Assign from "./components/assign/Assign";
 import { Menu } from "../Budget";
 import {
+  useAddCategoryMutation,
   useGetAccountsQuery,
   useGetCategoriesQuery,
 } from "@/core/api/budgetApiSlice";
@@ -68,10 +69,15 @@ function mapAllocationData(data: AllocationData): MappedAllocationData {
 
 function useAllocation() {
   const { data } = useGetCategoriesQuery();
-  useEffect(() => {}, []);
-
+  const [createCategory, { isLoading, isSuccess }] = useAddCategoryMutation();
   const [allocationData, setAllocationData] = useState(mapAllocationData(data));
   const [monthSelector, setMonthSelector] = useState(0);
+
+  useEffect(() => {
+    setAllocationData(mapAllocationData(data));
+  }, [data]);
+
+  useEffect(() => { }, [data]);
 
   const uniqueMonths = new Set(
     Object.values(allocationData.months).map((m) => m.month.slice(0, 7)),
@@ -108,9 +114,8 @@ function useAllocation() {
       prev - 1 >= minMonthSelector ? prev - 1 : prev,
     );
 
-  const handleAddCategory = (data: AddCategoryFormData) => {
-    // addCategory(data);
-    // appendedCategoryGroupId.current = data.categoryGroupId;
+  const handleAddCategory = (category: AddCategoryFormData) => {
+    createCategory(category);
   };
 
   const atLeastOneGroupOpen = Object.values(derivedCategoryGroups).some(
