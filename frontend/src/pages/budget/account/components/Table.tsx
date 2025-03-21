@@ -7,7 +7,14 @@ import {
   TableRow,
 } from "@/core/components/uiLibrary/table";
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Copy, MoveRight, Trash2 } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronDown,
+  Copy,
+  MoveRight,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/core/components/uiLibrary/button";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
 import {
@@ -540,7 +547,7 @@ export function MyTable({ transactions, addingTransaction }: TableProps) {
 function AddTransactionRow() {
   return (
     <>
-      <TableRow className="bg-blue-700/20 hover:bg-blue-700/20 border-none">
+      <TableRow className="bg-blue-700/10 hover:bg-blue-700/10 border-none">
         <TableCell>
           <DatePickerDemo />
         </TableCell>
@@ -560,7 +567,7 @@ function AddTransactionRow() {
           <InputOutline placeholder={"Inflow"} />
         </TableCell>
       </TableRow>
-      <TableRow className="bg-blue-700/20 hover:bg-blue-700/20">
+      <TableRow className="bg-blue-700/10 hover:bg-blue-700/10">
         <TableCell colSpan={6}>
           <div className="flex justify-end space-x-2">
             <Button
@@ -595,7 +602,7 @@ function InputOutline({ className, ...props }: InputOutlineProps) {
   return (
     <Input
       className={cn(
-        "bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 overflow-ellipsis",
+        "h-5 py-0 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 overflow-ellipsis rounded-sm shadow-none",
         className,
       )}
       {...props}
@@ -656,12 +663,14 @@ function SelectCategory() {
   return (
     <Popover modal={true}>
       <PopoverTrigger className="w-full">
-        {/* <InputOutline className="bg-white caret-transparent" /> */}
-        <InputOutline
-          className="caret-transparent"
-          placeholder="Category"
-          value={selectedCategory}
-        />
+        <div className="flex items-center pr-2 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 rounded-sm">
+          <input
+            className="px-2 w-full caret-transparent rounded-sm text-ellipsis focus:outline-none focus:ring-0"
+            placeholder="Category"
+            value={selectedCategory}
+          />
+          <ChevronDown className="size-4 text-sky-950" />
+        </div>
       </PopoverTrigger>
       <PopoverPortal>
         {showAddCategoryForm ? (
@@ -829,8 +838,14 @@ function CategoryAllocation({ value }: { value: number }) {
 function SelectPayee() {
   return (
     <Popover>
-      <PopoverTrigger>
-        <InputOutline placeholder="Payee" />
+      <PopoverTrigger className="w-full">
+        <div className="flex items-center pr-2 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 rounded-sm">
+          <input
+            className="px-2 w-full caret-transparent rounded-sm text-ellipsis focus:outline-none focus:ring-0"
+            placeholder="Payee"
+          />
+          <ChevronDown className="size-4 text-sky-950" />
+        </div>
       </PopoverTrigger>
       <PopoverContent className="w-[400px] h-[200px] text-sm">
         <PopoverArrow className="w-8 h-2 fill-white" />
