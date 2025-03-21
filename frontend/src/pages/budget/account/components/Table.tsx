@@ -832,7 +832,23 @@ function SelectPayee() {
       <PopoverTrigger>
         <InputOutline placeholder="Payee" />
       </PopoverTrigger>
-      <PopoverContent>Place content for the popover here.</PopoverContent>
+      <PopoverContent className="w-[400px] h-[200px] text-sm">
+        <PopoverArrow className="w-8 h-2 fill-white" />
+        <div className="h-full flex flex-col justify-between">
+          <div>
+            <div className="px-4 py-2 text-gray-700">
+              <p>Saved Payees</p>
+            </div>
+            <Separator />
+          </div>
+          <div>
+            <Separator />
+            <div className="px-4 py-2 text-sky-950">
+              <button>Manage Payees</button>
+            </div>
+          </div>
+        </div>
+      </PopoverContent>
     </Popover>
   );
 }
