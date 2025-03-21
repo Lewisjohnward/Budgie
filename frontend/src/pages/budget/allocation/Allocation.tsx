@@ -224,47 +224,47 @@ export function Allocation() {
                   <CategoryGroupName>{group.name}</CategoryGroupName>
                   <AddCategoryButton
                     id={group.id}
-                    handleAddCategory={expandAllCategoryGroups}
+                    handleAddCategory={handleAddCategory}
                   />
                 </CategoryGroupContainer>
 
                 <CategoriesContainer display={group.open}>
                   {group.categories.length > 0
                     ? group.categories.map((cat) => {
-                        const category = categories[cat];
-                        const { id, name } = category;
-                        const activity =
-                          category.months.length > 0
-                            ? months[category.months[monthSelector]].activity
-                            : 0;
+                      const category = categories[cat];
+                      const { id, name } = category;
+                      const activity =
+                        category.months.length > 0
+                          ? months[category.months[monthSelector]].activity
+                          : 0;
 
-                        // const available = assigned - activity;
+                      // const available = assigned - activity;
 
-                        return (
-                          <CategoryContent key={id}>
-                            {(ref) => (
-                              <>
-                                <Checkbox className="size-3 rounded-[2px] shadow-none" />
-                                <CategoryNameContainer>
-                                  <CategoryName>{name}</CategoryName>
-                                  <ProgressBar
-                                    assigned={0}
-                                    activity={activity}
-                                    available={0}
-                                  />
-                                </CategoryNameContainer>
-                                <EditAssigned
-                                  ref={ref}
-                                  // assigned={0.toFixed(2)}
-                                  assigned={"0.00"}
+                      return (
+                        <CategoryContent key={id}>
+                          {(ref) => (
+                            <>
+                              <Checkbox className="size-3 rounded-[2px] shadow-none" />
+                              <CategoryNameContainer>
+                                <CategoryName>{name}</CategoryName>
+                                <ProgressBar
+                                  assigned={0}
+                                  activity={activity}
+                                  available={0}
                                 />
-                                <Activity>{activity.toFixed(2)}</Activity>
-                                <Available>{"0.00"}</Available>
-                              </>
-                            )}
-                          </CategoryContent>
-                        );
-                      })
+                              </CategoryNameContainer>
+                              <EditAssigned
+                                ref={ref}
+                                // assigned={0.toFixed(2)}
+                                assigned={"0.00"}
+                              />
+                              <Activity>{activity.toFixed(2)}</Activity>
+                              <Available>{"0.00"}</Available>
+                            </>
+                          )}
+                        </CategoryContent>
+                      );
+                    })
                     : null}
                 </CategoriesContainer>
               </Container>
