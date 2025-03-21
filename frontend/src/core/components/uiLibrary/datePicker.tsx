@@ -11,21 +11,27 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 
 export function DatePickerDemo() {
-  const [date, setDate] = useState<Date>();
+  const [date, setDate] = useState<Date | undefined>(new Date());
 
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
-          variant={"outline"}
-          className={cn(
-            "h-auto py-0 px-2 shadow-none w-full justify-between font-normal overflow-hidden ring-[1px] ring-sky-700 hover:bg-white",
-            !date && "text-muted-foreground",
-          )}
-        >
-          {date ? format(date, "MM/dd/yy") : <span>Pick a date</span>}
-          <ChevronDown className="text-sky-950" />
-        </Button>
+        <div className="h-5 flex items-center pr-2 bg-white ring-[1px] ring-sky-700 rounded overflow-hidden">
+          <Button
+            variant={"outline"}
+            className={cn(
+              "h-auto py-0 px-2 shadow-none w-full justify-between font-normal overflow-hidden border-0 hover:bg-white",
+              !date && "text-muted-foreground",
+            )}
+          >
+            {date ? (
+              <span className="truncate">{format(date, "MM/dd/yy")}</span>
+            ) : (
+              <span className="text-gray-400 truncate">Pick a date</span>
+            )}
+          </Button>
+          <ChevronDown className="size-4 text-sky-950" />
+        </div>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0 caret-transparent">
         <Calendar
