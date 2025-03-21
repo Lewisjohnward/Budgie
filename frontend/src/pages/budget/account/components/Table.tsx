@@ -665,7 +665,7 @@ function SelectCategory() {
       </PopoverTrigger>
       <PopoverPortal>
         {showAddCategoryForm ? (
-          <PopoverContent className="w-[400px] p-0 overflow-scroll shadow-lg">
+          <PopoverContent className="w-[400px] overflow-scroll">
             <PopoverArrow className="w-8 h-2 fill-white" />
             <div className="px-4 py-3">
               {/*// TODO: ADD BACK BUTTON HERE */}
