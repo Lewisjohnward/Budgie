@@ -11,6 +11,7 @@ import {
   ArrowDown,
   ArrowUp,
   ChevronDown,
+  ChevronLeft,
   Copy,
   MoveRight,
   Trash2,
@@ -34,6 +35,7 @@ import {
   ContextMenuTrigger,
 } from "@/core/components/uiLibrary/context-menu";
 import {
+  useAddCategoryMutation,
   useDeleteTransactionMutation,
   useEditTransactionMutation,
   useGetCategoriesQuery,
@@ -613,14 +615,14 @@ function InputOutline({ className, ...props }: InputOutlineProps) {
 type SelectCategoryForm = {
   showAddCategoryForm: boolean;
   name: string;
-  categoryGroup: string;
+  categoryGroupId: string;
 };
 
 //TODO: THIS NEEDS TO MATCH THE BACKEND / DATA ON FE
 const AddCategorySchema = z.object({
   name: z.string().min(1, { message: "The category name is required." }),
   //TODO: z.string().uuid()
-  categoryGroup: z.string(),
+  categoryGroupId: z.string(),
   // categoryGroups: z.string().uuid(),
 });
 
@@ -629,6 +631,7 @@ const AddCategorySchema = z.object({
 function SelectCategory() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const { data } = useGetCategoriesQuery();
+  const [createCategory, { isLoading, isSuccess }] = useAddCategoryMutation();
 
   const categories = data?.categories || {};
   const categoryGroupsOb = data?.categoryGroups || {};
@@ -638,7 +641,7 @@ function SelectCategory() {
     defaultValues: {
       showAddCategoryForm: false,
       name: "",
-      categoryGroup: "",
+      categoryGroupId: "",
     },
     resolver: zodResolver(AddCategorySchema),
   });
@@ -657,8 +660,9 @@ function SelectCategory() {
     if (showAddCategoryForm) reset();
   };
 
-  const onSubmit = (value: z.infer<typeof AddCategorySchema>) => {
-    console.log("SelectCategory", value);
+  const onSubmit = (category: z.infer<typeof AddCategorySchema>) => {
+    console.log(category);
+    createCategory(category);
   };
 
   return (
@@ -714,7 +718,7 @@ function SelectCategory() {
                   />
                   <FormField
                     control={control}
-                    name="categoryGroup"
+                    name="categoryGroupId"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sky-950">
