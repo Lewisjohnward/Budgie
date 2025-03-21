@@ -611,7 +611,7 @@ type SelectCategoryForm = {
 
 //TODO: THIS NEEDS TO MATCH THE BACKEND / DATA ON FE
 const AddCategorySchema = z.object({
-  name: z.string(),
+  name: z.string().min(1, { message: "The category name is required." }),
   //TODO: z.string().uuid()
   categoryGroup: z.string(),
   // categoryGroups: z.string().uuid(),
