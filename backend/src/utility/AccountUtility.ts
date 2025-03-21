@@ -2,7 +2,10 @@ import { PrismaClient } from "@prisma/client";
 import { accountSchema, UpdatedTransaction } from "../schemas";
 import { AccountPayload, TransactionPayload } from "../dto";
 import { Decimal } from "@prisma/client/runtime/library";
-import { CategoryPayload } from "../schemas/CategorySchema";
+import {
+  CategoryGroupPayload,
+  CategoryPayload,
+} from "../schemas/CategorySchema";
 
 const prisma = new PrismaClient();
 
@@ -261,6 +264,14 @@ export const updateTransactions = async (
     data: {
       ...fields,
     },
+  });
+};
+
+export const createCategoryGroup = async (
+  categoryGroup: CategoryGroupPayload,
+) => {
+  const newCategoryGroup = await prisma.categoryGroup.create({
+    data: categoryGroup,
   });
 };
 
