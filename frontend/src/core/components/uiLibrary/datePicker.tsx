@@ -1,6 +1,4 @@
 import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
-
 import { cn } from "@/core/lib/utils";
 import { Button } from "@/core/components/uiLibrary/button";
 import { Calendar } from "@/core/components/uiLibrary/calendar";
@@ -9,27 +7,24 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/core/components/uiLibrary/popover";
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
 
-export function DatePickerDemo({
-  date,
-  setDate,
-}: {
-  date: Date | undefined;
-  setDate: (date: Date | undefined) => void;
-}) {
+export function DatePickerDemo() {
+  const [date, setDate] = useState<Date>();
+
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
           className={cn(
-            "shadow-none w-full justify-start text-left font-normal overflow-hidden",
+            "h-auto py-0 px-2 shadow-none w-full justify-between font-normal overflow-hidden ring-[1px] ring-sky-700 hover:bg-white",
             !date && "text-muted-foreground",
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4 text-neutral-500" />
-          {date ? format(date, "PPP") : <span>Pick a date</span>}
+          {date ? format(date, "MM/dd/yy") : <span>Pick a date</span>}
+          <ChevronDown className="text-sky-950" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0 caret-transparent">
@@ -37,7 +32,7 @@ export function DatePickerDemo({
           mode="single"
           className="border-sky-950"
           selected={date}
-          onSelect={(e) => setDate(e)}
+          onSelect={setDate}
           initialFocus
         />
       </PopoverContent>
