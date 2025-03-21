@@ -628,7 +628,6 @@ const AddCategorySchema = z.object({
 
 function SelectCategory() {
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [createNewCategory, setCreateNewCategory] = useState(true);
   const { data } = useGetCategoriesQuery();
 
   const categories = data?.categories || {};
@@ -644,7 +643,8 @@ function SelectCategory() {
     resolver: zodResolver(AddCategorySchema),
   });
 
-  const { control, register, handleSubmit, watch, formState, setValue } = form;
+  const { reset, control, register, handleSubmit, watch, formState, setValue } =
+    form;
 
   const handleSelectCategory = (categoryName: string) => {
     setSelectedCategory(categoryName);
@@ -654,6 +654,7 @@ function SelectCategory() {
 
   const toggleShowAddCategoryForm = () => {
     setValue("showAddCategoryForm", !showAddCategoryForm);
+    if (showAddCategoryForm) reset();
   };
 
   const onSubmit = (value: z.infer<typeof AddCategorySchema>) => {
@@ -661,9 +662,14 @@ function SelectCategory() {
   };
 
   return (
-    <Popover modal={true}>
+    <Popover
+      modal={true}
+      onOpenChange={(open) => {
+        if (!open) reset();
+      }}
+    >
       <PopoverTrigger className="w-full">
-        <div className="flex items-center pr-2 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 rounded-sm">
+        <div className="flex items-center pr-2 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 rounded-sm overflow-hidden">
           <input
             className="px-2 w-full caret-transparent rounded-sm text-ellipsis focus:outline-none focus:ring-0"
             placeholder="Category"
@@ -755,7 +761,6 @@ function SelectCategory() {
           </PopoverContent>
         ) : (
           <PopoverContent
-            onPointerDownOutside={close}
             avoidCollisions={false}
             side={"bottom"}
             className="w-[400px] max-h-[300px] p-0 overflow-scroll shadow-lg text-sm"
