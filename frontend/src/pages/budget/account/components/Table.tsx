@@ -777,7 +777,11 @@ function SelectCategory() {
 
                       return (
                         <CategoryContainer
-                          onClick={() => handleSelectCategory(name)}
+                          onClick={() =>
+                            handleSelectCategory(
+                              `${categoryGroup.name}: ${name}`,
+                            )
+                          }
                         >
                           <Category>{name}</Category>
                           <CategoryAllocation value={50} />
