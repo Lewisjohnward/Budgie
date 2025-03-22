@@ -44,6 +44,20 @@ import {
   MappedMonthData,
 } from "@/core/types/Allocation";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuTrigger,
+} from "@/core/components/uiLibrary/context-menu";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/core/components/uiLibrary/form";
+import { Category } from "@/core/types/NormalizedData";
 
 function formatDate(dateStr: string) {
   const date = new Date(dateStr + "-01");
@@ -186,7 +200,7 @@ export function Allocation() {
         </div>
         <CategorySelectorContainer>
           {categoriesSelector.map((catSelector) => (
-            <Category key={catSelector} text={catSelector} />
+            <CategorySelector key={catSelector} text={catSelector} />
           ))}
           <AddCategorySelectorButton />
         </CategorySelectorContainer>
@@ -240,29 +254,47 @@ export function Allocation() {
 
                       // const available = assigned - activity;
 
+                      const [contextOpen, setContextOpen] = useState(false);
+                      const handleContextMenu = (
+                        e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+                      ) => {
+                        e.preventDefault();
+                        setContextOpen(true);
+                      };
+
                       return (
-                        <CategoryContent key={id}>
-                          {(ref) => (
-                            <>
-                              <Checkbox className="size-3 rounded-[2px] shadow-none" />
-                              <CategoryNameContainer>
-                                <CategoryName>{name}</CategoryName>
-                                <ProgressBar
-                                  assigned={0}
-                                  activity={activity}
-                                  available={0}
-                                />
-                              </CategoryNameContainer>
-                              <EditAssigned
-                                ref={ref}
-                                // assigned={0.toFixed(2)}
-                                assigned={"0.00"}
-                              />
-                              <Activity>{activity.toFixed(2)}</Activity>
-                              <Available>{"0.00"}</Available>
-                            </>
-                          )}
-                        </CategoryContent>
+                        <div onContextMenu={handleContextMenu}>
+                          <CategoryContextMenu
+                            category={category}
+                            contextOpen={contextOpen}
+                            close={() => {
+                              setContextOpen(false);
+                            }}
+                          >
+                            <CategoryContent key={id}>
+                              {(ref) => (
+                                <>
+                                  <Checkbox className="size-3 rounded-[2px] shadow-none" />
+                                  <CategoryNameContainer>
+                                    <CategoryName>{name}</CategoryName>
+                                    <ProgressBar
+                                      assigned={0}
+                                      activity={activity}
+                                      available={0}
+                                    />
+                                  </CategoryNameContainer>
+                                  <EditAssigned
+                                    ref={ref}
+                                    // assigned={0.toFixed(2)}
+                                    assigned={"0.00"}
+                                  />
+                                  <Activity>{activity.toFixed(2)}</Activity>
+                                  <Available>{"0.00"}</Available>
+                                </>
+                              )}
+                            </CategoryContent>
+                          </CategoryContextMenu>
+                        </div>
                       );
                     })
                     : null}
@@ -305,13 +337,118 @@ function CategorySelectorContainer({ children }: { children: ReactNode }) {
   return <div className="gap-2 hidden md:flex"> {children}</div>;
 }
 
-function Category({ text }: { text: string }) {
+function CategorySelector({ text }: { text: string }) {
   return (
     <button
       className={`px-2 py-1 ${bgGray} rounded hover:${darkBlueBgHoverDark}`}
     >
       <p className="text-xs">{text}</p>
     </button>
+  );
+}
+
+const CategoryContextSchema = z.object({
+  name: z.string().min(1, { message: "Category requires a name" }),
+});
+
+type CategoryContextType = z.infer<typeof CategoryContextSchema>;
+
+function CategoryContextMenu({
+  category,
+  children,
+  contextOpen,
+  close,
+}: {
+  category: Category;
+  children: ReactNode;
+  contextOpen: boolean;
+  close: () => void;
+}) {
+  const form = useForm<CategoryContextType>({
+    defaultValues: {
+      name: category.name,
+    },
+    resolver: zodResolver(CategoryContextSchema),
+  });
+
+  const { reset, control, handleSubmit } = form;
+
+  const handleOpen = (open: boolean) => {
+    if (!open) reset();
+  };
+
+  const onSubmit = () => {
+    close();
+    console.log("Hello, World!");
+  };
+
+  return (
+    <Popover open={contextOpen} onOpenChange={handleOpen}>
+      <PopoverTrigger className="w-full text-left">{children}</PopoverTrigger>
+      <PopoverContent
+        onPointerDownOutside={close}
+        className="w-96 px-4 py-2 space-y-2"
+      >
+        <Form {...form}>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      className="focus-visible:ring-sky-700 shadow-none"
+                      placeholder="New category name"
+                      autoComplete="off"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-center" />
+                </FormItem>
+              )}
+            />
+            <div className="flex justify-between">
+              <div className="space-x-2">
+                <Button
+                  type="button"
+                  onClick={() => { }}
+                  className="bg-blue-200/60 text-blue-400 hover:bg-blue-200"
+                  variant={"destructive"}
+                >
+                  Hide
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => { }}
+                  className="bg-red-200 text-red-400 hover:text-white"
+                  variant={"destructive"}
+                >
+                  Delete
+                </Button>
+              </div>
+              <div className="space-x-2">
+                <Button
+                  type="button"
+                  onClick={close}
+                  className="bg-blue-400"
+                  variant={"destructive"}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-blue-600"
+                  variant={"destructive"}
+                >
+                  OK
+                </Button>
+              </div>
+            </div>
+          </form>
+        </Form>
+      </PopoverContent>
+    </Popover>
   );
 }
 
