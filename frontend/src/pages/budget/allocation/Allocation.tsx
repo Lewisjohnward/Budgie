@@ -91,7 +91,7 @@ function useAllocation() {
     setAllocationData(mapAllocationData(data));
   }, [data]);
 
-  useEffect(() => { }, [data]);
+  useEffect(() => {}, [data]);
 
   const uniqueMonths = new Set(
     Object.values(allocationData.months).map((m) => m.month.slice(0, 7)),
@@ -224,79 +224,79 @@ export function Allocation() {
             ) : null}
             <div className={`${darkBlueText} font-thin`}>CATEGORY</div>
           </div>
-          {categoryGroups.map((group) => {
+          {categoryGroups.map((categoryGroup) => {
             return (
-              <Container key={group.id}>
+              <Container key={categoryGroup.id}>
                 <CategoryGroupContainer>
                   <ExpandCategoryGroup
                     // onClick={() => toggleDisplayCategories(group.id)}
                     onClick={() => expandCategoryGroup(group.id)}
                     // open={group.open}
-                    open={group.open}
+                    open={categoryGroup.open}
                   />
                   <Checkbox className="size-3 rounded-[2px] shadow-none" />
-                  <CategoryGroupName>{group.name}</CategoryGroupName>
+                  <CategoryGroupName>{categoryGroup.name}</CategoryGroupName>
                   <AddCategoryButton
-                    id={group.id}
+                    id={categoryGroup.id}
                     handleAddCategory={handleAddCategory}
                   />
                 </CategoryGroupContainer>
 
-                <CategoriesContainer display={group.open}>
-                  {group.categories.length > 0
-                    ? group.categories.map((cat) => {
-                      const category = categories[cat];
-                      const { id, name } = category;
-                      const activity =
-                        category.months.length > 0
-                          ? months[category.months[monthSelector]].activity
-                          : 0;
+                <CategoriesContainer display={categoryGroup.open}>
+                  {categoryGroup.categories.length > 0
+                    ? categoryGroup.categories.map((cat) => {
+                        const category = categories[cat];
+                        const { id, name } = category;
+                        const activity =
+                          category.months.length > 0
+                            ? months[category.months[monthSelector]].activity
+                            : 0;
 
-                      // const available = assigned - activity;
+                        // const available = assigned - activity;
 
-                      const [contextOpen, setContextOpen] = useState(false);
-                      const handleContextMenu = (
-                        e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-                      ) => {
-                        e.preventDefault();
-                        setContextOpen(true);
-                      };
+                        const [contextOpen, setContextOpen] = useState(false);
+                        const handleContextMenu = (
+                          e: React.MouseEvent<HTMLDivElement, MouseEvent>,
+                        ) => {
+                          e.preventDefault();
+                          setContextOpen(true);
+                        };
 
-                      return (
-                        <div onContextMenu={handleContextMenu}>
-                          <CategoryContextMenu
-                            category={category}
-                            contextOpen={contextOpen}
-                            close={() => {
-                              setContextOpen(false);
-                            }}
-                          >
-                            <CategoryContent key={id}>
-                              {(ref) => (
-                                <>
-                                  <Checkbox className="size-3 rounded-[2px] shadow-none" />
-                                  <CategoryNameContainer>
-                                    <CategoryName>{name}</CategoryName>
-                                    <ProgressBar
-                                      assigned={0}
-                                      activity={activity}
-                                      available={0}
+                        return (
+                          <div onContextMenu={handleContextMenu}>
+                            <CategoryContextMenu
+                              category={category}
+                              contextOpen={contextOpen}
+                              close={() => {
+                                setContextOpen(false);
+                              }}
+                            >
+                              <CategoryContent key={id}>
+                                {(ref) => (
+                                  <>
+                                    <Checkbox className="size-3 rounded-[2px] shadow-none" />
+                                    <CategoryNameContainer>
+                                      <CategoryName>{name}</CategoryName>
+                                      <ProgressBar
+                                        assigned={0}
+                                        activity={activity}
+                                        available={0}
+                                      />
+                                    </CategoryNameContainer>
+                                    <EditAssigned
+                                      ref={ref}
+                                      // assigned={0.toFixed(2)}
+                                      assigned={"0.00"}
                                     />
-                                  </CategoryNameContainer>
-                                  <EditAssigned
-                                    ref={ref}
-                                    // assigned={0.toFixed(2)}
-                                    assigned={"0.00"}
-                                  />
-                                  <Activity>{activity.toFixed(2)}</Activity>
-                                  <Available>{"0.00"}</Available>
-                                </>
-                              )}
-                            </CategoryContent>
-                          </CategoryContextMenu>
-                        </div>
-                      );
-                    })
+                                    <Activity>{activity.toFixed(2)}</Activity>
+                                    <Available>{"0.00"}</Available>
+                                  </>
+                                )}
+                              </CategoryContent>
+                            </CategoryContextMenu>
+                          </div>
+                        );
+                      })
                     : null}
                 </CategoriesContainer>
               </Container>
@@ -349,6 +349,7 @@ function CategorySelector({ text }: { text: string }) {
 
 const CategoryContextSchema = z.object({
   name: z.string().min(1, { message: "Category requires a name" }),
+  id: z.string().uuid(),
 });
 
 type CategoryContextType = z.infer<typeof CategoryContextSchema>;
@@ -367,6 +368,7 @@ function CategoryContextMenu({
   const form = useForm<CategoryContextType>({
     defaultValues: {
       name: category.name,
+      id: category.id,
     },
     resolver: zodResolver(CategoryContextSchema),
   });
@@ -377,9 +379,9 @@ function CategoryContextMenu({
     if (!open) reset();
   };
 
-  const onSubmit = () => {
+  const onSubmit = (updatedCategory: CategoryContextType) => {
+    console.log(updatedCategory);
     close();
-    console.log("Hello, World!");
   };
 
   return (
@@ -412,7 +414,7 @@ function CategoryContextMenu({
               <div className="space-x-2">
                 <Button
                   type="button"
-                  onClick={() => { }}
+                  onClick={() => {}}
                   className="bg-blue-200/60 text-blue-400 hover:bg-blue-200"
                   variant={"destructive"}
                 >
@@ -420,7 +422,7 @@ function CategoryContextMenu({
                 </Button>
                 <Button
                   type="button"
-                  onClick={() => { }}
+                  onClick={() => {}}
                   className="bg-red-200 text-red-400 hover:text-white"
                   variant={"destructive"}
                 >
