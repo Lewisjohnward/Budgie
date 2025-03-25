@@ -7,11 +7,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/core/components/uiLibrary/popover";
-import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 
-export function DatePickerDemo() {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+export function DatePickerDemo({
+  date,
+  setDate,
+}: {
+  date: Date | undefined;
+  setDate: (date: Date | undefined) => void;
+}) {
 
   return (
     <Popover>
