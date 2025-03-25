@@ -47,7 +47,7 @@ model Category {
   name            String
   // budget       Budget        @relation(fields: [budgetId], references: [id])
   transactions    Transaction[]
-  category        CategoryGroup @relation(fields: [categoryGroupId], references: [id])
+  categoryGroup        CategoryGroup @relation(fields: [categoryGroupId], references: [id])
   months Month[]
 }
 
