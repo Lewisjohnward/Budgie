@@ -134,9 +134,17 @@ export const initialiseAccount = async (account: AccountPayload) => {
   //   },
   // });
 
+  const readyToAssignCategory = await prisma.category.findFirstOrThrow({
+    where: {
+      userId: account.userId,
+      name: "Ready to Assign",
+    },
+  });
+
   await insertTransaction({
     accountId: createdAccount.id,
     inflow: account.balance,
+    categoryId: readyToAssignCategory.id,
   });
 };
 
