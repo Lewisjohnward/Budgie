@@ -12,8 +12,14 @@ const commonTransactionSchema = z.object({
       message: "Invalid date format",
     })
     .optional(),
-  inflow: z.number().optional(),
-  outflow: z.number().optional(),
+  inflow: z
+    .string()
+    .transform((val) => Number(val))
+    .optional(),
+  outflow: z
+    .string()
+    .transform((val) => Number(val))
+    .optional(),
   payee: z.string().max(100).nullish(),
   memo: z.string().max(100).nullish(),
 });
