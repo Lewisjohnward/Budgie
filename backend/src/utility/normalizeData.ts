@@ -29,12 +29,23 @@ type Category = {
   userId: string;
   // type: "EXPENSE" | "INCOME";
   name: string;
+  categoryGroup: CategoryGroupT;
+};
+
+type CategoryGroupT = {
+  id: string;
+  name: string;
 };
 
 type NormalizedData = {
   accounts: { [key: string]: NormalizedAccount };
   transactions: { [key: string]: NormalizedTransaction };
-  categories: { [key: string]: Category };
+  categories: { [key: string]: normalizedCategory };
+  categoryGroups: { [key: string]: CategoryGroupT };
+};
+
+type normalizedCategory = Omit<Category, "categoryGroup"> & {
+  categoryGroup: string | null;
 };
 
 type NormalizedAccount = Omit<Account, "transactions"> & {
@@ -49,6 +60,7 @@ export function normalizeData(data: { accounts: Account[] }) {
     accounts: {},
     transactions: {},
     categories: {},
+    categoryGroups: {},
   };
 
   data.accounts.forEach((account) => {
@@ -83,7 +95,17 @@ export function normalizeData(data: { accounts: Account[] }) {
           userId: transaction.category.userId,
           // type: "EXPENSE",
           name: transaction.category.name,
+          categoryGroup: null,
         };
+
+        if (transaction.category?.categoryGroup) {
+          const { id } = transaction.category.categoryGroup;
+          normalizedData.categories[transaction.categoryId].categoryGroup = id;
+
+          normalizedData.categoryGroups[id] = {
+            ...transaction.category.categoryGroup,
+          };
+        }
       }
     });
   });

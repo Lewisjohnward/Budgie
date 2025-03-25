@@ -52,7 +52,11 @@ export const selectAccounts = async (userId: string) => {
     include: {
       transactions: {
         include: {
-          category: true,
+          category: {
+            include: {
+              categoryGroup: true,
+            },
+          },
         },
       },
     },
