@@ -36,6 +36,7 @@ import {
 } from "@/core/components/uiLibrary/context-menu";
 import {
   useAddCategoryMutation,
+  useAddTransactionMutation,
   useDeleteTransactionMutation,
   useEditTransactionMutation,
   useGetCategoriesQuery,
@@ -73,6 +74,7 @@ import {
 import { z } from "zod";
 
 type TableProps = {
+  accountId: string;
   transactions: Transaction[];
   addingTransaction: boolean;
 };
@@ -297,7 +299,11 @@ const useTransactionManager = () => {
   };
 };
 
-export function MyTable({ transactions, addingTransaction }: TableProps) {
+export function MyTable({
+  accountId,
+  transactions,
+  addingTransaction,
+}: TableProps) {
   const testRef = useRef<Transaction>(null);
 
   const [editTransaction] = useEditTransactionMutation();
@@ -436,9 +442,9 @@ export function MyTable({ transactions, addingTransaction }: TableProps) {
                   {header.isPlaceholder
                     ? null
                     : flexRender(
-                      header.column.columnDef.header,
-                      header.getContext(),
-                    )}
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
                 </TableHead>
               );
             })}
@@ -446,7 +452,7 @@ export function MyTable({ transactions, addingTransaction }: TableProps) {
         ))}
       </TableHeader>
       <TableBody className="border border-r-neutral-300">
-        {addingTransaction && <AddTransactionRow />}
+        {addingTransaction && <AddTransactionRow accountId={accountId} />}
         {table.getRowModel().rows?.length ? (
           table.getRowModel().rows.map((row) => (
             <>
@@ -546,49 +552,80 @@ export function MyTable({ transactions, addingTransaction }: TableProps) {
 
 /// TABLE COMPONENTS
 
-function AddTransactionRow() {
+function AddTransactionRow({ accountId }: { accountId: string }) {
+  const [addTransaction] = useAddTransactionMutation();
+
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [payee, setPayee] = useState("");
+  const [categoryName, setCategoryName] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [memo, setMemo] = useState("");
+  const [outflow, setOutflow] = useState("");
+  const [inflow, setInflow] = useState("");
+
+  const handleAddTransaction = () => {
+    const transaction = {
+      accountId,
+      date,
+      payee,
+      categoryId,
+      memo,
+      outflow,
+      inflow,
+    };
+
+    addTransaction(transaction);
+  };
+
   return (
     <>
-      <TableRow className="bg-blue-700/10 hover:bg-blue-700/10 border-none">
+      <TableRow className="bg-blue-700/5 hover:bg-blue-700/5 border-none">
         <TableCell>
-          <DatePickerDemo />
+          <DatePickerDemo date={date} setDate={setDate} />
         </TableCell>
         <TableCell>
           <SelectPayee />
         </TableCell>
         <TableCell>
-          <SelectCategory />
+          <SelectCategory
+            categoryName={categoryName}
+            setCategoryName={setCategoryName}
+            setCategoryId={setCategoryId}
+          />
         </TableCell>
         <TableCell>
-          <InputOutline placeholder={"Memo"} />
+          <InputOutline placeholder={"Memo"} value={memo} setValue={setMemo} />
         </TableCell>
         <TableCell>
-          <InputOutline placeholder={"Outflow"} />
+          <InputOutline
+            placeholder={"Outflow"}
+            value={outflow}
+            setValue={setOutflow}
+          />
         </TableCell>
         <TableCell>
-          <InputOutline placeholder={"Inflow"} />
+          <InputOutline
+            placeholder={"Inflow"}
+            value={inflow}
+            setValue={setInflow}
+          />
         </TableCell>
       </TableRow>
-      <TableRow className="bg-blue-700/10 hover:bg-blue-700/10">
+      <TableRow className="bg-blue-700/5 hover:bg-blue-700/5">
         <TableCell colSpan={6}>
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end gap-2">
             <Button
-              variant={"outline"}
-              className={clsx(
-                "bg-transparent text-sky-950/80 border-blue-950/80 hover:bg-sky-950/30",
-              )}
-              onClick={() => { }}
+              // onClick={toggleShowAddCategoryForm}
+              className="w-[80px] bg-sky-700/10 text-sky-700 border border-sky-700 hover:bg-sky-700/30"
             >
-              Cancel
+              cancel
             </Button>
             <Button
-              className={clsx(
-                // isFlashing ? "bg-sky-950/10" : "bg-sky-950/80",
-                "text-white hover:bg-sky-950/30",
-              )}
-              onClick={() => { }}
+              onClick={handleAddTransaction}
+              type="submit"
+              className="w-[80px] bg-sky-700 text-white hover:bg-sky-800"
             >
-              Save
+              Submit
             </Button>
           </div>
         </TableCell>
@@ -598,15 +635,25 @@ function AddTransactionRow() {
 }
 
 interface InputOutlineProps
-  extends React.InputHTMLAttributes<HTMLInputElement> { }
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  value: string;
+  setValue: (value: string) => void;
+}
 
-function InputOutline({ className, ...props }: InputOutlineProps) {
+function InputOutline({
+  value,
+  setValue,
+  className,
+  ...props
+}: InputOutlineProps) {
   return (
     <Input
       className={cn(
         "h-5 py-0 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 overflow-ellipsis rounded-sm shadow-none",
         className,
       )}
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
       {...props}
     />
   );
@@ -623,13 +670,20 @@ const AddCategorySchema = z.object({
   name: z.string().min(1, { message: "The category name is required." }),
   //TODO: z.string().uuid()
   categoryGroupId: z.string(),
-  // categoryGroups: z.string().uuid(),
 });
 
 // SELECT CATEGORY COMPONENTS
 
-function SelectCategory() {
-  const [selectedCategory, setSelectedCategory] = useState("");
+function SelectCategory({
+  categoryName,
+  setCategoryName,
+  setCategoryId,
+}: {
+  categoryName: string;
+  setCategoryName: (name: string) => void;
+  setCategoryId: (id: string) => void;
+}) {
+  const [popoverVisible, setPopoverVisible] = useState(false);
   const { data } = useGetCategoriesQuery();
   const [createCategory, { isLoading, isSuccess }] = useAddCategoryMutation();
 
@@ -646,11 +700,15 @@ function SelectCategory() {
     resolver: zodResolver(AddCategorySchema),
   });
 
-  const { reset, control, register, handleSubmit, watch, formState, setValue } =
-    form;
+  const { reset, control, handleSubmit, watch, setValue } = form;
 
-  const handleSelectCategory = (categoryName: string) => {
-    setSelectedCategory(categoryName);
+  const handleSelectCategory = (
+    categoryGroupName: string,
+    category: CategoryT,
+  ) => {
+    setCategoryName(`${categoryGroupName}: ${category.name}`);
+    setCategoryId(category.id);
+    handleOpenPopover();
   };
 
   const showAddCategoryForm = watch("showAddCategoryForm");
@@ -661,33 +719,42 @@ function SelectCategory() {
   };
 
   const onSubmit = (category: z.infer<typeof AddCategorySchema>) => {
-    console.log(category);
     createCategory(category);
+  };
+
+  const handleOpenPopover = () => {
+    setPopoverVisible((prev) => !prev);
   };
 
   return (
     <Popover
+      open={popoverVisible}
       modal={true}
       onOpenChange={(open) => {
         if (!open) reset();
       }}
     >
       <PopoverTrigger className="w-full">
-        <div className="flex items-center pr-2 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 rounded-sm overflow-hidden">
+        <div
+          onClick={handleOpenPopover}
+          className="flex items-center pr-2 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 rounded-sm overflow-hidden"
+        >
           <input
             className="px-2 w-full caret-transparent rounded-sm text-ellipsis focus:outline-none focus:ring-0"
             placeholder="Category"
-            value={selectedCategory}
+            value={categoryName}
           />
           <ChevronDown className="size-4 text-sky-950" />
         </div>
       </PopoverTrigger>
       <PopoverPortal>
         {showAddCategoryForm ? (
-          <PopoverContent className="w-[400px] overflow-scroll">
+          <PopoverContent
+            onPointerDownOutside={handleOpenPopover}
+            className="w-[400px] overflow-scroll"
+          >
             <PopoverArrow className="w-8 h-2 fill-white" />
             <div className="flex items-center gap-2 px-4 py-3">
-              {/*// TODO: ADD BACK BUTTON HERE */}
               <button onClick={toggleShowAddCategoryForm}>
                 <ChevronLeft className="size-4 text-sky-950" />
               </button>
@@ -766,6 +833,7 @@ function SelectCategory() {
         ) : (
           <PopoverContent
             avoidCollisions={false}
+            onPointerDownOutside={handleOpenPopover}
             side={"bottom"}
             className="w-[400px] max-h-[300px] p-0 overflow-scroll shadow-lg text-sm"
           >
@@ -785,17 +853,15 @@ function SelectCategory() {
                   <div key={categoryGroup.id}>
                     <CategoryGroup>{categoryGroup.name}</CategoryGroup>
                     {categoryGroup.categories.map((categoryId) => {
-                      const { id, name } = categories[categoryId];
+                      const category = categories[categoryId];
 
                       return (
                         <CategoryContainer
-                          onClick={() =>
-                            handleSelectCategory(
-                              `${categoryGroup.name}: ${name}`,
-                            )
-                          }
+                          onClick={() => {
+                            handleSelectCategory(categoryGroup.name, category);
+                          }}
                         >
-                          <Category>{name}</Category>
+                          <Category>{category.name}</Category>
                           <CategoryAllocation value={50} />
                         </CategoryContainer>
                       );
@@ -846,7 +912,7 @@ function Category({ children }: { children: ReactNode }) {
 function CategoryAllocation({ value }: { value: number }) {
   const textColor =
     value < 0 ? "text-red-400" : value > 0 ? "text-green-600" : "text-black ";
-  return <p className={`${textColor}`}>£{value.toFixed(2)}</p>;
+  return <p className={`${textColor} `}>£{value.toFixed(2)}</p>;
 }
 
 /// SELECT PAYEE COMPONENTS
