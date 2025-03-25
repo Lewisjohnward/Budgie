@@ -61,6 +61,7 @@ const FormField: React.FC<FormFieldProps> = ({
     <div className="flex items-center border rounded pr-2 border-sky-800/40 focus-within:border-transparent focus-within:ring-1 focus-within:ring-sky-950">
       <Input
         id={name}
+        autoComplete="off"
         type={type}
         className={clsx(
           "border-0 py-6 shadow-transparent focus-visible:ring-0",
