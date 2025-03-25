@@ -601,6 +601,7 @@ function AddTransactionRow({ accountId }: { accountId: string }) {
             placeholder={"Outflow"}
             value={outflow}
             setValue={setOutflow}
+            disabled={inflow.length > 0}
           />
         </TableCell>
         <TableCell>
@@ -608,6 +609,7 @@ function AddTransactionRow({ accountId }: { accountId: string }) {
             placeholder={"Inflow"}
             value={inflow}
             setValue={setInflow}
+            disabled={outflow.length > 0}
           />
         </TableCell>
       </TableRow>
@@ -643,6 +645,7 @@ interface InputOutlineProps
 function InputOutline({
   value,
   setValue,
+  disabled,
   className,
   ...props
 }: InputOutlineProps) {
@@ -652,6 +655,7 @@ function InputOutline({
         "h-5 py-0 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 overflow-ellipsis rounded-sm shadow-none",
         className,
       )}
+      disabled={disabled}
       value={value}
       onChange={(e) => setValue(e.target.value)}
       {...props}
