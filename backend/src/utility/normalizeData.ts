@@ -45,7 +45,7 @@ type NormalizedData = {
 };
 
 type normalizedCategory = Omit<Category, "categoryGroup"> & {
-  categoryGroup: string | null;
+  categoryGroupId: string | null;
 };
 
 type NormalizedAccount = Omit<Account, "transactions"> & {
@@ -95,12 +95,12 @@ export function normalizeData(data: { accounts: Account[] }) {
           userId: transaction.category.userId,
           // type: "EXPENSE",
           name: transaction.category.name,
-          categoryGroup: null,
+          categoryGroupId: null,
         };
 
         if (transaction.category?.categoryGroup) {
           const { id } = transaction.category.categoryGroup;
-          normalizedData.categories[transaction.categoryId].categoryGroup = id;
+          normalizedData.categories[transaction.categoryId].categoryGroupId = id;
 
           normalizedData.categoryGroups[id] = {
             ...transaction.category.categoryGroup,
