@@ -101,6 +101,7 @@ export function Account() {
         <AddTransactionButton onClick={handleOpenAddTransaction} />
       </Container>
       <MyTable
+        accountId={accountId!}
         transactions={account!.transactions}
         addingTransaction={addingTransaction}
       />
