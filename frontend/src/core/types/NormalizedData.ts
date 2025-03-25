@@ -28,6 +28,7 @@ export type Category = {
   id: string;
   userId: string;
   // type: "EXPENSE" | "INCOME";
+  categoryGroupId: string;
   name: string;
 };
 
@@ -35,6 +36,7 @@ export type NormalizedData = {
   accounts: { [key: string]: Account };
   transactions: { [key: string]: Transaction };
   categories: { [key: string]: Category };
+  categoryGroups: { [key: string]: CategoryGroup };
 };
 
 type CategoryGroup = {
