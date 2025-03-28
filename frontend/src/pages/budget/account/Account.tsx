@@ -52,7 +52,7 @@ import {
 } from "@/core/components/uiLibrary/select";
 import { FaRegCreditCard, FaRegMoneyBillAlt } from "react-icons/fa";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
-import { toggleDialog } from "@/core/store/managePayeesSlice";
+import { toggleDialog } from "@/core/slices/managePayeesSlice";
 
 type Category = {
   id: string;

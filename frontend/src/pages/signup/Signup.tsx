@@ -18,7 +18,7 @@ import { LockIcon, MailIcon, Unplug } from "lucide-react";
 import { signupSchema, SignupPayload } from "@/core/schemas/signupSchema";
 import { useSignupMutation } from "@/core/api/authApiSlice";
 import { useEffect, useState } from "react";
-import { setCredentials } from "@/core/auth/authSlice";
+import { setCredentials } from "@/core/slices/authSlice";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
 
 export default function SignupPage() {

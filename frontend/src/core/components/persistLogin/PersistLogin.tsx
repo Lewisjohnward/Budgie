@@ -2,7 +2,7 @@ import { Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useRefreshTokenMutation } from "@/core/api/authApiSlice";
 import { useAppDispatch, useAppSelector } from "@/core/hooks/reduxHooks";
-import { selectCurrentToken, setCredentials } from "@/core/auth/authSlice";
+import { selectCurrentToken, setCredentials } from "@/core/slices/authSlice";
 import { useLocation } from "react-router-dom";
 
 export default function PersistLogin() {

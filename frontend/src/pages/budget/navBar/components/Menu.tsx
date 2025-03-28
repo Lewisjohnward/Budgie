@@ -10,10 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "@/core/components/uiLibrary/dropdown-menu";
 import { MenuButton } from "./MenuButton";
-import { logOut } from "@/core/auth/authSlice";
+import { logOut } from "@/core/slices/authSlice";
 import { useLogoutMutation } from "@/core/api/authApiSlice";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
-import { toggleDialog } from "@/core/store/managePayeesSlice";
+import { toggleDialog } from "@/core/slices/managePayeesSlice";
 
 // TODO: Hookup Navigate to settings button
 

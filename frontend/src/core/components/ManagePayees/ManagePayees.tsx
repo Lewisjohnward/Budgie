@@ -6,7 +6,10 @@ import {
   DialogTitle,
 } from "@/core/components/uiLibrary/dialog";
 import { useAppDispatch, useAppSelector } from "@/core/hooks/reduxHooks";
-import { selectDialogOpen, toggleDialog } from "@/core/store/managePayeesSlice";
+import {
+  selectDialogOpen,
+  toggleDialog,
+} from "@/core/slices/managePayeesSlice";
 
 export function ManagePayees() {
   const dispatch = useAppDispatch();

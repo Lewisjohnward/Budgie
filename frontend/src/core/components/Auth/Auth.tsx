@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAppSelector } from "../../hooks/reduxHooks";
-import { selectCurrentToken } from "../../auth/authSlice";
+import { selectCurrentToken } from "../../slices/authSlice";
 
 const Auth = ({
   children,

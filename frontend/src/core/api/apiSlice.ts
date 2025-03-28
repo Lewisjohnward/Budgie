@@ -4,9 +4,9 @@ import {
   fetchBaseQuery,
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query";
-import { RootState } from "../store/store";
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { logOut, setCredentials } from "../auth/authSlice";
+import { logOut, setCredentials } from "../slices/authSlice";
+import { RootState } from "../store/store";
 
 const baseQuery = fetchBaseQuery({
   // TODO: get url from env variable
