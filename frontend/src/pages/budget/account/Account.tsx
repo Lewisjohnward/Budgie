@@ -109,16 +109,22 @@ export const columns = [
     header: "Memo",
   },
   {
-    accessorFn: (row) => row.outflow ?? 0,
+    accessorKey: "outflow",
     id: "outflow",
     header: "Outflow",
-    cell: (info) => `£${info.getValue<number>().toFixed(2)}`,
+    cell: (info) => {
+      const value = info.getValue<number>();
+      return value === 0 ? "" : `£${value.toFixed(2)}`;
+    },
   },
   {
-    accessorFn: (row) => row.inflow ?? 0,
+    accessorKey: "inflow",
     id: "inflow",
     header: "Inflow",
-    cell: (info) => `£${info.getValue<number>().toFixed(2)}`,
+    cell: (info) => {
+      const value = info.getValue<number>();
+      return value === 0 ? "" : `£${value.toFixed(2)}`;
+    },
   },
 ];
 
