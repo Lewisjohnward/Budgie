@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronLeft, CirclePlus } from "lucide-react";
+import { ChevronDown, ChevronLeft, CirclePlus, Pencil } from "lucide-react";
 import { useParams } from "react-router-dom";
 import {
   useAddCategoryMutation,
@@ -50,6 +50,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/core/components/uiLibrary/select";
+import { FaRegCreditCard, FaRegMoneyBillAlt } from "react-icons/fa";
 
 type Category = {
   id: string;
@@ -168,6 +169,7 @@ export function Account() {
 
   const account = {
     name: chosenAccount.name,
+    type: chosenAccount.type,
     balance: chosenAccount.balance,
     // clearedBalance: 0,
     // unclearedBalance: 0,
@@ -199,7 +201,16 @@ export function Account() {
   return (
     <div className="space-y-2 pt-4">
       <Container>
-        <AccountName>{account.name}</AccountName>
+        <div className="flex justify-between">
+          <div>
+            <AccountName>{account.name}</AccountName>
+            {account.type === "BANK" && <BankType />}
+            {account.type === "CREDIT_CARD" && <CreditCardType />}
+          </div>
+          <Button className="bg-blue-700/20 hover:bg-blue-700/30 shadow-none">
+            <Pencil className="text-blue-800" />
+          </Button>
+        </div>
       </Container>
       <Separator />
       <Container>
@@ -265,6 +276,25 @@ export function Account() {
 }
 
 // COMPONENTS
+
+function BankType() {
+  return (
+    <div className="flex items-center gap-[5px]">
+      <FaRegMoneyBillAlt className="text-gray-600" />
+      <p className="text-sm text-gray-600">Bank Account</p>
+    </div>
+  );
+}
+
+function CreditCardType() {
+  return (
+    <div className="flex items-center gap-[5px]">
+      <FaRegCreditCard className="text-gray-600" />
+      <p className="text-sm text-gray-600">Credit Card</p>
+    </div>
+  );
+}
+
 function Balance({ balance }: { balance: number }) {
   const color = balance > 0 ? "text-green-600" : "text-red-600";
   const formattedBalance = balance.toFixed(2);
@@ -278,7 +308,7 @@ function Balance({ balance }: { balance: number }) {
 }
 
 function AccountName({ children }: { children: ReactNode }) {
-  return <h1 className="font-bold text-2xl tracking-tight">{children}</h1>;
+  return <h1 className="font-bold text-2xl tracking-wide">{children}</h1>;
 }
 
 function Container({ children }: { children: ReactNode }) {
