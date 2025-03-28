@@ -95,15 +95,24 @@ export const columns = [
   },
   {
     accessorFn: (row) => {
-      let category = "Unassigned";
       if (row.categoryGroup?.name && row.category?.name) {
-        category = `${row.categoryGroup.name} : ${row.category.name}`;
+        return `${row.categoryGroup.name} : ${row.category.name}`;
       }
-      return category;
+      return "Unassigned";
     },
     id: "category",
     header: "Category",
-    cell: (info) => info.getValue(),
+    cell: (info) => {
+      const value = info.getValue();
+      const isUnassigned = value === "Unassigned";
+      return (
+        <span
+          className={isUnassigned ? "bg-yellow-300 px-2 py-[1px] rounded" : ""}
+        >
+          {value}
+        </span>
+      );
+    },
   },
   {
     accessorKey: "memo",
