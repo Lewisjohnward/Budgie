@@ -52,7 +52,7 @@ import {
 } from "@/core/components/uiLibrary/select";
 import { FaRegCreditCard, FaRegMoneyBillAlt } from "react-icons/fa";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
-import { toggleDialog } from "@/core/slices/managePayeesSlice";
+import { toggleManagePayees } from "@/core/slices/dialogSlice";
 
 type Category = {
   id: string;
@@ -723,7 +723,7 @@ function CategoryAllocation({ value }: { value: number }) {
 function SelectPayee() {
   const dispatch = useAppDispatch();
   const handleOpenDialog = () => {
-    dispatch(toggleDialog());
+    dispatch(toggleManagePayees());
   };
 
   return (

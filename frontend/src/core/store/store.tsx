@@ -1,13 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit/react";
 import authReducer from "../slices/authSlice";
-import managePayeesReducer from "../slices/managePayeesSlice";
+import dialogReducer from "../slices/dialogSlice";
 import { apiSlice } from "../api/apiSlice";
 
 export const createStore = () =>
   configureStore({
     reducer: {
       auth: authReducer,
-      managePayees: managePayeesReducer,
+      dialogs: dialogReducer,
       [apiSlice.reducerPath]: apiSlice.reducer,
     },
     middleware: (getDefaultMiddleWare) =>

@@ -7,15 +7,15 @@ import {
 } from "@/core/components/uiLibrary/dialog";
 import { useAppDispatch, useAppSelector } from "@/core/hooks/reduxHooks";
 import {
-  selectDialogOpen,
-  toggleDialog,
-} from "@/core/slices/managePayeesSlice";
+  selectManagePayees,
+  toggleManagePayees,
+} from "@/core/slices/dialogSlice";
 
 export function ManagePayees() {
   const dispatch = useAppDispatch();
-  const dialogOpen = useAppSelector(selectDialogOpen);
+  const dialogOpen = useAppSelector(selectManagePayees);
   const handleCloseDialog = () => {
-    dispatch(toggleDialog());
+    dispatch(toggleManagePayees());
   };
 
   return (

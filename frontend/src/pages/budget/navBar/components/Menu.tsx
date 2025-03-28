@@ -13,7 +13,7 @@ import { MenuButton } from "./MenuButton";
 import { logOut } from "@/core/slices/authSlice";
 import { useLogoutMutation } from "@/core/api/authApiSlice";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
-import { toggleDialog } from "@/core/slices/managePayeesSlice";
+import { toggleManagePayees } from "@/core/slices/dialogSlice";
 
 // TODO: Hookup Navigate to settings button
 
@@ -43,14 +43,14 @@ const useMenuActions = () => {
     dispatch(logOut());
     logout();
   }
-  const toggleManagePayees = () => {
-    dispatch(toggleDialog());
+  const toggleDialog = () => {
+    dispatch(toggleManagePayees());
   };
-  return { handleLogout, toggleManagePayees };
+  return { handleLogout, toggleDialog };
 };
 
 export function MenuContent() {
-  const { handleLogout, toggleManagePayees } = useMenuActions();
+  const { handleLogout, toggleDialog } = useMenuActions();
   return (
     <DropdownMenuContent className="w-56 caret-transparent">
       <DropdownMenuLabel className="text-sm">My Account</DropdownMenuLabel>
@@ -71,7 +71,7 @@ export function MenuContent() {
           <span>Log out</span>
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={toggleManagePayees}>
+        <DropdownMenuItem onClick={toggleDialog}>
           <LogOut />
           <span>Manage Payees</span>
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
