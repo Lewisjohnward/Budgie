@@ -51,6 +51,8 @@ import {
   SelectValue,
 } from "@/core/components/uiLibrary/select";
 import { FaRegCreditCard, FaRegMoneyBillAlt } from "react-icons/fa";
+import { useAppDispatch } from "@/core/hooks/reduxHooks";
+import { toggleDialog } from "@/core/store/managePayeesSlice";
 
 type Category = {
   id: string;
@@ -719,6 +721,11 @@ function CategoryAllocation({ value }: { value: number }) {
 /// SELECT PAYEE COMPONENTS
 
 function SelectPayee() {
+  const dispatch = useAppDispatch();
+  const handleOpenDialog = () => {
+    dispatch(toggleDialog());
+  };
+
   return (
     <Popover>
       <PopoverTrigger className="w-full">
@@ -742,7 +749,7 @@ function SelectPayee() {
           <div>
             <Separator />
             <div className="px-4 py-2 text-sky-950">
-              <button>Manage Payees</button>
+              <button onClick={handleOpenDialog}>Manage Payees</button>
             </div>
           </div>
         </div>
