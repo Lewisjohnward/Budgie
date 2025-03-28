@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit/react";
-import authReducer from "../auth/authSlice";
-import managePayeesReducer from "./managePayeesSlice";
+import authReducer from "../slices/authSlice";
+import managePayeesReducer from "../slices/managePayeesSlice";
 import { apiSlice } from "../api/apiSlice";
 
 export const createStore = () =>

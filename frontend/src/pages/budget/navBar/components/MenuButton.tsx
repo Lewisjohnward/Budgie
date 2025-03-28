@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import clsx from "clsx";
-import { selectCurrentUser } from "@/core/auth/authSlice";
+import { selectCurrentUser } from "@/core/slices/authSlice";
 import { BirdIcon, ChevronDownIcon } from "@/core/icons/icons";
 import useMouseOverTimeout from "@/core/hooks/useMouseOverTimeout";
 import { useAppSelector } from "@/core/hooks/reduxHooks";

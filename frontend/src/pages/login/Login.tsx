@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { selectCurrentToken, setCredentials } from "@/core/auth/authSlice";
+import { selectCurrentToken, setCredentials } from "@/core/slices/authSlice";
 import { useAppDispatch, useAppSelector } from "@/core/hooks/reduxHooks";
 import { useEffect } from "react";
 import { useLoginMutation } from "@/core/api/authApiSlice";
