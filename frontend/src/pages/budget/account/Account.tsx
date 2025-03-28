@@ -337,7 +337,7 @@ function AddTransactionRow({
 
   return (
     <>
-      <TableRow className="bg-blue-700/5 hover:bg-blue-700/5 border-none">
+      <TableRow className="bg-blue-700/10 hover:bg-blue-700/10 border-none">
         <TableCell>
           <DatePickerDemo date={date} setDate={setDate} />
         </TableCell>
@@ -371,7 +371,7 @@ function AddTransactionRow({
           />
         </TableCell>
       </TableRow>
-      <TableRow className="bg-blue-700/5 hover:bg-blue-700/5">
+      <TableRow className="bg-blue-700/10 hover:bg-blue-700/10">
         <TableCell colSpan={6}>
           <div className="flex justify-end gap-2">
             <Button
