@@ -29,7 +29,7 @@ export function DatePickerDemo({
             )}
           >
             {date ? (
-              <span className="truncate">{format(date, "MM/dd/yy")}</span>
+              <span className="truncate">{format(date, "dd/MM/yy")}</span>
             ) : (
               <span className="text-gray-400 truncate">Pick a date</span>
             )}
