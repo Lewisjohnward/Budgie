@@ -305,6 +305,12 @@ export const addCategory = async (
   return;
 };
 
+export const updateCategory = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => { };
+
 // TODO: NEEDS TESTING
 export const editCategory = async (
   req: Request,
