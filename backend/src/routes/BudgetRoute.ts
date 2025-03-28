@@ -11,6 +11,9 @@ import {
   getCategories,
   addCategory,
   addCategoryGroup,
+  addPayee,
+  editPayee,
+  deletePayee,
 } from "../controllers";
 
 const router = express.Router();
@@ -30,5 +33,9 @@ router.get("/categories", getCategories);
 
 router.post("/categoryGroup", addCategoryGroup);
 router.post("/category", addCategory);
+
+router.post("/payee", addPayee);
+router.patch("/payee", editPayee);
+router.delete("/payee", deletePayee);
 
 export { router as BudgetRoute };
