@@ -1,11 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit/react";
 import authReducer from "../auth/authSlice";
+import managePayeesReducer from "./managePayeesSlice";
 import { apiSlice } from "../api/apiSlice";
 
 export const createStore = () =>
   configureStore({
     reducer: {
       auth: authReducer,
+      managePayees: managePayeesReducer,
       [apiSlice.reducerPath]: apiSlice.reducer,
     },
     middleware: (getDefaultMiddleWare) =>
@@ -14,8 +16,7 @@ export const createStore = () =>
     devTools: true,
   });
 
-export const store = createStore()
-
+export const store = createStore();
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
