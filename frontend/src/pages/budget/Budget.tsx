@@ -13,6 +13,7 @@ import {
   useGetAccountsQuery,
   useGetCategoriesQuery,
 } from "@/core/api/budgetApiSlice";
+import { ManagePayees } from "@/core/components/ManagePayees/ManagePayees";
 
 export default function BudgetPage() {
   const { isLoading: isLoadingAccounts } = useGetAccountsQuery();
@@ -31,6 +32,7 @@ function BudgetContent() {
       <div className="flex-grow">
         <Outlet />
       </div>
+      <ManagePayees />
     </main>
   );
 }
