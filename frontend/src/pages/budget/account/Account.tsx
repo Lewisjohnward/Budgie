@@ -129,9 +129,7 @@ export const columns = [
 ];
 
 export function Account() {
-  // TODO: GET TRANSACTION DATA
   const { data, isLoading, isError } = useGetAccountsQuery();
-  const [addTransaction] = useAddTransactionMutation();
   const [addingTransaction, setAddingTransaction] = useState(false);
   const toggleAddTransaction = () => {
     setAddingTransaction((prev) => !prev);
