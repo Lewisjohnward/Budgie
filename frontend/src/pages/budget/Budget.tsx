@@ -14,6 +14,7 @@ import {
   useGetCategoriesQuery,
 } from "@/core/api/budgetApiSlice";
 import { ManagePayees } from "@/core/components/ManagePayees/ManagePayees";
+import { EditAccount } from "@/core/components/EditAccount/EditAccount";
 
 export default function BudgetPage() {
   const { isLoading: isLoadingAccounts } = useGetAccountsQuery();
@@ -33,6 +34,7 @@ function BudgetContent() {
         <Outlet />
       </div>
       <ManagePayees />
+      <EditAccount />
     </main>
   );
 }
