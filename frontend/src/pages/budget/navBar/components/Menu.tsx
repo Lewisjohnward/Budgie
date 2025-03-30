@@ -9,6 +9,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/core/components/uiLibrary/dropdown-menu";
+import { MdOutlineManageAccounts } from "react-icons/md";
 import { MenuButton } from "./MenuButton";
 import { logOut } from "@/core/slices/authSlice";
 import { useLogoutMutation } from "@/core/api/authApiSlice";
@@ -43,9 +44,7 @@ const useMenuActions = () => {
     dispatch(logOut());
     logout();
   }
-  const toggleDialog = () => {
-    dispatch(toggleManagePayees());
-  };
+  const toggleDialog = () => dispatch(toggleManagePayees()); 
   return { handleLogout, toggleDialog };
 };
 
@@ -59,22 +58,18 @@ export function MenuContent() {
         <DropdownMenuItem onClick={() => console.log("navbar - user button")}>
           <User />
           <span>Profile</span>
-          <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
         </DropdownMenuItem>
         <DropdownMenuItem>
           <Settings />
           <span>Settings</span>
-          <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={toggleDialog}>
+          <MdOutlineManageAccounts />
+          <span>Manage Payees</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleLogout}>
           <LogOut />
           <span>Log out</span>
-          <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={toggleDialog}>
-          <LogOut />
-          <span>Manage Payees</span>
-          <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuGroup>
     </DropdownMenuContent>
