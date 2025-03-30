@@ -29,7 +29,10 @@ import { Input } from "../uiLibrary/input";
 export function EditAccount() {
   const dispatch = useAppDispatch();
   const dialogOpen = useAppSelector(selectEditAccount);
-  const handleCloseDialog = () => dispatch(toggleEditAccount());
+  const handleCloseDialog = () => {
+    dispatch(toggleEditAccount());
+    form.reset();
+  };
 
   const editAccountSchema = z.object({
     name: z.string().min(2).max(50),
