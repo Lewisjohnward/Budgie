@@ -52,7 +52,10 @@ import {
 } from "@/core/components/uiLibrary/select";
 import { FaRegCreditCard, FaRegMoneyBillAlt } from "react-icons/fa";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
-import { toggleManagePayees } from "@/core/slices/dialogSlice";
+import {
+  toggleEditAccount,
+  toggleManagePayees,
+} from "@/core/slices/dialogSlice";
 import { MdOutlineManageAccounts } from "react-icons/md";
 
 type Category = {
@@ -144,6 +147,8 @@ export const columns = [
 export function Account() {
   const { data, isLoading, isError } = useGetAccountsQuery();
   const [addingTransaction, setAddingTransaction] = useState(false);
+  const dispatch = useAppDispatch();
+  const handleOpenDialog = () => dispatch(toggleEditAccount());
   const toggleAddTransaction = () => {
     setAddingTransaction((prev) => !prev);
   };
@@ -219,7 +224,10 @@ export function Account() {
             {account.type === "BANK" && <BankType />}
             {account.type === "CREDIT_CARD" && <CreditCardType />}
           </div>
-          <Button className="bg-blue-700/20 hover:bg-blue-700/30 shadow-none">
+          <Button
+            onClick={handleOpenDialog}
+            className="bg-blue-700/20 hover:bg-blue-700/30 shadow-none"
+          >
             <Pencil className="text-blue-800" />
           </Button>
         </div>
