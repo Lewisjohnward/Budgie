@@ -53,6 +53,7 @@ import {
 import { FaRegCreditCard, FaRegMoneyBillAlt } from "react-icons/fa";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
 import { toggleManagePayees } from "@/core/slices/dialogSlice";
+import { MdOutlineManageAccounts } from "react-icons/md";
 
 type Category = {
   id: string;
@@ -722,9 +723,7 @@ function CategoryAllocation({ value }: { value: number }) {
 
 function SelectPayee() {
   const dispatch = useAppDispatch();
-  const handleOpenDialog = () => {
-    dispatch(toggleManagePayees());
-  };
+  const handleOpenDialog = () => dispatch(toggleManagePayees());
 
   return (
     <Popover>
@@ -749,7 +748,13 @@ function SelectPayee() {
           <div>
             <Separator />
             <div className="px-4 py-2 text-sky-950">
-              <button onClick={handleOpenDialog}>Manage Payees</button>
+              <button
+                onClick={handleOpenDialog}
+                className="flex items-center gap-2"
+              >
+                <MdOutlineManageAccounts className="text-sky-950" />
+                <span>Manage Payees</span>
+              </button>
             </div>
           </div>
         </div>
