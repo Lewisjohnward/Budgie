@@ -42,7 +42,10 @@ export function AccountCard({
       )}
     >
       <div
-        onClick={handleOpenDialog}
+        onClick={(e) => {
+          e.preventDefault();
+          handleOpenDialog();
+        }}
         className="relative flex justify-center items-center w-5 h-5"
       >
         {mouseOver ? (
