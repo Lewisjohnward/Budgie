@@ -1,7 +1,6 @@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/core/components/uiLibrary/dialog";
@@ -10,23 +9,19 @@ import {
   selectManagePayees,
   toggleManagePayees,
 } from "@/core/slices/dialogSlice";
+import { MdOutlineManageAccounts } from "react-icons/md";
 
 export function ManagePayees() {
   const dispatch = useAppDispatch();
   const dialogOpen = useAppSelector(selectManagePayees);
-  const handleCloseDialog = () => {
-    dispatch(toggleManagePayees());
-  };
+  const handleCloseDialog = () => dispatch(toggleManagePayees());
 
   return (
     <Dialog open={dialogOpen} onOpenChange={handleCloseDialog}>
-      <DialogContent className="h-[600px] w-[1000px]">
-        <DialogHeader>
-          <DialogTitle>Manage Payees</DialogTitle>
-          <DialogDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
-          </DialogDescription>
+      <DialogContent className="h-[600px] w-[1000px] flex flex-col">
+        <DialogHeader className="flex flex-row items-center gap-2">
+          <MdOutlineManageAccounts className="text-sky-950" />
+          <DialogTitle className="text-sky-950">Manage Payees</DialogTitle>
         </DialogHeader>
       </DialogContent>
     </Dialog>
