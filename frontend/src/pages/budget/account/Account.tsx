@@ -113,17 +113,29 @@ export const columns = [
       const value = info.getValue();
       const isUnassigned = value === "Unassigned";
       return (
-        <span
-          className={isUnassigned ? "bg-yellow-300 px-2 py-[1px] rounded" : ""}
-        >
-          {value}
-        </span>
+        <div title={value} className="truncate">
+          <span
+            className={
+              isUnassigned ? "bg-yellow-300/70 px-2 py-[1px] rounded-lg" : ""
+            }
+          >
+            {value}
+          </span>
+        </div>
       );
     },
   },
   {
     accessorKey: "memo",
     header: "Memo",
+    cell: (info) => {
+      const value = info.getValue();
+      return (
+        <div className="truncate" title={value}>
+          {value}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "outflow",
@@ -160,6 +172,10 @@ export function Account() {
 
   const { accountId } = useParams();
 
+  if (!accountId) {
+    throw new Error("There is no accountId");
+  }
+
   if (isLoading) return <div>loading</div>;
 
   const chosenAccount = Object.values(data.accounts).find(
@@ -182,7 +198,7 @@ export function Account() {
 
           return { ...transaction, category, categoryGroup };
         }),
-    [data],
+    [data, accountId],
   );
 
   const account = {
@@ -214,6 +230,7 @@ export function Account() {
     data: account.transactions,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    enableRowSelection: true,
   });
 
   return (
@@ -241,7 +258,7 @@ export function Account() {
       <Container>
         <AddTransactionButton onClick={toggleAddTransaction} />
       </Container>
-      <Table>
+      <Table style={{ tableLayout: "fixed", width: "100%" }}>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -250,13 +267,14 @@ export function Account() {
                   <TableHead
                     key={header.id}
                     className="relative border border-r-neutral-300 text-nowrap text-ellipsis overflow-hidden"
+                    style={{ width: header.getSize() }}
                   >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
                   </TableHead>
                 );
               })}
@@ -266,23 +284,35 @@ export function Account() {
         <TableBody>
           {addingTransaction && (
             <AddTransactionRow
-              accountId={accountId!}
+              accountId={accountId}
               cancel={toggleAddTransaction}
             />
           )}
           {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
+            table.getRowModel().rows.map((row) =>
+              row.getIsSelected() ? (
+                <AddTransactionRow
+                  accountId={accountId}
+                  transactionId={row.original.id}
+                  cancel={() => row.toggleSelected()}
+                />
+              ) : (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                  onClick={() => row.toggleSelected()}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ),
+            )
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
@@ -357,19 +387,45 @@ function AddTransactionButton({ onClick }: { onClick: () => void }) {
 function AddTransactionRow({
   accountId,
   cancel,
+  transactionId,
 }: {
   accountId: string;
   cancel: () => void;
+  transactionId?: string;
 }) {
   const [addTransaction] = useAddTransactionMutation();
+  const { data } = useGetAccountsQuery();
 
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [payee, setPayee] = useState("");
-  const [categoryName, setCategoryName] = useState("");
+  const transaction = transactionId
+    ? data?.transactions[transactionId]
+    : undefined;
+
+  const [date, setDate] = useState<Date | undefined>(
+    transaction?.date ? new Date(transaction.date) : undefined,
+  );
+  const [payee, setPayee] = useState(transaction?.payee || "");
+
+  // TODO: THESE TWO
+  const [categoryName, setCategoryName] = useState(
+    transaction?.categoryId || "",
+  );
   const [categoryId, setCategoryId] = useState("");
-  const [memo, setMemo] = useState("");
-  const [outflow, setOutflow] = useState("");
-  const [inflow, setInflow] = useState("");
+
+  const [memo, setMemo] = useState(transaction?.memo || "");
+  const [outflow, setOutflow] = useState(
+    transaction?.outflow !== undefined && transaction?.outflow !== null
+      ? transaction.outflow === 0
+        ? ""
+        : transaction.outflow.toFixed(2)
+      : "",
+  );
+  const [inflow, setInflow] = useState(
+    transaction?.inflow !== undefined && transaction?.inflow !== null
+      ? transaction.inflow === 0
+        ? ""
+        : transaction.inflow.toFixed(2)
+      : "",
+  );
 
   const handleAddTransaction = () => {
     const transaction = {
