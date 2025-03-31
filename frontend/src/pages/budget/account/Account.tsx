@@ -57,6 +57,7 @@ import {
   toggleManagePayees,
 } from "@/core/slices/dialogSlice";
 import { MdOutlineManageAccounts } from "react-icons/md";
+import { numberToCurrency } from "@/core/lib/numberToCurrency";
 
 type Category = {
   id: string;
@@ -317,11 +318,11 @@ function CreditCardType() {
 
 function Balance({ balance }: { balance: number }) {
   const color = balance > 0 ? "text-green-600" : "text-red-600";
-  const formattedBalance = balance.toFixed(2);
+  const formattedBalance = numberToCurrency(balance);
 
   return (
     <div>
-      <p className={`${color} font-semibold`}>£{formattedBalance}</p>
+      <p className={`${color} font-semibold`}>{formattedBalance}</p>
       <p className="text-gray-600">Balance</p>
     </div>
   );
