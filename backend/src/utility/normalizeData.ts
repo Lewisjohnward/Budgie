@@ -16,7 +16,7 @@ type Transaction = {
   date: Date;
   inflow: number | null;
   outflow: number | null;
-  payee: string | null;
+  payeeId: string | null;
   memo: string | null;
   cleared: boolean;
   createdAt: Date;
@@ -100,7 +100,8 @@ export function normalizeData(data: { accounts: Account[] }) {
 
         if (transaction.category?.categoryGroup) {
           const { id } = transaction.category.categoryGroup;
-          normalizedData.categories[transaction.categoryId].categoryGroupId = id;
+          normalizedData.categories[transaction.categoryId].categoryGroupId =
+            id;
 
           normalizedData.categoryGroups[id] = {
             ...transaction.category.categoryGroup,
