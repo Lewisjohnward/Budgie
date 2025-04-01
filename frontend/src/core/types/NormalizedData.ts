@@ -6,7 +6,7 @@ export type Account = {
   balance: number;
   createdAt: Date;
   updatedAt: Date;
-  transactions: Transaction[];
+  transactions: string[];
 };
 
 export type Transaction = {
@@ -21,7 +21,7 @@ export type Transaction = {
   cleared: boolean;
   createdAt: Date;
   updatedAt: Date;
-  category: Category;
+  category: string;
 };
 
 export type Category = {
