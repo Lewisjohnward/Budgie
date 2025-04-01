@@ -4,8 +4,7 @@
 
 import clsx from "clsx";
 import { Dot, Pencil } from "lucide-react";
-import { Link } from "react-router-dom";
-import { useIsRoute } from "../hooks/useIsRoute";
+import { NavLink } from "react-router-dom";
 import useMouseOver from "@/core/hooks/useMouseOver";
 import { Account } from "@/core/types/NormalizedData";
 import { Balance } from "./Balance";
@@ -28,15 +27,16 @@ export function AccountCard({
   const hasFundsToAllocate = Math.random() >= 0.5;
 
   return (
-    <Link
+    <NavLink
       to={`account/${account.id}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={clsx(
-        // TODO: Would it be better to have selected as a property on the array from server?
-        (active || mouseOver) && "bg-white/10",
-        "flex justify-between items-center gap-4 pl-4 pr-2 py-2 text-sm rounded",
-      )}
+      className={({ isActive }) =>
+        clsx(
+          (isActive || mouseOver) && "bg-white/10",
+          "group flex justify-between items-center gap-4 pl-4 pr-2 py-2 text-sm rounded",
+        )
+      }
     >
       <div
         onClick={(e) => {
@@ -55,6 +55,6 @@ export function AccountCard({
         <p>{account.name}</p>
         <Balance balance={account.balance} />
       </div>
-    </Link>
+    </NavLink>
   );
 }
