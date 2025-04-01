@@ -1,4 +1,11 @@
-import { ChevronDown, ChevronLeft, CirclePlus, Pencil } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  CirclePlus,
+  Ellipsis,
+  Pencil,
+  X,
+} from "lucide-react";
 import { useParams } from "react-router-dom";
 import {
   useAddCategoryMutation,
@@ -6,10 +13,12 @@ import {
   useGetAccountsQuery,
   useGetCategoriesQuery,
 } from "@/core/api/budgetApiSlice";
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
   flexRender,
   getCoreRowModel,
+  Row,
+  RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
 import {
@@ -56,8 +65,9 @@ import {
   toggleEditAccount,
   toggleManagePayees,
 } from "@/core/slices/dialogSlice";
-import { MdOutlineManageAccounts } from "react-icons/md";
+import { MdMoveToInbox, MdOutlineManageAccounts } from "react-icons/md";
 import { numberToCurrency } from "@/core/lib/numberToCurrency";
+import { Dialog, DialogContent } from "@/core/components/uiLibrary/dialog";
 
 type Category = {
   id: string;
@@ -186,6 +196,21 @@ export function Account() {
     throw new Error(`Account with ID ${accountId} not found`);
   }
 
+  const handleSubmitTransaction = async () => {
+    const dummyTransaction = {
+      accountId,
+      // categoryId, doesn't need to be sent, by default will be this needs a category
+      // date, default is today
+      // inflow: 0.31,
+      outflow: 5.69,
+      // payee, not needed
+      // TODO: FIX BUG BELOW
+      // date: "2024-12-31", SENDING THIS will pass zod but fail db BUG!!!
+      date: "2025-01-03T00:00:00.000Z",
+      memo: "Sainsbury's hyper cheese bargs",
+    };
+  };
+
   const transactions = useMemo(
     () =>
       Object.values(data.transactions)
@@ -195,7 +220,6 @@ export function Account() {
           const categoryGroup = category
             ? (data.categoryGroups[category.categoryGroupId] ?? null)
             : null;
-
           return { ...transaction, category, categoryGroup };
         }),
     [data, accountId],
@@ -211,17 +235,67 @@ export function Account() {
     // transactions: formattedTransactions
   };
 
+  ///// TABLE
+
   useEffect(() => {
-    setAddingTransaction(false);
     table.resetRowSelection();
+    setAddingTransaction(false);
   }, [accountId]);
+
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [lastRowSelection, setLastRowSelection] = useState<RowSelectionState>(
+    {},
+  );
 
   const table = useReactTable({
     data: account.transactions,
     columns,
     getCoreRowModel: getCoreRowModel(),
     enableRowSelection: true,
+    enableMultiRowSelection: true,
+    onRowSelectionChange: setRowSelection, //hoist up the row selection state to your own scope
+    // getRowId: (row) => row.id,
+    state: {
+      rowSelection, //pass the row selection state back to the table instance
+    },
   });
+
+  const onRowSelection = (
+    e: React.MouseEvent<HTMLTableRowElement, MouseEvent>,
+    row,
+  ) => {
+    if (e.shiftKey) {
+      const start = Number(Object.keys(lastRowSelection));
+      const end = Number(row.id);
+      const [min, max] = start < end ? [start, end] : [end, start];
+      const selectedRows = Object.fromEntries(
+        Array.from({ length: max - min + 1 }, (_, i) => [min + i, true]),
+      );
+      table.setRowSelection({ ...rowSelection, ...selectedRows });
+    } else if (e.ctrlKey) {
+      const id = row.id;
+      table.setRowSelection((prev) => ({
+        ...prev,
+        [id]: !prev[id],
+      }));
+    } else {
+      table.resetRowSelection();
+      row.toggleSelected();
+    }
+    setLastRowSelection({ [row.id]: true });
+  };
+
+  const hoverEnabled = !addingTransaction && !table.getIsSomeRowsSelected();
+
+  const selectedRowIds = Object.keys(rowSelection).map(
+    (key) => account.transactions[Number(key)].id,
+  );
+
+  const numberOfRows = Object.keys(rowSelection).length;
+  const displaySelectionModal = numberOfRows > 0;
+  const cancelSelection = () => setRowSelection({});
+
+  //////
 
   return (
     <div className="space-y-2 pt-4">
@@ -262,9 +336,9 @@ export function Account() {
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </TableHead>
                 );
               })}
@@ -280,7 +354,8 @@ export function Account() {
           )}
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) =>
-              row.getIsSelected() ? (
+              // row.getIsSelected() ? (
+              false ? (
                 <AddTransactionRow
                   accountId={accountId}
                   transactionId={row.original.id}
@@ -290,7 +365,8 @@ export function Account() {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  onClick={() => row.toggleSelected()}
+                  // className={row.getIs ? "" : "hover:bg-transparent"}
+                  onClick={(e) => onRowSelection(e, row)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -312,6 +388,11 @@ export function Account() {
           )}
         </TableBody>
       </Table>
+      <SelectionModal
+        rowCount={numberOfRows}
+        display={displaySelectionModal}
+        cancel={cancelSelection}
+      />
     </div>
   );
 }
@@ -434,7 +515,7 @@ function AddTransactionRow({
 
   return (
     <>
-      <TableRow className="bg-blue-700/10 hover:bg-blue-700/10 border-none">
+      <TableRow className="bg-blue-700/20 hover:bg-blue-700/20 border-none">
         <TableCell>
           <DatePickerDemo date={date} setDate={setDate} />
         </TableCell>
@@ -468,7 +549,7 @@ function AddTransactionRow({
           />
         </TableCell>
       </TableRow>
-      <TableRow className="bg-blue-700/10 hover:bg-blue-700/10">
+      <TableRow className="bg-blue-700/20 hover:bg-blue-700/20">
         <TableCell colSpan={6}>
           <div className="flex justify-end gap-2">
             <Button
@@ -815,5 +896,39 @@ function SelectPayee() {
         </div>
       </PopoverContent>
     </Popover>
+  );
+}
+
+/// SELECTION MODAL
+
+function SelectionModal({
+  rowCount,
+  display,
+  cancel,
+}: {
+  rowCount: number;
+  display: boolean;
+  cancel: () => void;
+}) {
+  return (
+    <Dialog open={display} modal={false}>
+      <DialogContent
+        className="max-w-fit flex items-center px-2 h-12 bg-sky-950 border-none rounded-xl text-white shadow-none [&>button:last-child]:hidden"
+        position={"bc"}
+      >
+        <Button onClick={cancel} className="bg-transparent hover:bg-white/10">
+          <X />
+          {`${rowCount} Transactions`}
+        </Button>
+        <Button className="bg-transparent hover:bg-white/10">
+          <MdMoveToInbox />
+          Categorise
+        </Button>
+        <Button className="bg-transparent hover:bg-white/10">
+          <Ellipsis />
+          More
+        </Button>
+      </DialogContent>
+    </Dialog>
   );
 }
