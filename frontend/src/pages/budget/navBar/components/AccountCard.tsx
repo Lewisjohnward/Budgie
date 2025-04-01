@@ -10,6 +10,18 @@ import { Account } from "@/core/types/NormalizedData";
 import { Balance } from "./Balance";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
 import { toggleEditAccount } from "@/core/slices/dialogSlice";
+import { useGetAccountsQuery } from "@/core/api/budgetApiSlice";
+import { useMemo } from "react";
+
+export function useHasUnallocatedTransactions(account: Account) {
+  const { data } = useGetAccountsQuery();
+
+  return useMemo(() => {
+    return account.transactions.some(
+      (transactionId) => !data?.transactions?.[transactionId]?.categoryId,
+    );
+  }, [account.transactions, data?.transactions]);
+}
 
 export function AccountCard({
   account,
@@ -21,10 +33,7 @@ export function AccountCard({
   const { mouseOver, handleMouseEnter, handleMouseLeave } = useMouseOver();
   const dispatch = useAppDispatch();
   const handleOpenDialog = () => dispatch(toggleEditAccount());
-  const isRoute = useIsRoute();
-
-  const active = isRoute(`/budget/account/${account.id}`);
-  const hasFundsToAllocate = Math.random() >= 0.5;
+  const hasUnallocatedTransactions = useHasUnallocatedTransactions(account);
 
   return (
     <NavLink
@@ -47,7 +56,7 @@ export function AccountCard({
       >
         {mouseOver ? (
           <Pencil className="w-3 h-3 hover:opacity-30" />
-        ) : hasFundsToAllocate ? (
+        ) : hasUnallocatedTransactions ? (
           <Dot size={40} className="absolute" />
         ) : null}
       </div>
