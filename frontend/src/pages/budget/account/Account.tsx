@@ -6,7 +6,7 @@ import {
   useGetAccountsQuery,
   useGetCategoriesQuery,
 } from "@/core/api/budgetApiSlice";
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -211,20 +211,10 @@ export function Account() {
     // transactions: formattedTransactions
   };
 
-  const handleSubmitTransaction = async () => {
-    const dummyTransaction = {
-      accountId,
-      // categoryId, doesn't need to be sent, by default will be this needs a category
-      // date, default is today
-      // inflow: 0.31,
-      outflow: 5.69,
-      // payee, not needed
-      // TODO: FIX BUG BELOW
-      // date: "2024-12-31", SENDING THIS will pass zod but fail db BUG!!!
-      date: "2025-01-03T00:00:00.000Z",
-      memo: "Sainsbury's hyper cheese bargs",
-    };
-  };
+  useEffect(() => {
+    setAddingTransaction(false);
+    table.resetRowSelection();
+  }, [accountId]);
 
   const table = useReactTable({
     data: account.transactions,
