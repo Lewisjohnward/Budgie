@@ -184,9 +184,9 @@ export const addTransaction = async (
 
   // IF NO CATEGORY ASSIGN TO THIS NEEDS A CATEGORY
 
-  const { accountId, categoryId, date, inflow, outflow, payee, memo } = <
+  const { accountId, categoryId, date, inflow, outflow, payeeId, memo } = <
     TransactionPayload
-    >req.body;
+  >req.body;
 
   if (!inflow && !outflow) {
     res.status(400).json({ message: "Malformed data" });
@@ -200,7 +200,7 @@ export const addTransaction = async (
       date,
       inflow,
       outflow,
-      payee,
+      payeeId,
       memo,
     });
 
@@ -309,7 +309,7 @@ export const updateCategory = async (
   req: Request,
   res: Response,
   next: NextFunction,
-) => { };
+) => {};
 
 // TODO: NEEDS TESTING
 export const editCategory = async (
@@ -318,7 +318,7 @@ export const editCategory = async (
   next: NextFunction,
 ) => {
   try {
-  } catch (error) { }
+  } catch (error) {}
   return;
 };
 
@@ -328,7 +328,7 @@ export const deleteCategory = async (
   next: NextFunction,
 ) => {
   try {
-  } catch (error) { }
+  } catch (error) {}
   return;
 };
 
@@ -338,7 +338,7 @@ export const addPayee = async (
   next: NextFunction,
 ) => {
   try {
-  } catch (error) { }
+  } catch (error) {}
   return;
 };
 
@@ -348,7 +348,7 @@ export const editPayee = async (
   next: NextFunction,
 ) => {
   try {
-  } catch (error) { }
+  } catch (error) {}
   return;
 };
 
@@ -358,6 +358,6 @@ export const deletePayee = async (
   next: NextFunction,
 ) => {
   try {
-  } catch (error) { }
+  } catch (error) {}
   return;
 };

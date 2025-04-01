@@ -89,6 +89,7 @@ model Transaction {
   id         String   @id @default(uuid())
   accountId  String
   categoryId String?
+  payeeId    String?
   // budgetId    String
   date       DateTime @default(now())
   inflow     Decimal? @default(0)
@@ -100,5 +101,18 @@ model Transaction {
   updatedAt  DateTime @updatedAt
   account    Account  @relation(fields: [accountId], references: [id])
   category   Category? @relation(fields: [categoryId], references: [id])
+  payeeId   payeeId? @relation(fields: [payeeId], references: [id])
   // budget      Budget      @relation(fields: [budgetId], references: [id])
 }
+
+model Payee {
+ id String @id @default(uuid())
+ name String
+ transactions Transaction[]
+}
+
+
+
+
+
+

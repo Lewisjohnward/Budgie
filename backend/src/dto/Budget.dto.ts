@@ -31,7 +31,7 @@ export interface TransactionPayload {
   date?: string;
   inflow?: number | null;
   outflow?: number | null;
-  payee?: string | null;
+  payeeId?: string | null;
   memo?: string | null;
 }
 

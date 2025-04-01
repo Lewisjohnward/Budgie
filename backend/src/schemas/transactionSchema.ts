@@ -20,7 +20,7 @@ const commonTransactionSchema = z.object({
     .string()
     .transform((val) => Number(val))
     .optional(),
-  payee: z.string().max(100).nullish(),
+  payeeId: z.string().uuid().optional(),
   memo: z.string().max(100).nullish(),
 });
 
