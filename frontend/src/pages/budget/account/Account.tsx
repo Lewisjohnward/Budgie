@@ -917,19 +917,23 @@ function SelectionModal({
   return (
     <Dialog open={display} modal={false}>
       <DialogContent
+        onOpenAutoFocus={(e) => e.preventDefault()}
         className="max-w-fit flex items-center px-2 h-12 bg-sky-950 border-none rounded-xl text-white shadow-none [&>button:last-child]:hidden"
         position={"bc"}
       >
         <DialogTitle className="sr-only">Row selection modal</DialogTitle>
-        <Button onClick={cancel} className="bg-transparent hover:bg-white/10">
+        <Button
+          onClick={cancel}
+          className="bg-transparent hover:bg-white/10 focus-visible:ring-white"
+        >
           <X />
           {`${rowCount} Transactions`}
         </Button>
-        <Button className="bg-transparent hover:bg-white/10">
+        <Button className="bg-transparent hover:bg-white/10 focus-visible:ring-white">
           <MdMoveToInbox />
           Categorise
         </Button>
-        <Button className="bg-transparent hover:bg-white/10">
+        <Button className="bg-transparent hover:bg-white/10 focus-visible:ring-white">
           <Ellipsis />
           More
         </Button>
