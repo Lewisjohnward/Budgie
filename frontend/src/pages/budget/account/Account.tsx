@@ -67,7 +67,11 @@ import {
 } from "@/core/slices/dialogSlice";
 import { MdMoveToInbox, MdOutlineManageAccounts } from "react-icons/md";
 import { numberToCurrency } from "@/core/lib/numberToCurrency";
-import { Dialog, DialogContent } from "@/core/components/uiLibrary/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/core/components/uiLibrary/dialog";
 
 type Category = {
   id: string;
@@ -916,6 +920,7 @@ function SelectionModal({
         className="max-w-fit flex items-center px-2 h-12 bg-sky-950 border-none rounded-xl text-white shadow-none [&>button:last-child]:hidden"
         position={"bc"}
       >
+        <DialogTitle className="sr-only">Row selection modal</DialogTitle>
         <Button onClick={cancel} className="bg-transparent hover:bg-white/10">
           <X />
           {`${rowCount} Transactions`}
