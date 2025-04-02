@@ -326,7 +326,7 @@ export function Account() {
       <Container>
         <AddTransactionButton onClick={toggleAddTransaction} />
       </Container>
-      <Table style={{ tableLayout: "fixed", width: "100%" }}>
+      <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
