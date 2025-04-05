@@ -94,14 +94,13 @@ model Transaction {
   date       DateTime @default(now())
   inflow     Decimal? @default(0)
   outflow    Decimal? @default(0)
-  payee      String?
   memo       String?
   cleared    Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   account    Account  @relation(fields: [accountId], references: [id])
   category   Category? @relation(fields: [categoryId], references: [id])
-  payeeId   payeeId? @relation(fields: [payeeId], references: [id])
+  payee   Payee? @relation(fields: [payeeId], references: [id])
   // budget      Budget      @relation(fields: [budgetId], references: [id])
 }
 
