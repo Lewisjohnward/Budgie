@@ -245,18 +245,40 @@ export function Allocation() {
                 <CategoriesContainer display={categoryGroup.open}>
                   {categoryGroup.categories.length > 0
                     ? categoryGroup.categories.map((cat) => {
-                        const category = categories[cat];
-                        const { id, name } = category;
-                        const activity =
-                          category.months.length > 0
-                            ? months[category.months[monthSelector]].activity
-                            : 0;
+                      const category = categories[cat];
+                      const { id, name } = category;
+                      const activity =
+                        category.months.length > 0
+                          ? months[category.months[monthSelector]].activity
+                          : 0;
 
                       return (
                         <CategoryContextMenu category={category}>
                           <CategoryContent key={id}>
+                            {(ref) => (
+                              <>
+                                <Checkbox className="size-3 rounded-[2px] shadow-none" />
+                                <CategoryNameContainer>
+                                  <CategoryName>{name}</CategoryName>
+                                  <ProgressBar
+                                    assigned={0}
+                                    activity={activity}
+                                    available={0}
+                                  />
+                                </CategoryNameContainer>
+                                <EditAssigned
+                                  ref={ref}
+                                  // assigned={0.toFixed(2)}
+                                  assigned={"0.00"}
+                                />
+                                <Activity>{activity.toFixed(2)}</Activity>
+                                <Available>{"0.00"}</Available>
+                              </>
+                            )}
+                          </CategoryContent>
                         </CategoryContextMenu>
                       );
+                    })
                     : null}
                 </CategoriesContainer>
               </Container>
