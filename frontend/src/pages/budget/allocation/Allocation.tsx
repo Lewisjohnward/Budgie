@@ -230,7 +230,7 @@ export function Allocation() {
                 <CategoryGroupContainer>
                   <ExpandCategoryGroup
                     // onClick={() => toggleDisplayCategories(group.id)}
-                    onClick={() => expandCategoryGroup(group.id)}
+                    onClick={() => expandCategoryGroup(categoryGroup.id)}
                     // open={group.open}
                     open={categoryGroup.open}
                   />
