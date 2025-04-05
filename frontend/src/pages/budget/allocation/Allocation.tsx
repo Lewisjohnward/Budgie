@@ -339,13 +339,9 @@ type CategoryContextType = z.infer<typeof CategoryContextSchema>;
 function CategoryContextMenu({
   category,
   children,
-  contextOpen,
-  close,
 }: {
   category: Category;
   children: ReactNode;
-  contextOpen: boolean;
-  close: () => void;
 }) {
   const [contextOpen, setContextOpen] = useState(false);
   const form = useForm<CategoryContextType>({
