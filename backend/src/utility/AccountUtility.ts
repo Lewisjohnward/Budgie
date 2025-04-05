@@ -181,7 +181,7 @@ export const insertTransaction = async (transaction: TransactionPayload) => {
 };
 
 const roundToStartOfMonth = (date: Date) => {
-  const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+  const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 2);
   return startOfMonth;
 };
 
