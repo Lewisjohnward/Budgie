@@ -25,10 +25,9 @@ import {
   darkBlueText,
 } from "@/core/theme/colors";
 import Assign from "./components/assign/Assign";
-import { Menu } from "../Budget";
 import {
+  useAddCategoryGroupMutation,
   useAddCategoryMutation,
-  useGetAccountsQuery,
   useGetCategoriesQuery,
 } from "@/core/api/budgetApiSlice";
 import { produce } from "immer";
@@ -45,19 +44,14 @@ import {
 } from "@/core/types/Allocation";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
 import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuTrigger,
-} from "@/core/components/uiLibrary/context-menu";
-import {
   Form,
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/core/components/uiLibrary/form";
 import { Category } from "@/core/types/NormalizedData";
+import { CirclePlus } from "lucide-react";
 
 function formatDate(dateStr: string) {
   const date = new Date(dateStr + "-01");
@@ -91,7 +85,7 @@ function useAllocation() {
     setAllocationData(mapAllocationData(data));
   }, [data]);
 
-  useEffect(() => {}, [data]);
+  useEffect(() => { }, [data]);
 
   const uniqueMonths = new Set(
     Object.values(allocationData.months).map((m) => m.month.slice(0, 7)),
@@ -208,7 +202,7 @@ export function Allocation() {
 
       <BodyContainer>
         <WideCategoriesContainer>
-          <Menu />
+          <AddCategoryGroup />
           <div className="flex items-center gap-2 p-2">
             {categoryGroups.length > 0 ? (
               <button>
@@ -575,6 +569,91 @@ function AddCategoryButton({
   );
 }
 
+// Add category Group
+const AddCategoryGroupSchema = z.object({
+  name: z.string().min(1, { message: "Category group requires a name" }),
+});
+
+type AddCategoryGroupType = z.infer<typeof AddCategoryGroupSchema>;
+
+export function AddCategoryGroup() {
+  const [addCategoryGroup] = useAddCategoryGroupMutation();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { isValid },
+    reset,
+  } = useForm<AddCategoryGroupType>({
+    defaultValues: {
+      name: "",
+    },
+    resolver: zodResolver(AddCategoryGroupSchema),
+  });
+  // const handleOpen = (open: boolean) => {
+  //   if (!open) reset();
+  // };
+
+  const onSubmit = (categoryGroup: AddCategoryGroupType) => {
+    console.log(categoryGroup);
+    addCategoryGroup(categoryGroup);
+    // close();
+  };
+
+  return (
+    <div className="px-2 py-1 border-b border-r border-b-gray-200 border-r-gray-200">
+      <Popover modal={true}>
+        <PopoverTrigger>
+          <button
+            className="flex items-center gap-2 px-2 py-2 text-sky-950 rounded text-sm hover:bg-sky-950/10"
+          // onClick={handleClick}
+          >
+            <CirclePlus size={15} />
+            Category Group
+          </button>
+        </PopoverTrigger>
+        <PopoverPortal>
+          <PopoverContent
+            onPointerDownOutside={close}
+            avoidCollisions={false}
+            side={"bottom"}
+            className="w-[200px] p-0 shadow-lg"
+          >
+            <PopoverArrow className="w-8 h-2 fill-white" />
+            <form
+              className="px-2 py-2 space-y-2"
+              onSubmit={handleSubmit(onSubmit)}
+            >
+              <Input
+                className="shadow-none focus-visible:ring-sky-50"
+                placeholder="New Category Group"
+                autoComplete="off"
+                {...register("name")}
+              />
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="reset"
+                  onClick={close}
+                  className="bg-gray-400 hover:bg-gray-400/80"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-sky-900 hover:bg-sky-950/80"
+                  disabled={!isValid}
+                >
+                  Okay
+                </Button>
+              </div>
+            </form>
+          </PopoverContent>
+        </PopoverPortal>
+      </Popover>
+    </div>
+  );
+}
+
 function ExpandCategoryGroup({
   onClick,
   open,
@@ -747,4 +826,7 @@ function Activity({ children }: { children: ReactNode }) {
 
 function Available({ children }: { children: ReactNode }) {
   return <p className="flex-1 text-right">£{children}</p>;
+}
+function useModifyCategoryGroup(): { addCategoryGroup: any } {
+  throw new Error("Function not implemented.");
 }
