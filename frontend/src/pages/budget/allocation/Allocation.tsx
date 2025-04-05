@@ -252,51 +252,11 @@ export function Allocation() {
                             ? months[category.months[monthSelector]].activity
                             : 0;
 
-                        // const available = assigned - activity;
-
-                        const [contextOpen, setContextOpen] = useState(false);
-                        const handleContextMenu = (
-                          e: React.MouseEvent<HTMLDivElement, MouseEvent>,
-                        ) => {
-                          e.preventDefault();
-                          setContextOpen(true);
-                        };
-
-                        return (
-                          <div onContextMenu={handleContextMenu}>
-                            <CategoryContextMenu
-                              category={category}
-                              contextOpen={contextOpen}
-                              close={() => {
-                                setContextOpen(false);
-                              }}
-                            >
-                              <CategoryContent key={id}>
-                                {(ref) => (
-                                  <>
-                                    <Checkbox className="size-3 rounded-[2px] shadow-none" />
-                                    <CategoryNameContainer>
-                                      <CategoryName>{name}</CategoryName>
-                                      <ProgressBar
-                                        assigned={0}
-                                        activity={activity}
-                                        available={0}
-                                      />
-                                    </CategoryNameContainer>
-                                    <EditAssigned
-                                      ref={ref}
-                                      // assigned={0.toFixed(2)}
-                                      assigned={"0.00"}
-                                    />
-                                    <Activity>{activity.toFixed(2)}</Activity>
-                                    <Available>{"0.00"}</Available>
-                                  </>
-                                )}
-                              </CategoryContent>
-                            </CategoryContextMenu>
-                          </div>
-                        );
-                      })
+                      return (
+                        <CategoryContextMenu category={category}>
+                          <CategoryContent key={id}>
+                        </CategoryContextMenu>
+                      );
                     : null}
                 </CategoriesContainer>
               </Container>
@@ -365,6 +325,7 @@ function CategoryContextMenu({
   contextOpen: boolean;
   close: () => void;
 }) {
+  const [contextOpen, setContextOpen] = useState(false);
   const form = useForm<CategoryContextType>({
     defaultValues: {
       name: category.name,
@@ -384,73 +345,84 @@ function CategoryContextMenu({
     close();
   };
 
+  const openContextMenu = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    e.preventDefault();
+    setContextOpen(true);
+  };
+
+  const closeContextMenu = () => {
+    setContextOpen(false);
+  };
+
   return (
-    <Popover open={contextOpen} onOpenChange={handleOpen}>
-      <PopoverTrigger className="w-full text-left">{children}</PopoverTrigger>
-      <PopoverContent
-        onPointerDownOutside={close}
-        className="w-96 px-4 py-2 space-y-2"
-      >
-        <Form {...form}>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      className="focus-visible:ring-sky-700 shadow-none"
-                      placeholder="New category name"
-                      autoComplete="off"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage className="text-center" />
-                </FormItem>
-              )}
-            />
-            <div className="flex justify-between">
-              <div className="space-x-2">
-                <Button
-                  type="button"
-                  onClick={() => {}}
-                  className="bg-blue-200/60 text-blue-400 hover:bg-blue-200"
-                  variant={"destructive"}
-                >
-                  Hide
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => {}}
-                  className="bg-red-200 text-red-400 hover:text-white"
-                  variant={"destructive"}
-                >
-                  Delete
-                </Button>
+    <div onContextMenu={openContextMenu}>
+      <Popover open={contextOpen} onOpenChange={handleOpen}>
+        <PopoverTrigger className="w-full text-left">{children}</PopoverTrigger>
+        <PopoverContent
+          onPointerDownOutside={closeContextMenu}
+          className="w-96 px-4 py-2 space-y-2"
+        >
+          <Form {...form}>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        className="focus-visible:ring-sky-700 shadow-none"
+                        placeholder="New category name"
+                        autoComplete="off"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-center" />
+                  </FormItem>
+                )}
+              />
+              <div className="flex justify-between">
+                <div className="space-x-2">
+                  <Button
+                    type="button"
+                    onClick={() => { }}
+                    className="bg-blue-200/60 text-blue-400 hover:bg-blue-200"
+                    variant={"destructive"}
+                  >
+                    Hide
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => { }}
+                    className="bg-red-200 text-red-400 hover:text-white"
+                    variant={"destructive"}
+                  >
+                    Delete
+                  </Button>
+                </div>
+                <div className="space-x-2">
+                  <Button
+                    type="button"
+                    onClick={close}
+                    className="bg-blue-400"
+                    variant={"destructive"}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="bg-blue-600"
+                    variant={"destructive"}
+                  >
+                    OK
+                  </Button>
+                </div>
               </div>
-              <div className="space-x-2">
-                <Button
-                  type="button"
-                  onClick={close}
-                  className="bg-blue-400"
-                  variant={"destructive"}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-blue-600"
-                  variant={"destructive"}
-                >
-                  OK
-                </Button>
-              </div>
-            </div>
-          </form>
-        </Form>
-      </PopoverContent>
-    </Popover>
+            </form>
+          </Form>
+        </PopoverContent>
+      </Popover>
+    </div>
   );
 }
 
