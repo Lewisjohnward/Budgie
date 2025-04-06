@@ -515,12 +515,7 @@ function AddCategoryPopover({
   handleAddCategory: (data: AddCategoryFormData) => void;
   children: ReactNode;
 }) {
-  const [displayAddCategory, setDisplayAddCategory] = useState(false);
-  const close = () => {
-    setDisplayAddCategory(false);
-    reset();
-  };
-  const open = () => setDisplayAddCategory(true);
+  const [displayPopover, setDisplayPopover] = useState(false);
 
   const {
     register,
@@ -534,15 +529,22 @@ function AddCategoryPopover({
     resolver: zodResolver(AddCategorySchema),
   });
 
-  const createCategory = (data: AddCategoryFormData) => {
+  const togglePopover = () => setDisplayPopover((prev) => !prev);
+
+  const close = () => {
+    togglePopover();
+    reset();
+  };
+
+  const onSubmit = (data: AddCategoryFormData) => {
     handleAddCategory(data);
-    close();
+    togglePopover();
     reset();
   };
 
   return (
-    <Popover open={displayAddCategory} modal={true}>
-      <PopoverTrigger onClick={open}>{children}</PopoverTrigger>
+    <Popover open={displayPopover} modal={true}>
+      <PopoverTrigger onClick={togglePopover}>{children}</PopoverTrigger>
       <PopoverPortal>
         <PopoverContent
           onPointerDownOutside={close}
@@ -553,7 +555,7 @@ function AddCategoryPopover({
           <PopoverArrow className="w-8 h-2 fill-white" />
           <form
             className="px-2 py-2 space-y-2"
-            onSubmit={handleSubmit(createCategory)}
+            onSubmit={handleSubmit(onSubmit)}
           >
             <Input
               className="shadow-none focus-visible:ring-sky-50"
@@ -592,6 +594,7 @@ const AddCategoryGroupSchema = z.object({
 type AddCategoryGroupType = z.infer<typeof AddCategoryGroupSchema>;
 
 export function AddCategoryGroupPopover({ children }: { children: ReactNode }) {
+  const [displayPopover, setDisplayPopover] = useState(false);
   const [addCategoryGroup] = useAddCategoryGroupMutation();
 
   const {
@@ -605,20 +608,24 @@ export function AddCategoryGroupPopover({ children }: { children: ReactNode }) {
     },
     resolver: zodResolver(AddCategoryGroupSchema),
   });
-  // const handleOpen = (open: boolean) => {
-  //   if (!open) reset();
-  // };
+
+  const togglePopover = () => setDisplayPopover((prev) => !prev);
+
+  const close = () => {
+    reset();
+    togglePopover();
+  };
 
   const onSubmit = (categoryGroup: AddCategoryGroupType) => {
-    console.log(categoryGroup);
     addCategoryGroup(categoryGroup);
-    // close();
+    togglePopover();
+    reset();
   };
 
   return (
     <div className="px-2 py-1 border-b border-r border-b-gray-200 border-r-gray-200">
-      <Popover modal={true}>
-        <PopoverTrigger>{children}</PopoverTrigger>
+      <Popover open={displayPopover} modal={true}>
+        <PopoverTrigger onClick={togglePopover}>{children}</PopoverTrigger>
         <PopoverPortal>
           <PopoverContent
             onPointerDownOutside={close}
