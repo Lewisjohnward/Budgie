@@ -181,7 +181,7 @@ describe("Budget Controller", () => {
       const response = await request(app).post("/budget/transaction").send({
         accountId: "7c5a7df3-bd02-4576-b9e5-c2c8d6cf4d21",
         categoryId: "7c5a7df3-bd02-4576-b9e5-c2c8d6cf4d21",
-        inflow: 120,
+        inflow: "120",
       });
       expect(response.status).toBe(503);
       (insertTransaction as jest.Mock).mockReset();
@@ -193,7 +193,7 @@ describe("Budget Controller", () => {
       const response = await request(app).post("/budget/transaction").send({
         accountId: "7c5a7df3-bd02-4576-b9e5-c2c8d6cf4d21",
         categoryId: "7c5a7df3-bd02-4576-b9e5-c2c8d6cf4d21",
-        inflow: 120,
+        inflow: "120",
       });
       expect(response.status).toBe(200);
       expect(insertTransaction).toHaveBeenCalledTimes(1);
