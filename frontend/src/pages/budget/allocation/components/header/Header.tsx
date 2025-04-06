@@ -42,20 +42,11 @@ export function MonthSelector({
   );
 }
 
-export function AssignedMoney() {
-  const { data } = useGetCategoriesQuery();
-
-  const inflowGroup = Object.values(data.categoryGroups).find(
-    (group) => group.name === "Inflow",
-  );
-  const categoryId = inflowGroup.categories[0];
-  const inflowCategory = data.categories[categoryId];
-  const assignedValue = inflowCategory?.assigned ?? null;
-
+export function AssignedMoney({ amount }: { amount: number }) {
   const state =
-    assignedValue > 0
+    amount > 0
       ? { bg: "bg-lime-300", message: "Ready to Assign" }
-      : assignedValue < 0
+      : amount < 0
         ? { bg: "bg-red-200", message: "You assigned more than you have" }
         : {
             bg: "bg-gray-200",
@@ -70,9 +61,7 @@ export function AssignedMoney() {
         className={`flex items-center gap-8 w-56 ${state.bg} rounded px-4 py-2`}
       >
         <div>
-          <p className="text-black text-xl font-bold">
-            £{assignedValue.toFixed(2)}
-          </p>
+          <p className="text-black text-xl font-bold">£{amount.toFixed(2)}</p>
           <p className="text-sm">{state.message}</p>
         </div>
         {state.icon}
