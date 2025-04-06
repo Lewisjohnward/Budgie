@@ -56,6 +56,7 @@ model Month {
   categoryId String
   month      DateTime  
   activity Decimal   @default(0)
+  assigned Decimal   @default(0)
 
   category  Category  @relation(fields: [categoryId], references: [id])
 

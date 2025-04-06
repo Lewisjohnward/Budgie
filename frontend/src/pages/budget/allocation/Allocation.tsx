@@ -248,40 +248,37 @@ export function Allocation() {
                 <CategoriesContainer display={categoryGroup.open}>
                   {categoryGroup.categories.length > 0
                     ? categoryGroup.categories.map((cat) => {
-                      const category = categories[cat];
-                      const { id, name } = category;
-                      const activity =
-                        category.months.length > 0
-                          ? months[category.months[monthSelector]].activity
-                          : 0;
+                        const category = categories[cat];
+                        const { id, name } = category;
+                        const { activity, assigned } =
+                          months[category.months[monthSelector]];
 
-                      return (
-                        <CategoryContextMenu category={category}>
-                          <CategoryContent key={id}>
-                            {(ref) => (
-                              <>
-                                <Checkbox className="size-3 rounded-[2px] shadow-none" />
-                                <CategoryNameContainer>
-                                  <CategoryName>{name}</CategoryName>
-                                  <ProgressBar
-                                    assigned={0}
-                                    activity={activity}
-                                    available={0}
+                        return (
+                          <CategoryContextMenu category={category}>
+                            <CategoryContent key={id}>
+                              {(ref) => (
+                                <>
+                                  <Checkbox className="size-3 rounded-[2px] shadow-none" />
+                                  <CategoryNameContainer>
+                                    <CategoryName>{name}</CategoryName>
+                                    <ProgressBar
+                                      assigned={0}
+                                      activity={activity}
+                                      available={0}
+                                    />
+                                  </CategoryNameContainer>
+                                  <EditAssigned
+                                    ref={ref}
+                                    assigned={assigned}
                                   />
-                                </CategoryNameContainer>
-                                <EditAssigned
-                                  ref={ref}
-                                  // assigned={0.toFixed(2)}
-                                  assigned={"0.00"}
-                                />
-                                <Activity>{activity.toFixed(2)}</Activity>
-                                <Available>{"0.00"}</Available>
-                              </>
-                            )}
-                          </CategoryContent>
-                        </CategoryContextMenu>
-                      );
-                    })
+                                  <Activity>{activity.toFixed(2)}</Activity>
+                                  <Available>{"0.00"}</Available>
+                                </>
+                              )}
+                            </CategoryContent>
+                          </CategoryContextMenu>
+                        );
+                      })
                     : null}
                 </CategoriesContainer>
               </Container>
@@ -736,14 +733,29 @@ function CategoryContent({
   );
 }
 
-const EditAssigned = forwardRef<HTMLInputElement, { assigned: string }>(
+const AssignedSchema = z.object({
+  // categoryId: z.string().uuid(),
+  amount: z.number(),
+});
+
+type AssignedType = z.infer<typeof AssignedSchema>;
+
+const EditAssigned = forwardRef<HTMLInputElement, { assigned: number }>(
   ({ assigned }, ref) => {
+    console.log(typeof assigned);
     const inputRef = useRef<HTMLInputElement | null>(null);
     const [value, setValue] = useState(43);
     const [isFocused, setIsFocused] = useState(false);
     const currency = "£";
 
-    const valueWithCurrency = `${currency} ${assigned}`;
+    const form = useForm<AssignedType>({
+      defaultValues: {
+        amount: assigned,
+      },
+      resolver: zodResolver(CategoryContextSchema),
+    });
+
+    const valueWithCurrency = `${currency} ${assigned.toFixed(2)}`;
 
     const handleFocus = (e: React.FocusEvent<HTMLInputElement, Element>) => {
       setIsFocused(true);
@@ -776,7 +788,7 @@ const EditAssigned = forwardRef<HTMLInputElement, { assigned: string }>(
           ref={inputRef}
           className="w-3/4 px-1 text-right border border-transparent rounded focus:border-sky-950 hover:border-sky-950 focus:outline-none focus:ring-0 placeholder:text-black"
           placeholder={valueWithCurrency}
-          value={isFocused ? assigned : ""}
+          value={isFocused ? assigned.toFixed(2) : ""}
           onChange={(e) => setValue(+e.target.value)}
           onFocus={handleFocus}
           onBlur={() => setIsFocused(false)}

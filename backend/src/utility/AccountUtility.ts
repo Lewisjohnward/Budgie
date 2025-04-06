@@ -98,6 +98,7 @@ export const selectCategories = async (userId: string) => {
       months: category.months.map((month) => ({
         ...month,
         activity: convertDecimalToNumber(month.activity),
+        assigned: convertDecimalToNumber(month.assigned),
       })),
     })),
   }));
