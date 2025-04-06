@@ -202,7 +202,9 @@ export function Allocation() {
 
       <BodyContainer>
         <WideCategoriesContainer>
-          <AddCategoryGroup />
+          <AddCategoryGroupPopover>
+            <AddCategoryGroupButton />
+          </AddCategoryGroupPopover>
           <div className="flex items-center gap-2 p-2">
             {categoryGroups.length > 0 ? (
               <button>
@@ -223,17 +225,19 @@ export function Allocation() {
               <Container key={categoryGroup.id}>
                 <CategoryGroupContainer>
                   <ExpandCategoryGroup
-                    // onClick={() => toggleDisplayCategories(group.id)}
                     onClick={() => expandCategoryGroup(categoryGroup.id)}
-                    // open={group.open}
                     open={categoryGroup.open}
                   />
                   <Checkbox className="size-3 rounded-[2px] shadow-none" />
                   <CategoryGroupName>{categoryGroup.name}</CategoryGroupName>
-                  <AddCategoryButton
+                  <AddCategoryPopover
                     id={categoryGroup.id}
                     handleAddCategory={handleAddCategory}
-                  />
+                  >
+                    <AddCircleIcon
+                      className={`${darkBlueText} invisible group-hover:visible`}
+                    />
+                  </AddCategoryPopover>
                 </CategoryGroupContainer>
 
                 <CategoriesContainer display={categoryGroup.open}>
@@ -319,6 +323,17 @@ function CategorySelector({ text }: { text: string }) {
       className={`px-2 py-1 ${bgGray} rounded hover:${darkBlueBgHoverDark}`}
     >
       <p className="text-xs">{text}</p>
+    </button>
+  );
+}
+
+function AddCategoryGroupButton() {
+  return (
+    <button
+      className="flex items-center gap-2 px-2 py-2 text-sky-950 rounded text-sm hover:bg-sky-950/10"
+    >
+      <CirclePlus size={15} />
+      <span>Category Group</span>
     </button>
   );
 }
@@ -482,6 +497,8 @@ function CategoryGroupName({ children }: { children: ReactNode }) {
   return <p className={`${darkBlueText} font-bold`}>{children}</p>;
 }
 
+///// Add Category
+
 const AddCategorySchema = z.object({
   categoryGroupId: z.string(),
   name: z.string().min(1),
@@ -489,12 +506,14 @@ const AddCategorySchema = z.object({
 
 type AddCategoryFormData = z.infer<typeof AddCategorySchema>;
 
-function AddCategoryButton({
+function AddCategoryPopover({
   id,
   handleAddCategory,
+  children,
 }: {
   id: string;
   handleAddCategory: (data: AddCategoryFormData) => void;
+  children: ReactNode;
 }) {
   const [displayAddCategory, setDisplayAddCategory] = useState(false);
   const close = () => {
@@ -523,11 +542,7 @@ function AddCategoryButton({
 
   return (
     <Popover open={displayAddCategory} modal={true}>
-      <PopoverTrigger onClick={open}>
-        <AddCircleIcon
-          className={`${darkBlueText} invisible group-hover:visible`}
-        />
-      </PopoverTrigger>
+      <PopoverTrigger onClick={open}>{children}</PopoverTrigger>
       <PopoverPortal>
         <PopoverContent
           onPointerDownOutside={close}
@@ -569,14 +584,14 @@ function AddCategoryButton({
   );
 }
 
-// Add category Group
+//// Add category Group
 const AddCategoryGroupSchema = z.object({
   name: z.string().min(1, { message: "Category group requires a name" }),
 });
 
 type AddCategoryGroupType = z.infer<typeof AddCategoryGroupSchema>;
 
-export function AddCategoryGroup() {
+export function AddCategoryGroupPopover({ children }: { children: ReactNode }) {
   const [addCategoryGroup] = useAddCategoryGroupMutation();
 
   const {
@@ -603,15 +618,7 @@ export function AddCategoryGroup() {
   return (
     <div className="px-2 py-1 border-b border-r border-b-gray-200 border-r-gray-200">
       <Popover modal={true}>
-        <PopoverTrigger>
-          <button
-            className="flex items-center gap-2 px-2 py-2 text-sky-950 rounded text-sm hover:bg-sky-950/10"
-          // onClick={handleClick}
-          >
-            <CirclePlus size={15} />
-            Category Group
-          </button>
-        </PopoverTrigger>
+        <PopoverTrigger>{children}</PopoverTrigger>
         <PopoverPortal>
           <PopoverContent
             onPointerDownOutside={close}
@@ -826,7 +833,4 @@ function Activity({ children }: { children: ReactNode }) {
 
 function Available({ children }: { children: ReactNode }) {
   return <p className="flex-1 text-right">£{children}</p>;
-}
-function useModifyCategoryGroup(): { addCategoryGroup: any } {
-  throw new Error("Function not implemented.");
 }
