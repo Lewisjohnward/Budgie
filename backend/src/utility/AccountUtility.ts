@@ -195,7 +195,7 @@ const getMonth = () => {
     1,
   );
 
-  return { current: startOfCurrentMonth, next: nextMonth };
+  return { startOfCurrentMonth, nextMonth };
 };
 
 export const initialiseCategories = async (userId: string) => {
@@ -292,19 +292,19 @@ export const createCategory = async (category: CategoryPayload) => {
     data: category,
   });
 
-  const month = getMonth();
+  const {startOfCurrentMonth, nextMonth} = getMonth();
 
   await prisma.month.create({
     data: {
       categoryId: newCategory.id,
-      month: month.current,
+      month: startOfCurrentMonth,
     },
   });
 
   await prisma.month.create({
     data: {
       categoryId: newCategory.id,
-      month: month.next,
+      month: nextMonth,
     },
   });
 };
