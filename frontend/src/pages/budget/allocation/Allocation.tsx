@@ -97,14 +97,17 @@ function useAllocation() {
   const minMonthSelector = 0;
 
   const { categoryGroups, categories, months } = allocationData;
-  const inflowId = Object.keys(categoryGroups).find(
+  const inflowGroupId = Object.keys(categoryGroups).find(
     (key) => categoryGroups[key].name === "Inflow",
   );
-  const inflow = categoryGroups[inflowId!];
+
+  const [readyToAssignId] = categoryGroups[inflowGroupId!].categories;
+  const [firstMonthId] = allocationData.categories[readyToAssignId].months;
+  const assignableAmount = allocationData.months[firstMonthId].activity;
 
   const derivedCategoryGroups = Object.values(
     Object.fromEntries(
-      Object.entries(categoryGroups).filter(([key]) => key !== inflowId),
+      Object.entries(categoryGroups).filter(([key]) => key !== inflowGroupId),
     ),
   );
 
@@ -162,6 +165,7 @@ function useAllocation() {
     expandCategoryGroup,
     atLeastOneGroupOpen,
     months,
+    assignableAmount,
   };
 }
 
@@ -179,6 +183,7 @@ export function Allocation() {
     expandCategoryGroup,
     atLeastOneGroupOpen,
     months,
+    assignableAmount,
   } = useAllocation();
 
   return (
@@ -190,7 +195,7 @@ export function Allocation() {
             nextMonth={nextMonth}
             month={currentMonth}
           />
-          <AssignedMoney />
+          <AssignedMoney amount={assignableAmount} />
         </div>
         <CategorySelectorContainer>
           {categoriesSelector.map((catSelector) => (
