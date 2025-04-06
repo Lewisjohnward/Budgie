@@ -1,12 +1,13 @@
 export type AllocationData = {
-  months: Record<string, MonthData>;
+  months: Record<string, Month>;
   categoryGroups: Record<string, CategoryGroup>;
   categories: Record<string, Category>;
 };
 
-type MonthData = {
+type Month = {
   id: string;
   month: string;
+  activity: number;
   categoryGroupIds: string[];
   totalSpent: number;
   totalBudget: number;
@@ -15,7 +16,7 @@ type MonthData = {
 type CategoryGroup = {
   id: string;
   name: string;
-  categoryIds: string[];
+  categories: string[];
   budgetLimit: number;
   totalSpent: Record<string, number>;
 };
@@ -27,9 +28,10 @@ type Category = {
   categoryGroupId: string;
   budgetLimit: number;
   totalSpent: Record<string, number>;
+  months: string[];
 };
 
-export type MappedMonthData = MonthData & {
+export type MappedMonth = Month & {
   current: boolean;
   formattedDate: string;
 };
@@ -39,7 +41,7 @@ export type MappedCategoryGroup = CategoryGroup & {
 };
 
 export type MappedAllocationData = {
-  months: Record<string, MappedMonthData>;
+  months: Record<string, MappedMonth>;
   categoryGroups: Record<string, MappedCategoryGroup>;
   categories: Record<string, Category>;
 };
