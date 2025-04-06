@@ -20,7 +20,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: newAccount,
       }),
-      invalidatesTags: ["Accounts"],
+      invalidatesTags: ["Accounts", "Categories"],
     }),
     // TODO: TYPING
     addTransaction: builder.mutation<any, any>({
