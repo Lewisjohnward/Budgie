@@ -40,7 +40,7 @@ import {
   AllocationData,
   MappedAllocationData,
   MappedCategoryGroup,
-  MappedMonthData,
+  MappedMonth,
 } from "@/core/types/Allocation";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
 import {
@@ -65,7 +65,7 @@ function formatDate(dateStr: string) {
 function mapAllocationData(data: AllocationData): MappedAllocationData {
   const mappedData = produce(data, (draft) => {
     Object.values(draft.months).forEach((month) => {
-      (month as MappedMonthData).current = false;
+      (month as MappedMonth).current = false;
     });
     Object.values(draft.categoryGroups).forEach((group) => {
       (group as MappedCategoryGroup).open = true;
