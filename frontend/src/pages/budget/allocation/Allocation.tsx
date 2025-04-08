@@ -28,6 +28,7 @@ import Assign from "./components/assign/Assign";
 import {
   useAddCategoryGroupMutation,
   useAddCategoryMutation,
+  useEditMonthMutation,
   useGetCategoriesQuery,
 } from "@/core/api/budgetApiSlice";
 import { produce } from "immer";
@@ -52,6 +53,7 @@ import {
 } from "@/core/components/uiLibrary/form";
 import { Category } from "@/core/types/NormalizedData";
 import { CirclePlus } from "lucide-react";
+import { Month, MonthSchema } from "@/core/types/MonthSchema";
 
 function formatDate(dateStr: string) {
   const date = new Date(dateStr + "-01");
@@ -101,8 +103,8 @@ function useAllocation() {
     (key) => categoryGroups[key].name === "Inflow",
   );
 
-  const [readyToAssignId] = categoryGroups[inflowGroupId!].categories;
-  const [firstMonthId] = allocationData.categories[readyToAssignId].months;
+  const [assignId] = categoryGroups[inflowGroupId!].categories;
+  const [firstMonthId] = allocationData.categories[assignId].months;
   const assignableAmount = allocationData.months[firstMonthId].activity;
 
   const derivedCategoryGroups = Object.values(
@@ -166,6 +168,7 @@ function useAllocation() {
     atLeastOneGroupOpen,
     months,
     assignableAmount,
+    assignId,
   };
 }
 
@@ -184,6 +187,7 @@ export function Allocation() {
     atLeastOneGroupOpen,
     months,
     assignableAmount,
+    assignId,
   } = useAllocation();
 
   return (
@@ -250,12 +254,18 @@ export function Allocation() {
                     ? categoryGroup.categories.map((cat) => {
                         const category = categories[cat];
                         const { id, name } = category;
-                        const { activity, assigned } =
-                          months[category.months[monthSelector]];
+                        const {
+                          activity,
+                          assigned,
+                          id: monthId,
+                        } = months[category.months[monthSelector]];
 
                         return (
-                          <CategoryContextMenu category={category}>
-                            <CategoryContent key={id}>
+                          <CategoryContextMenu
+                            key={monthId}
+                            category={category}
+                          >
+                            <CategoryContent>
                               {(ref) => (
                                 <>
                                   <Checkbox className="size-3 rounded-[2px] shadow-none" />
@@ -270,6 +280,8 @@ export function Allocation() {
                                   <EditAssigned
                                     ref={ref}
                                     assigned={assigned}
+                                    monthId={monthId}
+                                    assignId={assignId}
                                   />
                                   <Activity>{activity.toFixed(2)}</Activity>
                                   <Available>{"0.00"}</Available>
@@ -733,71 +745,78 @@ function CategoryContent({
   );
 }
 
-const AssignedSchema = z.object({
-  // categoryId: z.string().uuid(),
-  amount: z.number(),
-});
+const EditAssigned = forwardRef<
+  HTMLInputElement,
+  { assigned: number; assignId: string; monthId: string }
+>(({ assigned, assignId, monthId }, ref) => {
+  const [editMonth] = useEditMonthMutation();
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const currency = "£";
 
-type AssignedType = z.infer<typeof AssignedSchema>;
-
-const EditAssigned = forwardRef<HTMLInputElement, { assigned: number }>(
-  ({ assigned }, ref) => {
-    console.log(typeof assigned);
-    const inputRef = useRef<HTMLInputElement | null>(null);
-    const [value, setValue] = useState(43);
-    const [isFocused, setIsFocused] = useState(false);
-    const currency = "£";
-
-    const form = useForm<AssignedType>({
+  const { register, handleSubmit, reset, getValues, setValue } = useForm<Month>(
+    {
       defaultValues: {
-        amount: assigned,
+        assigned: "",
+        monthId,
+        assignId,
       },
-      resolver: zodResolver(CategoryContextSchema),
-    });
+      resolver: zodResolver(MonthSchema),
+    },
+  );
 
-    const valueWithCurrency = `${currency} ${assigned.toFixed(2)}`;
+  const valueWithCurrency = `${currency} ${assigned.toFixed(2)}`;
 
-    const handleFocus = (e: React.FocusEvent<HTMLInputElement, Element>) => {
-      setIsFocused(true);
-      e.target.select();
-    };
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement, Element>) => {
+    setIsFocused(true);
+    setValue("assigned", assigned.toFixed(2));
 
-    useEffect(() => {
-      if (isFocused && inputRef.current) {
-        inputRef.current.select();
-      }
-    }, [isFocused]);
+    e.target.select();
+  };
 
-    useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, [
-      inputRef,
-    ]);
+  useEffect(() => {
+    if (isFocused && inputRef.current) {
+      inputRef.current.select();
+    }
+  }, [isFocused]);
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Escape") {
-        setIsFocused(false);
-        inputRef.current?.blur();
-      }
-    };
+  useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, [
+    inputRef,
+  ]);
 
-    // TODO: only allow numbers in input react hook form?
-    // TODO: When clicking on the subcategory focus the assigned
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      setIsFocused(false);
+      inputRef.current?.blur();
+    }
+  };
 
-    return (
-      <div className="flex-1 flex justify-end p-[1px]">
-        <input
-          ref={inputRef}
-          className="w-3/4 px-1 text-right border border-transparent rounded focus:border-sky-950 hover:border-sky-950 focus:outline-none focus:ring-0 placeholder:text-black"
-          placeholder={valueWithCurrency}
-          value={isFocused ? assigned.toFixed(2) : ""}
-          onChange={(e) => setValue(+e.target.value)}
-          onFocus={handleFocus}
-          onBlur={() => setIsFocused(false)}
-          onKeyDown={handleKeyDown}
-        />
-      </div>
-    );
-  },
-);
+  const onSubmit = (updatedValue: Month) => {
+    if (updatedValue.assigned === assigned.toFixed(2)) return;
+    editMonth(updatedValue);
+    reset();
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="flex-1 flex justify-end p-[1px]"
+    >
+      <input
+        className="w-3/4 px-1 text-right border border-transparent rounded focus:border-sky-950 hover:border-sky-950 focus:outline-none focus:ring-0 placeholder:text-black"
+        placeholder={valueWithCurrency}
+        onFocus={handleFocus}
+        onKeyDown={handleKeyDown}
+        {...register("assigned", { required: "Username is required" })}
+        onBlur={handleSubmit(onSubmit)}
+        ref={(e) => {
+          register("assigned").ref(e);
+          inputRef.current = e;
+        }}
+      />
+    </form>
+  );
+});
 
 function ProgressBar({
   assigned,
