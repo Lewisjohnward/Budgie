@@ -83,7 +83,11 @@ export const selectCategories = async (userId: string) => {
     include: {
       categories: {
         include: {
-          months: true,
+          months: {
+            orderBy: {
+              month: "asc",
+            },
+          },
         },
       },
     },
