@@ -165,6 +165,49 @@ export const initialiseAccount = async (account: AccountPayload) => {
   }
 };
 
+export const updateMonth = async ({
+  id,
+  assigned,
+  userId,
+}: {
+  id: string;
+  assigned: number;
+  userId: string;
+}) => {
+  await prisma.month.update({
+    where: {
+      id,
+      category: {
+        userId,
+      },
+    },
+    data: {
+      assigned,
+    },
+  });
+};
+
+export const calculateChangeInAssignedForMonth = async ({
+  monthId,
+  assigned,
+  userId,
+}: {
+  monthId: string;
+  assigned: number;
+  userId: string;
+}) => {
+  const month = await prisma.month.findFirstOrThrow({
+    where: {
+      id: monthId,
+      category: {
+        userId,
+      },
+    },
+  });
+
+  return convertDecimalToNumber(month.assigned) - assigned;
+};
+
 export const updateReadyToAssignMonths = async (
   categoryId: string,
   amount: number,

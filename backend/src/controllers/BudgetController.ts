@@ -8,6 +8,7 @@ import {
 } from "../dto";
 import { editTransactionArraySchema, transactionSchema } from "../schemas";
 import {
+  calculateChangeInAssignedForMonth,
   createCategory,
   createCategoryGroup,
   deleteTransactions,
@@ -17,11 +18,14 @@ import {
   normalizeData,
   selectAccounts,
   selectCategories,
+  updateMonth,
+  updateReadyToAssignMonths,
   updateTransactions,
   userOwnsAccount,
   validateAccount,
 } from "../utility";
 import { CategoryGroupSchema, CategorySchema } from "../schemas/CategorySchema";
+import { MonthSchema, UpdateMonthPayload } from "../schemas/MonthSchema";
 
 const prisma = new PrismaClient();
 export const data = async (req: Request, res: Response) => {
@@ -359,5 +363,41 @@ export const deletePayee = async (
 ) => {
   try {
   } catch (error) {}
+  return;
+};
+
+export const updateMonthForCategory = async (req: Request, res: Response) => {
+  const { assigned, monthId, assignId } = <UpdateMonthPayload>req.body;
+
+  try {
+    const validatedData = MonthSchema.parse({
+      assigned,
+      monthId,
+      assignId,
+    });
+
+    const changeInAssigned = await calculateChangeInAssignedForMonth({
+      monthId: validatedData.monthId,
+      assigned: validatedData.assigned,
+      userId: req.user?._id!,
+    });
+
+    await updateMonth({
+      id: validatedData.monthId,
+      assigned: validatedData.assigned,
+      userId: req.user?._id!,
+    });
+
+    updateReadyToAssignMonths(assignId, changeInAssigned, req.user?._id!);
+    res.sendStatus(200);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: "Malformed data" });
+      return;
+    }
+    res
+      .status(500)
+      .json({ message: "There has been an error editing transaction" });
+  }
   return;
 };
