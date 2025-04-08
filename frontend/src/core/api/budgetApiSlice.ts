@@ -1,4 +1,5 @@
 import { AddAccountPayload } from "../types/AccountSchema";
+import { Month } from "../types/MonthSchema";
 import {
   CategoriesNormalizedData,
   NormalizedData,
@@ -74,6 +75,16 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
       },
       invalidatesTags: ["Categories"],
     }),
+    editMonth: builder.mutation<void, Month>({
+      query: (assigned) => {
+        return {
+          url: "budget/month",
+          method: "PATCH",
+          body: assigned,
+        };
+      },
+      invalidatesTags: ["Categories"],
+    }),
   }),
 });
 
@@ -87,4 +98,5 @@ export const {
   useGetCategoriesQuery,
   useAddCategoryMutation,
   useAddCategoryGroupMutation,
+  useEditMonthMutation,
 } = budgetApiSlice;
