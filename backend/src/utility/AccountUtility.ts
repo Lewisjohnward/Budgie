@@ -153,19 +153,27 @@ export const initialiseAccount = async (account: AccountPayload) => {
   });
 
   if (account.balance > 0) {
-    updateReadyToAssignMonths(readyToAssignCategory.id, account.balance);
+    updateReadyToAssignMonths(
+      readyToAssignCategory.id,
+      account.balance,
+      account.userId,
+    );
   }
 };
 
-const updateReadyToAssignMonths = async (
+export const updateReadyToAssignMonths = async (
   categoryId: string,
   amount: number,
+  userId: string,
 ) => {
   const { startOfCurrentMonth } = getMonth();
 
-  const assignedCurrentMonth = await prisma.month.findFirst({
+  const assignedCurrentMonth = await prisma.month.findFirstOrThrow({
     where: {
       categoryId,
+      category: {
+        userId,
+      },
       month: {
         gte: startOfCurrentMonth,
       },
