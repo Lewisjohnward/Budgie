@@ -8,14 +8,13 @@ import {
   PopoverTrigger,
 } from "@/core/components/uiLibrary/popover";
 import { ChevronDown } from "lucide-react";
+import { useFormContext } from "react-hook-form";
 
-export function DatePickerDemo({
-  date,
-  setDate,
-}: {
-  date: Date | undefined;
-  setDate: (date: Date | undefined) => void;
-}) {
+export function DatePickerDemo() {
+  const { setValue, watch } = useFormContext();
+
+  const date = watch("date");
+  const setDate = (date: Date | undefined) => setValue("date", date);
 
   return (
     <Popover>
