@@ -39,9 +39,8 @@ import {
 } from "@/core/components/uiLibrary/popover";
 import { PopoverArrow, PopoverPortal } from "@radix-ui/react-popover";
 import { AddCircleIcon } from "@/core/icons/icons";
-import { cn } from "@/core/lib/utils";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CategoryT } from "@/core/types/NormalizedData";
 import {
@@ -487,53 +486,66 @@ function AddTransactionRow({
     ? data?.transactions[transactionId]
     : undefined;
 
-  const [date, setDate] = useState<Date | undefined>(
-    transaction?.date ? new Date(transaction.date) : undefined,
-  );
-  const [payee, setPayee] = useState(transaction?.payee || "");
+  const TransactionSchema = z.object({
+    accountId: z.string().uuid(),
+    date: z.date(),
+    payee: z.string(),
+    categoryName: z.string(),
+    categoryId: z.string().uuid(),
+    memo: z.string(),
+    outflow: z.string().optional(),
+    inflow: z.string().optional(),
+  });
 
-  // TODO: THESE TWO
-  const [categoryName, setCategoryName] = useState(
-    transaction?.categoryId || "",
-  );
-  const [categoryId, setCategoryId] = useState("");
+  type Transaction = z.infer<typeof TransactionSchema>;
 
-  const [memo, setMemo] = useState(transaction?.memo || "");
-  const [outflow, setOutflow] = useState(
-    transaction?.outflow !== undefined && transaction?.outflow !== null
-      ? transaction.outflow === 0
-        ? ""
-        : transaction.outflow.toFixed(2)
-      : "",
-  );
-  const [inflow, setInflow] = useState(
-    transaction?.inflow !== undefined && transaction?.inflow !== null
-      ? transaction.inflow === 0
-        ? ""
-        : transaction.inflow.toFixed(2)
-      : "",
-  );
+  const form = useForm<Transaction>({
+    defaultValues: {
+      accountId: accountId,
+      date: transaction?.date ? new Date(transaction.date) : new Date(),
+      payee: transaction?.payee || "",
+      categoryName: transaction?.categoryId || "",
+      categoryId: "",
+      memo: transaction?.memo || "",
+      outflow:
+        transaction?.outflow !== undefined && transaction?.outflow !== null
+          ? transaction.outflow === 0
+            ? ""
+            : transaction.outflow.toFixed(2)
+          : "",
+      inflow:
+        transaction?.inflow !== undefined && transaction?.inflow !== null
+          ? transaction.inflow === 0
+            ? ""
+            : transaction.inflow.toFixed(2)
+          : "",
+    },
+    resolver: zodResolver(AddCategorySchema),
+  });
+
+  const { register, getValues, setValue, watch, reset } = form;
 
   const handleAddTransaction = () => {
-    const transaction = {
-      accountId,
-      date,
-      payee,
-      categoryId,
-      memo,
-      outflow,
-      inflow,
-    };
-
-    addTransaction(transaction);
+    const newTransaction = getValues();
+    addTransaction(newTransaction);
     cancel();
   };
 
+  const handleSaveAndAddAnotherTransaction = () => {
+    const newTransaction = getValues();
+    addTransaction(newTransaction);
+    reset();
+  };
+
+  const categoryName = watch("categoryName");
+  const setCategoryName = (name: string) => setValue("categoryName", name);
+  const setCategoryId = (id: string) => setValue("categoryId", id);
+
   return (
-    <>
+    <FormProvider {...form}>
       <TableRow className="bg-blue-700/20 hover:bg-blue-700/20 border-none">
         <TableCell>
-          <DatePickerDemo date={date} setDate={setDate} />
+          <DatePickerDemo />
         </TableCell>
         <TableCell>
           <SelectPayee />
@@ -546,22 +558,24 @@ function AddTransactionRow({
           />
         </TableCell>
         <TableCell>
-          <InputOutline placeholder={"Memo"} value={memo} setValue={setMemo} />
-        </TableCell>
-        <TableCell>
-          <InputOutline
-            placeholder={"Outflow"}
-            value={outflow}
-            setValue={setOutflow}
-            disabled={inflow.length > 0}
+          <Input
+            className="h-5 py-0 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 overflow-ellipsis rounded-sm shadow-none"
+            placeholder="Memo"
+            {...register("memo")}
           />
         </TableCell>
         <TableCell>
-          <InputOutline
+          <Input
+            className="h-5 py-0 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 overflow-ellipsis rounded-sm shadow-none"
+            placeholder={"Outflow"}
+            {...register("outflow")}
+          />
+        </TableCell>
+        <TableCell>
+          <Input
+            className="h-5 py-0 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 overflow-ellipsis rounded-sm shadow-none"
             placeholder={"Inflow"}
-            value={inflow}
-            setValue={setInflow}
-            disabled={outflow.length > 0}
+            {...register("inflow")}
           />
         </TableCell>
       </TableRow>
@@ -570,48 +584,27 @@ function AddTransactionRow({
           <div className="flex justify-end gap-2">
             <Button
               onClick={cancel}
-              className="w-[80px] bg-sky-700/10 text-sky-700 border border-sky-700 hover:bg-sky-700/30"
+              className="h-5 w-[80px] py-3 rounded-sm bg-sky-700/10 text-sky-700 border border-sky-700 hover:bg-sky-700/30"
             >
-              cancel
+              Cancel
             </Button>
             <Button
               onClick={handleAddTransaction}
               type="submit"
-              className="w-[80px] bg-sky-700 text-white hover:bg-sky-800"
+              className="h-5 w-[80px] py-3 rounded-sm bg-sky-700 text-white hover:bg-sky-800"
             >
               Submit
+            </Button>
+            <Button
+              onClick={handleSaveAndAddAnotherTransaction}
+              className="h-5 py-3 rounded-sm px-4 bg-sky-700 text-white border border-sky-700 hover:bg-sky-800"
+            >
+              Save and add another
             </Button>
           </div>
         </TableCell>
       </TableRow>
-    </>
-  );
-}
-
-interface InputOutlineProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
-  value: string;
-  setValue: (value: string) => void;
-}
-
-function InputOutline({
-  value,
-  setValue,
-  disabled,
-  className,
-  ...props
-}: InputOutlineProps) {
-  return (
-    <Input
-      className={cn(
-        "h-5 py-0 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 overflow-ellipsis rounded-sm shadow-none",
-        className,
-      )}
-      disabled={disabled}
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      {...props}
-    />
+    </FormProvider>
   );
 }
 
