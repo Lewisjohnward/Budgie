@@ -193,6 +193,7 @@ export const columns = [
 
 export function Account() {
   const { data, isLoading, isError } = useGetAccountsQuery();
+  const [deleteTransaction] = useDeleteTransactionMutation();
   const [addingTransaction, setAddingTransaction] = useState(false);
   const dispatch = useAppDispatch();
   const handleOpenDialog = () => dispatch(toggleEditAccount());
@@ -310,6 +311,13 @@ export function Account() {
     setLastRowSelection({ [row.id]: true });
   };
 
+  const onRowSelectionContextMenu = (row) => {
+    if (!rowSelection[row.id]) {
+      table.setRowSelection({ [row.id]: true });
+      setLastRowSelection({ [row.id]: true });
+    }
+  };
+
   const hoverEnabled = !addingTransaction && !table.getIsSomeRowsSelected();
 
   const selectedRowIds = Object.keys(rowSelection).map(
@@ -319,6 +327,15 @@ export function Account() {
   const numberOfRows = Object.keys(rowSelection).length;
   const displaySelectionModal = numberOfRows > 0;
   const cancelSelection = () => setRowSelection({});
+
+  const deleteSelectedTransactions = () => {
+    deleteTransaction({ transactionIds: selectedRowIds });
+    cancelSelection();
+  };
+
+  const duplicateTransactions = () => {
+    console.log("duplicate", selectedRowIds);
+  };
 
   //////
 
@@ -387,29 +404,43 @@ export function Account() {
                   cancel={() => row.toggleSelected()}
                 />
               ) : (
-                <RowContextMenu
-                  selectedRows={
-                    selectedRowIds.length > 0
-                      ? { transactionIds: selectedRowIds }
-                      : { transactionIds: [row.original.id] }
-                  }
-                >
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                    // className={row.getIs ? "" : "hover:bg-transparent"}
-                    onClick={(e) => onRowSelection(e, row)}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext(),
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </RowContextMenu>
+                <ContextMenu modal>
+                  <ContextMenuTrigger asChild>
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                      // className={row.getIs ? "" : "hover:bg-transparent"}
+                      onClick={(e) => onRowSelection(e, row)}
+                      onContextMenu={() => onRowSelectionContextMenu(row)}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </ContextMenuTrigger>
+                  <ContextMenuContent className="w-64 text-gray-700">
+                    <ContextMenuItem
+                      onClick={deleteSelectedTransactions}
+                      className="justify-start gap-4"
+                    >
+                      <MdDelete />
+                      Delete
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem
+                      onClick={duplicateTransactions}
+                      className="justify-start gap-4"
+                    >
+                      <FaCopy />
+                      Duplicate
+                    </ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
               ),
             )
           ) : (
@@ -638,50 +669,6 @@ const AddCategorySchema = z.object({
   //TODO: z.string().uuid()
   categoryGroupId: z.string(),
 });
-
-// RowContextMenu
-
-function RowContextMenu({
-  selectedRows,
-  children,
-}: {
-  selectedRows: string[];
-  children: ReactNode;
-}) {
-  const [deleteTransaction] = useDeleteTransactionMutation();
-
-  const deleteTransactions = () => {
-    console.log("delete", selectedRows);
-    deleteTransaction(selectedRows);
-  };
-
-  const duplicateTransactions = () => {
-    console.log("duplicate", selectedRows);
-  };
-
-  return (
-    <ContextMenu>
-      <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
-      <ContextMenuContent className="w-64 text-gray-700">
-        <ContextMenuItem
-          onClick={deleteTransactions}
-          className="justify-start gap-4"
-        >
-          <MdDelete />
-          Delete
-        </ContextMenuItem>
-        <ContextMenuSeparator />
-        <ContextMenuItem
-          onClick={duplicateTransactions}
-          className="justify-start gap-4"
-        >
-          <FaCopy />
-          Duplicate
-        </ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
-  );
-}
 
 // SELECT CATEGORY COMPONENTS
 
