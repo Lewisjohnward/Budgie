@@ -339,7 +339,7 @@ export const deleteTransactions = async (
   userId: string,
   transactionIds: string[],
 ) => {
-  const deletedTransactions = await prisma.transaction.deleteMany({
+  const transactionsToDelete = await prisma.transaction.findMany({
     where: {
       id: {
         in: transactionIds,
@@ -350,7 +350,41 @@ export const deleteTransactions = async (
     },
   });
 
-  return deletedTransactions;
+  const account = await prisma.account.findFirstOrThrow({
+    where: {
+      id: transactionsToDelete[0].accountId,
+    },
+  });
+
+  const balance = convertDecimalToNumber(account.balance);
+  const changeInBalance = transactionsToDelete.reduce(
+    (accumulator, { inflow, outflow }) => {
+      return (
+        accumulator +
+        convertDecimalToNumber(outflow) -
+        convertDecimalToNumber(inflow)
+      );
+    },
+    0,
+  );
+
+  await prisma.$transaction(async () => {
+    const deletedTransactions = await prisma.transaction.deleteMany({
+      where: {
+        id: {
+          in: transactionIds,
+        },
+        account: {
+          userId: userId,
+        },
+      },
+    });
+
+    const updatedAccount = await prisma.account.update({
+      where: { id: transactionsToDelete[0].accountId },
+      data: { balance: balance + changeInBalance },
+    });
+  });
 };
 
 export const updateTransactions = async (
