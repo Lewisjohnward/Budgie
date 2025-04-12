@@ -6,18 +6,26 @@ import {
   Pencil,
   X,
 } from "lucide-react";
+import { MdDelete } from "react-icons/md";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/core/components/uiLibrary/context-menu";
 import { useParams } from "react-router-dom";
 import {
   useAddCategoryMutation,
   useAddTransactionMutation,
+  useDeleteTransactionMutation,
   useGetAccountsQuery,
   useGetCategoriesQuery,
 } from "@/core/api/budgetApiSlice";
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import {
   flexRender,
   getCoreRowModel,
-  Row,
   RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
@@ -58,7 +66,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/core/components/uiLibrary/select";
-import { FaRegCreditCard, FaRegMoneyBillAlt } from "react-icons/fa";
+import { FaCopy, FaRegCreditCard, FaRegMoneyBillAlt } from "react-icons/fa";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
 import {
   toggleEditAccount,
@@ -83,6 +91,7 @@ import {
   DropdownMenuTrigger,
 } from "@/core/components/uiLibrary/dropdown-menu";
 import { DropdownMenuArrow } from "@radix-ui/react-dropdown-menu";
+import React from "react";
 
 type Category = {
   id: string;
@@ -262,6 +271,7 @@ export function Account() {
     {},
   );
 
+  console.log("row selected", rowSelection);
   const table = useReactTable({
     data: account.transactions,
     columns,
@@ -377,21 +387,29 @@ export function Account() {
                   cancel={() => row.toggleSelected()}
                 />
               ) : (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  // className={row.getIs ? "" : "hover:bg-transparent"}
-                  onClick={(e) => onRowSelection(e, row)}
+                <RowContextMenu
+                  selectedRows={
+                    selectedRowIds.length > 0
+                      ? { transactionIds: selectedRowIds }
+                      : { transactionIds: [row.original.id] }
+                  }
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    // className={row.getIs ? "" : "hover:bg-transparent"}
+                    onClick={(e) => onRowSelection(e, row)}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </RowContextMenu>
               ),
             )
           ) : (
@@ -621,6 +639,50 @@ const AddCategorySchema = z.object({
   categoryGroupId: z.string(),
 });
 
+// RowContextMenu
+
+function RowContextMenu({
+  selectedRows,
+  children,
+}: {
+  selectedRows: string[];
+  children: ReactNode;
+}) {
+  const [deleteTransaction] = useDeleteTransactionMutation();
+
+  const deleteTransactions = () => {
+    console.log("delete", selectedRows);
+    deleteTransaction(selectedRows);
+  };
+
+  const duplicateTransactions = () => {
+    console.log("duplicate", selectedRows);
+  };
+
+  return (
+    <ContextMenu>
+      <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
+      <ContextMenuContent className="w-64 text-gray-700">
+        <ContextMenuItem
+          onClick={deleteTransactions}
+          className="justify-start gap-4"
+        >
+          <MdDelete />
+          Delete
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem
+          onClick={duplicateTransactions}
+          className="justify-start gap-4"
+        >
+          <FaCopy />
+          Duplicate
+        </ContextMenuItem>
+      </ContextMenuContent>
+    </ContextMenu>
+  );
+}
+
 // SELECT CATEGORY COMPONENTS
 
 function SelectCategory({
@@ -692,6 +754,7 @@ function SelectCategory({
             className="px-2 w-full caret-transparent rounded-sm text-ellipsis focus:outline-none focus:ring-0"
             placeholder="Category"
             value={categoryName}
+            readOnly
           />
           <ChevronDown className="size-4 text-sky-950" />
         </div>
@@ -990,8 +1053,7 @@ function SelectionModal({
                       <DropdownMenuSubTrigger>
                         <span>{categoryGroup.name}</span>
                       </DropdownMenuSubTrigger>
-                      <DropdownMenuPortal>
-                      </DropdownMenuPortal>
+                      <DropdownMenuPortal></DropdownMenuPortal>
                     </DropdownMenuSub>
                   </DropdownMenuGroup>
                 </DropdownMenuGroup>
