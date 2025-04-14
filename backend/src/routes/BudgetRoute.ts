@@ -15,6 +15,7 @@ import {
   editPayee,
   deletePayee,
   updateMonthForCategory,
+  duplicateTransactions,
 } from "../controllers";
 
 const router = express.Router();
@@ -29,6 +30,7 @@ router.delete("/account/:id", deleteAccount);
 router.post("/transaction", addTransaction);
 router.patch("/transaction", editTransaction);
 router.delete("/transaction", deleteTransaction);
+router.post("/transaction/duplicate", duplicateTransactions);
 
 router.get("/categories", getCategories);
 

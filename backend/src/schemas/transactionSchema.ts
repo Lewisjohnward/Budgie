@@ -54,3 +54,5 @@ export const editTransactionSchema = commonTransactionSchema
 export const editTransactionArraySchema = z.array(editTransactionSchema);
 
 export type UpdatedTransaction = z.infer<typeof editTransactionSchema>;
+
+export const duplicateTransactionsSchema = z.array(z.string().uuid());

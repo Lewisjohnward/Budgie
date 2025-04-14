@@ -19,6 +19,7 @@ import {
   useAddCategoryMutation,
   useAddTransactionMutation,
   useDeleteTransactionMutation,
+  useDuplicateTransactionsMutation,
   useGetAccountsQuery,
   useGetCategoriesQuery,
 } from "@/core/api/budgetApiSlice";
@@ -194,6 +195,7 @@ export const columns = [
 export function Account() {
   const { data, isLoading, isError } = useGetAccountsQuery();
   const [deleteTransaction] = useDeleteTransactionMutation();
+  const [duplicateTransactions] = useDuplicateTransactionsMutation();
   const [addingTransaction, setAddingTransaction] = useState(false);
   const dispatch = useAppDispatch();
   const handleOpenDialog = () => dispatch(toggleEditAccount());
@@ -333,11 +335,18 @@ export function Account() {
     cancelSelection();
   };
 
-  const duplicateTransactions = () => {
-    console.log("duplicate", selectedRowIds);
-  };
+  const handleDuplicateTransactions = () => {
+    const rows = table.getRowModel().rows;
+    const selectedRowIds = Object.keys(rowSelection).filter(
+      (id) => rowSelection[id],
+    );
 
-  //////
+    const transactionIds = rows
+      .filter((row) => selectedRowIds.includes(row.id))
+      .map((row) => row.original.id);
+
+    duplicateTransactions({ transactionIds });
+  };
 
   return (
     <div className="space-y-2 pt-4">
@@ -433,7 +442,7 @@ export function Account() {
                     </ContextMenuItem>
                     <ContextMenuSeparator />
                     <ContextMenuItem
-                      onClick={duplicateTransactions}
+                      onClick={handleDuplicateTransactions}
                       className="justify-start gap-4"
                     >
                       <FaCopy />

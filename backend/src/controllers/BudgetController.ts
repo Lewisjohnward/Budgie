@@ -6,13 +6,18 @@ import {
   DeleteTransactionPayload,
   TransactionPayload,
 } from "../dto";
-import { editTransactionArraySchema, transactionSchema } from "../schemas";
+import {
+  duplicateTransactionsSchema,
+  editTransactionArraySchema,
+  transactionSchema,
+} from "../schemas";
 import {
   calculateChangeInAssignedForMonth,
   createCategory,
   createCategoryGroup,
   deleteTransactions,
   initialiseAccount,
+  insertduplicateTransactions,
   insertTransaction,
   normalizeCategories,
   normalizeData,
@@ -176,6 +181,29 @@ export const deleteTransaction = async (
     res.status(200).json({ message: "Success" });
   } catch (error) {
     res.status(500).json({ message: "There has been an error" });
+  }
+};
+
+export const duplicateTransactions = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { transactionIds } = req.body;
+
+  try {
+    const validatedTransactionIds =
+      duplicateTransactionsSchema.parse(transactionIds);
+
+    await insertduplicateTransactions(req.user!._id, validatedTransactionIds);
+    res.status(200).json({ message: "Transaction dupliacated" });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: "Malformed data" });
+      return;
+    }
+    res.status(503).json({ message: error });
+    return;
   }
 };
 
