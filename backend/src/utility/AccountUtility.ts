@@ -387,6 +387,67 @@ export const deleteTransactions = async (
   });
 };
 
+export const insertduplicateTransactions = async (
+  userId: string,
+  transactionIds: string[],
+) => {
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      id: {
+        in: transactionIds,
+      },
+      account: {
+        userId,
+      },
+    },
+  });
+
+  if (transactions.length === 0) {
+    throw new Error("No matching transactions found to duplicate.");
+  }
+
+  const accountBalanceUpdates = transactions.reduce(
+    (acc, tx) => {
+      const netChange = Number(tx.inflow ?? 0) - Number(tx.outflow ?? 0);
+
+      if (!acc[tx.accountId]) {
+        acc[tx.accountId] = { changeInBalance: 0 };
+      }
+
+      acc[tx.accountId].changeInBalance += netChange;
+
+      return acc;
+    },
+    {} as Record<string, { changeInBalance: number }>,
+  );
+
+  const transactionsToInsert = transactions.map(
+    ({ id, createdAt, updatedAt, ...data }) => ({
+      ...data,
+      memo: data.memo ? `${data.memo} (copy)` : "(copy)",
+    }),
+  );
+
+  await prisma.$transaction(async (tx) => {
+    await Promise.all(
+      Object.entries(accountBalanceUpdates).map(
+        ([accountId, { changeInBalance }]) =>
+          tx.account.update({
+            where: { id: accountId },
+            data: {
+              balance: { increment: changeInBalance },
+            },
+          }),
+      ),
+    );
+
+    await tx.transaction.createMany({
+      data: transactionsToInsert,
+      skipDuplicates: true,
+    });
+  });
+};
+
 export const updateTransactions = async (
   userId: string,
   updatedTransaction: UpdatedTransaction,

@@ -32,6 +32,14 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Accounts"],
     }),
+    duplicateTransactions: builder.mutation<void, DuplicateTransactions>({
+      query: (transactions) => ({
+        url: "budget/transaction/duplicate",
+        method: "POST",
+        body: transactions,
+      }),
+      invalidatesTags: ["Accounts"],
+    }),
     deleteTransaction: builder.mutation<any, any>({
       query: (transaction) => ({
         url: "budget/transaction",
@@ -99,4 +107,5 @@ export const {
   useAddCategoryMutation,
   useAddCategoryGroupMutation,
   useEditMonthMutation,
+  useDuplicateTransactionsMutation,
 } = budgetApiSlice;
