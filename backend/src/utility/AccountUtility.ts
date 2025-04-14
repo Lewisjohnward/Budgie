@@ -368,8 +368,8 @@ export const deleteTransactions = async (
     0,
   );
 
-  await prisma.$transaction(async () => {
-    const deletedTransactions = await prisma.transaction.deleteMany({
+  await prisma.$transaction(async (tx) => {
+    await tx.transaction.deleteMany({
       where: {
         id: {
           in: transactionIds,
@@ -380,7 +380,7 @@ export const deleteTransactions = async (
       },
     });
 
-    const updatedAccount = await prisma.account.update({
+    await tx.account.update({
       where: { id: transactionsToDelete[0].accountId },
       data: { balance: balance + changeInBalance },
     });
