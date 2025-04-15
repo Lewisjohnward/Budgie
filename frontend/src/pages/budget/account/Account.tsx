@@ -547,7 +547,7 @@ function AddTransactionRow({
   const TransactionSchema = z.object({
     accountId: z.string().uuid(),
     date: z.date(),
-    payee: z.string(),
+    payeeId: z.string().nullish(),
     categoryName: z.string(),
     categoryId: z.string().uuid(),
     memo: z.string(),
@@ -561,7 +561,7 @@ function AddTransactionRow({
     defaultValues: {
       accountId: accountId,
       date: transaction?.date ? new Date(transaction.date) : new Date(),
-      payee: transaction?.payee || "",
+      payeeId: transaction?.payee || null,
       categoryName: transaction?.categoryId || "",
       categoryId: "",
       memo: transaction?.memo || "",
