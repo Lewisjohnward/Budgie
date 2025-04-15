@@ -3,9 +3,10 @@ import { z } from "zod";
 const commonTransactionSchema = z.object({
   categoryId: z
     .string()
-    .optional()
     .transform((val) => (val === "" ? null : val))
-    .refine((val) => val === null || z.string().uuid().safeParse(val).success),
+    .refine((val) => val === null || z.string().uuid().safeParse(val).success)
+    .nullish()
+    .optional(),
   date: z
     .string()
     .refine((value) => !isNaN(new Date(value).getTime()), {
@@ -20,7 +21,7 @@ const commonTransactionSchema = z.object({
     .string()
     .transform((val) => Number(val))
     .optional(),
-  payeeId: z.string().uuid().optional(),
+  payeeId: z.string().uuid().nullish().optional(),
   memo: z.string().max(100).nullish(),
 });
 
