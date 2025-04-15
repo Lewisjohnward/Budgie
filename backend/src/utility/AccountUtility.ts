@@ -263,10 +263,10 @@ export const insertTransaction = async (transaction: TransactionPayload) => {
     convertDecimalToNumber(account.balance) + balanceModifier;
 
   await prisma.$transaction(async (tx) => {
-    await prisma.transaction.create({
+    await tx.transaction.create({
       data: transaction,
     });
-    await prisma.account.update({
+    await tx.account.update({
       where: { id: account.id },
       data: { ...account, balance: updatedBalance },
     });
