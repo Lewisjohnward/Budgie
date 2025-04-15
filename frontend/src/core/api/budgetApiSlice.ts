@@ -4,6 +4,7 @@ import {
   CategoriesNormalizedData,
   NormalizedData,
 } from "../types/NormalizedData";
+import { DuplicateTransactions } from "../types/TransactionSchema";
 import { apiSlice } from "./apiSlice";
 
 export const budgetApiSlice = apiSlice.injectEndpoints({
