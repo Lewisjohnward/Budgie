@@ -247,17 +247,16 @@ export const updateReadyToAssignMonths = async (
 
 //TODO: THIS NEEDS FIXING
 export const insertTransaction = async (transaction: TransactionPayload) => {
+  const { accountId, inflow = 0, outflow = 0 } = transaction;
   // TODO: check that if a categoryId is given it exists to prevent bug
 
   const account = await prisma.account.findUniqueOrThrow({
     where: {
-      id: transaction.accountId,
+      id: accountId,
     },
   });
 
-  const { inflow, outflow } = transaction;
-
-  const balanceModifier = 0 - (outflow ? outflow : 0) + (inflow ? inflow : 0);
+  const balanceModifier = inflow - outflow;
 
   const updatedBalance =
     convertDecimalToNumber(account.balance) + balanceModifier;
