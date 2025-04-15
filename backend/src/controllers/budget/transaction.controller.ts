@@ -14,6 +14,55 @@ import {
   userOwnsAccount,
 } from "../../utility";
 
+export const addTransaction = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  // TODO: need to calculate new account balance on addition
+
+  // IF NO CATEGORY ASSIGN TO THIS NEEDS A CATEGORY
+
+  const { accountId, categoryId, date, inflow, outflow, payeeId, memo } = <
+    TransactionPayload
+    >req.body;
+
+  if (!inflow && !outflow) {
+    res.status(400).json({ message: "Malformed data" });
+    return;
+  }
+
+  try {
+    const validTransaction = transactionSchema.parse({
+      accountId,
+      categoryId,
+      date,
+      inflow,
+      outflow,
+      payeeId,
+      memo,
+    });
+
+    // TODO: - remove? insert where id = userId
+    await userOwnsAccount(
+      accountId,
+      // TODO: remove the !
+      req.user!._id,
+    );
+
+    await insertTransaction(validTransaction);
+    res.status(200).json({ message: "Transaction added" });
+    return;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: "Malformed data" });
+      return;
+    }
+    res.status(503).json({ message: error });
+    return;
+  }
+};
+
 export const editTransaction = async (
   req: Request,
   res: Response,
@@ -73,55 +122,6 @@ export const duplicateTransactions = async (
 
     await insertduplicateTransactions(req.user!._id, validatedTransactionIds);
     res.status(200).json({ message: "Transaction dupliacated" });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ message: "Malformed data" });
-      return;
-    }
-    res.status(503).json({ message: error });
-    return;
-  }
-};
-
-export const addTransaction = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  // TODO: need to calculate new account balance on addition
-
-  // IF NO CATEGORY ASSIGN TO THIS NEEDS A CATEGORY
-
-  const { accountId, categoryId, date, inflow, outflow, payeeId, memo } = <
-    TransactionPayload
-    >req.body;
-
-  if (!inflow && !outflow) {
-    res.status(400).json({ message: "Malformed data" });
-    return;
-  }
-
-  try {
-    const validTransaction = transactionSchema.parse({
-      accountId,
-      categoryId,
-      date,
-      inflow,
-      outflow,
-      payeeId,
-      memo,
-    });
-
-    // TODO: - remove? insert where id = userId
-    await userOwnsAccount(
-      accountId,
-      // TODO: remove the !
-      req.user!._id,
-    );
-
-    await insertTransaction(validTransaction);
-    res.status(200).json({ message: "Transaction added" });
-    return;
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({ message: "Malformed data" });
