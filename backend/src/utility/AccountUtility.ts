@@ -6,7 +6,7 @@ import {
   CategoryGroupPayload,
   CategoryPayload,
 } from "../schemas/CategorySchema";
-import { startOfMonth } from "date-fns";
+import { getIntermediateMonths, roundToStartOfMonth } from ".";
 
 const prisma = new PrismaClient();
 
@@ -275,7 +275,8 @@ export const insertTransaction = async (transaction: TransactionPayload) => {
 
 const getMonth = () => {
   const today = new Date();
-  const startOfCurrentMonth = startOfMonth(today);
+  const startOfCurrentMonth = roundToStartOfMonth(today);
+
   const nextMonth = new Date(
     startOfCurrentMonth.getFullYear(),
     startOfCurrentMonth.getMonth() + 1,
