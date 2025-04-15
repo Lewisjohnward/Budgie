@@ -2,21 +2,21 @@ import express from "express";
 import { Authenticate } from "../middleware/CommonAuth";
 import {
   addAccount,
-  addTransaction,
-  deleteAccount,
-  deleteTransaction,
-  editAccount,
-  editTransaction,
-  getAccounts,
-  getCategories,
   addCategory,
   addCategoryGroup,
   addPayee,
-  editPayee,
+  addTransaction,
+  deleteAccount,
   deletePayee,
-  updateMonthForCategory,
+  deleteTransaction,
   duplicateTransactions,
-} from "../controllers";
+  editAccount,
+  editPayee,
+  editTransaction,
+  getAccounts,
+  getCategories,
+} from "../controllers/budget/_index";
+import { updateMonthForCategory } from "../controllers/budget/month.controller";
 
 const router = express.Router();
 
