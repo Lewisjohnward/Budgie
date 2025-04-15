@@ -7,8 +7,7 @@ import {
   resetPassword,
   changePassword,
   logout,
-} from "../controllers";
-import { Authenticate } from "../middleware/CommonAuth";
+} from "../controllers/auth/_index";
 
 const router = express.Router();
 
@@ -22,12 +21,5 @@ router.get("/refresh", refresh);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/change-password", changePassword);
-
-router.use(Authenticate);
-router.patch("/me");
-
-/* User preferences */
-router.get("/me/preferences");
-router.put("/me/preferences");
 
 export { router as UserRoute };
