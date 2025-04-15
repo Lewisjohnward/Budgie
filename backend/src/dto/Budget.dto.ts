@@ -29,8 +29,8 @@ export interface TransactionPayload {
   categoryId?: string | null;
   // budgetId:
   date?: string;
-  inflow?: number | null;
-  outflow?: number | null;
+  inflow?: number;
+  outflow?: number;
   payeeId?: string | null;
   memo?: string | null;
 }
