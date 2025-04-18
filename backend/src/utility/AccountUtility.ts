@@ -605,6 +605,25 @@ export const insertduplicateTransactions = async (
       ),
     );
 
+    await Promise.all(
+      transactionsToInsert.map((transaction) =>
+        tx.month.update({
+          where: {
+            categoryId_month: {
+              categoryId: transaction.categoryId,
+              month: roundToStartOfMonth(transaction.date),
+            },
+          },
+          data: {
+            activity: {
+              increment:
+                Number(transaction.inflow) - Number(transaction.outflow),
+            },
+          },
+        }),
+      ),
+    );
+
     await tx.transaction.createMany({
       data: transactionsToInsert,
       skipDuplicates: true,
