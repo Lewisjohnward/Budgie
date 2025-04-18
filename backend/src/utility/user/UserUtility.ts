@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { registerUserSchema } from "../schemas";
+import { registerUserSchema } from "../../schemas";
 
 const prisma = new PrismaClient();
 

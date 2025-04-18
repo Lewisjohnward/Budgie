@@ -3,9 +3,9 @@ import { z } from "zod";
 import { AddAccountPayload } from "../../dto";
 import {
   initialiseAccount,
-  normalizeData,
   selectAccounts,
   validateAccount,
+  normalizeData,
 } from "../../utility";
 
 // DONE

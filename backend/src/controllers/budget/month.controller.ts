@@ -4,7 +4,7 @@ import {
   calculateChangeInAssignedForMonth,
   updateMonth,
   updateReadyToAssignMonths,
-} from "../../utility";
+} from "../../utility/budget";
 import { MonthSchema, UpdateMonthPayload } from "../../schemas/MonthSchema";
 
 export const updateMonthForCategory = async (req: Request, res: Response) => {

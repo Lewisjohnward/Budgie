@@ -1,4 +1,4 @@
-import app from "../app";
+import app from "../../app";
 import request from "supertest";
 
 import {
@@ -9,10 +9,10 @@ import {
   updateRefreshToken,
   userExists,
   ValidatePassword,
-} from "../utility";
+} from "../../utility";
 
-jest.mock("../utility/", () => ({
-  ...jest.requireActual("../utility"),
+jest.mock("../../utility/", () => ({
+  ...jest.requireActual("../../utility"),
   // Register
   userExists: jest.fn(),
   createUser: jest.fn(),
