@@ -13,9 +13,9 @@ import {
   validateCredentials,
   ValidatePassword,
   GenerateRefreshToken,
-  initialiseCategories,
 } from "../../utility";
 import { z } from "zod";
+import { initialiseCategories } from "../../utility";
 
 const prisma = new PrismaClient();
 

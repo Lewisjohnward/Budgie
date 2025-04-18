@@ -1,23 +1,7 @@
 import { Request } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { UserPayload, AuthPayload } from "../dto";
-import passwordValidator from "password-validator";
-
-export const PasswordSchema = () => {
-  const schema = new passwordValidator();
-  return schema
-    .is()
-    .min(8) // Minimum length 8
-    .is()
-    .max(20) // Maximum length 100
-    .has()
-    .uppercase() // Must have uppercase letters
-    .has()
-    .lowercase() // Must have lowercase letters
-    .has()
-    .digits(2); // Must have at least 2 digits
-};
+import { UserPayload } from "../../dto";
 
 export const GenerateSalt = async () => {
   return await bcrypt.genSalt();

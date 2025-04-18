@@ -1,4 +1,4 @@
-import { getIntermediateMonths } from "./date";
+import { getIntermediateMonths } from "..";
 
 describe("date", () => {
   describe("getIntermediateMonths", () => {

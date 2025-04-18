@@ -25,7 +25,7 @@ export const addTransaction = async (
 
   const { accountId, categoryId, date, inflow, outflow, payeeId, memo } = <
     TransactionPayload
-    >req.body;
+  >req.body;
 
   if (!inflow && !outflow) {
     res.status(400).json({ message: "Malformed data" });

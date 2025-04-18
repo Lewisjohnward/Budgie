@@ -2,13 +2,13 @@ import { Request, Response, NextFunction } from "express";
 import {
   createCategory,
   createCategoryGroup,
-  normalizeCategories,
   selectCategories,
-} from "../../utility";
+} from "../../utility/budget";
 import {
   CategoryGroupSchema,
   CategorySchema,
 } from "../../schemas/CategorySchema";
+import { normalizeCategories } from "../../utility";
 // TODO: NEEDS TESTING
 
 export const getCategories = async (
@@ -85,7 +85,6 @@ export const addCategory = async (
     await createCategory(validatedSubCategory);
     res.status(200).json({ message: "SubCategory added" });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: error });
   }
   return;
@@ -95,7 +94,7 @@ export const updateCategory = async (
   req: Request,
   res: Response,
   next: NextFunction,
-) => {};
+) => { };
 
 // TODO: NEEDS TESTING
 export const editCategory = async (
@@ -104,7 +103,7 @@ export const editCategory = async (
   next: NextFunction,
 ) => {
   try {
-  } catch (error) {}
+  } catch (error) { }
   return;
 };
 
@@ -114,6 +113,6 @@ export const deleteCategory = async (
   next: NextFunction,
 ) => {
   try {
-  } catch (error) {}
+  } catch (error) { }
   return;
 };
