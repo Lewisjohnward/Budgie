@@ -260,6 +260,8 @@ export function Allocation() {
                           id: monthId,
                         } = months[category.months[monthSelector]];
 
+                        const available = activity;
+
                         return (
                           <CategoryContextMenu
                             key={monthId}
@@ -284,7 +286,7 @@ export function Allocation() {
                                     assignId={assignId}
                                   />
                                   <Activity>{activity.toFixed(2)}</Activity>
-                                  <Available>{"0.00"}</Available>
+                                  <Available>{available.toFixed(2)}</Available>
                                 </>
                               )}
                             </CategoryContent>
