@@ -44,7 +44,7 @@ model Category {
   assigned        Decimal?      @default(0)
   activity        Decimal?      @default(0)
   // budgetId     String
-  name            String
+  name            String        @unique
   // budget       Budget        @relation(fields: [budgetId], references: [id])
   transactions    Transaction[]
   categoryGroup        CategoryGroup @relation(fields: [categoryGroupId], references: [id])
@@ -89,12 +89,12 @@ enum AccountType {
 model Transaction {
   id         String   @id @default(uuid())
   accountId  String
-  categoryId String?
+  categoryId String
   payeeId    String?
   // budgetId    String
   date       DateTime @default(now())
-  inflow     Decimal? @default(0)
-  outflow    Decimal? @default(0)
+  inflow     Decimal @default(0)
+  outflow    Decimal @default(0)
   memo       String?
   cleared    Boolean  @default(false)
   createdAt  DateTime @default(now())
