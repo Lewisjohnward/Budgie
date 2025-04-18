@@ -274,7 +274,6 @@ export function Account() {
     {},
   );
 
-  console.log("row selected", rowSelection);
   const table = useReactTable({
     data: account.transactions,
     columns,
@@ -721,7 +720,7 @@ function SelectCategory({
   ) => {
     setCategoryName(`${categoryGroupName}: ${category.name}`);
     setCategoryId(category.id);
-    handleOpenPopover();
+    handleTogglePopover();
   };
 
   const showAddCategoryForm = watch("showAddCategoryForm");
@@ -735,7 +734,7 @@ function SelectCategory({
     createCategory(category);
   };
 
-  const handleOpenPopover = () => {
+  const handleTogglePopover = () => {
     setPopoverVisible((prev) => !prev);
   };
 
@@ -749,7 +748,7 @@ function SelectCategory({
     >
       <PopoverTrigger className="w-full">
         <div
-          onClick={handleOpenPopover}
+          onClick={handleTogglePopover}
           className="flex items-center pr-2 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 rounded-sm overflow-hidden"
         >
           <input
@@ -764,7 +763,7 @@ function SelectCategory({
       <PopoverPortal>
         {showAddCategoryForm ? (
           <PopoverContent
-            onPointerDownOutside={handleOpenPopover}
+            onPointerDownOutside={handleTogglePopover}
             className="w-[400px] overflow-scroll"
           >
             <PopoverArrow className="w-8 h-2 fill-white" />
@@ -847,7 +846,7 @@ function SelectCategory({
         ) : (
           <PopoverContent
             avoidCollisions={false}
-            onPointerDownOutside={handleOpenPopover}
+            onPointerDownOutside={handleTogglePopover}
             side={"bottom"}
             className="w-[400px] max-h-[300px] p-0 overflow-scroll shadow-lg text-sm"
           >
