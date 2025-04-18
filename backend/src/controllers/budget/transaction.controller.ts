@@ -50,7 +50,7 @@ export const addTransaction = async (
       req.user!._id,
     );
 
-    await insertTransaction(validTransaction);
+    await insertTransaction(req.user?._id!, validTransaction);
     res.status(200).json({ message: "Transaction added" });
     return;
   } catch (error) {
