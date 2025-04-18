@@ -692,11 +692,17 @@ function SelectCategory({
 }) {
   const [popoverVisible, setPopoverVisible] = useState(false);
   const { data } = useGetCategoriesQuery();
+  const { months } = data;
+
   const [createCategory, { isLoading, isSuccess }] = useAddCategoryMutation();
 
   const categories = data?.categories || {};
   const categoryGroupsOb = data?.categoryGroups || {};
   const categoryGroups = Object.values(categoryGroupsOb);
+
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
 
   const form = useForm<SelectCategoryForm>({
     defaultValues: {
@@ -863,6 +869,18 @@ function SelectCategory({
                     {categoryGroup.categories.map((categoryId) => {
                       const category = categories[categoryId];
 
+                      const monthsForCategory = category.months.map(
+                        (monthId) => months[monthId],
+                      );
+
+                      const currentMonthObj = monthsForCategory.find((obj) => {
+                        const date = new Date(obj.month);
+                        return (
+                          date.getFullYear() === currentYear &&
+                          date.getMonth() === currentMonth
+                        );
+                      });
+
                       return (
                         <CategoryContainer
                           onClick={() => {
@@ -870,7 +888,9 @@ function SelectCategory({
                           }}
                         >
                           <Category>{category.name}</Category>
-                          <CategoryAllocation value={50} />
+                          <CategoryAllocation
+                            value={currentMonthObj.activity}
+                          />
                         </CategoryContainer>
                       );
                     })}
