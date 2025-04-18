@@ -31,7 +31,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: transaction,
       }),
-      invalidatesTags: ["Accounts"],
+      invalidatesTags: ["Accounts", "Categories"],
     }),
     duplicateTransactions: builder.mutation<void, DuplicateTransactions>({
       query: (transactions) => ({
@@ -47,7 +47,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
         method: "DELETE",
         body: transaction,
       }),
-      invalidatesTags: ["Accounts"],
+      invalidatesTags: ["Accounts", "Categories"],
     }),
     editTransaction: builder.mutation<any, any>({
       query: (transaction) => ({
@@ -55,7 +55,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
         method: "PATCH",
         body: transaction,
       }),
-      invalidatesTags: ["Accounts"],
+      invalidatesTags: ["Accounts", "Categories"],
     }),
     getCategories: builder.query<CategoriesNormalizedData, void>({
       query: () => ({
