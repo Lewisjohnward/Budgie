@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import { getMonth } from "..";
 import { CategoryPayload } from "../../../schemas/CategorySchema";
 
 const prisma = new PrismaClient();
@@ -9,19 +8,29 @@ export const createCategory = async (category: CategoryPayload) => {
     data: category,
   });
 
-  const { startOfCurrentMonth, nextMonth } = getMonth();
-
-  await prisma.month.create({
-    data: {
-      categoryId: newCategory.id,
-      month: startOfCurrentMonth,
+  const existingMonths = await prisma.month.findMany({
+    where: {
+      category: {
+        userId: category.userId,
+      },
+    },
+    select: {
+      month: true,
     },
   });
 
-  await prisma.month.create({
-    data: {
-      categoryId: newCategory.id,
-      month: nextMonth,
-    },
-  });
+  const uniqueMonths = [
+    ...new Set(existingMonths.map((item) => item.month.toISOString())),
+  ];
+
+  Promise.all(
+    uniqueMonths.map((month) =>
+      prisma.month.create({
+        data: {
+          categoryId: newCategory.id,
+          month: month,
+        },
+      }),
+    ),
+  );
 };
