@@ -57,7 +57,7 @@ export const editAccount = async (req: Request, res: Response) => {
 export const deleteAccount = async (req: Request, res: Response) => {
   const id = req.params.id;
   try {
-    const { accountId } = paramsSchema.parse(id);
+    const { accountId } = paramsSchema.parse({ accountId: id });
 
     await deleteAccountById(accountId, req.user?._id!);
     res.sendStatus(200);
