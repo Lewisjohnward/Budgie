@@ -1,61 +1,61 @@
 import { PrismaClient } from "@prisma/client";
-import { createCategory } from "..";
+import { getMonth } from "..";
 
 const prisma = new PrismaClient();
 
 export const initialiseCategories = async (userId: string) => {
-  const inflow = await prisma.categoryGroup.create({
-    data: {
-      userId,
+  const { startOfCurrentMonth, nextMonth } = getMonth();
+  const categoryGroupData = [
+    {
       name: "Inflow",
+      categories: ["Ready to Assign"],
     },
-  });
-
-  const uncategorisedGroup = await prisma.categoryGroup.create({
-    data: {
-      userId,
+    {
       name: "Uncategorised",
+      categories: ["Uncategorised Transactions"],
     },
-  });
-
-  const billsCategoryGroup = await prisma.categoryGroup.create({
-    data: {
-      userId: userId,
+    {
       name: "Bills",
+      categories: ["🏠 Rent/Mortgage", "🔌 Utilities"],
     },
-  });
-
-  const otherCategoryGroup = await prisma.categoryGroup.create({
-    data: {
-      userId: userId,
+    {
       name: "Other",
+      categories: ["❗️ Stuff I forgot to budget for"],
     },
-  });
+  ];
 
-  createCategory({
-    userId,
-    categoryGroupId: uncategorisedGroup.id,
-    name: "Uncategorised Transactions",
-  });
+  await prisma.$transaction(async (tx) => {
+    for (const group of categoryGroupData) {
+      const createdGroup = await tx.categoryGroup.create({
+        data: {
+          userId,
+          name: group.name,
+        },
+      });
 
-  createCategory({
-    userId,
-    categoryGroupId: inflow.id,
-    name: "Ready to Assign",
-  });
-  createCategory({
-    userId,
-    categoryGroupId: billsCategoryGroup.id,
-    name: "🏠 Rent/Mortgage",
-  });
-  createCategory({
-    userId,
-    categoryGroupId: billsCategoryGroup.id,
-    name: "🔌 Utilities",
-  });
-  createCategory({
-    userId,
-    categoryGroupId: otherCategoryGroup.id,
-    name: "❗️ Stuff I forgot to budget for",
+      for (const name of group.categories) {
+        const newCategory = await tx.category.create({
+          data: {
+            userId,
+            categoryGroupId: createdGroup.id,
+            name,
+          },
+        });
+
+        await tx.month.create({
+          data: {
+            categoryId: newCategory.id,
+            month: startOfCurrentMonth,
+          },
+        });
+
+        await tx.month.create({
+          data: {
+            categoryId: newCategory.id,
+            month: nextMonth,
+          },
+        });
+      }
+    }
   });
 };
