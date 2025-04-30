@@ -7,10 +7,12 @@ import {
   addPayee,
   addTransaction,
   deleteAccount,
+  deleteCategory,
   deletePayee,
   deleteTransaction,
   duplicateTransactions,
   editAccount,
+  editCategory,
   editPayee,
   editTransaction,
   getAccounts,
@@ -36,6 +38,8 @@ router.get("/categories", getCategories);
 
 router.post("/categoryGroup", addCategoryGroup);
 router.post("/category", addCategory);
+router.patch("/category", editCategory);
+router.delete("/category", deleteCategory);
 
 router.post("/payee", addPayee);
 router.patch("/payee", editPayee);
