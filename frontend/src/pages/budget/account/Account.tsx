@@ -137,21 +137,19 @@ export const columns = [
   },
   {
     accessorFn: (row) => {
-      if (row.categoryGroup?.name && row.category?.name) {
-        return `${row.categoryGroup.name} : ${row.category.name}`;
-      }
-      return "Unassigned";
+      if (row.unassigned) return "This needs a category";
+      return `${row.categoryGroup.name} : ${row.category.name}`;
     },
     id: "category",
     header: "Category",
     cell: (info) => {
       const value = info.getValue();
-      const isUnassigned = value === "Unassigned";
+      const unassigned = info.row.original.unassigned;
       return (
         <div title={value} className="truncate">
           <span
             className={
-              isUnassigned ? "bg-yellow-300/70 px-2 py-[1px] rounded-lg" : ""
+              unassigned ? "bg-yellow-300/70 px-2 py-[2px] rounded-lg" : ""
             }
           >
             {value}
@@ -243,11 +241,14 @@ export function Account() {
       Object.values(data.transactions)
         .filter(({ accountId: id }) => id === accountId)
         .map((transaction) => {
-          const category = data.categories[transaction.categoryId] ?? null;
+          const category = data.categories[transaction.categoryId];
           const categoryGroup = category
-            ? (data.categoryGroups[category.categoryGroupId] ?? null)
+            ? data.categoryGroups[category.categoryGroupId]
             : null;
-          return { ...transaction, category, categoryGroup };
+
+          const unassigned = categoryGroup?.name === "Uncategorised";
+
+          return { ...transaction, category, categoryGroup, unassigned };
         }),
     [data, accountId],
   );
