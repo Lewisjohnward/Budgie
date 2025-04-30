@@ -6,7 +6,9 @@ import {
   selectAccounts,
   validateAccount,
   normalizeData,
+  deleteAccountById,
 } from "../../utility";
+import { paramsSchema } from "../../schemas";
 
 // DONE
 export const getAccounts = async (req: Request, res: Response) => {
@@ -53,5 +55,13 @@ export const editAccount = async (req: Request, res: Response) => {
 };
 
 export const deleteAccount = async (req: Request, res: Response) => {
-  // TODO: use req query param to edit transaction
+  const id = req.params.id;
+  try {
+    const { accountId } = paramsSchema.parse(id);
+
+    await deleteAccountById(accountId, req.user?._id!);
+    res.sendStatus(200);
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting account" });
+  }
 };
