@@ -2,7 +2,9 @@ import { Request, Response, NextFunction } from "express";
 import {
   createCategory,
   createCategoryGroup,
+  deleteCategoryById,
   selectCategories,
+  updateCategoryById,
 } from "../../utility/budget";
 import {
   CategoryGroupSchema,
@@ -94,7 +96,7 @@ export const updateCategory = async (
   req: Request,
   res: Response,
   next: NextFunction,
-) => { };
+) => {};
 
 // TODO: NEEDS TESTING
 export const editCategory = async (
@@ -103,7 +105,8 @@ export const editCategory = async (
   next: NextFunction,
 ) => {
   try {
-  } catch (error) { }
+    updateCategoryById();
+  } catch (error) {}
   return;
 };
 
@@ -113,6 +116,7 @@ export const deleteCategory = async (
   next: NextFunction,
 ) => {
   try {
-  } catch (error) { }
+    deleteCategoryById();
+  } catch (error) {}
   return;
 };
