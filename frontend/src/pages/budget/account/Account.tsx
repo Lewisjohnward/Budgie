@@ -491,7 +491,7 @@ function CreditCardType() {
 }
 
 function Balance({ balance }: { balance: number }) {
-  const color = balance > 0 ? "text-green-600" : "text-red-600";
+  const color = balance >= 0 ? "text-green-600" : "text-red-600";
   const formattedBalance = numberToCurrency(balance);
 
   return (
