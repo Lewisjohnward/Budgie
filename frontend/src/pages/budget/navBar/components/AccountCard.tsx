@@ -32,7 +32,12 @@ export function AccountCard({
 }) {
   const { mouseOver, handleMouseEnter, handleMouseLeave } = useMouseOver();
   const dispatch = useAppDispatch();
-  const handleOpenDialog = () => dispatch(toggleEditAccount());
+  const handleOpenDialog = () => dispatch(toggleEditAccount(account));
+  const handleEditAccount = (e: React.MouseEvent) => {
+    e.preventDefault();
+    handleOpenDialog();
+  };
+
   const hasUnallocatedTransactions = useHasUnallocatedTransactions(account);
 
   return (
@@ -46,12 +51,10 @@ export function AccountCard({
           "group flex justify-between items-center gap-4 pl-4 pr-2 py-2 text-sm rounded",
         )
       }
+      onContextMenu={handleEditAccount}
     >
       <div
-        onClick={(e) => {
-          e.preventDefault();
-          handleOpenDialog();
-        }}
+        onClick={handleEditAccount}
         className="relative flex justify-center items-center w-5 h-5"
       >
         {mouseOver ? (
