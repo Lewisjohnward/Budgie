@@ -24,6 +24,13 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Accounts", "Categories"],
     }),
+    deleteAccount: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `budget/account/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Accounts", "Categories"],
+    }),
     // TODO: TYPING
     addTransaction: builder.mutation<any, any>({
       query: (transaction) => ({
@@ -101,6 +108,7 @@ export const {
   useGetDataQuery,
   useGetAccountsQuery,
   useAddAccountMutation,
+  useDeleteAccountMutation,
   useAddTransactionMutation,
   useDeleteTransactionMutation,
   useEditTransactionMutation,
