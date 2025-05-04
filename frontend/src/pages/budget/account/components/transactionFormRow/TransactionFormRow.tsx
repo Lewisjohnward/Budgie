@@ -8,7 +8,7 @@ import { Input } from "@/core/components/uiLibrary/input";
 import { DatePickerDemo } from "@/core/components/uiLibrary/datePicker";
 import { AddCircleIcon } from "@/core/icons/icons";
 import { z } from "zod";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CategoryT } from "@/core/types/NormalizedData";
 import {
@@ -33,44 +33,43 @@ import {
   PopoverTrigger,
 } from "@/core/components/uiLibrary/popover";
 import { Button } from "@/core/components/uiLibrary/button";
-import { useAppDispatch } from "@/core/hooks/reduxHooks";
+import { useAppDispatch, useAppSelector } from "@/core/hooks/reduxHooks";
 import { toggleManagePayees } from "@/core/slices/dialogSlice";
 import { ChevronDown, ChevronLeft } from "lucide-react";
 import { PopoverArrow, PopoverPortal } from "@radix-ui/react-popover";
 import { MdOutlineManageAccounts } from "react-icons/md";
 import { ReactNode, useState } from "react";
-import { Separator } from "../Separator";
+import { Separator } from "@/pages/budget/account/components/Separator";
+import {
+  closeTransactionFormRow,
+  transactionFormRow,
+} from "@/pages/budget/account/slices/transactionFormRowSlice";
+import clsx from "clsx";
 
-export function TransactionFormRow({
-  displayAccount,
-  accountId,
-  cancel,
-  transactionId,
-}: {
-  displayAccount: boolean;
-  accountId: string;
-  cancel: () => void;
-  transactionId?: string;
-}) {
-  const [addTransaction] = useAddTransactionMutation();
+const TransactionSchema = z.object({
+  accountId: z.string().uuid(),
+  date: z.date(),
+  payeeId: z.string().nullish(),
+  categoryName: z.string(),
+  categoryId: z.string().optional(),
+  memo: z.string(),
+  outflow: z.string().optional(),
+  inflow: z.string().optional(),
+});
+
+type Transaction = z.infer<typeof TransactionSchema>;
+
+export function TransactionFormRow() {
   const { data } = useGetAccountsQuery();
+  const dispatch = useAppDispatch();
+  const [addTransaction] = useAddTransactionMutation();
+  const { displayAccount, accountId, transactionId } =
+    useAppSelector(transactionFormRow);
+  const cancel = () => dispatch(closeTransactionFormRow());
 
   const transaction = transactionId
     ? data?.transactions[transactionId]
     : undefined;
-
-  const TransactionSchema = z.object({
-    accountId: z.string().uuid(),
-    date: z.date(),
-    payeeId: z.string().nullish(),
-    categoryName: z.string(),
-    categoryId: z.string().uuid(),
-    memo: z.string(),
-    outflow: z.string().optional(),
-    inflow: z.string().optional(),
-  });
-
-  type Transaction = z.infer<typeof TransactionSchema>;
 
   const form = useForm<Transaction>({
     defaultValues: {
@@ -93,15 +92,16 @@ export function TransactionFormRow({
             : transaction.inflow.toFixed(2)
           : "",
     },
-    resolver: zodResolver(AddCategorySchema),
+    resolver: zodResolver(TransactionSchema),
   });
 
-  const { register, getValues, setValue, watch, reset } = form;
+  const { register, getValues, reset } = form;
 
   const handleAddTransaction = () => {
-    const newTransaction = getValues();
-    addTransaction(newTransaction);
-    cancel();
+    form.handleSubmit((data) => {
+      addTransaction(data);
+      cancel();
+    })();
   };
 
   const handleSaveAndAddAnotherTransaction = () => {
@@ -109,10 +109,6 @@ export function TransactionFormRow({
     addTransaction(newTransaction);
     reset();
   };
-
-  const categoryName = watch("categoryName");
-  const setCategoryName = (name: string) => setValue("categoryName", name);
-  const setCategoryId = (id: string) => setValue("categoryId", id);
 
   return (
     <FormProvider {...form}>
@@ -129,11 +125,7 @@ export function TransactionFormRow({
           <SelectPayee />
         </TableCell>
         <TableCell>
-          <SelectCategory
-            categoryName={categoryName}
-            setCategoryName={setCategoryName}
-            setCategoryId={setCategoryId}
-          />
+          <SelectCategory />
         </TableCell>
         <TableCell>
           <Input
@@ -186,12 +178,9 @@ export function TransactionFormRow({
   );
 }
 
-type SelectAccountForm = {};
-
 function SelectAccount() {
-  const dispatch = useAppDispatch();
   const { data } = useGetAccountsQuery();
-  const handleOpenDialog = () => dispatch(toggleManagePayees());
+  const { setValue, watch } = useFormContext();
 
   if (!data) return <div>There has been an error</div>;
 
@@ -203,10 +192,10 @@ function SelectAccount() {
     (account) => account.type === "CREDIT_CARD",
   );
 
-  // const form = useForm
+  const accountId = watch("accountId");
 
-  const handleSelectAccount = () => {
-    console.log("selecting account");
+  const handleSelectAccount = (accountId: string) => {
+    setValue("accountId", accountId);
   };
 
   return (
@@ -214,8 +203,9 @@ function SelectAccount() {
       <PopoverTrigger className="w-full">
         <div className="flex items-center pr-2 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 rounded-sm overflow-hidden">
           <input
+            readOnly
             className="px-2 w-full caret-transparent rounded-sm text-ellipsis focus:outline-none focus:ring-0"
-            placeholder="Account"
+            value={data.accounts[accountId]?.name || "Account"}
           />
           <ChevronDown className="size-4 text-sky-950" />
         </div>
@@ -224,19 +214,40 @@ function SelectAccount() {
         <PopoverArrow className="w-8 h-2 fill-white" />
         <div className="h-full flex flex-col justify-between">
           <div className="py-2 text-gray-700">
-            <p className="px-4 py-2 font-bold text-sm">Cash Accounts</p>
-            {cashAccounts.map((account) => (
-              <button
-                className="flex w-full px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                onClick={() => handleSelectAccount()}
-              >
-                {account.name}
-              </button>
-            ))}
-            <p className="px-4 py-2 font-bold text-sm">Credit Accounts</p>
-            {creditAccounts.map((account) => (
-              <div>{account.name}</div>
-            ))}
+            {cashAccounts.length > 0 && (
+              <>
+                <p className="px-4 py-2 font-bold text-sm">Cash Accounts</p>
+                {cashAccounts.map((account) => (
+                  <button
+                    key={account.id}
+                    className={clsx(
+                      "flex w-full px-4 py-2 hover:bg-gray-100 cursor-pointer",
+                      account.id === accountId && "bg-gray-100",
+                    )}
+                    onClick={() => handleSelectAccount(account.id)}
+                  >
+                    {account.name}
+                  </button>
+                ))}
+              </>
+            )}
+            {creditAccounts.length > 0 && (
+              <>
+                <p className="px-4 py-2 font-bold text-sm">Credit Accounts</p>
+                {creditAccounts.map((account) => (
+                  <button
+                    key={account.id}
+                    className={clsx(
+                      "flex w-full px-4 py-2 hover:bg-gray-100 cursor-pointer",
+                      account.id === accountId && "bg-gray-100",
+                    )}
+                    onClick={() => handleSelectAccount(account.id)}
+                  >
+                    {account.name}
+                  </button>
+                ))}
+              </>
+            )}
           </div>
         </div>
       </PopoverContent>
@@ -303,18 +314,12 @@ const AddCategorySchema = z.object({
 
 // SELECT CATEGORY COMPONENTS
 
-function SelectCategory({
-  categoryName,
-  setCategoryName,
-  setCategoryId,
-}: {
-  categoryName: string;
-  setCategoryName: (name: string) => void;
-  setCategoryId: (id: string) => void;
-}) {
+function SelectCategory() {
   const [popoverVisible, setPopoverVisible] = useState(false);
   const { data } = useGetCategoriesQuery();
   const { months } = data;
+  const { watch: watchContext, setValue: setValueContext } = useFormContext();
+  const categoryName = watchContext("categoryName");
 
   const [createCategory, { isLoading, isSuccess }] = useAddCategoryMutation();
 
@@ -341,8 +346,8 @@ function SelectCategory({
     categoryGroupName: string,
     category: CategoryT,
   ) => {
-    setCategoryName(`${categoryGroupName}: ${category.name}`);
-    setCategoryId(category.id);
+    setValueContext("categoryName", `${categoryGroupName}: ${category.name}`);
+    setValueContext("categoryId", category.id);
     handleTogglePopover();
   };
 
@@ -375,10 +380,10 @@ function SelectCategory({
           className="flex items-center pr-2 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 rounded-sm overflow-hidden"
         >
           <input
+            readOnly
             className="px-2 w-full caret-transparent rounded-sm text-ellipsis focus:outline-none focus:ring-0"
             placeholder="Category"
             value={categoryName}
-            readOnly
           />
           <ChevronDown className="size-4 text-sky-950" />
         </div>
