@@ -48,10 +48,6 @@ const router = createBrowserRouter([
             element: <Reflect />,
           },
           {
-            path: "account/all",
-            element: <Account />,
-          },
-          {
             path: "account/:accountId",
             element: <Account />,
           },
