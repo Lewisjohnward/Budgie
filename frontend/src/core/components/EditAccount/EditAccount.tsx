@@ -7,11 +7,12 @@ import {
 import { useAppDispatch, useAppSelector } from "@/core/hooks/reduxHooks";
 import {
   selectEditAccount,
+  selectEditingAccount,
   toggleEditAccount,
 } from "@/core/slices/dialogSlice";
 import { darkBlueText } from "@/core/theme/colors";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import {
@@ -25,14 +26,16 @@ import {
 import { Button } from "@/core/components/uiLibrary/button";
 import { Textarea } from "@/core/components/uiLibrary/textarea";
 import { Input } from "../uiLibrary/input";
+import { useDeleteAccountMutation } from "@/core/api/budgetApiSlice";
+import { useNavigate } from "react-router-dom";
 
 export function EditAccount() {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const [deleteAccount, { isSuccess }] = useDeleteAccountMutation();
   const dialogOpen = useAppSelector(selectEditAccount);
-  const handleCloseDialog = () => {
-    dispatch(toggleEditAccount());
-    form.reset();
-  };
+  const editingAccount = useAppSelector(selectEditingAccount);
+  const handleCloseDialog = () => dispatch(toggleEditAccount(null));
 
   const editAccountSchema = z.object({
     name: z.string().min(2).max(50),
@@ -43,17 +46,45 @@ export function EditAccount() {
   const form = useForm<z.infer<typeof editAccountSchema>>({
     resolver: zodResolver(editAccountSchema),
     defaultValues: {
-      name: "",
+      name: editingAccount?.name,
+      workingBalance: editingAccount?.balance,
     },
   });
 
-  function onSubmit(values: z.infer<typeof editAccountSchema>) {
+  useEffect(() => {
+    if (editingAccount) {
+      form.reset({
+        name: editingAccount.name,
+        workingBalance: editingAccount.balance,
+      });
+    }
+  }, [editingAccount]);
+
+  useEffect(() => {
+    if (isSuccess) {
+      handleCloseDialog();
+      navigate("/budget/account/all");
+    }
+  }, [isSuccess]);
+
+  const onSubmit = (values: z.infer<typeof editAccountSchema>) => {
     console.log(values);
-  }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      if (editingAccount != null) await deleteAccount(editingAccount.id);
+    } catch (error) {
+      console.log("there has been an error", error);
+    }
+  };
 
   return (
     <Dialog open={dialogOpen} onOpenChange={handleCloseDialog}>
-      <DialogContent className="flex flex-col px-0 pt-4 pb-0 w-[550px] text-sky-950">
+      <DialogContent
+        onPointerDownOutside={(e) => e.preventDefault()}
+        className="flex flex-col px-0 pt-4 pb-0 w-[550px] text-sky-950"
+      >
         <DialogHeader>
           <Header>
             <DialogTitle className={`text-xl text-center ${darkBlueText}`}>
@@ -122,15 +153,17 @@ export function EditAccount() {
               <Footer>
                 <div className="flex justify-between items-center">
                   <Button
+                    type="button"
                     variant="destructive"
                     className="bg-opacity-30 text-red-700 hover:text-white"
-                    onClick={() => console.log("Hello, World!")}
+                    onClick={handleDeleteAccount}
                   >
                     Delete account
                   </Button>
                   <div className="space-x-2">
                     <Button
-                      onClick={() => console.log("Hello, World!")}
+                      type="button"
+                      onClick={handleCloseDialog}
                       className="bg-sky-950 bg-opacity-30 text-sky-950 hover:bg-opacity-60 hover:bg-sky-950"
                     >
                       Cancel
