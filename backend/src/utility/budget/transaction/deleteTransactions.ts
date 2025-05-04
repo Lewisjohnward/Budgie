@@ -1,6 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Transaction } from "@prisma/client";
 import { convertDecimalToNumber } from "../helpers/convertDecimalToNumber";
 import { roundToStartOfMonth } from "../helpers/roundToStartOfMonth";
+import { calculateBalanceChange } from "../helpers/calculateBalanceChangePerAccount";
 
 const prisma = new PrismaClient();
 
@@ -19,27 +20,9 @@ export const deleteTransactions = async (
     },
   });
 
-  const account = await prisma.account.findFirstOrThrow({
-    where: {
-      id: transactionsToDelete[0].accountId,
-    },
-  });
+  const balanceChangePerAccount = calculateBalanceChange(transactionsToDelete);
 
-  const balance = convertDecimalToNumber(account.balance);
-  const changeInBalance = transactionsToDelete.reduce(
-    (accumulator, { inflow, outflow }) => {
-      return (
-        accumulator +
-        convertDecimalToNumber(outflow) -
-        convertDecimalToNumber(inflow)
-      );
-    },
-    0,
-  );
-
-  console.log("to delete", transactionsToDelete);
-
-  const testTransactionsRoundedToStartOfMonth = transactionsToDelete.map(
+  const transactionsRoundedToStartOfMonth = transactionsToDelete.map(
     (transaction) => ({
       ...transaction,
       date: roundToStartOfMonth(transaction.date),
@@ -49,13 +32,8 @@ export const deleteTransactions = async (
     }),
   );
 
-  console.log(
-    "test months rounded to start",
-    testTransactionsRoundedToStartOfMonth,
-  );
-
   await Promise.all(
-    testTransactionsRoundedToStartOfMonth.map(
+    transactionsRoundedToStartOfMonth.map(
       async (transaction) =>
         await prisma.month.update({
           where: {
@@ -85,9 +63,13 @@ export const deleteTransactions = async (
       },
     });
 
-    await tx.account.update({
-      where: { id: transactionsToDelete[0].accountId },
-      data: { balance: balance + changeInBalance },
-    });
+    for (const accountId in balanceChangePerAccount) {
+      await tx.account.update({
+        where: { id: accountId },
+        data: {
+          balance: { increment: balanceChangePerAccount[accountId] },
+        },
+      });
+    }
   });
 };
