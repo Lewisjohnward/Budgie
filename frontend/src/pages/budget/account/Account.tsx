@@ -30,7 +30,7 @@ import {
 } from "@/core/components/uiLibrary/table";
 import { Button } from "@/core/components/uiLibrary/button";
 import { FaCopy, FaRegCreditCard, FaRegMoneyBillAlt } from "react-icons/fa";
-import { useAppDispatch } from "@/core/hooks/reduxHooks";
+import { useAppDispatch, useAppSelector } from "@/core/hooks/reduxHooks";
 import { toggleEditAccount } from "@/core/slices/dialogSlice";
 import { numberToCurrency } from "@/core/lib/numberToCurrency";
 import React from "react";
@@ -38,6 +38,12 @@ import { TransactionFormRow } from "./components/transactionFormRow/TransactionF
 import { Separator } from "./components/Separator";
 import { SelectionModal } from "./components/RowSelectionModal";
 import { columns } from "./components/columns";
+import {
+  closeTransactionFormRow,
+  openTransactionFormRow,
+  transactionFormRow,
+} from "@/pages/budget/account/slices/transactionFormRowSlice";
+import clsx from "clsx";
 
 type Category = {
   id: string;
@@ -75,14 +81,9 @@ export function Account() {
   const [addingTransaction, setAddingTransaction] = useState(false);
   const dispatch = useAppDispatch();
   const handleOpenDialog = () => dispatch(toggleEditAccount());
-  const toggleAddTransaction = () => {
-    setAddingTransaction((prev) => !prev);
-  };
-
+  const transactionFormRowState = useAppSelector(transactionFormRow);
   if (!data) return <div>There has been an error</div>;
-
   const { accountId } = useParams();
-
   const chosenAccount =
     accountId === "all"
       ? "all"
@@ -91,6 +92,14 @@ export function Account() {
   if (!chosenAccount || !accountId) {
     throw new Error(`Account with ID ${accountId} not found`);
   }
+  const displayTransactionFormRow = () => {
+    dispatch(
+      openTransactionFormRow({
+        displayAccount: chosenAccount === "all",
+        accountId,
+      }),
+    );
+  };
 
   const handleSubmitTransaction = async () => {
     const dummyTransaction = {
@@ -144,23 +153,26 @@ export function Account() {
   const account =
     chosenAccount === "all"
       ? {
-        name: "All Accounts",
-        type: "",
-        balance: sumBalance,
-        transactions,
-      }
+          name: "All Accounts",
+          type: "",
+          balance: sumBalance,
+          transactions,
+        }
       : {
-        name: chosenAccount.name,
-        type: chosenAccount.type,
-        balance: chosenAccount.balance,
-        transactions,
-      };
+          name: chosenAccount.name,
+          type: chosenAccount.type,
+          balance: chosenAccount.balance,
+          transactions,
+        };
+
+  const accountsAvailable = Object.keys(data.accounts).length > 0;
 
   ///// TABLE
 
   useEffect(() => {
     table.resetRowSelection();
     setAddingTransaction(false);
+    dispatch(closeTransactionFormRow());
   }, [accountId]);
 
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -269,7 +281,10 @@ export function Account() {
       </Container>
       <Separator />
       <Container>
-        <AddTransactionButton onClick={toggleAddTransaction} />
+        <AddTransactionButton
+          onClick={displayTransactionFormRow}
+          disabled={!accountsAvailable}
+        />
       </Container>
       <Table>
         <TableHeader>
@@ -285,9 +300,9 @@ export function Account() {
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </TableHead>
                 );
               })}
@@ -295,22 +310,16 @@ export function Account() {
           ))}
         </TableHeader>
         <TableBody>
-          {addingTransaction && (
-            <TransactionFormRow
-              displayAccount={chosenAccount === "all"}
-              accountId={accountId}
-              cancel={toggleAddTransaction}
-            />
-          )}
+          {transactionFormRowState.open && <TransactionFormRow />}
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) =>
               // row.getIsSelected() ? (
               false ? (
                 <TransactionFormRow
-                  displayAccount={chosenAccount === "all"}
-                  accountId={accountId}
-                  transactionId={row.original.id}
-                  cancel={() => row.toggleSelected()}
+                // displayAccount={chosenAccount === "all"}
+                // accountId={accountId}
+                // transactionId={row.original.id}
+                // cancel={() => row.toggleSelected()}
                 />
               ) : (
                 <ContextMenu modal>
@@ -410,11 +419,21 @@ function Container({ children }: { children: ReactNode }) {
   return <div className="px-4 py-2">{children}</div>;
 }
 
-function AddTransactionButton({ onClick }: { onClick: () => void }) {
+function AddTransactionButton({
+  onClick,
+  disabled,
+}: {
+  onClick: () => void;
+  disabled: boolean;
+}) {
   return (
     <button
-      className="flex items-center gap-2 px-2 py-2 text-sky-950 border border-sky-950/40 rounded text-sm hover:bg-sky-950/10"
+      className={clsx(
+        disabled ? "opacity-40" : "hover:bg-sky-950/10",
+        "flex items-center gap-2 px-2 py-2 text-sky-950 border border-sky-950/40 rounded text-sm",
+      )}
       onClick={onClick}
+      disabled={disabled}
     >
       <CirclePlus size={15} />
       Add Transaction
