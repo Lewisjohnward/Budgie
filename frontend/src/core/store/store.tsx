@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit/react";
-import authReducer from "../slices/authSlice";
+import authReducer from "@/core/slices/authSlice";
 import dialogReducer from "../slices/dialogSlice";
+import transactionFormRow from "@/pages/budget/account/slices/transactionFormRowSlice";
 import { apiSlice } from "../api/apiSlice";
 
 export const createStore = () =>
@@ -8,6 +9,7 @@ export const createStore = () =>
     reducer: {
       auth: authReducer,
       dialogs: dialogReducer,
+      transactionFormRow: transactionFormRow,
       [apiSlice.reducerPath]: apiSlice.reducer,
     },
     middleware: (getDefaultMiddleWare) =>
