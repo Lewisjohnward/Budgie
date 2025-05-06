@@ -9,22 +9,18 @@ export const initialiseAccount = async (account: AccountPayload) => {
 
   // TODO: THE NAME needs to be protected
 
-  // const defaultCategory = await prisma.category.findFirstOrThrow({
-  //   where: {
-  //     name: "Inflow: Ready to Assign",
-  //   },
-  // });
+  if (account.balance > 0) {
+    const readyToAssignCategory = await prisma.category.findFirstOrThrow({
+      where: {
+        userId: account.userId,
+        name: "Ready to Assign",
+      },
+    });
 
-  const readyToAssignCategory = await prisma.category.findFirstOrThrow({
-    where: {
-      userId: account.userId,
-      name: "Ready to Assign",
-    },
-  });
-
-  await insertTransaction(account.userId, {
-    accountId: createdAccount.id,
-    inflow: account.balance,
-    categoryId: readyToAssignCategory.id,
-  });
+    await insertTransaction(account.userId, {
+      accountId: createdAccount.id,
+      inflow: account.balance,
+      categoryId: readyToAssignCategory.id,
+    });
+  }
 };
