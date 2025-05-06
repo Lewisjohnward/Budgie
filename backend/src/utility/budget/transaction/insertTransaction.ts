@@ -3,6 +3,7 @@ import {
   convertDecimalToNumber,
   getIntermediateMonths,
   roundToStartOfMonth,
+  isAfterUtc,
 } from "..";
 import { toZonedTime } from "date-fns-tz";
 import { TransactionPayload } from "../../../dto";
@@ -29,9 +30,14 @@ export const insertTransaction = async (
   const updatedBalance =
     convertDecimalToNumber(account.balance) + balanceModifier;
 
-  const transactionDate = toZonedTime(new Date(transaction.date || ""), "UTC");
+  const transactionDate = toZonedTime(
+    transaction.date ? new Date(transaction.date) : new Date(),
+    "UTC",
+  );
+
   const utcNow = toZonedTime(new Date(), "UTC");
-  if (transactionDate >= utcNow) {
+
+  if (isAfterUtc(transactionDate, utcNow)) {
     console.log("User is trying to add a transaction in the future, rejected");
     return;
   }
@@ -129,26 +135,26 @@ export const insertTransaction = async (
           convertDecimalToNumber(monthRecord.activity) + balanceModifier,
       },
     });
-    return;
-  }
-  await prisma.transaction.create({
-    data: {
-      ...transaction,
-      categoryId: transaction.categoryId,
-    },
-  });
-
-  await prisma.month.update({
-    where: {
-      categoryId_month: {
+  } else {
+    await prisma.transaction.create({
+      data: {
+        ...transaction,
         categoryId: transaction.categoryId,
-        month: roundToStartOfMonth(transactionDate),
       },
-    },
-    data: {
-      activity: {
-        increment: balanceModifier,
+    });
+
+    await prisma.month.update({
+      where: {
+        categoryId_month: {
+          categoryId: transaction.categoryId,
+          month: roundToStartOfMonth(transactionDate),
+        },
       },
-    },
-  });
+      data: {
+        activity: {
+          increment: balanceModifier,
+        },
+      },
+    });
+  }
 };

@@ -1,9 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import {
-  createAccount,
-  insertTransaction,
-  updateReadyToAssignMonths,
-} from "..";
+import { createAccount, insertTransaction } from "..";
 import { AccountPayload } from "../../../dto";
 
 const prisma = new PrismaClient();
@@ -31,12 +27,4 @@ export const initialiseAccount = async (account: AccountPayload) => {
     inflow: account.balance,
     categoryId: readyToAssignCategory.id,
   });
-
-  if (account.balance > 0) {
-    updateReadyToAssignMonths(
-      readyToAssignCategory.id,
-      account.balance,
-      account.userId,
-    );
-  }
 };
