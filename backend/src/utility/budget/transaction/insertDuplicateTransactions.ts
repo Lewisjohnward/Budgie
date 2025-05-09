@@ -18,6 +18,13 @@ export const insertduplicateTransactions = async (
     },
   });
 
+  const readyToAssignCategory = await prisma.category.findUniqueOrThrow({
+    where: {
+      name: "Ready to Assign",
+      userId,
+    },
+  });
+
   if (transactions.length === 0) {
     throw new Error("No matching transactions found to duplicate.");
   }
@@ -44,6 +51,13 @@ export const insertduplicateTransactions = async (
     }),
   );
 
+  const readyToAssignTransactions = transactionsToInsert.filter(
+    (transaction) => transaction.categoryId === readyToAssignCategory.id,
+  );
+  const otherTransactions = transactionsToInsert.filter(
+    (transaction) => transaction.categoryId !== readyToAssignCategory.id,
+  );
+
   await prisma.$transaction(async (tx) => {
     await Promise.all(
       Object.entries(accountBalanceUpdates).map(
@@ -58,7 +72,24 @@ export const insertduplicateTransactions = async (
     );
 
     await Promise.all(
-      transactionsToInsert.map((transaction) =>
+      readyToAssignTransactions.map((transaction) =>
+        tx.month.updateMany({
+          where: {
+            categoryId: transaction.categoryId,
+            month: { gte: roundToStartOfMonth(transaction.date) },
+          },
+          data: {
+            activity: {
+              increment:
+                Number(transaction.inflow) - Number(transaction.outflow),
+            },
+          },
+        }),
+      ),
+    );
+
+    await Promise.all(
+      otherTransactions.map((transaction) =>
         tx.month.update({
           where: {
             categoryId_month: {

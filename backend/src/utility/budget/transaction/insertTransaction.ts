@@ -30,10 +30,7 @@ export const insertTransaction = async (
   const updatedBalance =
     convertDecimalToNumber(account.balance) + balanceModifier;
 
-  const transactionDate = toZonedTime(
-    transaction.date ? new Date(transaction.date) : new Date(),
-    "UTC",
-  );
+  const transactionDate = new Date(transaction.date!);
 
   const utcNow = toZonedTime(new Date(), "UTC");
 
@@ -95,6 +92,8 @@ export const insertTransaction = async (
   });
 
   const monthOfTransaction = roundToStartOfMonth(transactionDate);
+
+  // UNCATEGORISED TRANSACTION
   if (!transaction.categoryId) {
     const uncategorisedCategory = await prisma.category.findUniqueOrThrow({
       where: {
@@ -135,19 +134,30 @@ export const insertTransaction = async (
           convertDecimalToNumber(monthRecord.activity) + balanceModifier,
       },
     });
-  } else {
-    await prisma.transaction.create({
-      data: {
-        ...transaction,
-        categoryId: transaction.categoryId,
-      },
-    });
+    return;
+  }
 
-    await prisma.month.update({
+  // READY TO ASSIGN TRANSACTION
+  const readyToAssignCategory = await prisma.category.findUniqueOrThrow({
+    where: {
+      name: "Ready to Assign",
+      userId,
+    },
+  });
+
+  await prisma.transaction.create({
+    data: {
+      ...transaction,
+      categoryId: transaction.categoryId,
+    },
+  });
+
+  if (transaction.categoryId === readyToAssignCategory.id) {
+    await prisma.month.updateMany({
       where: {
-        categoryId_month: {
-          categoryId: transaction.categoryId,
-          month: roundToStartOfMonth(transactionDate),
+        categoryId: transaction.categoryId,
+        month: {
+          gte: roundToStartOfMonth(transactionDate),
         },
       },
       data: {
@@ -156,5 +166,30 @@ export const insertTransaction = async (
         },
       },
     });
+
+    const months = await prisma.month.findMany({
+      where: {
+        categoryId: transaction.categoryId,
+      },
+      orderBy: {
+        month: "desc",
+      },
+    });
+    return;
   }
+
+  // CATEGORISED TRANSACTION
+  await prisma.month.update({
+    where: {
+      categoryId_month: {
+        categoryId: transaction.categoryId,
+        month: roundToStartOfMonth(transactionDate),
+      },
+    },
+    data: {
+      activity: {
+        increment: balanceModifier,
+      },
+    },
+  });
 };

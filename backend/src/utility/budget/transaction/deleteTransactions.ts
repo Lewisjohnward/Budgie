@@ -1,4 +1,4 @@
-import { PrismaClient, Transaction } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { convertDecimalToNumber } from "../helpers/convertDecimalToNumber";
 import { roundToStartOfMonth } from "../helpers/roundToStartOfMonth";
 import { calculateBalanceChange } from "../helpers/calculateBalanceChangePerAccount";
@@ -20,6 +20,17 @@ export const deleteTransactions = async (
     },
   });
 
+  if (transactionsToDelete.length === 0) return;
+
+  const readyToAssignCategory = await prisma.category.findUniqueOrThrow({
+    where: {
+      name: "Ready to Assign",
+      userId,
+    },
+  });
+
+  const readyToAssignId = readyToAssignCategory.id;
+
   const balanceChangePerAccount = calculateBalanceChange(transactionsToDelete);
 
   const transactionsRoundedToStartOfMonth = transactionsToDelete.map(
@@ -31,11 +42,35 @@ export const deleteTransactions = async (
         convertDecimalToNumber(transaction.inflow),
     }),
   );
+  const readyToAssignTransactions = transactionsRoundedToStartOfMonth.filter(
+    (transaction) => transaction.categoryId === readyToAssignId,
+  );
+  const otherTransactions = transactionsRoundedToStartOfMonth.filter(
+    (transaction) => transaction.categoryId !== readyToAssignId,
+  );
 
-  await Promise.all(
-    transactionsRoundedToStartOfMonth.map(
-      async (transaction) =>
-        await prisma.month.update({
+  await prisma.$transaction(async (tx) => {
+    await Promise.all(
+      readyToAssignTransactions.map((transaction) =>
+        tx.month.updateMany({
+          where: {
+            categoryId: readyToAssignId,
+            month: {
+              gte: transaction.date,
+            },
+          },
+          data: {
+            activity: {
+              increment: transaction.changeInBalance,
+            },
+          },
+        }),
+      ),
+    );
+
+    await Promise.all(
+      otherTransactions.map((transaction) =>
+        tx.month.update({
           where: {
             categoryId_month: {
               categoryId: transaction.categoryId,
@@ -48,10 +83,9 @@ export const deleteTransactions = async (
             },
           },
         }),
-    ),
-  );
+      ),
+    );
 
-  await prisma.$transaction(async (tx) => {
     await tx.transaction.deleteMany({
       where: {
         id: {
