@@ -104,8 +104,10 @@ function useAllocation() {
   );
 
   const [assignId] = categoryGroups[inflowGroupId!].categories;
-  const [firstMonthId] = allocationData.categories[assignId].months;
-  const assignableAmount = allocationData.months[firstMonthId].activity;
+
+  const assignMonthIds = allocationData.categories[assignId].months;
+  const assignableAmount =
+    allocationData.months[assignMonthIds[monthSelector]].activity;
 
   const derivedCategoryGroups = Object.values(
     Object.fromEntries(
