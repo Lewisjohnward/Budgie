@@ -796,7 +796,7 @@ const EditAssigned = forwardRef<
   };
 
   const onSubmit = (updatedValue: Month) => {
-    if (updatedValue.assigned === assigned.toFixed(2)) return;
+    if (Number(updatedValue.assigned) === Number(assigned)) return;
     editMonth(updatedValue);
     reset();
   };
@@ -874,10 +874,23 @@ function ProgressBar({
   );
 }
 
-function Activity({ children }: { children: ReactNode }) {
-  return <p className="flex-1 text-right">£{children}</p>;
+function Activity({ value }: { value: number }) {
+  return <p className="flex-1 text-right">£{value.toFixed(2)}</p>;
 }
 
-function Available({ children }: { children: ReactNode }) {
-  return <p className="flex-1 text-right">£{children}</p>;
+function Available({ value }: { value: number }) {
+  const style =
+    value < 0
+      ? "bg-rose-300 text-red-950"
+      : value > 0
+        ? "bg-green-200"
+        : "bg-slate-200 text-slate-500";
+
+  return (
+    <div className="flex-1 flex justify-end">
+      <span className={`text-right px-2 ${style} rounded-lg`}>
+        £{value.toFixed(2)}
+      </span>
+    </div>
+  );
 }
