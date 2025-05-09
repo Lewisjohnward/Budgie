@@ -14,8 +14,16 @@ export function DatePickerDemo() {
   const { setValue, watch } = useFormContext();
 
   const date = watch("date");
-  const setDate = (date: Date | undefined) => setValue("date", date);
-
+  const setDate = (date: Date | undefined) => {
+    if (!date) {
+      setValue("date", date);
+      return;
+    }
+    const utcDate = new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+    );
+    setValue("date", utcDate);
+  };
   return (
     <Popover>
       <PopoverTrigger asChild>
