@@ -254,47 +254,47 @@ export function Allocation() {
                 <CategoriesContainer display={categoryGroup.open}>
                   {categoryGroup.categories.length > 0
                     ? categoryGroup.categories.map((cat) => {
-                        const category = categories[cat];
-                        const { id, name } = category;
-                        const {
-                          activity,
-                          assigned,
-                          id: monthId,
-                        } = months[category.months[monthSelector]];
+                      const category = categories[cat];
+                      const { id, name } = category;
+                      const {
+                        activity,
+                        assigned,
+                        id: monthId,
+                      } = months[category.months[monthSelector]];
 
-                        const available = activity;
+                      const available = assigned + activity;
 
-                        return (
-                          <CategoryContextMenu
-                            key={monthId}
-                            category={category}
-                          >
-                            <CategoryContent>
-                              {(ref) => (
-                                <>
-                                  <Checkbox className="size-3 rounded-[2px] shadow-none" />
-                                  <CategoryNameContainer>
-                                    <CategoryName>{name}</CategoryName>
-                                    <ProgressBar
-                                      assigned={0}
-                                      activity={activity}
-                                      available={0}
-                                    />
-                                  </CategoryNameContainer>
-                                  <EditAssigned
-                                    ref={ref}
-                                    assigned={assigned}
-                                    monthId={monthId}
-                                    assignId={assignId}
+                      return (
+                        <CategoryContextMenu
+                          key={monthId}
+                          category={category}
+                        >
+                          <CategoryContent>
+                            {(ref) => (
+                              <>
+                                <Checkbox className="size-3 rounded-[2px] shadow-none" />
+                                <CategoryNameContainer>
+                                  <CategoryName>{name}</CategoryName>
+                                  <ProgressBar
+                                    assigned={0}
+                                    activity={activity}
+                                    available={0}
                                   />
-                                  <Activity>{activity.toFixed(2)}</Activity>
-                                  <Available>{available.toFixed(2)}</Available>
-                                </>
-                              )}
-                            </CategoryContent>
-                          </CategoryContextMenu>
-                        );
-                      })
+                                </CategoryNameContainer>
+                                <EditAssigned
+                                  ref={ref}
+                                  assigned={assigned}
+                                  monthId={monthId}
+                                  assignId={assignId}
+                                />
+                                <Activity value={activity} />
+                                <Available value={available} />
+                              </>
+                            )}
+                          </CategoryContent>
+                        </CategoryContextMenu>
+                      );
+                    })
                     : null}
                 </CategoriesContainer>
               </Container>
