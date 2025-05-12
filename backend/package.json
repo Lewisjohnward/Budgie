@@ -4,9 +4,12 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "start": "nodemon src/index.ts",
+    "dev": "ts-node-dev --respawn src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc",
     "test": "jest -i",
-    "test:watch": "jest --watch"
+    "test:unit:watch": "jest --config jest.config.unit.ts --watch",
+    "test:integration:watch": "jest --config jest.config.integration.ts --watch /src/__test__/"
   },
   "prisma": {
     "seed": "ts-node src/prisma/seed.ts"

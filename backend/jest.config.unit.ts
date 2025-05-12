@@ -1,5 +1,4 @@
 import type { Config } from "jest";
-
 const config: Config = {
   preset: "ts-jest",
   clearMocks: true,
@@ -9,7 +8,8 @@ const config: Config = {
   coveragePathIgnorePatterns: ["/node_modules"],
   coverageProvider: "v8",
   moduleDirectories: ["node_modules", "src"],
-  setupFiles: ["<rootDir>/jest.setup.ts"],
+  testPathIgnorePatterns: ["/src/__test__/"],
+  setupFiles: ["<rootDir>/jest.setup.unit.ts"],
 };
 
 export default config;
