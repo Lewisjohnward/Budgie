@@ -18,7 +18,7 @@ export const insertduplicateTransactions = async (
     },
   });
 
-  const readyToAssignCategory = await prisma.category.findUniqueOrThrow({
+  const readyToAssignCategory = await prisma.category.findFirstOrThrow({
     where: {
       name: "Ready to Assign",
       userId,
