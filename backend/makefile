@@ -48,3 +48,8 @@ run-integration-test-db:
 		-e POSTGRES_DB=app_test \
 		-p $(TEST_DB_PORT):5432 \
 		-d postgres
+
+remove-integration-test-db:
+	@echo "Stopping and removing integration test PostgreSQL container..."
+	-docker container stop postgres_test
+	-docker container rm postgres_test
