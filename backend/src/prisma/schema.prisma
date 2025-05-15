@@ -42,7 +42,7 @@ model Category {
   userId          String
   categoryGroupId String
   // budgetId     String
-  name            String        @unique
+  name            String        
   // budget       Budget        @relation(fields: [budgetId], references: [id])
   transactions    Transaction[]
   categoryGroup        CategoryGroup @relation(fields: [categoryGroupId], references: [id])
