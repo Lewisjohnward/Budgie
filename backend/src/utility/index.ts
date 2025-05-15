@@ -1,4 +1,4 @@
 export * from "./budget";
 export * from "./user";
-export * from "./normalizeCategories";
-export * from "./normalizeAccounts";
+export * from "./normalizeData/normalizeCategories";
+export * from "./normalizeData/normalizeAccounts";
