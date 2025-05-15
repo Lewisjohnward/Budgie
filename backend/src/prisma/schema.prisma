@@ -41,8 +41,6 @@ model Category {
   id              String        @id @default(uuid())
   userId          String
   categoryGroupId String
-  assigned        Decimal?      @default(0)
-  activity        Decimal?      @default(0)
   // budgetId     String
   name            String        @unique
   // budget       Budget        @relation(fields: [budgetId], references: [id])
