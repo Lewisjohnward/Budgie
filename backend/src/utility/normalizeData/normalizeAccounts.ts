@@ -1,5 +1,5 @@
-import { Account, NormalizedAccountData } from "../types/_index";
-import { convertDecimalToNumber } from "./budget";
+import { Account, NormalizedAccountData } from "../../types/_index";
+import { convertDecimalToNumber } from "../budget";
 
 export function normalizeData(data: { accounts: Account[] }) {
   const normalizedData: NormalizedAccountData = {

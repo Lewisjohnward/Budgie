@@ -1,5 +1,5 @@
-import { CategoryGroup, NormalizedCategories } from "../types/_index";
-import { convertDecimalToNumber } from "./budget";
+import { CategoryGroup, NormalizedCategories } from "../../types/_index";
+import { convertDecimalToNumber } from "../budget";
 
 export function normalizeCategories(categoryGroups: CategoryGroup[]) {
   const normalizedData = categoryGroups.reduce(
