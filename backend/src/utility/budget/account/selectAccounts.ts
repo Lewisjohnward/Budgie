@@ -24,15 +24,5 @@ export const selectAccounts = async (userId: string) => {
     },
   });
 
-  const accounts = accountsWithTransactions.map((account) => ({
-    ...account,
-    balance: convertDecimalToNumber(account.balance),
-    transactions: account.transactions.map((transaction) => ({
-      ...transaction,
-      inflow: convertDecimalToNumber(transaction.inflow),
-      outflow: convertDecimalToNumber(transaction.outflow),
-    })),
-  }));
-
-  return accounts;
+  return accountsWithTransactions;
 };
