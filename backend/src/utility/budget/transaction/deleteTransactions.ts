@@ -22,7 +22,7 @@ export const deleteTransactions = async (
 
   if (transactionsToDelete.length === 0) return;
 
-  const readyToAssignCategory = await prisma.category.findUniqueOrThrow({
+  const readyToAssignCategory = await prisma.category.findFirstOrThrow({
     where: {
       name: "Ready to Assign",
       userId,

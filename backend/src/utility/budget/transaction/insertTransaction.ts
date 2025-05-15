@@ -95,9 +95,10 @@ export const insertTransaction = async (
 
   // UNCATEGORISED TRANSACTION
   if (!transaction.categoryId) {
-    const uncategorisedCategory = await prisma.category.findUniqueOrThrow({
+    const uncategorisedCategory = await prisma.category.findFirstOrThrow({
       where: {
         name: "Uncategorised Transactions",
+        userId,
       },
       include: {
         months: true,
@@ -138,7 +139,7 @@ export const insertTransaction = async (
   }
 
   // READY TO ASSIGN TRANSACTION
-  const readyToAssignCategory = await prisma.category.findUniqueOrThrow({
+  const readyToAssignCategory = await prisma.category.findFirstOrThrow({
     where: {
       name: "Ready to Assign",
       userId,
