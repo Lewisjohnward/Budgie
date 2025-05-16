@@ -30,7 +30,7 @@ export const insertTransaction = async (
   const updatedBalance =
     convertDecimalToNumber(account.balance) + balanceModifier;
 
-  const transactionDate = new Date(transaction.date!);
+  const transactionDate = new Date(transaction.date ?? Date.now());
 
   const utcNow = toZonedTime(new Date(), "UTC");
 
