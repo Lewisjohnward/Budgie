@@ -56,7 +56,7 @@ describe("Transaction controller", () => {
       expect(response.status).toBe(400);
     });
 
-    it("Should return 503 if insertion in db fails", async () => {
+    it("Should return 500 if error", async () => {
       (insertTransaction as jest.Mock).mockRejectedValue("Failed");
 
       const response = await request(app).post("/budget/transaction").send({
@@ -64,8 +64,8 @@ describe("Transaction controller", () => {
         categoryId: "7c5a7df3-bd02-4576-b9e5-c2c8d6cf4d21",
         inflow: "120",
       });
-      expect(response.status).toBe(503);
       (insertTransaction as jest.Mock).mockReset();
+      expect(response.status).toBe(500);
     });
 
     it("Should return 200 if correct data sent", async () => {
