@@ -9,6 +9,7 @@ import { UserRoute, BudgetRoute } from "./routes";
 import morgan from "morgan";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
+import { errorHandler } from "./middleware/errorHandler";
 
 // export const StartServer = async () => {
 if (!process.env.PAYLOAD_SECRET) {
@@ -41,5 +42,7 @@ app.use("/budget", BudgetRoute);
 app.get("/", (req, res) => {
   res.status(200).json({ ping: "pong" });
 });
+
+app.use(errorHandler);
 
 export default app;

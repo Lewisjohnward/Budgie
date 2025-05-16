@@ -10,8 +10,11 @@ import {
 } from "../../utility";
 import { paramsSchema } from "../../schemas";
 
-// DONE
-export const getAccounts = async (req: Request, res: Response) => {
+export const getAccounts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   // TODO: what about pagination if there's loads of transactions?
 
   try {
@@ -21,13 +24,15 @@ export const getAccounts = async (req: Request, res: Response) => {
 
     res.status(200).json({ ...data });
   } catch (error) {
-    res.status(500).json({ message: "There has been an error" });
+    next(error);
   }
-  return;
 };
 
-// DONE
-export const addAccount = async (req: Request, res: Response) => {
+export const addAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const { name, type, balance } = <AddAccountPayload>req.body;
 
   try {
@@ -42,19 +47,23 @@ export const addAccount = async (req: Request, res: Response) => {
 
     res.status(200).json({ message: "Account added" });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ message: "Malformed data" });
-      return;
-    }
-    res.status(500).json({ message: "Error adding account" });
+    next(error);
   }
 };
 
-export const editAccount = async (req: Request, res: Response) => {
+export const editAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   // TODO: use req query param to edit transaction
 };
 
-export const deleteAccount = async (req: Request, res: Response) => {
+export const deleteAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const id = req.params.id;
   try {
     const { accountId } = paramsSchema.parse({ accountId: id });
@@ -62,6 +71,6 @@ export const deleteAccount = async (req: Request, res: Response) => {
     await deleteAccountById(accountId, req.user?._id!);
     res.sendStatus(200);
   } catch (error) {
-    res.status(500).json({ message: "Error deleting account" });
+    next(error);
   }
 };

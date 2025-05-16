@@ -16,6 +16,10 @@ import {
 } from "../../utility";
 import { z } from "zod";
 import { initialiseCategories } from "../../utility";
+import {
+  InvalidCredentialsError,
+  InvalidOrExpiredRefreshTokenError,
+} from "../../errors";
 
 const prisma = new PrismaClient();
 
@@ -49,7 +53,6 @@ export const register = async (
     const user = await createUser({ email, password: passwordHash, salt });
     await initialiseCategories(user.id);
 
-    // TODO: THIS CAN BE ABSTRACTED OUT
     const accessToken = GenerateAccessToken({
       _id: user.id,
       email: user.email,
@@ -70,17 +73,13 @@ export const register = async (
     });
 
     res.status(200).json(accessToken);
-    ///////
   } catch (error) {
     if (error instanceof z.ZodError) {
-      res.status(422).json({ message: "Invalid credentials" });
+      next(new InvalidCredentialsError());
       return;
     }
-    res
-      .status(500)
-      .json({ message: "There has been an error creating the user" });
+    next(error);
   }
-  return;
 };
 
 export const login = async (
@@ -113,8 +112,6 @@ export const login = async (
       res.status(400).json({ message: "There has been an error logging in" });
       return;
     }
-
-    //// TODO: THIS CAN BE ABSTRACTED OUT
     const accessToken = GenerateAccessToken({
       _id: user.id,
       email: user.email,
@@ -134,13 +131,9 @@ export const login = async (
       maxAge: 24 * 60 * 60 * 1000,
     });
     res.status(200).json(accessToken);
-    /////
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "An unexpected error occurred" });
+    next(error);
   }
-
-  return;
 };
 
 export const logout = async (
@@ -151,13 +144,12 @@ export const logout = async (
   const cookies = req.cookies;
   if (!cookies?.jwt) {
     console.log("no cookies found");
-    res.sendStatus(204); // No content
+    res.sendStatus(204);
     return;
   }
 
   const refreshToken = cookies.jwt;
 
-  // Is refresh token in db?
   const user = await prisma.user.findUnique({
     where: { refreshToken },
   });
@@ -173,8 +165,7 @@ export const logout = async (
     return;
   }
 
-  // user.refreshToken = null;
-  const result = await prisma.user.update({
+  await prisma.user.update({
     where: { refreshToken },
     data: { refreshToken: null },
   });
@@ -185,7 +176,6 @@ export const logout = async (
     secure: process.env.NODE_ENV == "production",
   });
   res.sendStatus(204);
-  return;
 };
 
 export const refresh = async (
@@ -196,7 +186,7 @@ export const refresh = async (
   const cookies = req.cookies;
   if (!cookies?.jwt) {
     console.log(" no cookies");
-    res.sendStatus(401); // No content
+    res.sendStatus(401);
     return;
   }
 
@@ -227,9 +217,6 @@ export const refresh = async (
     res.json({ token, email: user.email });
     return;
   } catch (error) {
-    res.status(401).json({
-      message: "Invalid or expired refresh token",
-    });
-    return;
+    next(InvalidOrExpiredRefreshTokenError);
   }
 };

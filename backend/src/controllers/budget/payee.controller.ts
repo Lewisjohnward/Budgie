@@ -6,7 +6,9 @@ export const addPayee = async (
   next: NextFunction,
 ) => {
   try {
-  } catch (error) { }
+  } catch (error) {
+    next(error);
+  }
   return;
 };
 
@@ -16,7 +18,9 @@ export const editPayee = async (
   next: NextFunction,
 ) => {
   try {
-  } catch (error) { }
+  } catch (error) {
+    next(error);
+  }
   return;
 };
 
@@ -26,6 +30,8 @@ export const deletePayee = async (
   next: NextFunction,
 ) => {
   try {
-  } catch (error) { }
+  } catch (error) {
+    next(error);
+  }
   return;
 };

@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import { z } from "zod";
 import { DeleteTransactionPayload, TransactionPayload } from "../../dto";
 import {
   duplicateTransactionsSchema,
@@ -13,6 +12,7 @@ import {
   updateTransactions,
   userOwnsAccount,
 } from "../../utility";
+import { z } from "zod";
 
 export const addTransaction = async (
   req: Request,
@@ -52,14 +52,8 @@ export const addTransaction = async (
 
     await insertTransaction(req.user?._id!, validTransaction);
     res.status(200).json({ message: "Transaction added" });
-    return;
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ message: "Malformed data" });
-      return;
-    }
-    res.status(503).json({ message: error });
-    return;
+    next(error);
   }
 };
 
@@ -78,13 +72,7 @@ export const editTransaction = async (
 
     res.status(200).json({ message: "Transaction updated" });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ message: "Malformed data" });
-      return;
-    }
-    res
-      .status(500)
-      .json({ message: "There has been an error editing transaction" });
+    next(error);
   }
 };
 
@@ -105,7 +93,7 @@ export const deleteTransaction = async (
 
     res.status(200).json({ message: "Success" });
   } catch (error) {
-    res.status(500).json({ message: "There has been an error" });
+    next(error);
   }
 };
 
@@ -123,11 +111,6 @@ export const duplicateTransactions = async (
     await insertduplicateTransactions(req.user!._id, validatedTransactionIds);
     res.status(200).json({ message: "Transaction dupliacated" });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ message: "Malformed data" });
-      return;
-    }
-    res.status(503).json({ message: error });
-    return;
+    next(error);
   }
 };

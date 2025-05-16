@@ -11,8 +11,8 @@ import {
   CategorySchema,
 } from "../../schemas/CategorySchema";
 import { normalizeCategories } from "../../utility";
-// TODO: NEEDS TESTING
 
+// TODO: NEEDS TESTING
 export const getCategories = async (
   req: Request,
   res: Response,
@@ -24,8 +24,7 @@ export const getCategories = async (
 
     res.status(200).json({ ...normalizedCategories });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: error });
+    next(error);
   }
   return;
 };
@@ -48,7 +47,7 @@ export const addCategoryGroup = async (
     await createCategoryGroup(validatedCategoryGroup);
     res.status(200).json({ message: "Category group added" });
   } catch (error) {
-    res.status(500).json({ message: error });
+    next(error);
   }
   return;
 };
@@ -87,16 +86,15 @@ export const addCategory = async (
     await createCategory(validatedSubCategory);
     res.status(200).json({ message: "SubCategory added" });
   } catch (error) {
-    res.status(500).json({ message: error });
+    next(error);
   }
-  return;
 };
 
 export const updateCategory = async (
   req: Request,
   res: Response,
   next: NextFunction,
-) => {};
+) => { };
 
 // TODO: NEEDS TESTING
 export const editCategory = async (
@@ -106,7 +104,9 @@ export const editCategory = async (
 ) => {
   try {
     updateCategoryById();
-  } catch (error) {}
+  } catch (error) {
+    next(error);
+  }
   return;
 };
 
@@ -117,6 +117,8 @@ export const deleteCategory = async (
 ) => {
   try {
     deleteCategoryById();
-  } catch (error) {}
+  } catch (error) {
+    next(error);
+  }
   return;
 };
