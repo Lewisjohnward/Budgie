@@ -11,7 +11,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAccounts: builder.query<NormalizedData, void>({
       query: () => ({
-        url: "budget/account",
+        url: "budget/accounts",
         method: "GET",
       }),
       providesTags: ["Accounts"],
