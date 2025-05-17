@@ -1,6 +1,6 @@
 import { Account, CategoryGroup, Transaction } from "./db";
 
-export type NormalizedAccountData = {
+export type NormalizedAccounts = {
   accounts: { [key: string]: NormalizedAccount };
   transactions: { [key: string]: NormalizedTransaction };
   categories: { [key: string]: NormalizedCategory };
