@@ -1,22 +1,42 @@
 import { PrismaClient } from "@prisma/client";
 import { CategoryPayload } from "../../../schemas/CategorySchema";
-import { InflowCategoryGroupModificationError } from "../../../errors";
+import {
+  AddingTransactionToProtectedCategoryGroupError,
+  DuplicateCategoryNameError,
+  UnableToFindProtectedCategoriesInDBError,
+} from "../../../errors";
 
 const prisma = new PrismaClient();
 
 export const createCategory = async (category: CategoryPayload) => {
-  const inflowCategoryGroup = await prisma.categoryGroup.findFirst({
+  const protectedCategoryGroups = await prisma.categoryGroup.findMany({
     where: {
       userId: category.userId,
-      name: "Inflow",
+      name: {
+        in: ["Inflow", "Uncategorised"],
+      },
+    },
+  });
+  if (protectedCategoryGroups.length === 0)
+    throw new UnableToFindProtectedCategoriesInDBError();
+
+  const protectedGroupIds = new Set(
+    protectedCategoryGroups.map((group) => group.id),
+  );
+
+  if (protectedGroupIds.has(category.categoryGroupId)) {
+    throw new AddingTransactionToProtectedCategoryGroupError();
+  }
+
+  const existingCategory = await prisma.category.findFirst({
+    where: {
+      categoryGroupId: category.categoryGroupId,
+      name: category.name,
     },
   });
 
-  if (!inflowCategoryGroup)
-    throw new Error("Unable to find Inflow Category Group ");
-
-  if (inflowCategoryGroup.id === category.categoryGroupId) {
-    throw new InflowCategoryGroupModificationError();
+  if (existingCategory) {
+    throw new DuplicateCategoryNameError();
   }
 
   const newCategory = await prisma.category.create({
