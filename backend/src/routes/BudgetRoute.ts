@@ -24,7 +24,7 @@ const router = express.Router();
 
 router.use(Authenticate);
 
-router.get("/account", getAccounts);
+router.get("/accounts", getAccounts);
 router.post("/account", addAccount);
 router.patch("/account/:id", editAccount);
 router.delete("/account/:id", deleteAccount);

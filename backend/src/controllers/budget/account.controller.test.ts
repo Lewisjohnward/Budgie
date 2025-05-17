@@ -107,7 +107,7 @@ describe("getAccounts", () => {
     (selectAccounts as jest.Mock).mockRejectedValue(
       new Error("Database error"),
     );
-    const response = await request(app).get("/budget/account");
+    const response = await request(app).get("/budget/accounts");
     expect(response.status).toBe(500);
   });
 
@@ -115,7 +115,7 @@ describe("getAccounts", () => {
     const selectAccountsMock = selectAccounts as jest.Mock;
     selectAccountsMock.mockResolvedValue([]);
 
-    const response = await request(app).get("/budget/account");
+    const response = await request(app).get("/budget/accounts");
 
     expect(response.status).toBe(200);
   });
