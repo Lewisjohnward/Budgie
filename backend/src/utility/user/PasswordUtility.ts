@@ -2,6 +2,10 @@ import { Request } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { UserPayload } from "../../dto";
+import {
+  MissingOrMalformedAuthorizationHeaderError,
+  UserNotAuthorisedError,
+} from "../../errors";
 
 export const GenerateSalt = async () => {
   return await bcrypt.genSalt();
@@ -35,18 +39,16 @@ export const DecodeToken = (token: string) => {
 export const ValidateSignature = async (req: Request) => {
   const signature = req.get("Authorization");
 
+  if (!signature || !signature.startsWith("Bearer ")) {
+    throw new MissingOrMalformedAuthorizationHeaderError();
+  }
+  const token = signature.split(" ")[1];
+
   try {
-    if (signature) {
-      const token = signature.split(" ")[1];
-      const payload = DecodeToken(token);
-
-      req.user = payload;
-
-      return true;
-    }
-
-    return false;
+    const payload = DecodeToken(token);
+    req.user = payload;
+    return true;
   } catch (error) {
-    return false;
+    throw new UserNotAuthorisedError();
   }
 };

@@ -15,11 +15,10 @@ export const Authenticate = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const validate = await ValidateSignature(req);
-
-  if (validate) {
+  try {
+    await ValidateSignature(req);
     next();
-  } else {
-    res.status(401).json({ message: "User not authorised" });
+  } catch (error) {
+    next(error);
   }
 };
