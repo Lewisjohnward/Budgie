@@ -8,7 +8,7 @@ import { z } from "zod";
 export const CategorySchema = z.object({
   userId: z.string().uuid(),
   categoryGroupId: z.string().uuid(),
-  name: z.string().max(20, { message: "Name must be less than 20 characters" }),
+  name: z.string().max(50, { message: "Name must be less than 50 characters" }),
 });
 
 export const CategoryGroupSchema = z.object({
