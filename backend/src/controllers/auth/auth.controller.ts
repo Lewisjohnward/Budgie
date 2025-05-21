@@ -13,6 +13,8 @@ import {
   validateCredentials,
   ValidatePassword,
   GenerateRefreshToken,
+  setRefreshTokenCookie,
+  clearRefreshTokenCookie,
 } from "../../utility";
 import { z } from "zod";
 import { initialiseCategories } from "../../utility";
@@ -65,12 +67,7 @@ export const register = async (
 
     await updateRefreshToken(email, refreshToken);
 
-    res.cookie("jwt", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV == "production",
-      sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+    setRefreshTokenCookie(res, refreshToken);
 
     res.status(200).json(accessToken);
   } catch (error) {
@@ -124,12 +121,7 @@ export const login = async (
 
     await updateRefreshToken(email, refreshToken);
 
-    res.cookie("jwt", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV == "production",
-      sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000,
-    });
+    setRefreshTokenCookie(res, refreshToken);
     res.status(200).json(accessToken);
   } catch (error) {
     next(error);
@@ -142,41 +134,31 @@ export const logout = async (
   next: NextFunction,
 ) => {
   try {
-  const cookies = req.cookies;
-  if (!cookies?.jwt) {
-    console.log("no cookies found");
-    res.sendStatus(204);
-    return;
-  }
+    const cookies = req.cookies;
+    if (!cookies?.jwt) {
+      res.sendStatus(204);
+      return;
+    }
 
-  const refreshToken = cookies.jwt;
+    const refreshToken = cookies.jwt;
 
-  const user = await prisma.user.findUnique({
-    where: { refreshToken },
-  });
-
-  if (!user) {
-    console.log("no user found");
-    res.clearCookie("jwt", {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV == "production",
+    const user = await prisma.user.findUnique({
+      where: { refreshToken },
     });
+
+    if (!user) {
+      clearRefreshTokenCookie(res);
+      res.sendStatus(204);
+      return;
+    }
+
+    await prisma.user.update({
+      where: { refreshToken },
+      data: { refreshToken: null },
+    });
+
+    clearRefreshTokenCookie(res);
     res.sendStatus(204);
-    return;
-  }
-
-  await prisma.user.update({
-    where: { refreshToken },
-    data: { refreshToken: null },
-  });
-
-  res.clearCookie("jwt", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV == "production",
-  });
-  res.sendStatus(204);
   } catch (error) {
     next(error);
   }
@@ -188,24 +170,24 @@ export const refresh = async (
   next: NextFunction,
 ) => {
   try {
-  const cookies = req.cookies;
-  if (!cookies?.jwt) {
+    const cookies = req.cookies;
+    if (!cookies?.jwt) {
       next(new InvalidOrExpiredRefreshTokenError());
-    return;
-  }
+      return;
+    }
 
-  const refreshToken = cookies.jwt;
+    const refreshToken = cookies.jwt;
 
-  const user = await prisma.user.findUnique({
-    where: { refreshToken },
-  });
+    const user = await prisma.user.findUnique({
+      where: { refreshToken },
+    });
 
-  if (!user) {
+    if (!user) {
+      clearRefreshTokenCookie(res);
       next(new RefreshTokenNoUserFoundError());
-    return;
-  }
+      return;
+    }
 
-  try {
     jwt.verify(refreshToken, process.env.PAYLOAD_SECRET!);
 
     const token = GenerateAccessToken({
