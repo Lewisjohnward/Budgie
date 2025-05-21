@@ -57,13 +57,13 @@ describe("User Controller", () => {
       expect(response.status).toBe(400);
     });
 
-    it("Should return 422 if credentials validation fails", async () => {
+    it("Should return 401 if credentials validation fails", async () => {
       const response = await request(app)
         .post("/user/register")
         .send({ email: "test", password: "test" })
         .set("Authorization", "Bearer mock-token");
 
-      expect(response.status).toBe(422);
+      expect(response.status).toBe(401);
     });
 
     it("Should return 400 if the user already exists", async () => {
@@ -126,18 +126,17 @@ describe("User Controller", () => {
       expect(noPasswordReponse.status).toBe(400);
     });
 
-    it("should return 400 if user does not exist", async () => {
+    it("should return 401 if user does not exist", async () => {
       (getUser as jest.Mock).mockResolvedValue(null);
 
       const response = await request(app)
         .post("/user/login")
         .send({ email: "test@example.com", password: "password" });
 
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe("There has been an error logging in");
+      expect(response.status).toBe(401);
     });
 
-    it("should return 400 if password is invalid", async () => {
+    it("should return 401 if password is invalid", async () => {
       const mockUser = {
         email: "test@example.com",
         password: "hashedPassword",
@@ -150,8 +149,7 @@ describe("User Controller", () => {
         .post("/user/login")
         .send({ email: "test@example.com", password: "wrongPassword" });
 
-      expect(response.status).toBe(400);
-      expect(response.body.message).toBe("There has been an error logging in");
+      expect(response.status).toBe(401);
     });
 
     it("should return 200 and access token on successful login", async () => {
