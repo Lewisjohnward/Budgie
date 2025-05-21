@@ -1,5 +1,17 @@
 import { HttpError } from "./HttpError";
 
+export class MissingCredentialsError extends HttpError {
+  constructor() {
+    super("Missing credentials", 400);
+  }
+}
+
+export class EmailAlreadyRegisteredError extends HttpError {
+  constructor() {
+    super("This email is already registered", 400);
+  }
+}
+
 export class UserNotAuthorisedError extends HttpError {
   constructor() {
     super("User not authorised", 401);
@@ -20,6 +32,12 @@ export class InvalidOrExpiredRefreshTokenError extends HttpError {
 
 export class InvalidCredentialsError extends HttpError {
   constructor() {
-    super("Invalid credentials", 422);
+    super("Invalid credentials", 401);
+  }
+}
+
+export class RefreshTokenNoUserFoundError extends HttpError {
+  constructor() {
+    super("No user found with the provided refresh token. Please log in again.", 403);
   }
 }

@@ -1,3 +1,3 @@
 export * from "./HttpError";
 export * from "./BudgetErrors";
-export * from "./UserErrors";
+export * from "./AuthErrors";
