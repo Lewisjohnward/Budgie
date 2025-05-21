@@ -17,8 +17,11 @@ import {
 import { z } from "zod";
 import { initialiseCategories } from "../../utility";
 import {
-  InvalidCredentialsError,
+  EmailAlreadyRegisteredError,
   InvalidOrExpiredRefreshTokenError,
+  MissingCredentialsError,
+  InvalidCredentialsError,
+  RefreshTokenNoUserFoundError,
 } from "../../errors";
 
 const prisma = new PrismaClient();
@@ -31,7 +34,7 @@ export const register = async (
   const { email, password } = <RegisterUserInput>req.body;
 
   if (!email || !password) {
-    res.status(400).json({ message: "Missing credentials" });
+    next(new MissingCredentialsError());
     return;
   }
 
@@ -40,10 +43,7 @@ export const register = async (
     const userAlreadyExists = await userExists(email);
 
     if (userAlreadyExists) {
-      res.status(400).json({
-        success: false,
-        errors: { email: "This email address is already registered" },
-      });
+      next(new EmailAlreadyRegisteredError());
       return;
     }
 
@@ -90,7 +90,7 @@ export const login = async (
   const { email, password } = <UserLoginInput>req.body;
 
   if (!email || !password) {
-    res.status(400).json({ message: "There has been an error logging in" });
+    next(new MissingCredentialsError());
     return;
   }
 
@@ -98,7 +98,7 @@ export const login = async (
     const user = await getUser(email);
 
     if (!user) {
-      res.status(400).json({ message: "There has been an error logging in" });
+      next(new InvalidCredentialsError());
       return;
     }
 
@@ -109,7 +109,7 @@ export const login = async (
     );
 
     if (!validPassword) {
-      res.status(400).json({ message: "There has been an error logging in" });
+      next(new InvalidCredentialsError());
       return;
     }
     const accessToken = GenerateAccessToken({
@@ -141,6 +141,7 @@ export const logout = async (
   res: Response,
   next: NextFunction,
 ) => {
+  try {
   const cookies = req.cookies;
   if (!cookies?.jwt) {
     console.log("no cookies found");
@@ -176,6 +177,9 @@ export const logout = async (
     secure: process.env.NODE_ENV == "production",
   });
   res.sendStatus(204);
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const refresh = async (
@@ -183,10 +187,10 @@ export const refresh = async (
   res: Response,
   next: NextFunction,
 ) => {
+  try {
   const cookies = req.cookies;
   if (!cookies?.jwt) {
-    console.log(" no cookies");
-    res.sendStatus(401);
+      next(new InvalidOrExpiredRefreshTokenError());
     return;
   }
 
@@ -197,13 +201,7 @@ export const refresh = async (
   });
 
   if (!user) {
-    console.log(" no user");
-    res.clearCookie("jwt", {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV == "production",
-    });
-    res.sendStatus(403);
+      next(new RefreshTokenNoUserFoundError());
     return;
   }
 
@@ -215,8 +213,11 @@ export const refresh = async (
       email: user.email,
     });
     res.json({ token, email: user.email });
-    return;
   } catch (error) {
-    next(InvalidOrExpiredRefreshTokenError);
+    if (error instanceof jwt.JsonWebTokenError) {
+      next(new InvalidOrExpiredRefreshTokenError());
+    } else {
+      next(error);
+    }
   }
 };
