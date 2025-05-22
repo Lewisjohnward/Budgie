@@ -5,7 +5,7 @@ import cors from "cors";
 
 import path from "path";
 import bodyParser from "body-parser";
-import { UserRoute, BudgetRoute } from "./routes";
+import { authRoutes, budgetRoutes, passwordRoutes } from "./routes";
 import morgan from "morgan";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
@@ -36,8 +36,9 @@ app.use(
 );
 app.use(helmet());
 
-app.use("/user", UserRoute);
-app.use("/budget", BudgetRoute);
+app.use("/user", authRoutes);
+app.use("/user", passwordRoutes);
+app.use("/budget", budgetRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({ ping: "pong" });
