@@ -47,4 +47,4 @@ router.delete("/payee", deletePayee);
 
 router.patch("/month", updateMonthForCategory);
 
-export { router as BudgetRoute };
+export { router as budgetRoutes };
