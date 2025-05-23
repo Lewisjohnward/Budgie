@@ -11,6 +11,7 @@ export async function clearDatabase() {
     prisma.category.deleteMany({}),
     prisma.categoryGroup.deleteMany({}),
     prisma.payee.deleteMany({}),
+    prisma.passwordResetToken.deleteMany({}),
     prisma.user.deleteMany({}),
   ]);
 }
