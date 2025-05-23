@@ -16,6 +16,18 @@ model User {
   refreshToken String?   @unique
   // budgets  Budget[]
   accounts     Account[]
+  resetTokens PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id         String   @id @default(uuid())
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 // model Budget {

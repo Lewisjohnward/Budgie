@@ -12,6 +12,6 @@ router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 
 router.use(Authenticate);
-router.post("/change-password", changePassword);
+router.patch("/change-password", changePassword);
 
 export { router as passwordRoutes };

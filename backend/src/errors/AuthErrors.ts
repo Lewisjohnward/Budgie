@@ -38,6 +38,9 @@ export class InvalidCredentialsError extends HttpError {
 
 export class RefreshTokenNoUserFoundError extends HttpError {
   constructor() {
-    super("No user found with the provided refresh token. Please log in again.", 403);
+    super(
+      "No user found with the provided refresh token. Please log in again.",
+      403,
+    );
   }
 }
