@@ -2,12 +2,12 @@ import { Outlet } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useRefreshTokenMutation } from "@/core/api/authApiSlice";
 import { useAppDispatch, useAppSelector } from "@/core/hooks/reduxHooks";
-import { selectCurrentToken, setCredentials } from "@/core/slices/authSlice";
+import { selectAccessToken, setCredentials } from "@/core/slices/authSlice";
 import { useLocation } from "react-router-dom";
 
 export default function PersistLogin() {
   const [isLoading, setIsLoading] = useState(true);
-  const token = useAppSelector(selectCurrentToken);
+  const token = useAppSelector(selectAccessToken);
   const dispatch = useAppDispatch();
   const location = useLocation();
   const pathname = location.pathname;

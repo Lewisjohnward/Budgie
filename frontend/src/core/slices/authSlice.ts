@@ -3,12 +3,12 @@ import { RootState } from "../store/store";
 
 export type AuthState = {
   email: string | null;
-  token: string | null;
+  accessToken: string | null;
 };
 
 const initialState: AuthState = {
   email: null,
-  token: null,
+  accessToken: null,
 };
 
 const authSlice = createSlice({
@@ -18,11 +18,11 @@ const authSlice = createSlice({
     setCredentials: (state, action) => {
       const { email, token } = action.payload;
       state.email = email;
-      state.token = token;
+      state.accessToken = token;
     },
     logOut: (state) => {
       state.email = null;
-      state.token = null;
+      state.accessToken = null;
     },
   },
 });
@@ -31,4 +31,4 @@ export const { setCredentials, logOut } = authSlice.actions;
 export default authSlice.reducer;
 
 export const selectCurrentUser = (state: RootState) => state.auth.email;
-export const selectCurrentToken = (state: RootState) => state.auth.token;
+export const selectAccessToken = (state: RootState) => state.auth.accessToken;

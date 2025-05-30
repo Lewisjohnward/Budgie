@@ -1,7 +1,7 @@
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHooks";
 import { RootState } from "../store/store";
 import {
-  selectCurrentToken,
+  selectAccessToken,
   selectCurrentUser,
   setCredentials,
 } from "./authSlice";
@@ -27,11 +27,11 @@ describe("mySlice reducer", () => {
 
     const state: RootState = {
       auth: {
-        token: null,
+        accessToken: null,
         email: null,
       },
     };
-    const token = selectCurrentToken(state);
+    const token = selectAccessToken(state);
     const user = selectCurrentUser(state);
     expect(token).toBeNull();
     expect(user).toBeNull();
