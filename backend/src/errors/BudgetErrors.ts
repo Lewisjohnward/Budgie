@@ -32,3 +32,12 @@ export class AddTransactionToFutureError extends HttpError {
     super("Unable to add a transaction in the future", 400);
   }
 }
+
+export class AssigningToUncategorisedCategoryMonthError extends HttpError {
+  constructor() {
+    super(
+      "Assigning to an uncategorised category month is prohibited",
+      403,
+    );
+  }
+}
