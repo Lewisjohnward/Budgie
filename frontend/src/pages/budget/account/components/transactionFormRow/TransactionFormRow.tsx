@@ -325,7 +325,9 @@ function SelectCategory() {
 
   const categories = data?.categories || {};
   const categoryGroupsOb = data?.categoryGroups || {};
-  const categoryGroups = Object.values(categoryGroupsOb);
+  const categoryGroups = Object.values(categoryGroupsOb).filter((group) => group.name !== "Uncategorised");
+
+  const extendableCategoryGroups = categoryGroups.filter((group) => group.name !== "Inflow");
 
   const now = new Date();
   const currentYear = now.getFullYear();
@@ -442,7 +444,7 @@ function SelectCategory() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {categoryGroups.map((categoryGroup) => (
+                            {extendableCategoryGroups.map((categoryGroup) => (
                               <SelectItem value={categoryGroup.id}>
                                 {categoryGroup.name}
                               </SelectItem>
