@@ -1,15 +1,15 @@
 import { PrismaClient } from "@prisma/client";
-import { convertDecimalToNumber } from "../helpers/convertDecimalToNumber";
+import { convertDecimalToNumber } from "../helpers/_index";
 
 const prisma = new PrismaClient();
 
 export const calculateChangeInAssignedForMonth = async ({
-  monthId,
   assigned,
+  monthId,
   userId,
 }: {
-  monthId: string;
   assigned: number;
+  monthId: string;
   userId: string;
 }) => {
   const month = await prisma.month.findFirstOrThrow({
