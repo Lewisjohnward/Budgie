@@ -6,7 +6,12 @@ import { useMenu } from "@/pages/landing/hooks/useMenu";
 export default function LandingPage() {
   const { menu } = useMenu();
 
-  return <LandingContent menu={menu} />;
+  return (
+    <>
+      <TopBar menu={menu} />
+      <Body menuVisible={menu.visible} />
+    </>
+  );
 }
 
 type MenuProps = {
@@ -15,15 +20,6 @@ type MenuProps = {
     toggle: () => void;
   };
 };
-
-function LandingContent({ menu }: MenuProps) {
-  return (
-    <>
-      <TopBar menu={menu} />
-      <Body menuVisible={menu.visible} />
-    </>
-  );
-}
 
 function TopBar({ menu }: MenuProps) {
   return (

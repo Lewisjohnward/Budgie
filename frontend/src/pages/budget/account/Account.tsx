@@ -1,4 +1,5 @@
-import { CirclePlus, Ellipsis, Pencil, X } from "lucide-react";
+import { CirclePlus, Pencil } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { MdDelete } from "react-icons/md";
 import {
   ContextMenu,
@@ -74,24 +75,33 @@ type Transaction = {
   categoryGroup: CategoryGroup | null;
 };
 
-export function Account() {
+export default function Account() {
   const { data } = useGetAccountsQuery();
+  const navigate = useNavigate();
   const [deleteTransaction] = useDeleteTransactionMutation();
   const [duplicateTransactions] = useDuplicateTransactionsMutation();
   const [addingTransaction, setAddingTransaction] = useState(false);
   const dispatch = useAppDispatch();
   const handleOpenDialog = () => dispatch(toggleEditAccount());
   const transactionFormRowState = useAppSelector(transactionFormRow);
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [lastRowSelection, setLastRowSelection] = useState<RowSelectionState>(
+    {},
+  );
   if (!data) return <div>There has been an error</div>;
   const { accountId } = useParams();
+  const accounts = Object.values(data.accounts);
   const chosenAccount =
-    accountId === "all"
-      ? "all"
-      : Object.values(data.accounts).find(({ id }) => id === accountId);
+    accountId === "all" ? "all" : accounts.find(({ id }) => id === accountId);
 
-  if (!chosenAccount || !accountId) {
-    throw new Error(`Account with ID ${accountId} not found`);
+
+  if (chosenAccount === undefined || accountId === undefined) {
+    accounts.length > 0
+      ? navigate("/budget/account/all")
+      : navigate("/budget/allocation");
   }
+
+
   const displayTransactionFormRow = () => {
     dispatch(
       openTransactionFormRow({
@@ -153,17 +163,17 @@ export function Account() {
   const account =
     chosenAccount === "all"
       ? {
-          name: "All Accounts",
-          type: "",
-          balance: sumBalance,
-          transactions,
-        }
+        name: "All Accounts",
+        type: "",
+        balance: sumBalance,
+        transactions,
+      }
       : {
-          name: chosenAccount.name,
-          type: chosenAccount.type,
-          balance: chosenAccount.balance,
-          transactions,
-        };
+        name: chosenAccount?.name,
+        type: chosenAccount?.type,
+        balance: chosenAccount?.balance,
+        transactions,
+      };
 
   const accountsAvailable = Object.keys(data.accounts).length > 0;
 
@@ -175,10 +185,7 @@ export function Account() {
     dispatch(closeTransactionFormRow());
   }, [accountId]);
 
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [lastRowSelection, setLastRowSelection] = useState<RowSelectionState>(
-    {},
-  );
+ 
 
   const table = useReactTable({
     data: account.transactions,
@@ -256,6 +263,10 @@ export function Account() {
     duplicateTransactions({ transactionIds });
   };
 
+  if (chosenAccount === undefined) {
+    return <div>Redirecting...</div>;
+  }
+
   return (
     <div className="space-y-2 pt-4">
       <Container>
@@ -300,9 +311,9 @@ export function Account() {
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
                   </TableHead>
                 );
               })}

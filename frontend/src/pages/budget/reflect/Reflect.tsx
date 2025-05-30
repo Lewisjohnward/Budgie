@@ -1,4 +1,4 @@
-export function Reflect() {
+export default function Reflect() {
   return (
     <div>
       <div>hello from reflect component</div>

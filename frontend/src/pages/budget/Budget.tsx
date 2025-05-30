@@ -14,12 +14,7 @@ export default function BudgetPage() {
   if (isLoadingAccounts || isLoadingCategories) {
     return <div className="h-screen bg-blue-400">...Getting data</div>;
   }
-  return <BudgetContent />;
-}
-
-function BudgetContent() {
-  return (
-    <main className="flex h-dvh">
+    return <main className="flex h-dvh">
       <Navbar />
       <div className="flex-grow">
         <Outlet />
@@ -27,5 +22,4 @@ function BudgetContent() {
       <ManagePayees />
       <EditAccount />
     </main>
-  );
 }

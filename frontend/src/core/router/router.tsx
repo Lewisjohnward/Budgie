@@ -2,16 +2,16 @@ import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import {
   AccountSettingsPage,
   BudgetPage,
+  Allocation,
+  Account,
+  Reflect,
   ForgotPasswordPage,
   LandingPage,
   LoginPage,
   NotFoundPage,
+  SignUpPage
 } from "@/pages";
-import { Auth, PersistLogin } from "@/core/components";
-import Signup from "@/pages/signup/Signup";
-import { Allocation } from "@/pages/budget/allocation/Allocation";
-import { Account } from "@/pages/budget/account/Account";
-import { Reflect } from "@/pages/budget/reflect/Reflect";
+import { RedirectIfAuth, RequireAuth, PersistLogin } from "@/core/components";
 
 const router = createBrowserRouter([
   {
@@ -26,17 +26,13 @@ const router = createBrowserRouter([
       {
         path: "budget",
         element: (
-          <Auth required>
+          <RequireAuth>
             <BudgetPage />
-          </Auth>
+          </RequireAuth>
         ),
         children: [
           {
             path: "",
-            element: <Navigate to="allocation" replace />,
-          },
-          {
-            path: "*",
             element: <Navigate to="allocation" replace />,
           },
           {
@@ -51,14 +47,18 @@ const router = createBrowserRouter([
             path: "account/:accountId",
             element: <Account />,
           },
+          {
+            path: "*",
+            element: <Navigate to="allocation" replace />,
+          },
         ],
       },
       {
         path: "user",
         element: (
-          <Auth>
+          <RedirectIfAuth>
             <Outlet />
-          </Auth>
+          </RedirectIfAuth>
         ),
         children: [
           {
@@ -71,7 +71,7 @@ const router = createBrowserRouter([
           },
           {
             path: "signup",
-            element: <Signup />,
+            element: <SignUpPage />,
           },
         ],
       },
