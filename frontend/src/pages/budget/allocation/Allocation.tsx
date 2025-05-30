@@ -174,7 +174,7 @@ function useAllocation() {
   };
 }
 
-export function Allocation() {
+export default function Allocation() {
   const {
     categoriesSelector,
     monthSelector,
@@ -347,9 +347,7 @@ function CategorySelector({ text }: { text: string }) {
 
 function AddCategoryGroupButton() {
   return (
-    <button
-      className="flex items-center gap-2 px-2 py-2 text-sky-950 rounded text-sm hover:bg-sky-950/10"
-    >
+    <button className="flex items-center gap-2 px-2 py-2 text-sky-950 rounded text-sm hover:bg-sky-950/10">
       <CirclePlus size={15} />
       <span>Category Group</span>
     </button>
@@ -494,7 +492,7 @@ function Container({ children }: { children: ReactNode }) {
 
 function CategoryGroupContainer({ children }: { children: ReactNode }) {
   return (
-    <div className={`group flex items-center gap-0 pl-2 bg-gray-400/20`}>
+    <div className={`group flex items-center gap-0 px-2 bg-gray-400/20`}>
       <div className="flex-grow flex-shrink basis-56 flex items-center gap-4 py-2">
         {children}
       </div>
