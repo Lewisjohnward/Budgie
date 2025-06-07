@@ -12,7 +12,7 @@ describe("Auth Controller", () => {
     let testUserId: string;
 
     it("should register a new user successfully", async () => {
-      const response = await request(app).post("/user/register").send({
+      const response = await request(app).post("/user/auth/register").send({
         email: testEmail,
         password: testPassword,
       });
@@ -34,7 +34,7 @@ describe("Auth Controller", () => {
     });
 
     it("should return 400 if email is missing", async () => {
-      const response = await request(app).post("/user/register").send({
+      const response = await request(app).post("/user/autħ/register").send({
         password: testPassword,
       });
 
@@ -42,7 +42,7 @@ describe("Auth Controller", () => {
     });
 
     it("should return 400 if password is missing", async () => {
-      const response = await request(app).post("/user/register").send({
+      const response = await request(app).post("/user/auth/register").send({
         email: testEmail,
       });
 
@@ -50,7 +50,7 @@ describe("Auth Controller", () => {
     });
 
     it("should return 401 if email is invalid", async () => {
-      const response = await request(app).post("/user/register").send({
+      const response = await request(app).post("/user/auth/register").send({
         email: "invalid-email",
         password: testPassword,
       });
@@ -59,12 +59,12 @@ describe("Auth Controller", () => {
     });
 
     it("should return 400 if email is already registered", async () => {
-      await request(app).post("/user/register").send({
+      await request(app).post("/user/auth/register").send({
         email: testEmail,
         password: testPassword,
       });
 
-      const response = await request(app).post("/user/register").send({
+      const response = await request(app).post("/user/auth/register").send({
         email: testEmail,
         password: "AnotherPassword123!",
       });
@@ -73,7 +73,7 @@ describe("Auth Controller", () => {
     });
 
     it("should create default categories for new users", async () => {
-      await request(app).post("/user/register").send({
+      await request(app).post("/user/auth/register").send({
         email: testEmail,
         password: testPassword,
       });
@@ -100,43 +100,39 @@ describe("Auth Controller", () => {
     let testUserId: string;
 
     beforeEach(async () => {
-      await request(app)
-        .post('/user/register')
-        .send({
-          email: testEmail,
-          password: testPassword,
-        });
+      await request(app).post("/user/auth/register").send({
+        email: testEmail,
+        password: testPassword,
+      });
 
       const user = await prisma.user.findUnique({
         where: { email: testEmail },
       });
-      
+
       if (user) {
         testUserId = user.id;
       }
     });
 
     it("should return 200 and set refresh token cookie on successful login", async () => {
-      const response = await request(app)
-        .post('/user/login')
-        .send({
-          email: testEmail,
-          password: testPassword,
-        });
+      const response = await request(app).post("/user/auth/login").send({
+        email: testEmail,
+        password: testPassword,
+      });
 
       expect(response.status).toBe(200);
 
       const [refreshToken] = response.headers["set-cookie"];
       expect(refreshToken).toBeDefined();
       expect(refreshToken).toContain("jwt=");
-      
+
       expect(typeof response.body).toBe("string");
-      expect(response.body.split('.').length).toBe(3);
+      expect(response.body.split(".").length).toBe(3);
     });
 
     it("should return 400 if email is missing", async () => {
       const response = await request(app)
-        .post('/user/login')
+        .post("/user/auth/login")
         .send({ password: testPassword });
 
       expect(response.status).toBe(400);
@@ -144,67 +140,58 @@ describe("Auth Controller", () => {
 
     it("should return 400 if password is missing", async () => {
       const response = await request(app)
-        .post('/user/login')
+        .post("/user/auth/login")
         .send({ email: testEmail });
 
       expect(response.status).toBe(400);
     });
 
-
     it("should return 401 if email is not registered", async () => {
-      const response = await request(app)
-        .post('/user/login')
-        .send({
-          email: "nonexistent@example.com",
-          password: testPassword,
-        });
+      const response = await request(app).post("/user/auth/login").send({
+        email: "nonexistent@example.com",
+        password: testPassword,
+      });
 
       expect(response.status).toBe(401);
     });
 
     it("should return 401 if password is incorrect", async () => {
-      const response = await request(app)
-        .post('/user/login')
-        .send({
-          email: testEmail,
-          password: "WrongPassword123!",
-        });
+      const response = await request(app).post("/user/auth/login").send({
+        email: testEmail,
+        password: "WrongPassword123!",
+      });
 
       expect(response.status).toBe(401);
     });
 
     it("should return 401 if email is invalid", async () => {
-      const response = await request(app)
-        .post('/user/login')
-        .send({
-          email: "invalid-email",
-          password: testPassword,
-        });
+      const response = await request(app).post("/user/auth/login").send({
+        email: "invalid-email",
+        password: testPassword,
+      });
 
       expect(response.status).toBe(401);
     });
-  })
-
+  });
 
   describe("Logout", () => {
     let testUserId: string;
-    const testRefreshToken = 'test-refresh-token';
-    const clearCookie = 'jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax';
+    const testRefreshToken = "test-refresh-token";
+    const clearCookie =
+      "jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax";
     const testEmail = "test-logout@example.com";
     const testPassword = "ValidPass123!";
 
     beforeEach(async () => {
-      await request(app)
-        .post('/user/register')
-        .send({
-          email: testEmail,
-          password: testPassword,
-        });
-  
+      await request(app).post("/user/auth/register").send({
+        email: testEmail,
+        password: testPassword,
+      });
+
       const user = await prisma.user.findUnique({
         where: { email: testEmail },
       });
-      
+
       if (user) {
         testUserId = user.id;
         await prisma.user.update({
@@ -216,7 +203,7 @@ describe("Auth Controller", () => {
 
     it("should clear refresh token from database and clear cookie on successful logout", async () => {
       const response = await request(app)
-        .post("/user/logout")
+        .post("/user/auth/logout")
         .set("Cookie", [`jwt=${testRefreshToken}`])
         .send();
 
@@ -235,11 +222,11 @@ describe("Auth Controller", () => {
     it("should return 204 and clear cookie even if no refresh token in database", async () => {
       await prisma.user.update({
         where: { id: testUserId },
-        data: { refreshToken: null }
+        data: { refreshToken: null },
       });
 
       const response = await request(app)
-        .post("/user/logout")
+        .post("/user/auth/logout")
         .set("Cookie", [`jwt=${testRefreshToken}`])
         .send();
 
@@ -251,35 +238,29 @@ describe("Auth Controller", () => {
     });
 
     it("should return 204 even if no JWT cookie is present", async () => {
-      const response = await request(app)
-        .post("/user/logout")
-        .send();
+      const response = await request(app).post("/user/auth/logout").send();
 
       expect(response.status).toBe(204);
-      expect(response.headers['set-cookie']).toBeUndefined();
+      expect(response.headers["set-cookie"]).toBeUndefined();
     });
-
-
   });
 
   describe("Refresh", () => {
     let testUserId: string;
-    const testRefreshToken = 'test-refresh-token';
+    const testRefreshToken = "test-refresh-token";
     const testEmail = "test-refresh@example.com";
     const testPassword = "ValidPass123!";
 
     beforeEach(async () => {
-      await request(app)
-        .post("/user/register")
-        .send({
-          email: testEmail,
-          password: testPassword,
-        });
+      await request(app).post("/user/auth/register").send({
+        email: testEmail,
+        password: testPassword,
+      });
 
       const user = await prisma.user.findUnique({
         where: { email: testEmail },
       });
-      
+
       if (user) {
         testUserId = user.id;
         await prisma.user.update({
@@ -290,16 +271,14 @@ describe("Auth Controller", () => {
     });
 
     it("should return 401 if no refresh token cookie is present", async () => {
-      const response = await request(app)
-        .get("/user/refresh")
-        .send();
+      const response = await request(app).get("/user/auth/refresh").send();
 
       expect(response.status).toBe(401);
     });
 
     it("should return 403 if refresh token is invalid", async () => {
       const response = await request(app)
-        .get("/user/refresh")
+        .get("/user/auth/refresh")
         .set("Cookie", [`jwt=invalid-token`])
         .send();
 
@@ -312,7 +291,7 @@ describe("Auth Controller", () => {
       });
 
       const response = await request(app)
-        .get("/user/refresh")
+        .get("/user/auth/refresh")
         .set("Cookie", [`jwt=${testRefreshToken}`])
         .send();
 
@@ -321,29 +300,29 @@ describe("Auth Controller", () => {
 
     it("should return 200 with new access token if refresh token is valid", async () => {
       const loginResponse = await request(app)
-        .post("/user/login")
+        .post("/user/auth/login")
         .send({
           email: testEmail,
           password: testPassword,
         })
         .expect(200);
-    
-      const refreshToken = loginResponse.body
-      
+
+      const refreshToken = loginResponse.body;
+
       if (!refreshToken) {
-        throw new Error('No refresh token cookie found in login response');
+        throw new Error("No refresh token cookie found in login response");
       }
-    
+
       const refreshResponse = await request(app)
-        .get("/user/refresh")
+        .get("/user/auth/refresh")
         .set("Cookie", `jwt=${refreshToken}`)
         .send();
-    
+
       expect(refreshResponse.status).toBe(200);
-      
-      expect(typeof refreshResponse.body).toBe('object');
-      expect(refreshResponse.body.token.split('.').length).toBe(3);
-      
+
+      expect(typeof refreshResponse.body).toBe("object");
+      expect(refreshResponse.body.token.split(".").length).toBe(3);
+
       if (loginResponse.body) {
         expect(refreshResponse.body.token).not.toBe(loginResponse.body.token);
       }

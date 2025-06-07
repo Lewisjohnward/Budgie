@@ -1,8 +1,6 @@
 import request from "supertest";
 import app from "../../app";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "../../shared/prisma/client";
 
 describe("Password Controller", () => {
   describe("Forgot Password", () => {
@@ -11,7 +9,7 @@ describe("Password Controller", () => {
     let testUserId: string;
 
     beforeEach(async () => {
-      await request(app).post("/user/register").send({
+      await request(app).post("/user/auth/register").send({
         email: testEmail,
         password: testPassword,
       });
@@ -27,7 +25,7 @@ describe("Password Controller", () => {
 
     it("should return success response for valid email", async () => {
       const res = await request(app)
-        .post("/user/forgot-password")
+        .post("/user/password/forgot-password")
         .send({ email: testEmail });
 
       expect(res.status).toBe(200);
@@ -55,12 +53,12 @@ describe("Password Controller", () => {
 
     it("Should only ever have one entry per email", async () => {
       await request(app)
-        .post("/user/forgot-password")
+        .post("/user/password/forgot-password")
         .send({ email: testEmail })
         .set("Authorization", "Bearer mock-token");
 
       await request(app)
-        .post("/user/forgot-password")
+        .post("/user/password/forgot-password")
         .send({ email: testEmail });
 
       const resetTokens = await prisma.passwordResetToken.findMany({
@@ -74,14 +72,16 @@ describe("Password Controller", () => {
 
     it("should return 200 for non-existent email", async () => {
       const res = await request(app)
-        .post("/user/forgot-password")
+        .post("/user/password/forgot-password")
         .send({ email: "nonexistent@example.com" });
 
       expect(res.status).toBe(200);
     });
 
     it("should return 400 for missing email in request", async () => {
-      const res = await request(app).post("/user/forgot-password").send({});
+      const res = await request(app)
+        .post("/user/password/forgot-password")
+        .send({});
 
       expect(res.status).toBe(400);
     });
@@ -103,7 +103,7 @@ describe("Password Controller", () => {
     let authToken: string;
 
     beforeEach(async () => {
-      await request(app).post("/user/register").send({
+      await request(app).post("/user/auth/register").send({
         email: testEmail,
         password: testPassword,
       });
@@ -112,7 +112,7 @@ describe("Password Controller", () => {
         where: { email: testEmail },
       });
 
-      const loginRes = await request(app).post("/user/login").send({
+      const loginRes = await request(app).post("/user/auth/login").send({
         email: testEmail,
         password: testPassword,
       });
@@ -121,23 +121,25 @@ describe("Password Controller", () => {
     });
 
     it("should return 401 for invalid/missing authentication token", async () => {
-      const res = await request(app).patch("/user/change-password").send({
-        currentPassword: testPassword,
-        newPassword: newPassword,
-      });
+      const res = await request(app)
+        .patch("/user/password/change-password")
+        .send({
+          currentPassword: testPassword,
+          newPassword: newPassword,
+        });
 
       expect(res.status).toBe(401);
     });
 
     it("Should return 400 for missing either current password or new password", async () => {
       await request(app)
-        .patch("/user/change-password")
+        .patch("/user/password/change-password")
         .set("Authorization", `Bearer ${authToken}`)
         .send({ newPassword: newPassword })
         .expect(400);
 
       await request(app)
-        .patch("/user/change-password")
+        .patch("/user/password/change-password")
         .set("Authorization", `Bearer ${authToken}`)
         .send({ currentPassword: testPassword })
         .expect(400);
@@ -145,7 +147,7 @@ describe("Password Controller", () => {
 
     it("Should return 400 when current password and new password are the same", async () => {
       const res = await request(app)
-        .patch("/user/change-password")
+        .patch("/user/password/change-password")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
           currentPassword: testPassword,
@@ -156,7 +158,7 @@ describe("Password Controller", () => {
 
     it("Should return 400 for incorrect current password", async () => {
       const res = await request(app)
-        .patch("/user/change-password")
+        .patch("/user/password/change-password")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
           currentPassword: "wrongpassword",
@@ -167,7 +169,7 @@ describe("Password Controller", () => {
 
     it("should successfully change password with valid current password", async () => {
       await request(app)
-        .patch("/user/change-password")
+        .patch("/user/password/change-password")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
           currentPassword: testPassword,
@@ -176,7 +178,7 @@ describe("Password Controller", () => {
         .expect(200);
 
       await request(app)
-        .post("/user/login")
+        .post("/user/auth/login")
         .send({
           email: testEmail,
           password: newPassword,
@@ -185,13 +187,13 @@ describe("Password Controller", () => {
     });
 
     it("should invalidate refresh token after password change", async () => {
-      const session1 = await request(app).post("/user/login").send({
+      const session1 = await request(app).post("/user/auth/login").send({
         email: testEmail,
         password: testPassword,
       });
 
       await request(app)
-        .patch("/user/change-password")
+        .patch("/user/password/change-password")
         .set("Authorization", `Bearer ${authToken}`)
         .send({
           currentPassword: testPassword,
@@ -199,7 +201,7 @@ describe("Password Controller", () => {
         });
 
       await request(app)
-        .get("/user/refresh")
+        .get("/user/auth/refresh")
         .set("Cookie", `jwt=${authToken}`)
         .expect(403);
     });

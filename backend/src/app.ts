@@ -5,11 +5,13 @@ import cors from "cors";
 
 import path from "path";
 import bodyParser from "body-parser";
-import { authRoutes, budgetRoutes, passwordRoutes } from "./routes";
 import morgan from "morgan";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
-import { errorHandler } from "./middleware/errorHandler";
+import { errorHandler } from "./shared/middleWare/errorHandler";
+
+import budgetRoutes from "./features/budget/budget.routes";
+import userRoutes from "./features/user/user.routes";
 
 // export const StartServer = async () => {
 if (!process.env.PAYLOAD_SECRET) {
@@ -36,8 +38,7 @@ app.use(
 );
 app.use(helmet());
 
-app.use("/user", authRoutes);
-app.use("/user", passwordRoutes);
+app.use("/user", userRoutes);
 app.use("/budget", budgetRoutes);
 
 app.get("/", (req, res) => {

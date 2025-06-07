@@ -51,7 +51,11 @@ const baseQueryWithReauth: BaseQueryFn<
 
   // If server returns a 401 when sending a request refresh token
   if (result?.error?.status === 401) {
-    const refreshResult = await baseQuery("user/refresh", api, extraOptions);
+    const refreshResult = await baseQuery(
+      "user/auth/refresh",
+      api,
+      extraOptions,
+    );
     if (refreshResult.data) {
       const email = (api.getState() as RootState).auth.email;
       api.dispatch(setCredentials({ ...refreshResult.data, email }));

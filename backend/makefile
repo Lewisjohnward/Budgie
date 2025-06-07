@@ -53,3 +53,24 @@ remove-integration-test-db:
 	@echo "Stopping and removing integration test PostgreSQL container..."
 	-docker container stop postgres_test
 	-docker container rm postgres_test
+
+backup-pgdata:
+	@echo "Backing up db data"
+	docker run --rm \
+	  -v pgdata:/volume \
+	  -v $(shell pwd):/backup \
+	  alpine \
+	  tar czf /backup/pgdata_backup.tar.gz -C /volume .
+
+restore-pgdata:
+	@echo "Restoring db data"
+	docker volume create pgdata
+	docker run --rm \
+	  -v pgdata:/volume \
+	  -v $(shell pwd):/backup \
+	  alpine \
+	  sh -c "cd /volume && tar xzf /backup/pgdata_backup.tar.gz"
+
+start-be-db-with-restore: db-remove restore-pgdata run-db
+	@echo "Database started with restored data"
+	npm run dev

@@ -9,6 +9,7 @@ type Month = {
   month: string;
   activity: number;
   assigned: number;
+  available: number;
   categoryGroupIds: string[];
   totalSpent: number;
   totalBudget: number;
