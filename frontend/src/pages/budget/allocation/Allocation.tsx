@@ -107,7 +107,7 @@ function useAllocation() {
 
   const assignMonthIds = allocationData.categories[assignId].months;
   const assignableAmount =
-    allocationData.months[assignMonthIds[monthSelector]].activity;
+    allocationData.months[assignMonthIds[monthSelector]].available;
 
   const derivedCategoryGroups = Object.values(
     Object.fromEntries(
@@ -259,10 +259,9 @@ export default function Allocation() {
                       const {
                         activity,
                         assigned,
+                        available,
                         id: monthId,
                       } = months[category.months[monthSelector]];
-
-                      const available = assigned + activity;
 
                       return (
                         <CategoryContextMenu

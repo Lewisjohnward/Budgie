@@ -1,7 +1,4 @@
-// testUtils/clearDatabase.ts
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "../../shared/prisma/client";
 
 export async function clearDatabase() {
   await prisma.$transaction([

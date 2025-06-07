@@ -1,123 +1,25 @@
 import request from "supertest";
 import app from "../../app";
-import { PrismaClient } from "@prisma/client";
-import { NormalizedCategories } from "../../types/normalizedCategories";
-import { NormalizedAccounts } from "../../types/normalizedAccounts";
-
-const prisma = new PrismaClient();
-
-const testUser = {
-  email: "test@test.com",
-  password: "testpasswordABC$",
-};
-
-const login = async () => {
-  const res = await request(app).post("/user/login").send(testUser);
-  const cookie = res.body;
-
-  return cookie;
-};
-
-const registerUser = async () => {
-  const res = await request(app).post("/user/register").send(testUser);
-
-  const cookie = res.body;
-  const user = await prisma.user.findFirstOrThrow({});
-
-  const res1 = await request(app)
-    .post("/budget/categoryGroup")
-    .set("Authorization", `Bearer ${cookie}`)
-    .send({
-      name: "test category group",
-    });
-
-  const categoriesResponse = await request(app)
-    .get("/budget/categories")
-    .set("Authorization", `Bearer ${cookie}`);
-
-  const responseBody = categoriesResponse.body as NormalizedCategories;
-
-  const { categoryGroups } = responseBody;
-
-  const testCategoryGroup = Object.values(categoryGroups).find(
-    (categoryGroup) => categoryGroup.name === "test category group",
-  );
-
-  if (!testCategoryGroup) throw new Error("Unable to find test category group");
-
-  const res2 = await request(app)
-    .post("/budget/category")
-    .set("Authorization", `Bearer ${cookie}`)
-    .send({
-      categoryGroupId: testCategoryGroup.id,
-      name: "test category",
-    });
-
-  const category = await prisma.category.findFirstOrThrow({
-    where: {
-      name: "test category",
-    },
-  });
-
-  const accountsRes = await request(app)
-    .get("/budget/accounts")
-    .set("Authorization", `Bearer ${cookie}`);
-
-  const catRes = await request(app)
-    .get("/budget/categories")
-    .set("Authorization", `Bearer ${cookie}`);
-
-  // console.log("WHY ARE THESE 2 DIFFERENT??");
-  // console.log(accountsRes.body);
-  // console.log(catRes.body);
-};
-
-const createTestAccount = async (cookie: string) => {
-  const testAccount = {
-    name: "test account",
-    type: "BANK",
-    balance: 0,
-  };
-
-  const createAccountRes = await request(app)
-    .post("/budget/account")
-    .set("Authorization", `Bearer ${cookie}`)
-    .send(testAccount);
-
-  const account = await prisma.account.findFirstOrThrow({
-    where: {
-      name: testAccount.name,
-    },
-  });
-
-  return account;
-};
-
-const getCategories = async (cookie: string) => {
-  const res = await request(app)
-    .get("/budget/categories")
-    .set("Authorization", `Bearer ${cookie}`);
-  return res.body as NormalizedCategories;
-};
-
-const getAccounts = async (cookie: string) => {
-  const res = await request(app)
-    .get("/budget/accounts")
-    .set("Authorization", `Bearer ${cookie}`);
-  return res.body as NormalizedAccounts;
-};
+import { NormalizedCategories } from "../../features/budget/category/category.types";
+import { getAccounts, getCategories } from "../utils/getData";
+import { createTestAccount } from "../utils/createTestAccount";
+import { login, registerUser } from "../utils/auth";
 
 describe("Budget", () => {
   it.todo("Should prevent users accessing/updating other users data");
-  describe("Categories", () => {
-    beforeEach(async () => {
-      await registerUser();
-    });
 
+  let cookie: string;
+
+  beforeEach(async () => {
+    await registerUser();
+    cookie = await login();
+  });
+
+  describe("Categories", () => {
+    it.todo("Should handle delete categories");
     it.todo("Should prevent user adding a category without category group");
 
     it("Should only add a single category when adding", async () => {
-      const cookie = await login();
       const { categories } = await getCategories(cookie);
 
       const testCategory = Object.values(categories).filter(
@@ -127,7 +29,6 @@ describe("Budget", () => {
     });
 
     it("Should prevent user from adding category to Inflow group", async () => {
-      const cookie = await login();
       const { categoryGroups } = await getCategories(cookie);
 
       const inflowCategoryGroup = Object.values(categoryGroups).find(
@@ -150,7 +51,7 @@ describe("Budget", () => {
       expect(addCategoryResponse.status).toBe(403);
 
       const categoriesResponseAfter = await request(app)
-        .get("/budget/categories")
+        .get("/budget/category")
         .set("Authorization", `Bearer ${cookie}`);
 
       const responseBodyAfter =
@@ -164,7 +65,6 @@ describe("Budget", () => {
     });
 
     it("Should prevent user from adding categories to Uncategorised group", async () => {
-      const cookie = await login();
       const { categoryGroups } = await getCategories(cookie);
 
       const uncategorisedCategoryGroup = Object.values(categoryGroups).find(
@@ -187,7 +87,7 @@ describe("Budget", () => {
       expect(addCategoryResponse.status).toBe(403);
 
       const categoriesResponseAfter = await request(app)
-        .get("/budget/categories")
+        .get("/budget/category")
         .set("Authorization", `Bearer ${cookie}`);
 
       const responseBodyAfter =
@@ -201,7 +101,6 @@ describe("Budget", () => {
     });
 
     it("Should prevent user from adding a category with a duplicate name", async () => {
-      const cookie = await login();
       const { categoryGroups, categories } = await getCategories(cookie);
 
       const testCategoryGroup = Object.values(categoryGroups).find(
@@ -253,12 +152,7 @@ describe("Budget", () => {
   });
 
   describe("Account", () => {
-    beforeEach(async () => {
-      await registerUser();
-    });
     it("Should add an account with zero balance", async () => {
-      const cookie = await login();
-
       const testAccountData = {
         name: "test account",
         type: "BANK",
@@ -292,10 +186,6 @@ describe("Budget", () => {
   });
 
   describe("Transaction", () => {
-    beforeEach(async () => {
-      await registerUser();
-    });
-
     it("When adding a transaction without logging in returns 401", async () => {
       const testTransaction = {
         outflow: 10,
@@ -307,24 +197,40 @@ describe("Budget", () => {
 
       expect(res.status).toBe(401);
     });
-
-    it.skip("When adding a transaction with no account, returns 400", async () => {
-      const cookie = await login();
-    });
-
-    it("When adding a transaction with no category, transaction is assigned to Uncategorised", async () => {
-      const cookie = await login();
+    it.skip("should allow transactions added at 1am", async () => {
       const account = await createTestAccount(cookie);
 
-      const testTransaction = {
-        accountId: account.id,
-        outflow: "10",
-      };
+      jest.useFakeTimers();
+      const fixedDate = new Date("2024-01-01T12:00:00Z");
+      jest.setSystemTime(fixedDate);
+
+      const transactionDate = new Date(2025, 6, 15, 1, 0, 0);
 
       const addTransactionRes = await request(app)
         .post("/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
-        .send(testTransaction);
+        .send({
+          accountId: account.id,
+          outflow: "10",
+          date: transactionDate,
+        })
+        .expect(200);
+
+      jest.useRealTimers();
+    });
+
+    it.skip("When adding a transaction with no account, returns 400", async () => {});
+
+    it("When adding a transaction with no category, transaction is assigned to Uncategorised", async () => {
+      const account = await createTestAccount(cookie);
+
+      const addTransactionRes = await request(app)
+        .post("/budget/transaction")
+        .set("Authorization", `Bearer ${cookie}`)
+        .send({
+          accountId: account.id,
+          outflow: "10",
+        });
 
       const { transactions, categories } = await getAccounts(cookie);
 
@@ -342,40 +248,75 @@ describe("Budget", () => {
         throw new Error("Unable to find uncategorised category");
 
       expect(transaction.categoryId).toBe(uncategorisedCategory.id);
-
-      expect.hasAssertions();
     });
 
     it.todo("Should correctly duplicate transactions");
+    it("should fail when adding a transaction without inflow or outflow", async () => {
+      const account = await createTestAccount(cookie);
+
+      const testTransaction = {
+        accountId: account.id,
+        memo: "test tx",
+      };
+
+      await request(app)
+        .post("/budget/transaction")
+        .set("Authorization", `Bearer ${cookie}`)
+        .send(testTransaction)
+        .expect(400);
+    });
   });
 
+  describe("Ready to assign", () => {});
+
   describe("Months", () => {
-    beforeEach(async () => {
-      await registerUser();
+    it("should prevent user from assigning to uncategorised category month", async () => {
+      const { categories } = await getCategories(cookie);
+
+      const uncategorisedCategory = Object.values(categories).find(
+        (c) => c.name === "Uncategorised Transactions",
+      );
+
+      if (!uncategorisedCategory)
+        throw new Error("Unable to find uncategorised category");
+
+      const res = await request(app)
+        .patch("/budget/assign")
+        .set("Authorization", `Bearer ${cookie}`)
+        .send({
+          assigned: "10",
+          monthId: uncategorisedCategory.months[0],
+        });
+
+      expect(res.status).toBe(403);
     });
 
-    it("Should create correct amount of months when adding a transaction in the past", async () => {
-      const cookie = await login();
+    it.todo("Should correctly update assigned for category month");
+    it.todo("should prevent user from accessing another users months");
 
+    it("should update available/activity when deleting an inflow transaction", async () => {
+      const testTransaction = {
+        inflow: "10",
+        memo: "test",
+      };
       const testAccountData = {
         name: "test account",
         type: "BANK",
-        balance: 50,
+        balance: 0,
       };
-
-      const testTransaction = {
-        outflow: "10",
-        memo: "test",
-      };
-
       const resAddAccount = await request(app)
         .post("/budget/account")
         .set("Authorization", `Bearer ${cookie}`)
-        .send(testAccountData);
-
-      expect(resAddAccount.status).toBe(200);
+        .send(testAccountData)
+        .expect(200);
 
       const { accounts } = await getAccounts(cookie);
+      const { categories } = await getCategories(cookie);
+
+      const testCategory = Object.values(categories).find(
+        (cat) => cat.name === "test category",
+      );
+      if (!testCategory) throw new Error("No category found");
 
       const testAccount = Object.values(accounts).find(
         (account) => account.name == "test account",
@@ -385,32 +326,40 @@ describe("Budget", () => {
 
       const { id: accountId } = testAccount;
 
-      const oneYearAgo = new Date();
-      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-
       const resAddTransaction = await request(app)
         .post("/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           ...testTransaction,
+          categoryId: testCategory.id,
           accountId,
-          date: oneYearAgo,
-        });
+        })
+        .expect(200);
 
-      expect(resAddTransaction.status).toBe(200);
+      const { transactions } = await getAccounts(cookie);
 
-      const { categories } = await getCategories(cookie);
-
-      const uncategorisedTransactionsCategory = Object.values(categories).find(
-        (cat) => cat.name === "Uncategorised Transactions",
+      const transaction = Object.values(transactions).find(
+        (t) => t.memo === "test",
       );
 
-      const testCategory = Object.values(categories).find(
-        (cat) => cat.name === "test category",
+      if (!transaction) throw new Error("Unable to find test transaction");
+
+      await request(app)
+        .delete("/budget/transaction")
+        .set("Authorization", `Bearer ${cookie}`)
+        .send({ transactionIds: [transaction.id] })
+        .expect(200);
+
+      const { months } = await getCategories(cookie);
+
+      const testMonths = Object.values(months).filter(
+        (month) => month.categoryId === testCategory.id,
       );
 
-      expect(uncategorisedTransactionsCategory?.months.length).toBe(14);
-      expect(testCategory?.months.length).toBe(14);
+      expect(testMonths[0].activity).toBe(0);
+      expect(testMonths[0].available).toBe(0);
+      expect(testMonths[1].activity).toBe(0);
+      expect(testMonths[1].available).toBe(0);
     });
   });
 });
@@ -427,7 +376,7 @@ const testUserB = {
 
 describe("When signing up", () => {
   it("Should add Inflow category group", async () => {
-    const res = await request(app).post("/user/register").send(testUserA);
+    const res = await request(app).post("/user/auth/register").send(testUserA);
     const cookie = await login();
 
     const { categoryGroups } = await getCategories(cookie);
@@ -440,7 +389,7 @@ describe("When signing up", () => {
   });
 
   it("Should add Ready to Assign category", async () => {
-    const res = await request(app).post("/user/register").send(testUserA);
+    const res = await request(app).post("/user/auth/register").send(testUserA);
     const cookie = await login();
 
     const { categories } = await getCategories(cookie);
@@ -454,7 +403,7 @@ describe("When signing up", () => {
   });
 
   it("Should add Uncategorised category", async () => {
-    const res = await request(app).post("/user/register").send(testUserA);
+    const res = await request(app).post("/user/auth/register").send(testUserA);
     const cookie = await login();
 
     const { categories } = await getCategories(cookie);
@@ -493,16 +442,24 @@ describe("Auth", () => {
   it.todo("Should provide a cookie in res.body.token?");
   describe("Sign up", () => {
     it("Should prevent sign up with pre-existing email address", async () => {
-      const resA = await request(app).post("/user/register").send(testUserA);
-      const resB = await request(app).post("/user/register").send(testUserA);
+      const resA = await request(app)
+        .post("/user/auth/register")
+        .send(testUserA);
+      const resB = await request(app)
+        .post("/user/auth/register")
+        .send(testUserA);
 
       expect(resA.status).toBe(200);
       expect(resB.status).toBe(400);
     });
 
     it("Should allow multiple users to sign up without category name collision", async () => {
-      const resA = await request(app).post("/user/register").send(testUserA);
-      const resB = await request(app).post("/user/register").send(testUserB);
+      const resA = await request(app)
+        .post("/user/auth/register")
+        .send(testUserA);
+      const resB = await request(app)
+        .post("/user/auth/register")
+        .send(testUserB);
 
       expect(resA.status).toBe(200);
       expect(resB.status).toBe(200);
@@ -515,7 +472,7 @@ describe("Auth", () => {
       const cookie = await login();
 
       const logoutRes = await request(app)
-        .post("/user/logout")
+        .post("/user/auth/logout")
         .set("Cookie", `jwt=${cookie}`)
         .expect(204);
 

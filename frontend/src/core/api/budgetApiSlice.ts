@@ -11,7 +11,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAccounts: builder.query<NormalizedData, void>({
       query: () => ({
-        url: "budget/accounts",
+        url: "budget/account",
         method: "GET",
       }),
       providesTags: ["Accounts"],
@@ -66,7 +66,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
     }),
     getCategories: builder.query<CategoriesNormalizedData, void>({
       query: () => ({
-        url: "budget/categories",
+        url: "budget/category",
         method: "GET",
       }),
       providesTags: ["Categories"],
@@ -84,7 +84,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
     addCategoryGroup: builder.mutation<void, any>({
       query: (categoryGroup) => {
         return {
-          url: "budget/categoryGroup",
+          url: "budget/categorygroup",
           method: "POST",
           body: categoryGroup,
         };
@@ -94,7 +94,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
     editMonth: builder.mutation<void, Month>({
       query: (assigned) => {
         return {
-          url: "budget/month",
+          url: "budget/assign",
           method: "PATCH",
           body: assigned,
         };
