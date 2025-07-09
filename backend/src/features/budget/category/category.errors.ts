@@ -12,17 +12,32 @@ export class DuplicateCategoryNameError extends HttpError {
   }
 }
 
-export class AddingTransactionToProtectedCategoryGroupError extends HttpError {
+export class AddingToCategoryGroupNotOwnedByUserError extends HttpError {
+  constructor() {
+    super("You are not allowed to add categories to this category group.", 403);
+  }
+}
+
+export class CategoryNotFoundError extends HttpError {
+  constructor() {
+    super("Category not found or not owned by user.", 404);
+  }
+}
+
+export class InheritingCategoryIdNotProvidedError extends HttpError {
   constructor() {
     super(
-      "Adding a transaction to a protected category group is prohibited",
-      403,
+      "You must provide an inheriting category ID to transfer transactions to.",
+      400,
     );
   }
 }
 
-export class AddingToCategoryGroupNotOwnedByUserError extends HttpError {
+export class AddingTransactionToProtectedCategoryError extends HttpError {
   constructor() {
-    super("You are not allowed to add categories to this category group.", 403);
+    super(
+      "You are not allowed to add transactions to protected categories.",
+      403,
+    );
   }
 }

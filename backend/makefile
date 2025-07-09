@@ -18,8 +18,8 @@ run-db:
 
 setup-db: run-db
 	@echo "Setting up database schema..."
-	npx prisma generate --schema=src/prisma/schema.prisma
-	npx prisma migrate dev --name init --schema=src/prisma/schema.prisma
+	npx prisma generate --schema=src/shared/prisma/schema.prisma
+	npx prisma migrate dev --name init --schema=src/shared/prisma/schema.prisma
 
 # Cleanup Commands
 db-remove:

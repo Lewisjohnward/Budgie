@@ -1,11 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import { categoryService } from "./category.service";
 import {
-  updateCategorySchema,
-  categoryParamsSchema,
-  CategorySchema,
+  createCategorySchema,
+  editCategorySchema,
+  deleteCategorySchema,
 } from "./category.schema";
 import { normaliseCategories } from "./utils/normaliseCategories";
+import { categoryUseCase } from "./category.useCase";
 
 export const getCategories = async (
   req: Request,
@@ -13,7 +13,7 @@ export const getCategories = async (
   next: NextFunction,
 ) => {
   try {
-    const categories = await categoryService.getCategories(req.user!._id);
+    const categories = await categoryUseCase.getCategories(req.user!._id);
     const normalizedCategories = normaliseCategories(categories);
     res.status(200).json({ ...normalizedCategories });
   } catch (error) {
@@ -27,12 +27,12 @@ export const createCategory = async (
   next: NextFunction,
 ) => {
   try {
-    const payload = CategorySchema.parse({
+    const payload = createCategorySchema.parse({
       userId: req.user!._id,
       ...req.body,
     });
-    const newCategory = await categoryService.createCategory(payload);
-    res.status(201).json(newCategory);
+    await categoryUseCase.createCategory(payload);
+    res.status(201).json({ message: "New category created" });
   } catch (error) {
     next(error);
   }
@@ -44,14 +44,14 @@ export const updateCategory = async (
   next: NextFunction,
 ) => {
   try {
-    const { categoryId } = categoryParamsSchema.parse(req.params);
-    const payload = updateCategorySchema.parse(req.body);
-    // const updatedCategory = await categoryService.updateCategory(
-    //   req.user!._id,
-    //   categoryId,
-    //   payload,
-    // );
-    // res.status(200).json(updatedCategory);
+    const payload = editCategorySchema.parse({
+      userId: req.user!._id,
+      ...req.body,
+    });
+
+    await categoryUseCase.updateCategory(payload);
+
+    res.status(201).json({ message: "New category created" });
   } catch (error) {
     next(error);
   }
@@ -63,8 +63,12 @@ export const deleteCategory = async (
   next: NextFunction,
 ) => {
   try {
-    const { categoryId } = categoryParamsSchema.parse(req.params);
-    await categoryService.deleteCategory(req.user!._id, categoryId);
+    const payload = deleteCategorySchema.parse({
+      userId: req.user!._id,
+      ...req.body,
+    });
+
+    await categoryUseCase.deleteCategory(payload);
     res.sendStatus(204);
   } catch (error) {
     next(error);

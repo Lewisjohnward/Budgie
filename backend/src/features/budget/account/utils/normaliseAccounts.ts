@@ -1,9 +1,9 @@
 import { convertDecimalToNumber } from "../../../../shared/utils/convertDecimalToNumber";
 import { Account } from "../../category/category.types";
-import { NormalizedAccounts } from "../account.schema";
+import { NormalisedAccounts } from "../account.schema";
 
 export function normaliseAccounts(data: { accounts: Account[] }) {
-  const normalizedData: NormalizedAccounts = {
+  const normalisedData: NormalisedAccounts = {
     accounts: {},
     transactions: {},
     categories: {},
@@ -11,10 +11,11 @@ export function normaliseAccounts(data: { accounts: Account[] }) {
   };
 
   data.accounts.forEach((account) => {
-    normalizedData.accounts[account.id] = {
+    normalisedData.accounts[account.id] = {
       id: account.id,
       userId: account.userId,
       name: account.name,
+      open: account.open,
       position: account.position,
       type: account.type,
       balance: convertDecimalToNumber(account.balance),
@@ -27,20 +28,20 @@ export function normaliseAccounts(data: { accounts: Account[] }) {
       const transactionId = transaction.id;
       const categoryId = transaction.category ? transaction.category.id : null;
 
-      normalizedData.transactions[transaction.id] = {
+      normalisedData.transactions[transaction.id] = {
         ...transaction,
         inflow: convertDecimalToNumber(transaction.inflow),
         outflow: convertDecimalToNumber(transaction.outflow),
         category: categoryId,
       };
-      normalizedData.accounts[account.id].transactions.push(transactionId);
+      normalisedData.accounts[account.id].transactions.push(transactionId);
 
       if (
         transaction.category &&
         transaction.categoryId != null &&
-        !normalizedData.categories[transaction.categoryId]
+        !normalisedData.categories[transaction.categoryId]
       ) {
-        normalizedData.categories[transaction.categoryId] = {
+        normalisedData.categories[transaction.categoryId] = {
           id: transaction.categoryId,
           userId: transaction.category.userId,
           name: transaction.category.name,
@@ -49,10 +50,10 @@ export function normaliseAccounts(data: { accounts: Account[] }) {
 
         if (transaction.category?.categoryGroupId) {
           const id = transaction.category.categoryGroupId;
-          normalizedData.categories[transaction.categoryId].categoryGroupId =
+          normalisedData.categories[transaction.categoryId].categoryGroupId =
             id;
 
-          normalizedData.categoryGroups[id] = {
+          normalisedData.categoryGroups[id] = {
             ...transaction.category.categoryGroup,
           };
         }
@@ -60,5 +61,5 @@ export function normaliseAccounts(data: { accounts: Account[] }) {
     });
   });
 
-  return normalizedData;
+  return normalisedData;
 }

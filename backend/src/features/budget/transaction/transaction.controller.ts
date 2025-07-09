@@ -4,28 +4,17 @@ import {
   editTransactionArraySchema,
   transactionSchema,
 } from "./transaction.schema";
-import { accountService } from "../account/account.service";
-import { transactionService } from "./transaction.service";
+import { transactionUseCase } from "./transaction.useCase";
 
 export const addTransaction = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  // TODO: need to calculate new account balance on addition
-
-  // IF NO CATEGORY ASSIGN TO THIS NEEDS A CATEGORY
   try {
     const transactionPayload = transactionSchema.parse(req.body);
 
-    // TODO: - remove? insert where id = userId
-    await accountService.checkUserOwnsAccount(
-      transactionPayload.accountId,
-      // TODO: remove the !
-      req.user!._id,
-    );
-
-    await transactionService.insertTransaction(
+    await transactionUseCase.insertTransaction(
       req.user?._id!,
       transactionPayload,
     );
@@ -43,7 +32,7 @@ export const editTransaction = async (
   try {
     const validatedTransactions = editTransactionArraySchema.parse(req.body);
 
-    await transactionService.updateTransactions(
+    await transactionUseCase.updateTransactions(
       req.user!._id,
       validatedTransactions,
     );
@@ -67,8 +56,8 @@ export const deleteTransactions = async (
   }
 
   try {
-    // need to check to make sure that client is giving uuids[]
-    await transactionService.deleteTransactions(req.user?._id!, transactionIds);
+    // TODO: NEED ZOD need to check to make sure that client is giving uuids[]
+    await transactionUseCase.deleteTransactions(req.user?._id!, transactionIds);
 
     res.status(200).json({ message: "Success" });
   } catch (error) {
@@ -86,7 +75,7 @@ export const duplicateTransactions = async (
       req.body,
     );
 
-    await transactionService.insertDuplicateTransactions(
+    await transactionUseCase.insertDuplicateTransactions(
       req.user!._id,
       duplicateTransactionsPayload.transactionIds,
     );

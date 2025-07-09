@@ -1,6 +1,6 @@
 import request from "supertest";
 import app from "../../app";
-import { NormalizedCategories } from "../../features/budget/category/category.types";
+import { NormalisedCategories } from "../../features/budget/category/category.types";
 import { getAccounts, getCategories } from "../utils/getData";
 import { createTestAccount } from "../utils/createTestAccount";
 import { login, registerUser } from "../utils/auth";
@@ -16,168 +16,239 @@ describe("Budget", () => {
   });
 
   describe("Categories", () => {
+    describe("Delete category", () => {
+      it.todo("should recalculate position of other categories");
+      it.todo("should throw error if user doesn't own category");
+      it.todo("should throw error if user doesn't own inheriting category");
+      it.todo("should throw error if no inheriting category provided");
+      it.todo("should throw error if inherting category is protected category");
+      it.todo(
+        "should correctly update rta when deleting category with assigned",
+      );
+      it.todo("should transfer transactions to inheriting group");
+      it.todo("should throw error if no inheriting category provided");
+      it.todo("should throw error if inheriting category is protected");
+      it.todo("should throw error if inheriting category is not owned by user");
+    });
     it.todo("Should handle delete categories");
-    it.todo("Should prevent user adding a category without category group");
-
-    it("Should only add a single category when adding", async () => {
-      const { categories } = await getCategories(cookie);
-
-      const testCategory = Object.values(categories).filter(
-        (cat) => cat.name === "test category",
-      );
-      expect(testCategory.length).toBe(1);
+    describe("Edit category", () => {
+      it.todo("should prevent name collision");
+      it.todo("should maintain position when updating");
+      it.todo("should throw error if user doesn't own category");
+      it.todo("should throw error if name conflict within category group");
+      it.todo("should not allow adding to protected category groups");
+      it.todo("should correctly update a category");
     });
 
-    it("Should prevent user from adding category to Inflow group", async () => {
-      const { categoryGroups } = await getCategories(cookie);
-
-      const inflowCategoryGroup = Object.values(categoryGroups).find(
-        (categoryGroup) => categoryGroup.name === "Inflow",
+    describe("Create category", () => {
+      it.todo("should prevent name collision");
+      it.todo("Should prevent user adding a category without category group");
+      it.todo(
+        "Should prevent user from adding a category to a category group they don't own",
       );
+      it.todo("Should correctly assign position when categoryGroup empty");
 
-      if (!inflowCategoryGroup)
-        throw new Error("Inflow category group not found");
-
-      const testCategory = {
-        name: "inflow test category",
-        categoryGroupId: inflowCategoryGroup.id,
-      };
-
-      const addCategoryResponse = await request(app)
-        .post("/budget/category")
-        .send(testCategory)
-        .set("Authorization", `Bearer ${cookie}`);
-
-      expect(addCategoryResponse.status).toBe(403);
-
-      const categoriesResponseAfter = await request(app)
-        .get("/budget/category")
-        .set("Authorization", `Bearer ${cookie}`);
-
-      const responseBodyAfter =
-        categoriesResponseAfter.body as NormalizedCategories;
-
-      expect(
-        Object.values(responseBodyAfter.categories).some(
-          (cat) => cat.name === testCategory.name,
-        ),
-      ).toBe(false);
-    });
-
-    it("Should prevent user from adding categories to Uncategorised group", async () => {
-      const { categoryGroups } = await getCategories(cookie);
-
-      const uncategorisedCategoryGroup = Object.values(categoryGroups).find(
-        (categoryGroup) => categoryGroup.name === "Uncategorised",
+      it.todo(
+        "Should correctly assign position when categoryGroup has other categories",
       );
+      it("Should only add a single category when adding", async () => {
+        const { categories } = await getCategories(cookie);
 
-      if (!uncategorisedCategoryGroup)
-        throw new Error("Uncategorised category group not found");
+        const testCategory = Object.values(categories).filter(
+          (cat) => cat.name === "test category",
+        );
+        expect(testCategory.length).toBe(1);
+      });
+      it("Should prevent user from adding category to Inflow group", async () => {
+        const { categoryGroups } = await getCategories(cookie);
 
-      const testCategory = {
-        name: "uncategorised test category",
-        categoryGroupId: uncategorisedCategoryGroup.id,
-      };
+        const inflowCategoryGroup = Object.values(categoryGroups).find(
+          (categoryGroup) => categoryGroup.name === "Inflow",
+        );
 
-      const addCategoryResponse = await request(app)
-        .post("/budget/category")
-        .send(testCategory)
-        .set("Authorization", `Bearer ${cookie}`);
+        if (!inflowCategoryGroup)
+          throw new Error("Inflow category group not found");
 
-      expect(addCategoryResponse.status).toBe(403);
+        const testCategory = {
+          name: "inflow test category",
+          categoryGroupId: inflowCategoryGroup.id,
+        };
 
-      const categoriesResponseAfter = await request(app)
-        .get("/budget/category")
-        .set("Authorization", `Bearer ${cookie}`);
-
-      const responseBodyAfter =
-        categoriesResponseAfter.body as NormalizedCategories;
-
-      expect(
-        Object.values(responseBodyAfter.categories).some(
-          (cat) => cat.name === testCategory.name,
-        ),
-      ).toBe(false);
-    });
-
-    it("Should prevent user from adding a category with a duplicate name", async () => {
-      const { categoryGroups, categories } = await getCategories(cookie);
-
-      const testCategoryGroup = Object.values(categoryGroups).find(
-        (cg) => cg.name === "test category group",
-      );
-
-      if (!testCategoryGroup)
-        throw new Error("Unable to find test category group");
-
-      const testCategory = {
-        categoryGroupId: testCategoryGroup.id,
-        name: "test category",
-      };
-
-      const existingCategory = Object.values(categories).find(
-        (cat) =>
-          cat.name === testCategory.name &&
-          cat.categoryGroupId === testCategory.categoryGroupId,
-      );
-
-      if (!existingCategory) {
-        await request(app)
+        const addCategoryResponse = await request(app)
           .post("/budget/category")
-          .set("Authorization", `Bearer ${cookie}`)
           .send(testCategory)
-          .expect(201);
-      }
+          .set("Authorization", `Bearer ${cookie}`);
 
-      const duplicateCategoryRes = await request(app)
-        .post("/budget/category")
-        .set("Authorization", `Bearer ${cookie}`)
-        .send(testCategory);
+        expect(addCategoryResponse.status).toBe(403);
 
-      const { categories: updatedCategories } = await getCategories(cookie);
+        const categoriesResponseAfter = await request(app)
+          .get("/budget/category")
+          .set("Authorization", `Bearer ${cookie}`);
 
-      expect(duplicateCategoryRes.status).toBe(409);
-      expect(
-        Object.values(updatedCategories).filter(
+        const responseBodyAfter =
+          categoriesResponseAfter.body as NormalisedCategories;
+
+        expect(
+          Object.values(responseBodyAfter.categories).some(
+            (cat) => cat.name === testCategory.name,
+          ),
+        ).toBe(false);
+      });
+
+      it("Should prevent user from adding categories to Uncategorised group", async () => {
+        const { categoryGroups } = await getCategories(cookie);
+
+        const uncategorisedCategoryGroup = Object.values(categoryGroups).find(
+          (categoryGroup) => categoryGroup.name === "Uncategorised",
+        );
+
+        if (!uncategorisedCategoryGroup)
+          throw new Error("Uncategorised category group not found");
+
+        const testCategory = {
+          name: "uncategorised test category",
+          categoryGroupId: uncategorisedCategoryGroup.id,
+        };
+
+        const addCategoryResponse = await request(app)
+          .post("/budget/category")
+          .send(testCategory)
+          .set("Authorization", `Bearer ${cookie}`);
+
+        expect(addCategoryResponse.status).toBe(403);
+
+        const categoriesResponseAfter = await request(app)
+          .get("/budget/category")
+          .set("Authorization", `Bearer ${cookie}`);
+
+        const responseBodyAfter =
+          categoriesResponseAfter.body as NormalisedCategories;
+
+        expect(
+          Object.values(responseBodyAfter.categories).some(
+            (cat) => cat.name === testCategory.name,
+          ),
+        ).toBe(false);
+      });
+
+      it("Should prevent user from adding a category with a duplicate name", async () => {
+        const { categoryGroups, categories } = await getCategories(cookie);
+
+        const testCategoryGroup = Object.values(categoryGroups).find(
+          (cg) => cg.name === "test category group",
+        );
+
+        if (!testCategoryGroup)
+          throw new Error("Unable to find test category group");
+
+        const testCategory = {
+          categoryGroupId: testCategoryGroup.id,
+          name: "test category",
+        };
+
+        const existingCategory = Object.values(categories).find(
           (cat) =>
             cat.name === testCategory.name &&
             cat.categoryGroupId === testCategory.categoryGroupId,
-        ).length,
-      ).toBe(1);
+        );
+
+        if (!existingCategory) {
+          await request(app)
+            .post("/budget/category")
+            .set("Authorization", `Bearer ${cookie}`)
+            .send(testCategory)
+            .expect(201);
+        }
+
+        const duplicateCategoryRes = await request(app)
+          .post("/budget/category")
+          .set("Authorization", `Bearer ${cookie}`)
+          .send(testCategory);
+
+        const { categories: updatedCategories } = await getCategories(cookie);
+
+        expect(duplicateCategoryRes.status).toBe(409);
+        expect(
+          Object.values(updatedCategories).filter(
+            (cat) =>
+              cat.name === testCategory.name &&
+              cat.categoryGroupId === testCategory.categoryGroupId,
+          ).length,
+        ).toBe(1);
+      });
+
+      it.todo(
+        "Should prevent user from adding a category group with a duplicate name",
+      );
+    });
+  });
+
+  describe("Category groups", () => {
+    describe("create", () => {
+      it.todo("should prevent name collision");
+      it.todo("should create a category group");
     });
 
-    it.todo(
-      "Should prevent user from adding a category group with a duplicate name",
-    );
+    describe("edit", () => {
+      it.todo("should prevent name collision");
+      it.todo("should update name");
+      it.todo("should update position");
+      it.todo("should prevent user editing non existent / other users groups");
+    });
+
+    describe("delete", () => {
+      it.todo("should delete category group");
+      it.todo("should update name");
+      it.todo("should transfer to inherting category");
+      it.todo("should prevent user deleting non existent / other users groups");
+    });
   });
 
   describe("Account", () => {
-    it("Should add an account with zero balance", async () => {
-      const testAccountData = {
-        name: "test account",
-        type: "BANK",
-        balance: 0,
-      };
+    describe("create", () => {
+      it.todo("prevent name collisions");
+      it.todo("should add account with initial balance");
+      it("Should add an account with zero balance", async () => {
+        const testAccountData = {
+          name: "test account",
+          type: "BANK",
+          balance: 0,
+        };
 
-      const resAddAccount = await request(app)
-        .post("/budget/account")
-        .set("Authorization", `Bearer ${cookie}`)
-        .send(testAccountData);
+        const resAddAccount = await request(app)
+          .post("/budget/account")
+          .set("Authorization", `Bearer ${cookie}`)
+          .send(testAccountData);
 
-      expect(resAddAccount.status).toBe(200);
+        expect(resAddAccount.status).toBe(200);
 
-      const { accounts } = await getAccounts(cookie);
+        const { accounts } = await getAccounts(cookie);
 
-      const testAccount = Object.values(accounts).filter(
-        (account) => account.name === testAccountData.name,
+        const testAccount = Object.values(accounts).filter(
+          (account) => account.name === testAccountData.name,
+        );
+
+        const transactions = testAccount[0].transactions;
+        const accountData = testAccount[0];
+
+        expect(testAccount.length).toBe(1);
+        expect(accountData.balance).toBe(0);
+        expect(transactions.length).toBe(0);
+      });
+    });
+
+    describe("delete", () => {
+      it.todo("should throw error if account not owned by user/found");
+      it.todo("should delete account if it has transactions and zero balance");
+      it.todo(
+        "should close account and zero balance if it has transactions and non zero balance",
       );
+    });
 
-      const transactions = testAccount[0].transactions;
-      const accountData = testAccount[0];
-
-      expect(testAccount.length).toBe(1);
-      expect(accountData.balance).toBe(0);
-      expect(transactions.length).toBe(0);
+    describe("update", () => {
+      it.todo("should throw error if account not owned by user/found");
+      it.todo("should update name when provided");
+      it.todo("should adjust balance with an rta transaction");
     });
 
     it.todo("Should handle weird inputs on balance");
@@ -186,6 +257,11 @@ describe("Budget", () => {
   });
 
   describe("Transaction", () => {
+    describe("Adding transaction", () => {
+      it.todo(
+        "should throw error if user tries adding to account not owned by themselves",
+      );
+    });
     it("When adding a transaction without logging in returns 401", async () => {
       const testTransaction = {
         outflow: 10,
@@ -218,8 +294,13 @@ describe("Budget", () => {
 
       jest.useRealTimers();
     });
+    it.todo(
+      "should throw error if category id provided doesn't exist/ not owned by user",
+    );
 
-    it.skip("When adding a transaction with no account, returns 400", async () => {});
+    it.skip("When adding a transaction with no account, returns 400", async () => { });
+
+    it.todo("Should return error when user doesn't own category");
 
     it("When adding a transaction with no category, transaction is assigned to Uncategorised", async () => {
       const account = await createTestAccount(cookie);
@@ -267,7 +348,7 @@ describe("Budget", () => {
     });
   });
 
-  describe("Ready to assign", () => {});
+  describe("Ready to assign", () => { });
 
   describe("Months", () => {
     it("should prevent user from assigning to uncategorised category month", async () => {
@@ -293,6 +374,7 @@ describe("Budget", () => {
 
     it.todo("Should correctly update assigned for category month");
     it.todo("should prevent user from accessing another users months");
+    it.todo("should prevent user from assigning to rta category");
 
     it("should update available/activity when deleting an inflow transaction", async () => {
       const testTransaction = {

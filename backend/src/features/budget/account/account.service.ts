@@ -1,12 +1,7 @@
-import { selectAccounts } from './use-cases/selectAccounts';
-import { deleteAccountById } from './use-cases/deleteAccountById';
-import { userOwnsAccount } from './use-cases/userOwnsAccount';
-import { initialiseAccount } from './use-cases/initialiseAccount';
+import { getAccount } from "./application/services/getAccount";
+import { updateAccountBalances } from "./application/services/updateAccountBalances";
 
 export const accountService = {
-    getAccounts: selectAccounts,
-    deleteAccount: deleteAccountById,
-    initialiseNewAccount: initialiseAccount,
-
-    checkUserOwnsAccount: userOwnsAccount,
+  getAccount,
+  updateAccountBalances,
 };

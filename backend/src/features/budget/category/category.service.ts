@@ -1,42 +1,29 @@
-import { Prisma } from "@prisma/client";
-import { createCategory } from "./use-cases/createCategory";
-import { deleteCategoryById } from "./use-cases/deleteCategoryById";
-import { initialiseCategories } from "./use-cases/initialiseCategories";
-import { isValidCategory } from "./use-cases/isValidCategory";
-import { selectCategories } from "./use-cases/selectCategories";
-import { updateCategoryById } from "./use-cases/updateCategoryById";
-import { CategoryPayload, UpdateCategoryPayload } from "./category.schema";
+import { checkUserOwnsCategory } from "./application/services/assertUserOwnsCategory";
+import { checkCategoryNameIsUniqueInGroup } from "./application/services/checkCategoryNameIsUniqueInGroup";
+import { checkInheritingCategoryIsNotProtected } from "./application/services/checkInheritingCategoryIsNotProtected";
+import { getNextCategoryPosition } from "./application/services/getNextCategoryPosition";
+import { initialiseCategories } from "./application/services/initialiseCategories";
+import { createMonthsForCategory } from "./application/services/months/createMonthsForCategory";
+import { insertMissingMonths } from "./application/services/months/insertMissingMonths";
+import { recalculateCategoryMonthsForTransactions } from "./application/services/months/recalculateForTransactions";
+import { calculateMonthsAvailable } from "./application/services/rta/calculateMonthsAvailable";
+import { updateMonthsActivityForTransactions } from "./application/services/rta/updateMonthsActivityForTransactions";
 
 export const categoryService = {
-  getCategories: (userId: string) => {
-    return selectCategories(userId);
+  rta: {
+    calculateMonthsAvailable,
+    updateMonthsActivityForTransactions,
   },
-
-  createCategory: (payload: CategoryPayload) => {
-    return createCategory(payload);
+  months: {
+    recalculateCategoryMonthsForTransactions,
+    insertMissingMonths,
+    createMonthsForCategory,
   },
-
-  updateCategory: async (
-    userId: string,
-    categoryId: string,
-    payload: UpdateCategoryPayload,
-  ) => {
-    const isOwner = await isValidCategory(userId, categoryId);
-    if (!isOwner) {
-      throw new Error("User does not have permission to update this category.");
-    }
-    return updateCategoryById();
-  },
-
-  deleteCategory: async (userId: string, categoryId: string) => {
-    const isOwner = await isValidCategory(userId, categoryId);
-    if (!isOwner) {
-      throw new Error("User does not have permission to delete this category.");
-    }
-    return deleteCategoryById({ userId, categoryToDeleteId: categoryId });
-  },
-
-  initialiseUserCategories: (userId: string) => {
-    return initialiseCategories(userId);
+  categories: {
+    initialiseCategories,
+    checkUserOwnsCategory,
+    checkCategoryNameIsUniqueInGroup,
+    getNextCategoryPosition,
+    checkInheritingCategoryIsNotProtected,
   },
 };

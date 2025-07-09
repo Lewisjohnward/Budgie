@@ -1,7 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import { accountService } from "./account.service";
-import { accountSchema, paramsSchema } from "./account.schema";
+import {
+  addAccountSchema,
+  deleteAccountSchema,
+  editAccountSchema,
+} from "./account.schema";
 import { normaliseAccounts } from "./utils/normaliseAccounts";
+import { accountUseCase } from "./account.useCase";
 
 export const getAccounts = async (
   req: Request,
@@ -11,7 +15,7 @@ export const getAccounts = async (
   // TODO: what about pagination if there's loads of transactions?
 
   try {
-    const accountsWithTransactions = await accountService.getAccounts(
+    const accountsWithTransactions = await accountUseCase.getAccounts(
       req.user?._id!,
     );
 
@@ -29,12 +33,12 @@ export const addAccount = async (
   next: NextFunction,
 ) => {
   try {
-    const payload = accountSchema.parse({
+    const payload = addAccountSchema.parse({
       userId: req.user?._id,
       ...req.body,
     });
 
-    await accountService.initialiseNewAccount(payload);
+    await accountUseCase.createAccount(payload);
 
     res.status(200).json({ message: "Account added" });
   } catch (error) {
@@ -47,7 +51,19 @@ export const editAccount = async (
   res: Response,
   next: NextFunction,
 ) => {
-  // TODO: use req query param to edit transaction
+  try {
+    //TODO: NEED TO CHECK THAT USER IS EITHER UPDATING NAME OR ADJUSTING BALANCE, OTHERWISE WASTE OF TIME
+
+    const payload = editAccountSchema.parse({
+      userId: req.user?._id,
+      ...req.body,
+    });
+
+    await accountUseCase.updateAccount(payload);
+    res.sendStatus(200);
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const deleteAccount = async (
@@ -55,11 +71,13 @@ export const deleteAccount = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const id = req.params.id;
   try {
-    const { accountId } = paramsSchema.parse({ accountId: id });
+    const payload = deleteAccountSchema.parse({
+      userId: req.user?._id,
+      ...req.body,
+    });
 
-    await accountService.deleteAccount(accountId, req.user?._id!);
+    await accountUseCase.deleteAccount(payload);
     res.sendStatus(200);
   } catch (error) {
     next(error);
