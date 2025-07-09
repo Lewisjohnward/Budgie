@@ -20,3 +20,9 @@ export class AddingTransactionToProtectedCategoryGroupError extends HttpError {
     );
   }
 }
+
+export class AddingToCategoryGroupNotOwnedByUserError extends HttpError {
+  constructor() {
+    super("You are not allowed to add categories to this category group.", 403);
+  }
+}
