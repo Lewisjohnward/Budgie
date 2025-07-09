@@ -37,7 +37,7 @@ wipe-db-reset-be: db-remove db-remove-data setup-db
 
 # Development Tools
 prisma-gui:
-	npx prisma studio --schema=src/prisma/schema.prisma
+	npx prisma studio --schema=src/shared/prisma/schema.prisma
 
 # Integration Testing
 run-integration-test-db:
