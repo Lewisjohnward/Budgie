@@ -1,6 +1,7 @@
-import { Account, Month, Prisma, Transaction } from "@prisma/client";
+import { Account, Category, Month, Prisma, Transaction } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 import { TransactionPayload } from "./transaction/transaction.schema";
+import { CategoryPayload } from "./category/category.schema";
 
 export interface BudgetRepository {
   // insert tx
@@ -130,4 +131,39 @@ export interface BudgetRepository {
     tx: Prisma.TransactionClient,
     userId: string,
   ): Promise<string>;
+}
+
+export interface CategoryRepository {
+  getProtectedCategoryGroupIds(
+    tx: Prisma.TransactionClient,
+    userId: string,
+  ): Promise<string[]>;
+
+  getCategoryGroupId(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    id: string,
+  ): Promise<string | null>;
+
+  getCategoryId(
+    tx: Prisma.TransactionClient,
+    userId: string,
+    categoryGroupId: string,
+    name: string,
+  ): Promise<string | null>;
+
+  createCategory(
+    tx: Prisma.TransactionClient,
+    category: CategoryPayload,
+  ): Promise<Category>;
+
+  getExistingMonths(
+    tx: Prisma.TransactionClient,
+    userId: string,
+  ): Promise<{ month: Date }[]>;
+
+  createMonths(
+    tx: Prisma.TransactionClient,
+    months: Prisma.MonthCreateManyInput[],
+  ): Promise<void>;
 }
