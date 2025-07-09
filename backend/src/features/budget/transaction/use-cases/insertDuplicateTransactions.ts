@@ -24,7 +24,7 @@ export const insertDuplicateTransactions = async (
     if (transactions.length === 0) {
       throw new Error("No matching transactions found to duplicate.");
     }
-    const { id: rtaCategoryId } = await categoryService.getRtaCategory(
+    const rtaCategoryId = await budgetRepository.getRtaCategoryId(
       tx,
       userId,
     );

@@ -36,7 +36,7 @@ export const updateTransactions = async (
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     //
     if (filteredTxs.length === 0) return;
-    const { id: rtaCategoryId } = await categoryService.getRtaCategory(
+    const rtaCategoryId = await budgetRepository.getRtaCategoryId(
       tx,
       userId,
     );

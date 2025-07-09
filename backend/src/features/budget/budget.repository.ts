@@ -120,4 +120,14 @@ export interface BudgetRepository {
     transactionIds: string[],
     userId: string,
   ): Promise<void>;
+
+  getRtaCategoryId(
+    tx: Prisma.TransactionClient,
+    userId: string,
+  ): Promise<string>;
+
+  getUncategorisedCategoryId(
+    tx: Prisma.TransactionClient,
+    userId: string,
+  ): Promise<string>;
 }

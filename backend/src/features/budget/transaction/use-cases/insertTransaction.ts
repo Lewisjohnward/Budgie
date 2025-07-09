@@ -27,13 +27,9 @@ export const insertTransaction = async (
   await prisma.$transaction(async (tx) => {
     validateTransaction(transaction);
 
-    const { id: uncategorisedCategoryId } =
-      await categoryService.getUncategorisedCategory(tx, userId);
+    const uncategorisedCategoryId = await budgetRepository.getUncategorisedCategoryId(tx, userId);
 
-    const { id: rtaCategoryId } = await categoryService.getRtaCategory(
-      tx,
-      userId,
-    );
+    const rtaCategoryId = await budgetRepository.getRtaCategoryId(tx, userId);
 
     const newTransaction = await budgetRepository.createTransaction(tx, {
       ...transaction,

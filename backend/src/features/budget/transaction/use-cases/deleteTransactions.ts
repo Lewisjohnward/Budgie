@@ -27,7 +27,7 @@ export const deleteTransactions = async (
     if (transactionsToDelete.length === 0) return;
     // get rta category
     // TODO: MOVE THIS into domain?
-    const { id: rtaCategoryId } = await categoryService.getRtaCategory(
+    const rtaCategoryId = await budgetRepository.getRtaCategoryId(
       tx,
       userId,
     );
