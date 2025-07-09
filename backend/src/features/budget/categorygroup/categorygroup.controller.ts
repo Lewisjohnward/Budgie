@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { categoryGroupService } from "./categorygroup.service";
+import { categoryGroupUseCase } from "./categorygroup.useCase";
 import { CategoryGroupSchema } from "./categorygroup.schema";
 
 export const addCategoryGroup = async (
@@ -17,7 +17,7 @@ export const addCategoryGroup = async (
       name,
     });
 
-    await categoryGroupService.createCategoryGroup(validatedCategoryGroup);
+    await categoryGroupUseCase.createCategoryGroup(validatedCategoryGroup);
     res.status(200).json({ message: "Category group added" });
   } catch (error) {
     next(error);

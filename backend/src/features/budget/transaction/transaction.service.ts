@@ -1,11 +1,7 @@
-import { deleteTransactions } from "./use-cases/deleteTransactions";
-import { updateTransactions } from "./use-cases/updateTransactions";
-import { insertTransaction } from "./use-cases/insertTransaction";
-import { insertDuplicateTransactions } from "./use-cases/insertDuplicateTransactions";
+import { createBalanceAdjustmentTransaction } from "./application/services/createBalanceAdjustmentTransaction";
+import { createOpeningBalanceTransaction } from "./application/services/createOpeningBalanceTransaction";
 
 export const transactionService = {
-  deleteTransactions,
-  updateTransactions,
-  insertTransaction,
-  insertDuplicateTransactions,
+    createBalanceAdjustmentTransaction,
+    createOpeningBalanceTransaction
 };

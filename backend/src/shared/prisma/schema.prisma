@@ -55,6 +55,7 @@ model Category {
   categoryGroupId String
   // budgetId     String
   name            String        
+  position        Int
   // budget       Budget        @relation(fields: [budgetId], references: [id])
   transactions    Transaction[]
   categoryGroup        CategoryGroup @relation(fields: [categoryGroupId], references: [id])
@@ -84,6 +85,7 @@ model Account {
   position     Int        @default (autoincrement())
   userId       String
   name         String
+  open         Boolean       @default(true)
   type         AccountType
   balance      Decimal       @default(0)
   createdAt    DateTime      @default(now())

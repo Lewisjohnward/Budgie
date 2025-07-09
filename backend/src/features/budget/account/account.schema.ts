@@ -3,13 +3,30 @@ import { Decimal } from "@prisma/client/runtime/library";
 import { Prisma } from "@prisma/client";
 import { CategoryGroup, Transaction } from "../../../shared/types/db";
 
-export const paramsSchema = z.object({
+export const deleteAccountSchema = z.object({
+  userId: z.string().uuid(),
   accountId: z.string().uuid({ message: "Invalid UUID format" }),
+});
+
+export const editAccountSchema = z.object({
+  userId: z.string().uuid(),
+  accountId: z.string().uuid({ message: "Invalid UUID format" }),
+
+  name: z
+    .string()
+    .nonempty({ message: "Account name cannot be empty" })
+    .optional(),
+  balanceAdjustment: z
+    .preprocess((val) => {
+      if (val === undefined || val === null || val === "") return undefined;
+      return new Decimal(val as any);
+    }, z.instanceof(Decimal))
+    .optional(),
 });
 
 export const AccountTypeEnum = z.enum(["BANK", "CREDIT_CARD"]);
 
-export const accountSchema = z.object({
+export const addAccountSchema = z.object({
   userId: z.string().uuid(),
   name: z.string().min(1, { message: "Account name is required" }),
   type: AccountTypeEnum,
@@ -19,7 +36,9 @@ export const accountSchema = z.object({
   ),
 });
 
-export type AccountPayload = z.infer<typeof accountSchema>;
+export type AddAccountPayload = z.infer<typeof addAccountSchema>;
+export type DeleteAccountPayload = z.infer<typeof deleteAccountSchema>;
+export type EditAccountSchema = z.infer<typeof editAccountSchema>;
 
 type Account = Prisma.AccountGetPayload<{
   include: {
@@ -29,26 +48,26 @@ type Account = Prisma.AccountGetPayload<{
   };
 }>;
 
-export type NormalizedAccounts = {
-  accounts: { [key: string]: NormalizedAccount };
-  transactions: { [key: string]: NormalizedTransaction };
-  categories: { [key: string]: NormalizedCategory };
-  categoryGroups: { [key: string]: NormalizedCategoryGroup };
+export type NormalisedAccounts = {
+  accounts: { [key: string]: NormalisedAccount };
+  transactions: { [key: string]: NormalisedTransaction };
+  categories: { [key: string]: NormalisedCategory };
+  categoryGroups: { [key: string]: NormalisedCategoryGroup };
 };
 
-type NormalizedCategory = {
+type NormalisedCategory = {
   id: string;
   userId: string;
   name: string;
   categoryGroupId: string | null;
 };
 
-type NormalizedAccount = Omit<Account, "transactions" | "balance"> & {
+type NormalisedAccount = Omit<Account, "transactions" | "balance"> & {
   transactions: string[];
   balance: number;
 };
 
-type NormalizedTransaction = Omit<
+type NormalisedTransaction = Omit<
   Transaction,
   "category" | "inflow" | "outflow"
 > & {
@@ -57,4 +76,4 @@ type NormalizedTransaction = Omit<
   outflow: number;
 };
 
-type NormalizedCategoryGroup = Omit<CategoryGroup, "categories">;
+type NormalisedCategoryGroup = Omit<CategoryGroup, "categories">;

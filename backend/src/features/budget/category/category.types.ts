@@ -1,27 +1,27 @@
 import { Month, Prisma } from "@prisma/client";
 
-export type NormalizedCategories = {
+export type NormalisedCategories = {
   categoryGroups: {
-    [key: string]: NormalizedCategoryGroup;
+    [key: string]: NormalisedCategoryGroup;
   };
   categories: {
-    [key: string]: NormalizedCategory;
+    [key: string]: NormalisedCategory;
   };
   months: {
-    [key: string]: NormalizedMonth;
+    [key: string]: NormalisedMonth;
   };
 };
 
-type NormalizedCategoryGroup = Omit<CategoryGroup, "categories" | "userId"> & {
+type NormalisedCategoryGroup = Omit<CategoryGroup, "categories" | "userId"> & {
   categories: string[];
 };
 
-type NormalizedCategory = Omit<Category, "months"> & {
+type NormalisedCategory = Omit<Category, "months"> & {
   months: string[];
   categoryGroupId: string;
 };
 
-type NormalizedMonth = Omit<Month, "activity" | "assigned" | "available"> & {
+type NormalisedMonth = Omit<Month, "activity" | "assigned" | "available"> & {
   categoryId: string;
   activity: number;
   assigned: number;

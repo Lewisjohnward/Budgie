@@ -2312,4 +2312,14 @@ describe("RTA allocation", () => {
       // expect(testMonths[1].available).toBe(10);
     });
   });
+
+  describe("Assigning to months", () => {
+    it.todo(
+      "should prevent user from assigning to uncategorised category months",
+    );
+
+    it.todo("should prevent user from assigning to rta category months");
+
+    it.todo("should correctly update the month when assigning");
+  });
 });

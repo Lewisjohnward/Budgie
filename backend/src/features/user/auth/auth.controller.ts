@@ -53,7 +53,7 @@ export const register = async (
       password: passwordHash,
       salt,
     });
-    await categoryService.initialiseUserCategories(user.id);
+    await categoryService.categories.initialiseCategories(user.id);
 
     const accessToken = GenerateAccessToken({
       _id: user.id,

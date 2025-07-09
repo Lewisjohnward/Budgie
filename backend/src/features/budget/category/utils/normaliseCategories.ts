@@ -1,12 +1,13 @@
-import { CategoryGroup, NormalizedCategories } from "../category.types";
+import { CategoryGroup, NormalisedCategories } from "../category.types";
 import { convertDecimalToNumber } from "../../../../shared/utils/convertDecimalToNumber";
 
 export function normaliseCategories(categoryGroups: CategoryGroup[]) {
-  const normalizedData = categoryGroups.reduce(
+  const normalisedData = categoryGroups.reduce(
     (acc, categoryGroup) => {
       acc.categoryGroups[categoryGroup.id] = {
         id: categoryGroup.id,
         name: categoryGroup.name,
+        position: categoryGroup.position,
 
         categories: categoryGroup.categories.map((cat) => cat.id),
       };
@@ -18,6 +19,7 @@ export function normaliseCategories(categoryGroups: CategoryGroup[]) {
           categoryGroupId: cat.categoryGroupId,
           name: cat.name,
           months: cat.months.map((month) => month.id),
+          position: cat.position,
         };
 
         cat.months.forEach((month) => {
@@ -38,7 +40,7 @@ export function normaliseCategories(categoryGroups: CategoryGroup[]) {
       categoryGroups: {},
       categories: {},
       months: {},
-    } as NormalizedCategories,
+    } as NormalisedCategories,
   );
-  return normalizedData;
+  return normalisedData;
 }
