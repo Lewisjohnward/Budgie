@@ -43,6 +43,7 @@ model CategoryGroup {
   id         String     @id @default(uuid())
   userId     String
   name       String
+  position   Int
   categories Category[]
 }
 

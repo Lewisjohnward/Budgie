@@ -18,11 +18,13 @@ export interface TransactionRepository {
     accountId: string,
   ): Promise<Transaction[]>;
 
+  //TODO: THIS TYPING NEEDS IMPROVING
   createTransaction(
     tx: Prisma.TransactionClient,
     transaction: TransactionPayload & { categoryId: string },
   ): Promise<Transaction>;
 
+  //TODO: THIS TYPING NEEDS IMPROVING
   createTransactions(
     tx: Prisma.TransactionClient,
     transactions: Omit<Transaction, "id">[],

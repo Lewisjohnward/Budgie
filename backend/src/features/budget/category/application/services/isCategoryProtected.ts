@@ -5,7 +5,7 @@ import {
   UnableToFindProtectedCategoriesInDBError,
 } from "../../category.errors";
 
-export const checkInheritingCategoryIsNotProtected = async (
+export const isCategoryProtected = async (
   prisma: Prisma.TransactionClient,
   userId: string,
   categoryId: string,
@@ -15,11 +15,14 @@ export const checkInheritingCategoryIsNotProtected = async (
     userId,
   );
 
+  console.log("pcids", protectedCategoryIds);
+
   if (protectedCategoryIds.length === 0)
     throw new UnableToFindProtectedCategoriesInDBError();
 
   const protectedIds = new Set(protectedCategoryIds);
 
+  // TODO: THIS ERROR NAME NEEDS CHANGING
   if (protectedIds.has(categoryId)) {
     throw new AddingTransactionToProtectedCategoryError();
   }

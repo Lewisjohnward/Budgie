@@ -5,8 +5,10 @@ import { CategoryNotFoundError } from "../../category.errors";
 import { categoryGroupService } from "../../../categorygroup/categoryGroup.service";
 import { categoryService } from "../../category.service";
 
-export const updateCategory = async (payload: EditCategoryPayload) => {
+//  TODO: IMPLEMENT CHANGE POSITION
+export const editCategory = async (payload: EditCategoryPayload) => {
   const { categoryId, userId, categoryGroupId, name } = payload;
+  // TODO: PREVENT USER FROM editing PROTECTED CATEGORIES
 
   if (!name && !categoryGroupId) return;
 
@@ -21,13 +23,19 @@ export const updateCategory = async (payload: EditCategoryPayload) => {
       throw new CategoryNotFoundError();
     }
 
+    await categoryService.categories.isCategoryProtected(
+      tx,
+      userId,
+      categoryToUpdate.id,
+    );
+
     if (categoryGroupId) {
       await categoryGroupService.ensureUserOwnsCategoryGroup(
         tx,
         userId,
         categoryGroupId,
       );
-      await categoryGroupService.ensureNotAddingToProtectedCategoryGroup(
+      await categoryGroupService.isProtectedCategoryGroup(
         tx,
         userId,
         categoryGroupId,

@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
-import { categoryGroupRepository } from "../../../../../shared/repository/categoryGroupRepositoryImpl";
 import { NoCategoryGroupFoundError } from "../../categoryGroup.errors";
+import { categoryGroupRepository } from "../../../../../shared/repository/categoryGroupRepositoryImpl";
 
 export const ensureUserOwnsCategoryGroup = async (
   prisma: Prisma.TransactionClient,

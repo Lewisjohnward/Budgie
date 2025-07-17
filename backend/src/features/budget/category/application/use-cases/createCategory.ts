@@ -4,9 +4,9 @@ import { categoryGroupService } from "../../../categorygroup/categoryGroup.servi
 import { CreateCategoryPayload } from "../../category.schema";
 import { categoryService } from "../../category.service";
 
-export const createCategory = async (category: CreateCategoryPayload) => {
+export const createCategory = async (payload: CreateCategoryPayload) => {
   await prisma.$transaction(async (tx) => {
-    const { userId, categoryGroupId, name } = category;
+    const { userId, categoryGroupId, name } = payload;
 
     await categoryGroupService.ensureUserOwnsCategoryGroup(
       tx,
@@ -14,7 +14,7 @@ export const createCategory = async (category: CreateCategoryPayload) => {
       categoryGroupId,
     );
 
-    await categoryGroupService.ensureNotAddingToProtectedCategoryGroup(
+    await categoryGroupService.isProtectedCategoryGroup(
       tx,
       userId,
       categoryGroupId,
@@ -34,7 +34,7 @@ export const createCategory = async (category: CreateCategoryPayload) => {
       );
 
     const newCategory = await categoryRepository.createCategory(tx, {
-      ...category,
+      ...payload,
       position: nextPosition,
     });
 

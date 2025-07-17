@@ -6,14 +6,16 @@ export const createCategorySchema = z.object({
   categoryGroupId: z.string().uuid({ message: "Invalid Category Group ID" }),
 });
 
+// TODO: IS THIS CORRECT IF JUST EDITING POSITION?
 export const editCategorySchema = z.object({
   userId: z.string().uuid(),
   categoryId: z.string().uuid(),
-  categoryGroupId: z.string().uuid(),
+  categoryGroupId: z.string().uuid().optional(),
   name: z
     .string()
     .min(1)
-    .max(50, { message: "Name must be less than 50 characters" }),
+    .max(50, { message: "Name must be less than 50 characters" })
+    .optional(),
 });
 
 export const deleteCategorySchema = z.object({
