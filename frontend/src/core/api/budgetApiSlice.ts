@@ -1,11 +1,10 @@
+import { CategoryContextType } from "@/pages/budget/allocation/Allocation";
 import { AddAccountPayload } from "../types/AccountSchema";
 import { Month } from "../types/MonthSchema";
-import {
-  CategoriesNormalizedData,
-  NormalizedData,
-} from "../types/NormalizedData";
+import { NormalizedData } from "../types/NormalizedData";
 import { DuplicateTransactions } from "../types/TransactionSchema";
 import { apiSlice } from "./apiSlice";
+import { AllocationData } from "../types/Allocation";
 
 export const budgetApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -24,10 +23,11 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Accounts", "Categories"],
     }),
-    deleteAccount: builder.mutation<void, string>({
-      query: (id) => ({
-        url: `budget/account/${id}`,
+    deleteAccount: builder.mutation<void, { accountId: string }>({
+      query: (accountId) => ({
+        url: `budget/account`,
         method: "DELETE",
+        body: accountId,
       }),
       invalidatesTags: ["Accounts", "Categories"],
     }),
@@ -64,7 +64,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Accounts", "Categories"],
     }),
-    getCategories: builder.query<CategoriesNormalizedData, void>({
+    getCategories: builder.query<AllocationData, void>({
       query: () => ({
         url: "budget/category",
         method: "GET",
@@ -81,7 +81,27 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
       },
       invalidatesTags: ["Categories"],
     }),
-    addCategoryGroup: builder.mutation<void, any>({
+    editCategory: builder.mutation<void, CategoryContextType>({
+      query: (category) => {
+        return {
+          url: "budget/category",
+          method: "PATCH",
+          body: category,
+        };
+      },
+      invalidatesTags: ["Categories"],
+    }),
+    deleteCategory: builder.mutation<void, string>({
+      query: (categoryId) => {
+        return {
+          url: "budget/category",
+          method: "DELETE",
+          body: categoryId,
+        };
+      },
+      invalidatesTags: ["Categories", "Accounts"],
+    }),
+    addCategoryGroup: builder.mutation<void, { name: string }>({
       query: (categoryGroup) => {
         return {
           url: "budget/categorygroup",
@@ -114,6 +134,8 @@ export const {
   useEditTransactionMutation,
   useGetCategoriesQuery,
   useAddCategoryMutation,
+  useEditCategoryMutation,
+  useDeleteCategoryMutation,
   useAddCategoryGroupMutation,
   useEditMonthMutation,
   useDuplicateTransactionsMutation,
