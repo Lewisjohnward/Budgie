@@ -28,21 +28,15 @@ import Assign from "./components/assign/Assign";
 import {
   useAddCategoryGroupMutation,
   useAddCategoryMutation,
+  useDeleteCategoryMutation,
+  useEditCategoryMutation,
   useEditMonthMutation,
-  useGetCategoriesQuery,
 } from "@/core/api/budgetApiSlice";
-import { produce } from "immer";
 import useMouseOverTimeout from "@/core/hooks/useMouseOverTimeout";
 import clsx from "clsx";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Progress } from "@/core/components/uiLibrary/progress";
-import {
-  AllocationData,
-  MappedAllocationData,
-  MappedCategoryGroup,
-  MappedMonth,
-} from "@/core/types/Allocation";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
 import {
   Form,
@@ -54,139 +48,16 @@ import {
 import { Category } from "@/core/types/NormalizedData";
 import { CirclePlus } from "lucide-react";
 import { Month, MonthSchema } from "@/core/types/MonthSchema";
-
-function formatDate(dateStr: string) {
-  const date = new Date(dateStr + "-01");
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    year: "numeric",
-  }).format(date);
-}
-
-function mapAllocationData(data: AllocationData): MappedAllocationData {
-  const mappedData = produce(data, (draft) => {
-    Object.values(draft.months).forEach((month) => {
-      (month as MappedMonth).current = false;
-    });
-    Object.values(draft.categoryGroups).forEach((group) => {
-      (group as MappedCategoryGroup).open = true;
-    });
-  });
-
-  return mappedData as MappedAllocationData;
-}
-
-function useAllocation() {
-  const { data } = useGetCategoriesQuery();
-  const [createCategory, { isLoading, isSuccess }] = useAddCategoryMutation();
-  const [allocationData, setAllocationData] = useState(mapAllocationData(data));
-  const [monthSelector, setMonthSelector] = useState(0);
-
-  useEffect(() => {
-    setAllocationData(mapAllocationData(data));
-  }, [data]);
-
-  useEffect(() => { }, [data]);
-
-  const uniqueMonths = new Set(
-    Object.values(allocationData.months).map((m) => m.month.slice(0, 7)),
-  );
-  const formattedMonths = [...uniqueMonths].map((month) => formatDate(month));
-  const currentMonth = formattedMonths[monthSelector];
-
-  const maxMonthSelector = uniqueMonths.size;
-  const minMonthSelector = 0;
-
-  const { categoryGroups, categories, months } = allocationData;
-  const inflowGroupId = Object.keys(categoryGroups).find(
-    (key) => categoryGroups[key].name === "Inflow",
-  );
-
-  const [assignId] = categoryGroups[inflowGroupId!].categories;
-
-  const assignMonthIds = allocationData.categories[assignId].months;
-  const assignableAmount =
-    allocationData.months[assignMonthIds[monthSelector]].available;
-
-  const derivedCategoryGroups = Object.values(
-    Object.fromEntries(
-      Object.entries(categoryGroups).filter(([key]) => key !== inflowGroupId),
-    ),
-  );
-
-  const categoriesSelector = [
-    "All",
-    "Underfunded",
-    "Money available",
-    "Snoozed",
-  ];
-
-  const nextMonth = () =>
-    setMonthSelector((prev) => (prev + 1 < maxMonthSelector ? prev + 1 : prev));
-  const prevMonth = () =>
-    setMonthSelector((prev) =>
-      prev - 1 >= minMonthSelector ? prev - 1 : prev,
-    );
-
-  const handleAddCategory = (category: AddCategoryFormData) => {
-    createCategory(category);
-  };
-
-  const atLeastOneGroupOpen = Object.values(derivedCategoryGroups).some(
-    (group) => group.open === true,
-  );
-
-  const expandAllCategoryGroups = () => {
-    setAllocationData((prev) =>
-      produce(prev, (draft) => {
-        Object.values(draft.categoryGroups).forEach((group) => {
-          group.open = !atLeastOneGroupOpen;
-        });
-      }),
-    );
-  };
-
-  const expandCategoryGroup = (groupId: string) => {
-    setAllocationData((prev) =>
-      produce(prev, (draft) => {
-        draft.categoryGroups[groupId].open =
-          !draft.categoryGroups[groupId].open;
-      }),
-    );
-  };
-
-  return {
-    handleAddCategory,
-    monthSelector,
-    categoriesSelector,
-    categoryGroups: derivedCategoryGroups,
-    categories,
-    currentMonth,
-    nextMonth,
-    prevMonth,
-    expandAllCategoryGroups,
-    expandCategoryGroup,
-    atLeastOneGroupOpen,
-    months,
-    assignableAmount,
-    assignId,
-  };
-}
+import { AddCategoryFormData, AddCategorySchema } from "./types/types";
+import { useAllocation } from "./hooks/useAllocation";
 
 export default function Allocation() {
   const {
+    month,
     categoriesSelector,
-    monthSelector,
     categoryGroups,
     categories,
-    currentMonth,
-    nextMonth,
-    prevMonth,
-    handleAddCategory,
-    expandAllCategoryGroups,
-    expandCategoryGroup,
-    atLeastOneGroupOpen,
+    expandCategoryGroups,
     months,
     assignableAmount,
     assignId,
@@ -197,9 +68,10 @@ export default function Allocation() {
       <HeaderContainer>
         <div className="flex gap-8 py-4">
           <MonthSelector
-            prevMonth={prevMonth}
-            nextMonth={nextMonth}
-            month={currentMonth}
+            prevMonth={month.prev}
+            nextMonth={month.next}
+            month={month.current}
+            selectCurrentMonth={month.selectCurrentMonth}
           />
           <AssignedMoney amount={assignableAmount} />
         </div>
@@ -221,11 +93,13 @@ export default function Allocation() {
               <button>
                 <ChevronDownIcon
                   className={clsx(
-                    atLeastOneGroupOpen ? "" : "-rotate-90",
+                    expandCategoryGroups.atLeastOneGroupOpen
+                      ? ""
+                      : "-rotate-90",
                     `h-4 w-4 ${darkBlueText}`,
                   )}
                   // onClick={() => toggleDisplayCategories(undefined)}
-                  onClick={expandAllCategoryGroups}
+                  onClick={expandCategoryGroups.expandAllCategoryGroups}
                 />
               </button>
             ) : null}
@@ -236,15 +110,14 @@ export default function Allocation() {
               <Container key={categoryGroup.id}>
                 <CategoryGroupContainer>
                   <ExpandCategoryGroup
-                    onClick={() => expandCategoryGroup(categoryGroup.id)}
+                    onClick={() =>
+                      expandCategoryGroups.expandCategoryGroup(categoryGroup.id)
+                    }
                     open={categoryGroup.open}
                   />
                   <Checkbox className="size-3 rounded-[2px] shadow-none" />
                   <CategoryGroupName>{categoryGroup.name}</CategoryGroupName>
-                  <AddCategoryPopover
-                    id={categoryGroup.id}
-                    handleAddCategory={handleAddCategory}
-                  >
+                  <AddCategoryPopover id={categoryGroup.id}>
                     <AddCircleIcon
                       className={`${darkBlueText} invisible group-hover:visible`}
                     />
@@ -261,7 +134,7 @@ export default function Allocation() {
                         assigned,
                         available,
                         id: monthId,
-                      } = months[category.months[monthSelector]];
+                      } = months[category.months[month.index]];
 
                       return (
                         <CategoryContextMenu
@@ -355,10 +228,10 @@ function AddCategoryGroupButton() {
 
 const CategoryContextSchema = z.object({
   name: z.string().min(1, { message: "Category requires a name" }),
-  id: z.string().uuid(),
+  categoryId: z.string().uuid(),
 });
 
-type CategoryContextType = z.infer<typeof CategoryContextSchema>;
+export type CategoryContextType = z.infer<typeof CategoryContextSchema>;
 
 function CategoryContextMenu({
   category,
@@ -368,10 +241,13 @@ function CategoryContextMenu({
   children: ReactNode;
 }) {
   const [contextOpen, setContextOpen] = useState(false);
+  const [editCategory] = useEditCategoryMutation();
+  const [deleteCategory] = useDeleteCategoryMutation();
+
   const form = useForm<CategoryContextType>({
     defaultValues: {
       name: category.name,
-      id: category.id,
+      categoryId: category.id,
     },
     resolver: zodResolver(CategoryContextSchema),
   });
@@ -383,8 +259,14 @@ function CategoryContextMenu({
   };
 
   const onSubmit = (updatedCategory: CategoryContextType) => {
-    console.log(updatedCategory);
-    close();
+    editCategory(updatedCategory);
+    closeContextMenu();
+    reset();
+  };
+
+  const handleDelete = (categoryId: string) => {
+    console.log("cat id", categoryId);
+    deleteCategory({ categoryId });
   };
 
   const openContextMenu = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -435,7 +317,7 @@ function CategoryContextMenu({
                   </Button>
                   <Button
                     type="button"
-                    onClick={() => { }}
+                    onClick={() => handleDelete(category.id)}
                     className="bg-red-200 text-red-400 hover:text-white"
                     variant={"destructive"}
                   >
@@ -514,23 +396,15 @@ function CategoryGroupName({ children }: { children: ReactNode }) {
 
 ///// Add Category
 
-const AddCategorySchema = z.object({
-  categoryGroupId: z.string(),
-  name: z.string().min(1),
-});
-
-type AddCategoryFormData = z.infer<typeof AddCategorySchema>;
-
 function AddCategoryPopover({
   id,
-  handleAddCategory,
   children,
 }: {
   id: string;
-  handleAddCategory: (data: AddCategoryFormData) => void;
   children: ReactNode;
 }) {
   const [displayPopover, setDisplayPopover] = useState(false);
+  const [createCategory] = useAddCategoryMutation();
 
   const {
     register,
@@ -552,7 +426,7 @@ function AddCategoryPopover({
   };
 
   const onSubmit = (data: AddCategoryFormData) => {
-    handleAddCategory(data);
+    createCategory(data);
     togglePopover();
     reset();
   };
