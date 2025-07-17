@@ -1,11 +1,11 @@
 import { Prisma } from "@prisma/client";
-import { categoryGroupRepository } from "../../../../../shared/repository/categoryGroupRepositoryImpl";
 import {
   AddingCategoryToProtectedCategoryGroupError,
   UnableToFindProtectedCategoriesInDBError,
 } from "../../categoryGroup.errors";
+import { categoryGroupRepository } from "../../../../../shared/repository/categoryGroupRepositoryImpl";
 
-export const ensureNotAddingToProtectedCategoryGroup = async (
+export const isProtectedCategoryGroup = async (
   prisma: Prisma.TransactionClient,
   userId: string,
   categoryGroupId: string,
@@ -18,6 +18,7 @@ export const ensureNotAddingToProtectedCategoryGroup = async (
 
   const protectedGroupIds = new Set(protectedCategoryGroupIds);
 
+  //TODO: THIS ERROR NEEDS A NAME CHANGE
   if (protectedGroupIds.has(categoryGroupId)) {
     throw new AddingCategoryToProtectedCategoryGroupError();
   }

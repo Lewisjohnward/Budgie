@@ -1,7 +1,7 @@
 import { createCategory } from "./application/use-cases/createCategory";
 import { deleteCategory } from "./application/use-cases/deleteCategory";
+import { editCategory } from "./application/use-cases/editCategory";
 import { selectCategories } from "./application/use-cases/selectCategories";
-import { updateCategory } from "./application/use-cases/updateCategory";
 import {
   CreateCategoryPayload,
   DeleteCategoryPayload,
@@ -17,8 +17,8 @@ export const categoryUseCase = {
     return createCategory(payload);
   },
 
-  updateCategory: async (payload: EditCategoryPayload) => {
-    return updateCategory(payload);
+  editCategory: async (payload: EditCategoryPayload) => {
+    return editCategory(payload);
   },
 
   deleteCategory: async (payload: DeleteCategoryPayload) => {

@@ -1,20 +1,20 @@
 import { Request, Response, NextFunction } from "express";
 import { categoryGroupUseCase } from "./categorygroup.useCase";
-import { CategoryGroupSchema } from "./categorygroup.schema";
+import {
+  createCategoryGroupSchema,
+  deleteCategoryGroupSchema,
+  editCategoryGroupSchema,
+} from "./categorygroup.schema";
 
 export const addCategoryGroup = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  const { name } = req.body;
-
-  // TODO: when adding a category need to add current month and next month
-
   try {
-    const validatedCategoryGroup = CategoryGroupSchema.parse({
+    const validatedCategoryGroup = createCategoryGroupSchema.parse({
       userId: req.user!._id,
-      name,
+      ...req.body,
     });
 
     await categoryGroupUseCase.createCategoryGroup(validatedCategoryGroup);
@@ -22,7 +22,6 @@ export const addCategoryGroup = async (
   } catch (error) {
     next(error);
   }
-  return;
 };
 
 export const editCategoryGroup = async (
@@ -30,7 +29,17 @@ export const editCategoryGroup = async (
   res: Response,
   next: NextFunction,
 ) => {
-  res.sendStatus(200);
+  try {
+    const payload = editCategoryGroupSchema.parse({
+      userId: req.user!._id,
+      ...req.body,
+    });
+
+    await categoryGroupUseCase.editCategoryGroup(payload);
+    res.sendStatus(200);
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const deleteCategoryGroup = async (
@@ -38,5 +47,15 @@ export const deleteCategoryGroup = async (
   res: Response,
   next: NextFunction,
 ) => {
-  res.sendStatus(200);
+  try {
+    const payload = deleteCategoryGroupSchema.parse({
+      userId: req.user!._id,
+      ...req.body,
+    });
+
+    await categoryGroupUseCase.deleteCategoryGroup(payload);
+    res.sendStatus(200);
+  } catch (error) {
+    next(error);
+  }
 };

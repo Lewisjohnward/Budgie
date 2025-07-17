@@ -24,7 +24,7 @@ export const categoryRepository: CategoryRepository = {
   },
 
   getProtectedCategoryIds: async (tx, userId) => {
-    const protectedCategories = await tx.categoryGroup.findMany({
+    const protectedCategories = await tx.category.findMany({
       where: { userId, name: { in: [...PROTECTED_CATEGORY_NAMES] } },
     });
     return protectedCategories.map((c) => c.id);
@@ -121,7 +121,7 @@ export const categoryRepository: CategoryRepository = {
     });
   },
 
-  getMonth: async function (
+  getMonth: async function(
     tx: Prisma.TransactionClient,
     userId: string,
     monthId: string,

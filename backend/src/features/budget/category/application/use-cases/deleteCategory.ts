@@ -23,6 +23,12 @@ export const deleteCategory = async ({
       throw new CategoryNotFoundError();
     }
 
+    await categoryService.categories.isCategoryProtected(
+      tx,
+      userId,
+      categoryToDelete.id,
+    );
+
     const transactions =
       await transactionRepository.getTransactionsByCategoryId(tx, categoryId);
 
@@ -48,7 +54,7 @@ export const deleteCategory = async ({
         inheritingCategoryId,
       );
 
-      await categoryService.categories.checkInheritingCategoryIsNotProtected(
+      await categoryService.categories.isCategoryProtected(
         tx,
         userId,
         inheritingCategoryId,

@@ -20,7 +20,7 @@ export class AddingToCategoryGroupNotOwnedByUserError extends HttpError {
 
 export class CategoryNotFoundError extends HttpError {
   constructor() {
-    super("Category not found or not owned by user.", 404);
+    super("Category not found", 404);
   }
 }
 
