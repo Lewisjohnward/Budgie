@@ -68,12 +68,7 @@ export default function Allocation() {
     <AllocationContainer>
       <HeaderContainer>
         <div className="flex gap-8 py-4">
-          <MonthSelector
-            prevMonth={month.prev}
-            nextMonth={month.next}
-            month={month.current}
-            selectCurrentMonth={month.selectCurrentMonth}
-          />
+          <MonthSelector month={month} />
           <AssignedMoney amount={assignableAmount} />
         </div>
         <CategorySelectorContainer>
