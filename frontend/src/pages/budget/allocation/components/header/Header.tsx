@@ -11,10 +11,12 @@ export function MonthSelector({
   prevMonth,
   nextMonth,
   month,
+  selectCurrentMonth,
 }: {
   prevMonth: () => void;
   nextMonth: () => void;
   month: string;
+  selectCurrentMonth: () => void;
 }) {
   return (
     <div className="flex flex-grow gap-4 items-center">
@@ -35,6 +37,7 @@ export function MonthSelector({
       </div>
       <button
         className={`px-2 py-1 bg-sky-950/30 rounded hover:${darkBlueBgHoverDark} hover:text-white`}
+        onClick={selectCurrentMonth}
       >
         Today
       </button>
