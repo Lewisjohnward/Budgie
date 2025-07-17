@@ -50,6 +50,7 @@ import { CirclePlus } from "lucide-react";
 import { Month, MonthSchema } from "@/core/types/MonthSchema";
 import { AddCategoryFormData, AddCategorySchema } from "./types/types";
 import { useAllocation } from "./hooks/useAllocation";
+import { calculateBarColors } from "./utils/calculateBarColors";
 
 export default function Allocation() {
   const {
@@ -148,9 +149,8 @@ export default function Allocation() {
                                 <CategoryNameContainer>
                                   <CategoryName>{name}</CategoryName>
                                   <ProgressBar
-                                    assigned={0}
                                     activity={activity}
-                                    available={0}
+                                      available={available}
                                   />
                                 </CategoryNameContainer>
                                 <EditAssigned
@@ -694,35 +694,13 @@ const EditAssigned = forwardRef<
 });
 
 function ProgressBar({
-  assigned,
   activity,
   available,
 }: {
-  assigned: number;
   activity: number;
   available: number;
 }) {
-  // If assigned === available and activity === 0, solid green
-  //
-
-  // if assigned ===  0 full gray
-  // overspent - red on the right
-  // partially spend - hashed line until remaining/overspent
-  // fully funded full green
-
-  // const spent = (activity / assigned) * 100;
-  // let availablet = 100 - spent;
-  // if (spent > 100) {
-  //   overspent = spent - 100; // Overspent percentage
-  // } else {
-  //   overspent = 0; // No overspending
-  // }
-
-  const subCategory = {
-    spent: 33,
-    available: 33,
-    overspent: 34,
-  };
+  const values = calculateBarColors({ activity, available });
 
   return (
     <div className="relative h-[5px] border border-gray-400 rounded-sm">
@@ -730,15 +708,15 @@ function ProgressBar({
       <div className="absolute top-0 left-0 h-full w-full flex rounded">
         <Progress
           className="h-full bg-green-200 rounded-r"
-          style={{ width: `${subCategory?.spent}%` }}
+          style={{ width: `${values.lightGreen}%` }}
         />
         <Progress
           className="h-full bg-green-400 rounded-l-[3px]  rounded-r-[3px]"
-          style={{ width: `${subCategory?.available}%` }}
+          style={{ width: `${values.green}%` }}
         />
         <Progress
           className="h-full bg-red-400 rounded-l-none rounded-r"
-          style={{ width: `${subCategory?.overspent}%` }}
+          style={{ width: `${values.red}%` }}
         />
       </div>
     </div>
