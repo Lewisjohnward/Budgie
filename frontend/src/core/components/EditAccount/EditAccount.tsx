@@ -73,7 +73,8 @@ export function EditAccount() {
 
   const handleDeleteAccount = async () => {
     try {
-      if (editingAccount != null) await deleteAccount(editingAccount.id);
+      if (editingAccount != null)
+        await deleteAccount({ accountId: editingAccount.id });
     } catch (error) {
       console.log("there has been an error", error);
     }
