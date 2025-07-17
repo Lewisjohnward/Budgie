@@ -1,43 +1,46 @@
-import { useGetCategoriesQuery } from "@/core/api/budgetApiSlice";
 import { TickIcon } from "@/core/icons/icons";
-import {
-  darkBlueBgHover,
-  darkBlueBgHoverDark,
-  darkBlueText,
-} from "@/core/theme/colors";
+import { darkBlueBgHover, darkBlueText } from "@/core/theme/colors";
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
+import { MonthType } from "../../hooks/useMonthSelector";
 
-export function MonthSelector({
-  prevMonth,
-  nextMonth,
-  month,
-  selectCurrentMonth,
-}: {
-  prevMonth: () => void;
-  nextMonth: () => void;
-  month: string;
-  selectCurrentMonth: () => void;
-}) {
+export function MonthSelector({ month }: { month: MonthType }) {
   return (
     <div className="flex flex-grow gap-4 items-center">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         <button
-          onClick={prevMonth}
-          className={`hover:${darkBlueBgHover}  rounded-xl w-6 h-6`}
+          onClick={month.prev}
+          disabled={!month.canGoPrev}
+          className={`rounded-xl w-6 h-6 ${
+            !month.canGoPrev
+              ? "opacity-50"
+              : `hover:${darkBlueBgHover} cursor-pointer`
+          }`}
         >
           <ArrowLeftIcon className={`${darkBlueText}`} />
         </button>
-        <p className="min-w-max text-xl font-semibold">{month}</p>
+        <p className="w-24 text-center text-xl font-semibold">
+          {month.current}
+        </p>
         <button
-          onClick={nextMonth}
-          className={`hover:${darkBlueBgHover} rounded-xl w-6 h-6`}
+          onClick={month.next}
+          disabled={!month.canGoNext}
+          className={`rounded-xl w-6 h-6 ${
+            !month.canGoNext
+              ? "opacity-50"
+              : `hover:${darkBlueBgHover} cursor-pointer`
+          }`}
         >
           <ArrowRightIcon className={`${darkBlueText}`} />
         </button>
       </div>
       <button
-        className={`px-2 py-1 bg-sky-950/30 rounded hover:${darkBlueBgHoverDark} hover:text-white`}
-        onClick={selectCurrentMonth}
+        disabled={month.isCurrentMonth}
+        className={`px-2 py-1 rounded ${
+          month.isCurrentMonth
+            ? "opacity-0"
+            : `bg-sky-950/30 hover:${darkBlueBgHover} hover:text-white cursor-pointer`
+        }`}
+        onClick={month.selectCurrentMonth}
       >
         Today
       </button>

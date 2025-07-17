@@ -1,8 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@/core/hooks/reduxHooks";
 import { month, selectMonthIndex } from "../slices/monthSlice";
 import { formatDate } from "../utils/dateUtils";
-
-// TODO: Persist Month Selection Across Sessions
+import { useEffect } from "react";
 
 export function useMonthSelector(months: string[]) {
   const dispatch = useAppDispatch();
@@ -33,13 +32,19 @@ export function useMonthSelector(months: string[]) {
       ),
     );
 
+  useEffect(() => {
+    selectCurrentMonth();
+  }, []);
+
   const current = formattedMonths[monthState.month] ?? "";
 
   const canGoNext = monthState.month < months.length - 1;
   const canGoPrev = monthState.month > 0;
+  const isCurrentMonth = currentMonthIndex === monthState.month;
 
   return {
     index: monthState.month,
+    isCurrentMonth,
     current,
     next,
     prev,
@@ -48,3 +53,5 @@ export function useMonthSelector(months: string[]) {
     canGoPrev,
   };
 }
+
+export type MonthType = ReturnType<typeof useMonthSelector>;
