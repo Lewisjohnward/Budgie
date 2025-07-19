@@ -45,6 +45,8 @@ type CategoryGroup = {
   categories: string[];
 };
 
+export type CategoryGroupContext = Omit<CategoryGroup, "categories">;
+
 export type CategoryT = {
   id: string;
   userId: string;

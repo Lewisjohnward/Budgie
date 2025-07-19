@@ -4,6 +4,8 @@ import { useMonthSelector } from "./useMonthSelector";
 import { useMappedAllocationData } from "./useMappedAllocationData";
 import { useExpandableCategoryGroups } from "./useExpandableCategoryGroups";
 import { useInflowCategory } from "./useInflowCategory";
+import { MappedCategoryGroup } from "@/core/types/Allocation";
+import { useUncategorisedCategory } from "./useUncategorisedCategory";
 
 export function useAllocation() {
   const { data } = useGetCategoriesQuery();
@@ -18,18 +20,42 @@ export function useAllocation() {
 
   const { categories, months } = allocationData;
 
-  const { inflowGroupId, assignId, assignableAmount } = useInflowCategory(
+  const { inflowGroupId, assignableAmount } = useInflowCategory(
     allocationData,
     month.index,
   );
 
-  const derivedGroups = Object.values(
-    Object.fromEntries(
-      Object.entries(allocationData.categoryGroups).filter(
-        ([key]) => key !== inflowGroupId,
-      ),
-    ),
+  const uncategorisedGroup = useUncategorisedCategory(
+    allocationData,
+    month.index,
   );
+
+  const derivedGroups: MappedCategoryGroup[] = Object.entries(
+    allocationData.categoryGroups,
+  )
+    .filter(([key]) => key !== inflowGroupId && key !== uncategorisedGroup.id)
+    .map(([, group]) => {
+      const assigned = group.categories.reduce((sum, categoryId) => {
+        const category = allocationData.categories[categoryId];
+        const m = allocationData.months[category.months[month.index]];
+        return sum + m.assigned;
+      }, 0);
+
+      const activity = group.categories.reduce((sum, categoryId) => {
+        const category = allocationData.categories[categoryId];
+        const m = allocationData.months[category.months[month.index]];
+        return sum + m.activity;
+      }, 0);
+
+      const available = assigned + activity;
+
+      return {
+        ...group,
+        assigned: assigned.toFixed(2),
+        activity: activity.toFixed(2),
+        available: available.toFixed(2),
+      };
+    });
 
   const expandCategoryGroups = useExpandableCategoryGroups(
     derivedGroups,
@@ -51,6 +77,6 @@ export function useAllocation() {
     expandCategoryGroups,
     months,
     assignableAmount,
-    assignId,
+    uncategorisedGroup,
   };
 }

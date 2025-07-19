@@ -82,16 +82,16 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["Categories"],
     }),
     editCategory: builder.mutation<void, CategoryContextType>({
-      query: (category) => {
+      query: (editedCategory) => {
         return {
           url: "budget/category",
           method: "PATCH",
-          body: category,
+          body: editedCategory,
         };
       },
-      invalidatesTags: ["Categories"],
+      invalidatesTags: ["Categories", "Accounts"],
     }),
-    deleteCategory: builder.mutation<void, string>({
+    deleteCategory: builder.mutation<void, { categoryId: string }>({
       query: (categoryId) => {
         return {
           url: "budget/category",
@@ -107,6 +107,29 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
           url: "budget/categorygroup",
           method: "POST",
           body: categoryGroup,
+        };
+      },
+      invalidatesTags: ["Categories"],
+    }),
+    deleteCategoryGroup: builder.mutation<void, { categoryGroupId: string }>({
+      query: (categoryGroup) => {
+        return {
+          url: "budget/categorygroup",
+          method: "DELETE",
+          body: categoryGroup,
+        };
+      },
+      invalidatesTags: ["Categories"],
+    }),
+    editCategoryGroup: builder.mutation<
+      void,
+      { categoryGroupId: string; name: string }
+    >({
+      query: (updatedCategoryGroup) => {
+        return {
+          url: "budget/categorygroup",
+          method: "PATCH",
+          body: updatedCategoryGroup,
         };
       },
       invalidatesTags: ["Categories"],
@@ -137,6 +160,8 @@ export const {
   useEditCategoryMutation,
   useDeleteCategoryMutation,
   useAddCategoryGroupMutation,
+  useDeleteCategoryGroupMutation,
+  useEditCategoryGroupMutation,
   useEditMonthMutation,
   useDuplicateTransactionsMutation,
 } = budgetApiSlice;
