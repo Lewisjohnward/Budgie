@@ -1,23 +1,6 @@
 import { AssignedMoney, MonthSelector } from "./components/header/Header";
 import { AddCircleIcon, ChevronDownIcon } from "@/core/icons/icons";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/core/components/uiLibrary/popover";
-import {
-  forwardRef,
-  ReactNode,
-  RefObject,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from "react";
-import { PopoverArrow, PopoverPortal } from "@radix-ui/react-popover";
-import { Input } from "@/core/components/uiLibrary/input";
-import { Button } from "@/core/components/uiLibrary/button";
-import { z } from "zod";
+import { ReactNode, useRef } from "react";
 import {
   bgGray,
   borderBottom,
@@ -25,32 +8,20 @@ import {
   darkBlueText,
 } from "@/core/theme/colors";
 import Assign from "./components/assign/Assign";
-import {
-  useAddCategoryGroupMutation,
-  useAddCategoryMutation,
-  useDeleteCategoryMutation,
-  useEditCategoryMutation,
-  useEditMonthMutation,
-} from "@/core/api/budgetApiSlice";
 import useMouseOverTimeout from "@/core/hooks/useMouseOverTimeout";
 import clsx from "clsx";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Progress } from "@/core/components/uiLibrary/progress";
-import { Checkbox } from "@/core/components/uiLibrary/checkbox";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/core/components/uiLibrary/form";
-import { Category } from "@/core/types/NormalizedData";
-import { CirclePlus } from "lucide-react";
-import { Month, MonthSchema } from "@/core/types/MonthSchema";
-import { AddCategoryFormData, AddCategorySchema } from "./types/types";
 import { useAllocation } from "./hooks/useAllocation";
-import { calculateBarColors } from "./utils/calculateBarColors";
+import { CategoryContextMenu } from "./contextMenus/CategoryContextMenu";
+import { Category } from "@/core/types/NormalizedData";
+import { CategoryGroupContextMenu } from "./contextMenus/CategoryGroupContextMenu";
+import { AddCategoryPopover } from "./popovers/AddCategoryPopover";
+import { AddCategoryGroupPopover } from "./popovers/AddCategoryGroupPopover";
+import { ProgressBar } from "./components/categories/ProgressBar";
+import { EditAssigned } from "./components/categories/EditAssigned";
+import { Available } from "./components/categories/Available";
+import { Checkbox } from "@/core/components/uiLibrary/checkbox";
+import { MappedMonth } from "@/core/types/Allocation";
+import { CirclePlus } from "lucide-react";
 
 export default function Allocation() {
   const {
@@ -61,13 +32,13 @@ export default function Allocation() {
     expandCategoryGroups,
     months,
     assignableAmount,
-    assignId,
+    uncategorisedGroup,
   } = useAllocation();
 
   return (
     <AllocationContainer>
       <HeaderContainer>
-        <div className="flex gap-8 py-4">
+        <div className="flex gap-16 py-4">
           <MonthSelector month={month} />
           <AssignedMoney amount={assignableAmount} />
         </div>
@@ -79,7 +50,7 @@ export default function Allocation() {
         </CategorySelectorContainer>
       </HeaderContainer>
 
-      <BodyContainer>
+      <FlexContainer>
         <WideCategoriesContainer>
           <AddCategoryGroupPopover>
             <AddCategoryGroupButton />
@@ -94,75 +65,71 @@ export default function Allocation() {
                       : "-rotate-90",
                     `h-4 w-4 ${darkBlueText}`,
                   )}
-                  // onClick={() => toggleDisplayCategories(undefined)}
                   onClick={expandCategoryGroups.expandAllCategoryGroups}
                 />
               </button>
             ) : null}
             <div className={`${darkBlueText} font-thin`}>CATEGORY</div>
           </div>
+
+          <CategoriesContainer display={uncategorisedGroup.display}>
+            <CategoryGridRow>
+              <EmptyCell />
+              <div className="flex items-center gap-4">
+                <Checkbox className="size-3 rounded-[2px] shadow-none" />
+                <p>Uncategorised Transactions</p>
+              </div>
+              <p className="px-[5px] text-right">-</p>
+              <CategoryCell>
+                {uncategorisedGroup.month.activity.toFixed(2)}
+              </CategoryCell>
+              <CategoryCell>
+                {uncategorisedGroup.month.available.toFixed(2)}
+              </CategoryCell>
+            </CategoryGridRow>
+          </CategoriesContainer>
+
           {categoryGroups.map((categoryGroup) => {
             return (
               <Container key={categoryGroup.id}>
-                <CategoryGroupContainer>
-                  <ExpandCategoryGroup
-                    onClick={() =>
-                      expandCategoryGroups.expandCategoryGroup(categoryGroup.id)
-                    }
-                    open={categoryGroup.open}
-                  />
-                  <Checkbox className="size-3 rounded-[2px] shadow-none" />
-                  <CategoryGroupName>{categoryGroup.name}</CategoryGroupName>
-                  <AddCategoryPopover id={categoryGroup.id}>
-                    <AddCircleIcon
-                      className={`${darkBlueText} invisible group-hover:visible`}
-                    />
-                  </AddCategoryPopover>
-                </CategoryGroupContainer>
+                <CategoryGroupContextMenu categoryGroup={categoryGroup}>
+                  <div className="group bg-gray-400/20">
+                    <CategoryGridRow>
+                      <ExpandCategoryGroupButton
+                        onClick={() =>
+                          expandCategoryGroups.expandCategoryGroup(
+                            categoryGroup.id,
+                          )
+                        }
+                        open={categoryGroup.open}
+                      />
+                      <div className="w-3/4 flex min-w-0 items-center gap-2">
+                        <Checkbox className="size-3 rounded-[2px] shadow-none" />
+                        <CategoryGroupName>
+                          {categoryGroup.name}
+                        </CategoryGroupName>
+                        <AddCategoryPopover id={categoryGroup.id}>
+                          <AddCircleIcon
+                            className={`${darkBlueText} invisible group-hover:visible`}
+                          />
+                        </AddCategoryPopover>
+                      </div>
+                      <CategoryCell>{categoryGroup.assigned}</CategoryCell>
+                      <CategoryCell>{categoryGroup.activity}</CategoryCell>
+                      <CategoryCell>{categoryGroup.available}</CategoryCell>
+                    </CategoryGridRow>
+                  </div>
+                </CategoryGroupContextMenu>
 
                 <CategoriesContainer display={categoryGroup.open}>
-                  {categoryGroup.categories.length > 0
-                    ? categoryGroup.categories.map((cat) => {
-                      const category = categories[cat];
-                      const { id, name } = category;
-                      const {
-                        activity,
-                        assigned,
-                        available,
-                        id: monthId,
-                      } = months[category.months[month.index]];
+                  {categoryGroup.categories.map((cat) => {
+                    const category = categories[cat];
+                    const m = months[category.months[month.index]];
 
-                      return (
-                        <CategoryContextMenu
-                          key={monthId}
-                          category={category}
-                        >
-                          <CategoryContent>
-                            {(ref) => (
-                              <>
-                                <Checkbox className="size-3 rounded-[2px] shadow-none" />
-                                <CategoryNameContainer>
-                                  <CategoryName>{name}</CategoryName>
-                                  <ProgressBar
-                                    activity={activity}
-                                      available={available}
-                                  />
-                                </CategoryNameContainer>
-                                <EditAssigned
-                                  ref={ref}
-                                  assigned={assigned}
-                                  monthId={monthId}
-                                  assignId={assignId}
-                                />
-                                <Activity value={activity} />
-                                <Available value={available} />
-                              </>
-                            )}
-                          </CategoryContent>
-                        </CategoryContextMenu>
-                      );
-                    })
-                    : null}
+                    return (
+                      <CategoryRow key={m.id} category={category} month={m} />
+                    );
+                  })}
                 </CategoriesContainer>
               </Container>
             );
@@ -171,7 +138,7 @@ export default function Allocation() {
         <AssignContainer>
           <Assign />
         </AssignContainer>
-      </BodyContainer>
+      </FlexContainer>
     </AllocationContainer>
   );
 }
@@ -180,7 +147,7 @@ function AllocationContainer({ children }: { children: ReactNode }) {
   return <div className="flex-grow flex flex-col">{children}</div>;
 }
 
-function BodyContainer({ children }: { children: ReactNode }) {
+function FlexContainer({ children }: { children: ReactNode }) {
   return <div className="flex">{children}</div>;
 }
 
@@ -221,338 +188,7 @@ function AddCategoryGroupButton() {
   );
 }
 
-const CategoryContextSchema = z.object({
-  name: z.string().min(1, { message: "Category requires a name" }),
-  categoryId: z.string().uuid(),
-});
-
-export type CategoryContextType = z.infer<typeof CategoryContextSchema>;
-
-function CategoryContextMenu({
-  category,
-  children,
-}: {
-  category: Category;
-  children: ReactNode;
-}) {
-  const [contextOpen, setContextOpen] = useState(false);
-  const [editCategory] = useEditCategoryMutation();
-  const [deleteCategory] = useDeleteCategoryMutation();
-
-  const form = useForm<CategoryContextType>({
-    defaultValues: {
-      name: category.name,
-      categoryId: category.id,
-    },
-    resolver: zodResolver(CategoryContextSchema),
-  });
-
-  const { reset, control, handleSubmit } = form;
-
-  const handleOpen = (open: boolean) => {
-    if (!open) reset();
-  };
-
-  const onSubmit = (updatedCategory: CategoryContextType) => {
-    editCategory(updatedCategory);
-    closeContextMenu();
-    reset();
-  };
-
-  const handleDelete = (categoryId: string) => {
-    console.log("cat id", categoryId);
-    deleteCategory({ categoryId });
-  };
-
-  const openContextMenu = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    e.preventDefault();
-    setContextOpen(true);
-  };
-
-  const closeContextMenu = () => {
-    setContextOpen(false);
-  };
-
-  return (
-    <div onContextMenu={openContextMenu}>
-      <Popover open={contextOpen} onOpenChange={handleOpen}>
-        <PopoverTrigger className="w-full text-left">{children}</PopoverTrigger>
-        <PopoverContent
-          onPointerDownOutside={closeContextMenu}
-          className="w-96 px-4 py-2 space-y-2"
-        >
-          <Form {...form}>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input
-                        className="focus-visible:ring-sky-700 shadow-none"
-                        placeholder="New category name"
-                        autoComplete="off"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-center" />
-                  </FormItem>
-                )}
-              />
-              <div className="flex justify-between">
-                <div className="space-x-2">
-                  <Button
-                    type="button"
-                    onClick={() => { }}
-                    className="bg-blue-200/60 text-blue-400 hover:bg-blue-200"
-                    variant={"destructive"}
-                  >
-                    Hide
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => handleDelete(category.id)}
-                    className="bg-red-200 text-red-400 hover:text-white"
-                    variant={"destructive"}
-                  >
-                    Delete
-                  </Button>
-                </div>
-                <div className="space-x-2">
-                  <Button
-                    type="button"
-                    onClick={close}
-                    className="bg-blue-400"
-                    variant={"destructive"}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="bg-blue-600"
-                    variant={"destructive"}
-                  >
-                    OK
-                  </Button>
-                </div>
-              </div>
-            </form>
-          </Form>
-        </PopoverContent>
-      </Popover>
-    </div>
-  );
-}
-
-function AddCategorySelectorButton() {
-  const { mouseOver, handleMouseOver } = useMouseOverTimeout();
-
-  return (
-    <button onMouseOver={handleMouseOver}>
-      <AddCircleIcon
-        className={clsx(
-          mouseOver ? "rotate-180" : "",
-          `h-4 w-4 ${darkBlueText} transition duration-500`,
-        )}
-      />
-    </button>
-  );
-}
-
-/////// CATEGORIES ALLOCATION
-
-function Container({ children }: { children: ReactNode }) {
-  return <div className="min-w-[600px]">{children}</div>;
-}
-
-function CategoryGroupContainer({ children }: { children: ReactNode }) {
-  return (
-    <div className={`group flex items-center gap-0 px-2 bg-gray-400/20`}>
-      <div className="flex-grow flex-shrink basis-56 flex items-center gap-4 py-2">
-        {children}
-      </div>
-      <div className="flex-1 text-right">
-        <p>Assigned</p>
-      </div>
-      <div className="flex-1 text-right">
-        <p>Activity</p>
-      </div>
-      <div className="flex-1 text-right">
-        <p>Available</p>
-      </div>
-    </div>
-  );
-}
-
-function CategoryGroupName({ children }: { children: ReactNode }) {
-  return <p className={`${darkBlueText} font-bold`}>{children}</p>;
-}
-
-///// Add Category
-
-function AddCategoryPopover({
-  id,
-  children,
-}: {
-  id: string;
-  children: ReactNode;
-}) {
-  const [displayPopover, setDisplayPopover] = useState(false);
-  const [createCategory] = useAddCategoryMutation();
-
-  const {
-    register,
-    handleSubmit,
-    formState: { isValid },
-    reset,
-  } = useForm<AddCategoryFormData>({
-    defaultValues: {
-      categoryGroupId: id,
-    },
-    resolver: zodResolver(AddCategorySchema),
-  });
-
-  const togglePopover = () => setDisplayPopover((prev) => !prev);
-
-  const close = () => {
-    togglePopover();
-    reset();
-  };
-
-  const onSubmit = (data: AddCategoryFormData) => {
-    createCategory(data);
-    togglePopover();
-    reset();
-  };
-
-  return (
-    <Popover open={displayPopover} modal={true}>
-      <PopoverTrigger onClick={togglePopover}>{children}</PopoverTrigger>
-      <PopoverPortal>
-        <PopoverContent
-          onPointerDownOutside={close}
-          avoidCollisions={false}
-          side={"right"}
-          className="w-[200px] p-0 shadow-lg"
-        >
-          <PopoverArrow className="w-8 h-2 fill-white" />
-          <form
-            className="px-2 py-2 space-y-2"
-            onSubmit={handleSubmit(onSubmit)}
-          >
-            <Input
-              className="shadow-none focus-visible:ring-sky-50"
-              placeholder="New Category"
-              autoComplete="off"
-              {...register("name")}
-            />
-            <div className="flex justify-end gap-2">
-              <Button
-                type="reset"
-                onClick={close}
-                className="bg-gray-400 hover:bg-gray-400/80"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="bg-sky-900 hover:bg-sky-950/80"
-                disabled={!isValid}
-              >
-                Okay
-              </Button>
-            </div>
-          </form>
-        </PopoverContent>
-      </PopoverPortal>
-    </Popover>
-  );
-}
-
-//// Add category Group
-const AddCategoryGroupSchema = z.object({
-  name: z.string().min(1, { message: "Category group requires a name" }),
-});
-
-type AddCategoryGroupType = z.infer<typeof AddCategoryGroupSchema>;
-
-export function AddCategoryGroupPopover({ children }: { children: ReactNode }) {
-  const [displayPopover, setDisplayPopover] = useState(false);
-  const [addCategoryGroup] = useAddCategoryGroupMutation();
-
-  const {
-    register,
-    handleSubmit,
-    formState: { isValid },
-    reset,
-  } = useForm<AddCategoryGroupType>({
-    defaultValues: {
-      name: "",
-    },
-    resolver: zodResolver(AddCategoryGroupSchema),
-  });
-
-  const togglePopover = () => setDisplayPopover((prev) => !prev);
-
-  const close = () => {
-    reset();
-    togglePopover();
-  };
-
-  const onSubmit = (categoryGroup: AddCategoryGroupType) => {
-    addCategoryGroup(categoryGroup);
-    togglePopover();
-    reset();
-  };
-
-  return (
-    <div className="px-2 py-1 border-b border-r border-b-gray-200 border-r-gray-200">
-      <Popover open={displayPopover} modal={true}>
-        <PopoverTrigger onClick={togglePopover}>{children}</PopoverTrigger>
-        <PopoverPortal>
-          <PopoverContent
-            onPointerDownOutside={close}
-            avoidCollisions={false}
-            side={"bottom"}
-            className="w-[200px] p-0 shadow-lg"
-          >
-            <PopoverArrow className="w-8 h-2 fill-white" />
-            <form
-              className="px-2 py-2 space-y-2"
-              onSubmit={handleSubmit(onSubmit)}
-            >
-              <Input
-                className="shadow-none focus-visible:ring-sky-50"
-                placeholder="New Category Group"
-                autoComplete="off"
-                {...register("name")}
-              />
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="reset"
-                  onClick={close}
-                  className="bg-gray-400 hover:bg-gray-400/80"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-sky-900 hover:bg-sky-950/80"
-                  disabled={!isValid}
-                >
-                  Okay
-                </Button>
-              </div>
-            </form>
-          </PopoverContent>
-        </PopoverPortal>
-      </Popover>
-    </div>
-  );
-}
-
-function ExpandCategoryGroup({
+function ExpandCategoryGroupButton({
   onClick,
   open,
 }: {
@@ -582,159 +218,88 @@ function CategoriesContainer({
   return null;
 }
 
-function CategoryName({ children }: { children: ReactNode }) {
-  return children;
-}
-
-function CategoryNameContainer({ children }: { children: ReactNode }) {
+function CategoryGridRow({ children }: { children: ReactNode }) {
   return (
-    <div className="flex-grow basis-48 text-ellipsis whitespace-nowrap">
+    <div className="py-2 px-2 grid grid-cols-[20px_1fr_80px_80px_80px] gap-x-2 border-t">
       {children}
     </div>
   );
 }
 
-function CategoryContent({
-  children,
-}: {
-  children: (ref: RefObject<HTMLInputElement>) => ReactNode;
-}) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
+function CategoryCell({ children }: { children: ReactNode }) {
+  return <div className="px-1 text-right">{children}</div>;
+}
 
-  const handleInputFocus = () => {
+function EmptyCell() {
+  return <div></div>;
+}
+
+function CategoryRow({
+  category,
+  month,
+}: {
+  category: Category;
+  month: MappedMonth;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleClick = () => {
     inputRef.current?.focus();
   };
-
   return (
-    <div
-      className={`flex items-center gap-4 py-2 pl-10 pr-2 border-b ${borderBottom} focus-within:bg-gray-100/80`}
-      onClick={handleInputFocus}
-    >
-      {children(inputRef)}
-    </div>
-  );
-}
-
-const EditAssigned = forwardRef<
-  HTMLInputElement,
-  { assigned: number; assignId: string; monthId: string }
->(({ assigned, assignId, monthId }, ref) => {
-  const [editMonth] = useEditMonthMutation();
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const [isFocused, setIsFocused] = useState(false);
-  const currency = "£";
-
-  const { register, handleSubmit, reset, getValues, setValue } = useForm<Month>(
-    {
-      defaultValues: {
-        assigned: "",
-        monthId,
-        assignId,
-      },
-      resolver: zodResolver(MonthSchema),
-    },
-  );
-
-  const valueWithCurrency = `${currency} ${assigned.toFixed(2)}`;
-
-  const handleFocus = (e: React.FocusEvent<HTMLInputElement, Element>) => {
-    setIsFocused(true);
-    setValue("assigned", assigned.toFixed(2));
-
-    e.target.select();
-  };
-
-  useEffect(() => {
-    if (isFocused && inputRef.current) {
-      inputRef.current.select();
-    }
-  }, [isFocused]);
-
-  useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, [
-    inputRef,
-  ]);
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Escape") {
-      setIsFocused(false);
-      inputRef.current?.blur();
-    }
-  };
-
-  const onSubmit = (updatedValue: Month) => {
-    if (Number(updatedValue.assigned) === Number(assigned)) return;
-    editMonth(updatedValue);
-    reset();
-  };
-
-  return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="flex-1 flex justify-end p-[1px]"
-    >
-      <input
-        className="w-3/4 px-1 text-right border border-transparent rounded focus:border-sky-950 hover:border-sky-950 focus:outline-none focus:ring-0 placeholder:text-black"
-        placeholder={valueWithCurrency}
-        onFocus={handleFocus}
-        onKeyDown={handleKeyDown}
-        {...register("assigned", { required: "Username is required" })}
-        onBlur={handleSubmit(onSubmit)}
-        ref={(e) => {
-          register("assigned").ref(e);
-          inputRef.current = e;
-        }}
-      />
-    </form>
-  );
-});
-
-function ProgressBar({
-  activity,
-  available,
-}: {
-  activity: number;
-  available: number;
-}) {
-  const values = calculateBarColors({ activity, available });
-
-  return (
-    <div className="relative h-[5px] border border-gray-400 rounded-sm">
-      <Progress className="h-full bg-gray-200 rounded" />
-      <div className="absolute top-0 left-0 h-full w-full flex rounded">
-        <Progress
-          className="h-full bg-green-200 rounded-r"
-          style={{ width: `${values.lightGreen}%` }}
-        />
-        <Progress
-          className="h-full bg-green-400 rounded-l-[3px]  rounded-r-[3px]"
-          style={{ width: `${values.green}%` }}
-        />
-        <Progress
-          className="h-full bg-red-400 rounded-l-none rounded-r"
-          style={{ width: `${values.red}%` }}
-        />
+    <CategoryContextMenu category={category}>
+      <div
+        onClick={handleClick}
+        className="focus-within:bg-gray-100/80 cursor-pointer"
+      >
+        <CategoryGridRow>
+          <EmptyCell />
+          <div className="flex items-center min-w-0 gap-4">
+            <Checkbox className="size-3 rounded-[2px] shadow-none" />
+            <div className="w-3/4">
+              <p className="truncate">{category.name}</p>
+              <ProgressBar
+                activity={month.activity}
+                available={month.available}
+              />
+            </div>
+          </div>
+          <EditAssigned
+            ref={inputRef}
+            assigned={month.assigned}
+            monthId={month.id}
+          />
+          <CategoryCell>{month.activity.toFixed(2)}</CategoryCell>
+          <CategoryCell>
+            <Available value={month.available} />
+          </CategoryCell>
+        </CategoryGridRow>
       </div>
-    </div>
+    </CategoryContextMenu>
   );
 }
 
-function Activity({ value }: { value: number }) {
-  return <p className="flex-1 text-right">£{value.toFixed(2)}</p>;
-}
-
-function Available({ value }: { value: number }) {
-  const style =
-    value < 0
-      ? "bg-rose-300 text-red-950"
-      : value > 0
-        ? "bg-green-200"
-        : "bg-slate-200 text-slate-500";
+function AddCategorySelectorButton() {
+  const { mouseOver, handleMouseOver } = useMouseOverTimeout();
 
   return (
-    <div className="flex-1 flex justify-end">
-      <span className={`text-right px-2 ${style} rounded-lg`}>
-        £{value.toFixed(2)}
-      </span>
-    </div>
+    <button onMouseOver={handleMouseOver}>
+      <AddCircleIcon
+        className={clsx(
+          mouseOver ? "rotate-180" : "",
+          `h-4 w-4 ${darkBlueText} transition duration-500`,
+        )}
+      />
+    </button>
   );
+}
+
+/////// CATEGORIES ALLOCATION
+
+function Container({ children }: { children: ReactNode }) {
+  return <div className="min-w-[600px]">{children}</div>;
+}
+
+function CategoryGroupName({ children }: { children: ReactNode }) {
+  return <p className={`${darkBlueText}font-bold truncate`}>{children}</p>;
 }

@@ -10,9 +10,9 @@ export function useInflowCategory(
     (key) => categoryGroups[key].name === "Inflow",
   )!;
 
-  const assignId = categoryGroups[inflowGroupId].categories[0];
-  const assignMonthIds = categories[assignId].months;
-  const assignableAmount = months[assignMonthIds[selectedMonthIndex]].available;
+  const rtaCategoryId = categoryGroups[inflowGroupId].categories[0];
+  const rtaMonthIds = categories[rtaCategoryId].months;
+  const assignableAmount = months[rtaMonthIds[selectedMonthIndex]].available;
 
-  return { inflowGroupId, assignId, assignableAmount };
+  return { inflowGroupId, assignableAmount };
 }

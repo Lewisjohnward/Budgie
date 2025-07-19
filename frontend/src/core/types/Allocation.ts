@@ -25,6 +25,7 @@ type CategoryGroup = {
 
 type Category = {
   id: string;
+  userId: string;
   name: string;
   amounts: Record<string, number>;
   categoryGroupId: string;
@@ -40,6 +41,9 @@ export type MappedMonth = Month & {
 
 export type MappedCategoryGroup = CategoryGroup & {
   open: boolean;
+  assigned: string;
+  activity: string;
+  available: string;
 };
 
 export type MappedAllocationData = {
