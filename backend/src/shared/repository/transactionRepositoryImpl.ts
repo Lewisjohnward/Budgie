@@ -80,4 +80,18 @@ export const transactionRepository: TransactionRepository = {
       },
     });
   },
+  getTransactionsByCategoryGroupId: async function (
+    tx: Prisma.TransactionClient,
+    categoryGroupId: string,
+  ): Promise<Transaction[]> {
+    const transactions = await tx.transaction.findMany({
+      where: {
+        category: {
+          categoryGroupId,
+        },
+      },
+    });
+
+    return transactions;
+  },
 };

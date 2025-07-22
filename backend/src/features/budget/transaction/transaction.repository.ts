@@ -13,6 +13,11 @@ export interface TransactionRepository {
     categoryId: string,
   ): Promise<Transaction[]>;
 
+  getTransactionsByCategoryGroupId(
+    tx: Prisma.TransactionClient,
+    categoryGroupId: string,
+  ): Promise<Transaction[]>;
+
   getTransactionsByAccountId(
     tx: Prisma.TransactionClient,
     accountId: string,

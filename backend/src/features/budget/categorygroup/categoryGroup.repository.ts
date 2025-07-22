@@ -37,4 +37,9 @@ export interface CategoryGroupRepository {
     tx: Prisma.TransactionClient,
     categoryGroup: EditCategoryGroupData,
   ): Promise<void>;
+
+  deleteCategoryGroup(
+    tx: Prisma.TransactionClient,
+    categoryGroupId: string,
+  ): Promise<void>;
 }

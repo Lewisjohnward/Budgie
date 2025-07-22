@@ -6,9 +6,10 @@ import { categoryGroupService } from "../../../categorygroup/categoryGroup.servi
 import { categoryService } from "../../category.service";
 
 //  TODO: IMPLEMENT CHANGE POSITION
+// TODO: IF NOTHING CHANGES DON'T INTERACT WITH DB
+// TODO: PREVENT USER FROM editing PROTECTED CATEGORy gropus
 export const editCategory = async (payload: EditCategoryPayload) => {
   const { categoryId, userId, categoryGroupId, name } = payload;
-  // TODO: PREVENT USER FROM editing PROTECTED CATEGORIES
 
   if (!name && !categoryGroupId) return;
 
