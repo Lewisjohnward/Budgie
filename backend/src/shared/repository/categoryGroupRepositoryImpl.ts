@@ -7,7 +7,7 @@ import {
 } from "../../features/budget/categorygroup/categorygroup.schema";
 
 export const categoryGroupRepository: CategoryGroupRepository = {
-  getCategoryGroup: async function(
+  getCategoryGroup: async function (
     tx: Prisma.TransactionClient,
     userId: string,
     categoryGroupId: string,
@@ -35,7 +35,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     return groups.map((c) => c.id);
   },
 
-  createCategoryGroup: async function(
+  createCategoryGroup: async function (
     tx: Prisma.TransactionClient,
     categoryGroup: CreateCategoryGroupData,
   ): Promise<void> {
@@ -44,7 +44,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     });
   },
 
-  getCategoryGroupIdByName: async function(
+  getCategoryGroupIdByName: async function (
     tx: Prisma.TransactionClient,
     userId: string,
     name: string,
@@ -62,7 +62,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
 
     return categoryGroup?.id ?? null;
   },
-  updateCategoryGroup: async function(
+  updateCategoryGroup: async function (
     tx: Prisma.TransactionClient,
     data: EditCategoryGroupData,
   ): Promise<void> {
@@ -72,6 +72,17 @@ export const categoryGroupRepository: CategoryGroupRepository = {
       },
       data: {
         name: data.name,
+      },
+    });
+  },
+
+  deleteCategoryGroup: async function (
+    tx: Prisma.TransactionClient,
+    categoryGroupId: string,
+  ): Promise<void> {
+    await tx.categoryGroup.delete({
+      where: {
+        id: categoryGroupId,
       },
     });
   },

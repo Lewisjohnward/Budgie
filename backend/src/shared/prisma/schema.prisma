@@ -59,7 +59,7 @@ model Category {
   position        Int
   // budget       Budget        @relation(fields: [budgetId], references: [id])
   transactions    Transaction[]
-  categoryGroup        CategoryGroup @relation(fields: [categoryGroupId], references: [id])
+  categoryGroup        CategoryGroup @relation(fields: [categoryGroupId], references: [id], onDelete: Cascade)
   months Month[]
 }
 
@@ -71,7 +71,7 @@ model Month {
   assigned Decimal   @default(0)
   available Decimal  @default(0)
 
-  category  Category  @relation(fields: [categoryId], references: [id])
+  category  Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@unique([ categoryId, month])
 }
