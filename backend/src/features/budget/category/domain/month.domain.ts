@@ -2,6 +2,20 @@ import { Month } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 import { groupBy } from "../utils/groupBy";
 
+/**
+ * Adjusts a list of monthly category data based on a change in assigned funds.
+ *
+ * The function recalculates each month's `assigned` and `available` values.
+ * The first month receives the direct change in assigned funds, and depending on the
+ * before/after available amounts, a `carryOver` value is calculated and applied
+ * to subsequent months to reflect the effect of crossing availability thresholds (e.g. from negative to positive).
+ *
+ * @template M - A subtype of MonthSlice, representing the shape of a month object.
+ * @param categoryMonths - The list of months to adjust (each with `month`, `activity`, `available`, `assigned`).
+ * @param changeInAssigned - The amount to add to the first month's `assigned` value.
+ * @returns A new array of months with updated `assigned` and `available` values.
+ */
+
 type MonthSlice = Pick<Month, "month" | "activity" | "available" | "assigned">;
 
 export const calculateCategoryMonths = <M extends MonthSlice>(
@@ -88,12 +102,18 @@ export function calculateMonthsByCategoryId(
 }
 
 /**
- * Adjusts monthly `activity` and `available` fields for category
- * when adding / deleting transactions.
+ * Adjusts each month's `activity` and `available` fields based on a list of transactions,
+ * either adding or removing them depending on the operation mode.
  *
- * Preconditions:
- * - `months` must be sorted in ascending order by `month` date.
- * - All transactions in `txs` must have dates falling within or after the first month in `months`.
+ * Behavior:
+ * - Transactions affect the first matching month and all subsequent months.
+ * - If a month matches the transaction date, its `activity` and `available` are adjusted.
+ * - Subsequent months get updated `available = activity + remaining positive availability`.
+ *
+ * @param txs - List of transactions to apply.
+ * @param months - List of months to adjust (sorted by date ascending).
+ * @param mode - Whether transactions are being added or removed.
+ * @returns A new array of adjusted months.
  */
 
 import { Transaction } from "@prisma/client";
