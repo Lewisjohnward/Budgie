@@ -55,22 +55,24 @@ export default function Allocation() {
           <AddCategoryGroupPopover>
             <AddCategoryGroupButton />
           </AddCategoryGroupPopover>
-          <div className="flex items-center gap-2 p-2">
+          <CategoryGridRow>
             {categoryGroups.length > 0 ? (
-              <button>
-                <ChevronDownIcon
-                  className={clsx(
-                    expandCategoryGroups.atLeastOneGroupOpen
-                      ? ""
-                      : "-rotate-90",
-                    `h-4 w-4 ${darkBlueText}`,
-                  )}
-                  onClick={expandCategoryGroups.expandAllCategoryGroups}
-                />
-              </button>
+              <ExpandButton
+                open={expandCategoryGroups.atLeastOneGroupOpen}
+                onClick={expandCategoryGroups.expandAllCategoryGroups}
+              />
             ) : null}
-            <div className={`${darkBlueText} font-thin`}>CATEGORY</div>
-          </div>
+            <div className={`${darkBlueText} font-[300]`}>CATEGORY</div>
+            <CategoryCell>
+              <span className="text-sky-950 font-[300]">ASSIGNED</span>
+            </CategoryCell>
+            <CategoryCell>
+              <span className="text-sky-950 font-[300]">ACTIVITY</span>
+            </CategoryCell>
+            <CategoryCell>
+              <span className="text-sky-950 font-[400]">AVAILABLE</span>
+            </CategoryCell>
+          </CategoryGridRow>
 
           <CategoriesContainer display={uncategorisedGroup.display}>
             <CategoryGridRow>
@@ -95,19 +97,19 @@ export default function Allocation() {
                 <CategoryGroupContextMenu categoryGroup={categoryGroup}>
                   <div className="group bg-gray-400/20">
                     <CategoryGridRow>
-                      <ExpandCategoryGroupButton
+                      <ExpandButton
+                        open={categoryGroup.open}
                         onClick={() =>
                           expandCategoryGroups.expandCategoryGroup(
                             categoryGroup.id,
                           )
                         }
-                        open={categoryGroup.open}
                       />
-                      <div className="w-3/4 flex min-w-0 items-center gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
                         <Checkbox className="size-3 rounded-[2px] shadow-none" />
-                        <CategoryGroupName>
+                        <p className={`${darkBlueText} font-bold truncate`}>
                           {categoryGroup.name}
-                        </CategoryGroupName>
+                        </p>
                         <AddCategoryPopover id={categoryGroup.id}>
                           <AddCircleIcon
                             className={`${darkBlueText} invisible group-hover:visible`}
@@ -144,7 +146,7 @@ export default function Allocation() {
 }
 
 function AllocationContainer({ children }: { children: ReactNode }) {
-  return <div className="flex-grow flex flex-col">{children}</div>;
+  return <div className="flex flex-col">{children}</div>;
 }
 
 function FlexContainer({ children }: { children: ReactNode }) {
@@ -152,12 +154,12 @@ function FlexContainer({ children }: { children: ReactNode }) {
 }
 
 function WideCategoriesContainer({ children }: { children: ReactNode }) {
-  return <div className="flex-grow-2"> {children}</div>;
+  return <div className="xl:basis-3/4"> {children}</div>;
 }
 
 function AssignContainer({ children }: { children: ReactNode }) {
   return (
-    <div className={`hidden flex-grow xl:flex p-4 ${bgGray}`}>{children}</div>
+    <div className={`hidden xl:flex basis-1/4 p-4 ${bgGray}`}>{children}</div>
   );
 }
 
@@ -188,25 +190,6 @@ function AddCategoryGroupButton() {
   );
 }
 
-function ExpandCategoryGroupButton({
-  onClick,
-  open,
-}: {
-  onClick: () => void;
-  open: boolean;
-}) {
-  return (
-    <button className="w-4" onClick={onClick}>
-      <ChevronDownIcon
-        className={clsx(
-          open ? "rotate-0" : "-rotate-90",
-          `h-4 w-4 ${darkBlueText}`,
-        )}
-      />
-    </button>
-  );
-}
-
 function CategoriesContainer({
   children,
   display,
@@ -220,7 +203,7 @@ function CategoriesContainer({
 
 function CategoryGridRow({ children }: { children: ReactNode }) {
   return (
-    <div className="py-2 px-2 grid grid-cols-[20px_1fr_80px_80px_80px] gap-x-2 border-t">
+    <div className="py-2 px-2 grid grid-cols-[30px_20fr_3fr_3fr_3fr] gap-x-2 border-t">
       {children}
     </div>
   );
@@ -256,7 +239,7 @@ function CategoryRow({
           <EmptyCell />
           <div className="flex items-center min-w-0 gap-4">
             <Checkbox className="size-3 rounded-[2px] shadow-none" />
-            <div className="w-3/4">
+            <div className="w-5/6">
               <p className="truncate">{category.name}</p>
               <ProgressBar
                 activity={month.activity}
@@ -300,6 +283,15 @@ function Container({ children }: { children: ReactNode }) {
   return <div className="min-w-[600px]">{children}</div>;
 }
 
-function CategoryGroupName({ children }: { children: ReactNode }) {
-  return <p className={`${darkBlueText}font-bold truncate`}>{children}</p>;
+function ExpandButton({ open, onClick }: { open: any; onClick: any }) {
+  return (
+    <button onClick={onClick}>
+      <ChevronDownIcon
+        className={clsx(
+          open ? "" : "-rotate-90",
+          `m-auto h-4 w-4 ${darkBlueText}`,
+        )}
+      />
+    </button>
+  );
 }
