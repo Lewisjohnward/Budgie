@@ -10,16 +10,39 @@ export const calculateCategoryMonths = <M extends MonthSlice>(
 ) => {
   const clone = categoryMonths.map((m) => ({ ...m }));
 
+  let carryOver: Decimal = ZERO;
   return clone.map((month, i) => {
-    const assigned =
-      i === 0 ? month.assigned.add(changeInAssigned) : month.assigned;
+    const isFirst = i === 0;
 
-    const available = month.available.add(changeInAssigned);
+    const assigned = isFirst
+      ? month.assigned.add(changeInAssigned)
+      : month.assigned;
 
+    const availableBefore = month.available;
+
+    const availableAfter = isFirst
+      ? availableBefore.add(changeInAssigned)
+      : availableBefore.add(carryOver);
+
+    if (isFirst) {
+      const crossedZeroFromNegative =
+        availableBefore.lt(0) && availableAfter.gt(0);
+      const stayedPositive = availableBefore.gte(0) && availableAfter.gt(0);
+      const crossedZeroToNegative =
+        availableBefore.gte(0) && availableAfter.lte(0);
+
+      if (crossedZeroFromNegative) {
+        carryOver = availableAfter;
+      } else if (stayedPositive) {
+        carryOver = changeInAssigned;
+      } else if (crossedZeroToNegative) {
+        carryOver = availableBefore.negated();
+      }
+    }
     return {
       ...month,
       assigned,
-      available,
+      available: availableAfter,
     };
   });
 };
