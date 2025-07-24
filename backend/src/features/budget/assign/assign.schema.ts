@@ -3,13 +3,22 @@ import { z } from "zod";
 
 export const assignSchema = z.object({
   userId: z.string().uuid(),
-  assigned: z.string().transform((str) => {
-    const num = new Decimal(str);
-    if (num.isNaN() || num.isNegative()) {
-      return new Decimal(0);
-    }
-    return num;
-  }),
+  assigned: z
+    .string()
+    .refine(
+      (str) => {
+        try {
+          const num = new Decimal(str);
+          return !num.isNaN() && !num.isNegative();
+        } catch {
+          return false;
+        }
+      },
+      {
+        message: "assigned must be a valid non-negative number string",
+      },
+    )
+    .transform((str) => new Decimal(str)),
   monthId: z.string().uuid(),
 });
 
