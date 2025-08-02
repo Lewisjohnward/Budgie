@@ -718,4 +718,127 @@ describe("calculateRtaAvailablePerMonth", () => {
     expectDecimalToBe(updated[1].available, -66);
     expectDecimalToBe(updated[2].available, -99);
   });
+
+  it("should correctly propagate negative available", () => {
+    const rtaMonths = [
+      {
+        month: new Date("2025-03-01"),
+        activity: new Decimal(0),
+      },
+      {
+        month: new Date("2025-04-01"),
+        activity: new Decimal(0),
+      },
+      {
+        month: new Date("2025-05-01"),
+        activity: new Decimal(0),
+      },
+    ];
+
+    const assignedNegAvailableByMonth = {
+      "2025-03": {
+        assigned: new Decimal(10),
+        negativeAvailable: new Decimal(0),
+      },
+      "2025-04": {
+        assigned: new Decimal(0),
+        negativeAvailable: new Decimal(0),
+      },
+      "2025-05": {
+        assigned: new Decimal(0),
+        negativeAvailable: new Decimal(0),
+      },
+    };
+
+    const updatedRtaMonths = calculateRtaAvailablePerMonth(
+      rtaMonths,
+      assignedNegAvailableByMonth,
+    );
+
+    expectDecimalToBe(updatedRtaMonths[0].available, -10);
+    expectDecimalToBe(updatedRtaMonths[1].available, -10);
+    expectDecimalToBe(updatedRtaMonths[2].available, -10);
+  });
+
+  it("should correctly calculate available when assigned in future", () => {
+    const rtaMonths = [
+      {
+        month: new Date("2025-03-01"),
+        activity: new Decimal(2142.66),
+      },
+      {
+        month: new Date("2025-04-01"),
+        activity: new Decimal(1968.56),
+      },
+      {
+        month: new Date("2025-05-01"),
+        activity: new Decimal(0),
+      },
+    ];
+
+    const assignedNegAvailableByMonth = {
+      "2025-03": {
+        assigned: new Decimal(1525.72),
+        negativeAvailable: new Decimal(0),
+      },
+      "2025-04": {
+        assigned: new Decimal(1501.46),
+        negativeAvailable: new Decimal(0),
+      },
+      "2025-05": {
+        assigned: new Decimal(0),
+        negativeAvailable: new Decimal(0),
+      },
+    };
+
+    const updatedRtaMonths = calculateRtaAvailablePerMonth(
+      rtaMonths,
+      assignedNegAvailableByMonth,
+    );
+
+    expectDecimalToBe(updatedRtaMonths[0].available, 0);
+    expectDecimalToBe(updatedRtaMonths[1].available, 1084.04);
+    expectDecimalToBe(updatedRtaMonths[2].available, 1084.04);
+  });
+
+  it("should correctly calculate available when assigned in future and starting month non activity zero", () => {
+    const rtaMonths = [
+      {
+        month: new Date("2025-03-01"),
+        activity: new Decimal(200.0),
+      },
+      {
+        month: new Date("2025-04-01"),
+        activity: new Decimal(2142.66),
+      },
+      {
+        month: new Date("2025-05-01"),
+        activity: new Decimal(1968.56),
+      },
+    ];
+
+    const assignedNegAvailableByMonth = {
+      "2025-03": {
+        assigned: new Decimal(1525.72),
+        negativeAvailable: new Decimal(-10),
+      },
+      "2025-04": {
+        assigned: new Decimal(1501.46),
+        negativeAvailable: new Decimal(0),
+      },
+      "2025-05": {
+        assigned: new Decimal(0),
+        negativeAvailable: new Decimal(0),
+      },
+    };
+
+    const updatedRtaMonths = calculateRtaAvailablePerMonth(
+      rtaMonths,
+      assignedNegAvailableByMonth,
+    );
+
+    expectDecimalToBe(updatedRtaMonths[0].available, -1325.72);
+    expectDecimalToBe(updatedRtaMonths[1].available, -694.52);
+    expectDecimalToBe(updatedRtaMonths[2].available, 1274.04);
+  });
 });
