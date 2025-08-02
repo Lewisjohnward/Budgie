@@ -75,6 +75,39 @@ export function calculateRtaMonthsActivity(
     .filter((m): m is Month => m !== null && m.id !== undefined);
 }
 
+/**
+ * Calculates the available RTA (Ready to Assign) available for each month,
+ * taking into account assigned amounts, negative available balances,
+ * leftover available from previous months.
+ *
+ * This function:
+ * - Clones the input months to avoid mutating them.
+ * - Tracks overspending from previous months.
+ * - Adjusts availability based on assigned and negative available amounts.
+ * - Uses a queue to decrement assigned amounts in a first-in-first-out manner.
+ *
+ * @template M - A type extending MonthSlice, containing at least "month" and "activity" properties.
+ *
+ * @param {M[]} rtaMonths - Array of month objects to calculate availability for.
+ * @param {AssignedNegAvailableByMonth} assignedNegAvailableByMonth - Record mapping month keys (string) to assigned and negativeAvailable Decimal values.
+ * @param {Decimal} [leftOverBal=ZERO] - Initial leftover balance carried over before calculations start.
+ *
+ * @returns {(WithAvailable<M>[]) } - New array of months augmented with an `available` Decimal property,
+ *   representing the calculated available balance for that month.
+ *
+ * @example
+ * const rtaMonths = [
+ *   { month: new Date('2023-01-01'), activity: new Decimal(100) },
+ *   { month: new Date('2023-02-01'), activity: new Decimal(50) },
+ * ];
+ * const assigned = {
+ *   '2023-01': { assigned: new Decimal(30), negativeAvailable: new Decimal(-10) },
+ *   '2023-02': { assigned: new Decimal(20), negativeAvailable: new Decimal(0) },
+ * };
+ * const result = calculateRtaAvailablePerMonth(rtaMonths, assigned, new Decimal(10));
+ * // result will be an array of months with available balances calculated
+ */
+
 type AssignedNegAvailableByMonth = Record<
   string,
   { assigned: Decimal; negativeAvailable: Decimal }
@@ -90,7 +123,7 @@ export const calculateRtaAvailablePerMonth = <M extends MonthSlice>(
   assignedNegAvailableByMonth: AssignedNegAvailableByMonth,
   leftOverBal: Decimal = ZERO,
 ): WithAvailable<M>[] => {
-  const clone = rtaMonths.map((m) => ({
+  const rtaMonthsClone = rtaMonths.map((m) => ({
     ...m,
   }));
 
@@ -116,7 +149,7 @@ export const calculateRtaAvailablePerMonth = <M extends MonthSlice>(
     new Decimal(0),
   );
 
-  return clone.map((m) => {
+  return rtaMonthsClone.map((m) => {
     const monthKey = getMonthKey(m.month);
     const monthAvailableNegative =
       assignedNegativeAvailableClone[monthKey]?.negativeAvailable ??
@@ -124,30 +157,31 @@ export const calculateRtaAvailablePerMonth = <M extends MonthSlice>(
     const monthAssigned =
       assignedNegativeAvailableClone[monthKey]?.assigned || ZERO;
 
-    // left over from previous month
     let available = previousMonthBalance
-      // rta txs for month
       .add(m.activity)
-      // subtract previous month overspend
       .add(previousMonthOverspend)
-      // subtract assigned
       .sub(assignedInFuture.gt(0) ? monthAssigned : ZERO);
+
+    if (queue[0]?.assigned) {
+      queue[0].assigned = queue[0].assigned.sub(monthAssigned);
+    }
 
     assignedInFuture = assignedInFuture.sub(monthAssigned);
 
-    // subtract future assigned amounts
     if (available.gt(0) && assignedInFuture.gt(0)) {
       let toSubtract = Decimal.min(available, assignedInFuture);
+
       available = available.sub(toSubtract);
+
       assignedInFuture = assignedInFuture.sub(toSubtract);
 
-      // Use the queue to subtract from assigned progressively
       while (toSubtract.gt(0) && queue.length > 0) {
         const front = queue[0];
+
         const subtractNow = Decimal.min(front.assigned, toSubtract);
 
         front.assigned = front.assigned.sub(subtractNow);
-        // update the assigned for the month
+
         assignedNegativeAvailableClone[front.key].assigned = front.assigned;
 
         toSubtract = toSubtract.sub(subtractNow);
