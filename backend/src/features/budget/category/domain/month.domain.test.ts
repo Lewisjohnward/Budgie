@@ -161,6 +161,7 @@ describe("calculateCategoryMonths", () => {
     expect(updatedMonths[0].assigned.toFixed(2)).toBe("0.00");
     expect(updatedMonths[0].activity.toFixed(2)).toBe("20.00");
     expect(updatedMonths[0].available.toFixed(2)).toBe("20.00");
+
     expect(updatedMonths[1].assigned.toFixed(2)).toBe("0.00");
     expect(updatedMonths[1].activity.toFixed(2)).toBe("-40.00");
     expect(updatedMonths[1].available.toFixed(2)).toBe("-20.00");
@@ -238,15 +239,17 @@ describe("calculateCategoryMonths", () => {
     expect(updatedMonths[0].assigned.toFixed(2)).toBe("30.00");
     expect(updatedMonths[0].activity.toFixed(2)).toBe("-25.00");
     expect(updatedMonths[0].available.toFixed(2)).toBe("5.00");
+
     expect(updatedMonths[1].assigned.toFixed(2)).toBe("0.00");
     expect(updatedMonths[1].activity.toFixed(2)).toBe("0.00");
     expect(updatedMonths[1].available.toFixed(2)).toBe("5.00");
+
     expect(updatedMonths[2].assigned.toFixed(2)).toBe("0.00");
     expect(updatedMonths[2].activity.toFixed(2)).toBe("0.00");
     expect(updatedMonths[2].available.toFixed(2)).toBe("5.00");
   });
 
-  it("should correctly update future months when crossing zero to negative", () => {
+  it("should correctly update future months when crossing zero from positive", () => {
     const categoryMonths = [
       {
         month: new Date("2025-04-01"),
@@ -306,5 +309,131 @@ describe("calculateCategoryMonths", () => {
     expect(updatedMonths[1].assigned.toFixed(2)).toBe("0.00");
     expect(updatedMonths[1].activity.toFixed(2)).toBe("0.00");
     expect(updatedMonths[1].available.toFixed(2)).toBe("0.00");
+  });
+
+  it("should update months correctly when available goes from negative to positive", () => {
+    const categoryMonths = [
+      {
+        month: new Date("2025-04-01"),
+        assigned: new Decimal(0),
+        activity: new Decimal(-100),
+        available: new Decimal(-100),
+      },
+      {
+        month: new Date("2025-05-01"),
+        assigned: new Decimal(0),
+        activity: new Decimal(-40),
+        available: new Decimal(-40),
+      },
+      {
+        month: new Date("2025-06-01"),
+        assigned: new Decimal(0),
+        activity: new Decimal(0),
+        available: new Decimal(0),
+      },
+    ];
+
+    const changeInAssigned = new Decimal(130);
+
+    const updatedMonths = calculateCategoryMonths(
+      categoryMonths,
+      changeInAssigned,
+    );
+
+    expect(updatedMonths[0].assigned.toFixed(2)).toBe("130.00");
+    expect(updatedMonths[0].activity.toFixed(2)).toBe("-100.00");
+    expect(updatedMonths[0].available.toFixed(2)).toBe("30.00");
+
+    expect(updatedMonths[1].assigned.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[1].activity.toFixed(2)).toBe("-40.00");
+    expect(updatedMonths[1].available.toFixed(2)).toBe("-10.00");
+
+    expect(updatedMonths[2].assigned.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[2].activity.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[2].available.toFixed(2)).toBe("0.00");
+  });
+
+  it("should correctly update future months available when available goes from negative to positive", () => {
+    const categoryMonths = [
+      {
+        month: new Date("2025-04-01"),
+        assigned: new Decimal(0),
+        activity: new Decimal(-100),
+        available: new Decimal(-100),
+      },
+      {
+        month: new Date("2025-05-01"),
+        assigned: new Decimal(0),
+        activity: new Decimal(-40),
+        available: new Decimal(-40),
+      },
+      {
+        month: new Date("2025-06-01"),
+        assigned: new Decimal(0),
+        activity: new Decimal(0),
+        available: new Decimal(0),
+      },
+    ];
+
+    const changeInAssigned = new Decimal(140);
+
+    const updatedMonths = calculateCategoryMonths(
+      categoryMonths,
+      changeInAssigned,
+    );
+
+    expect(updatedMonths[0].assigned.toFixed(2)).toBe("140.00");
+    expect(updatedMonths[0].activity.toFixed(2)).toBe("-100.00");
+    expect(updatedMonths[0].available.toFixed(2)).toBe("40.00");
+
+    expect(updatedMonths[1].assigned.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[1].activity.toFixed(2)).toBe("-40.00");
+    expect(updatedMonths[1].available.toFixed(2)).toBe("0.00");
+
+    expect(updatedMonths[2].assigned.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[2].activity.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[2].available.toFixed(2)).toBe("0.00");
+  });
+
+  it("should correctly update months when removing assigned", () => {
+    const categoryMonths = [
+      {
+        month: new Date("2025-04-01"),
+        assigned: new Decimal(100),
+        activity: new Decimal(-100),
+        available: new Decimal(0),
+      },
+      {
+        month: new Date("2025-05-01"),
+        assigned: new Decimal(0),
+        activity: new Decimal(40),
+        available: new Decimal(40),
+      },
+      {
+        month: new Date("2025-06-01"),
+        assigned: new Decimal(0),
+        activity: new Decimal(0),
+        available: new Decimal(0),
+      },
+    ];
+
+    const changeInAssigned = new Decimal(-100);
+
+    const updatedMonths = calculateCategoryMonths(
+      categoryMonths,
+      changeInAssigned,
+    );
+
+    expect(updatedMonths[0].assigned.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[0].activity.toFixed(2)).toBe("-100.00");
+    expect(updatedMonths[0].available.toFixed(2)).toBe("-100.00");
+
+    expect(updatedMonths[1].assigned.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[1].activity.toFixed(2)).toBe("40.00");
+    expect(updatedMonths[1].available.toFixed(2)).toBe("40.00");
+
+    expect(updatedMonths[2].assigned.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[2].activity.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[2].available.toFixed(2)).toBe("0.00");
   });
 });

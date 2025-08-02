@@ -42,17 +42,29 @@ export const calculateCategoryMonths = <M extends MonthSlice>(
       const crossedZeroFromNegative =
         availableBefore.lt(0) && availableAfter.gt(0);
       const stayedPositive = availableBefore.gte(0) && availableAfter.gt(0);
-      const crossedZeroToNegative =
+      const crossedZeroFromPositive =
         availableBefore.gte(0) && availableAfter.lte(0);
 
       if (crossedZeroFromNegative) {
         carryOver = availableAfter;
       } else if (stayedPositive) {
         carryOver = changeInAssigned;
-      } else if (crossedZeroToNegative) {
+      } else if (crossedZeroFromPositive) {
         carryOver = availableBefore.negated();
       }
+    } else {
+      const crossedZeroFromNegative =
+        availableBefore.lt(0) && availableAfter.gt(0);
+
+      if (crossedZeroFromNegative) {
+        carryOver = availableAfter;
+      } else {
+        carryOver = availableAfter.gt(0)
+          ? availableAfter.sub(availableBefore)
+          : ZERO;
+      }
     }
+
     return {
       ...month,
       assigned,
