@@ -117,9 +117,10 @@ export default function Allocation() {
                           />
                         </AddCategoryPopover>
                       </div>
-                      <CategoryCell>{categoryGroup.assigned}</CategoryCell>
-                      <CategoryCell>{categoryGroup.activity}</CategoryCell>
-                      <CategoryCell>{categoryGroup.available}</CategoryCell>
+                      <CategoryCell>
+                        <span className="px-2">
+                        </span>
+                      </CategoryCell>
                     </CategoryGridRow>
                   </div>
                 </CategoryGroupContextMenu>
@@ -147,20 +148,24 @@ export default function Allocation() {
 }
 
 function AllocationContainer({ children }: { children: ReactNode }) {
-  return <div className="flex flex-col">{children}</div>;
+  return <div className="flex flex-col h-full">{children}</div>;
 }
 
 function FlexContainer({ children }: { children: ReactNode }) {
-  return <div className="flex">{children}</div>;
+  return <div className="overflow-scroll flex h-full">{children}</div>;
 }
 
 function WideCategoriesContainer({ children }: { children: ReactNode }) {
-  return <div className="xl:basis-3/4"> {children}</div>;
+  return <div className="xl:basis-3/4 overflow-scroll"> {children}</div>;
 }
 
 function AssignContainer({ children }: { children: ReactNode }) {
   return (
-    <div className={`hidden xl:flex basis-1/4 p-4 ${bgGray}`}>{children}</div>
+    <div
+      className={`hidden xl:flex flex-col basis-1/4 h-full p-4 bg-gray-200 overflow-y-scroll`}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -211,7 +216,7 @@ function CategoryGridRow({ children }: { children: ReactNode }) {
 }
 
 function CategoryCell({ children }: { children: ReactNode }) {
-  return <div className="px-1 text-right">{children}</div>;
+  return <div className="px-1 text-right whitespace-nowrap">{children}</div>;
 }
 
 function EmptyCell() {
