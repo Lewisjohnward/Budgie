@@ -64,7 +64,7 @@ export const EditAssigned = forwardRef<
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex justify-end">
       <input
-        className="px-1 w-3/4 text-right border border-transparent rounded focus:border-sky-950 hover:border-sky-950 focus:outline-none focus:ring-0 placeholder:text-black"
+        className="w-full px-1 text-right border border-transparent rounded focus:border-sky-950 hover:border-sky-950 focus:outline-none focus:ring-0 placeholder:text-black"
         placeholder={valueWithCurrency}
         onFocus={handleFocus}
         onKeyDown={handleKeyDown}

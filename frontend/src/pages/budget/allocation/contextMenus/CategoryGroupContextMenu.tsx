@@ -85,7 +85,9 @@ export function CategoryGroupContextMenu({
   return (
     <div onContextMenu={openContextMenu}>
       <Popover open={contextOpen} onOpenChange={handleOpen}>
-        <PopoverTrigger className="w-full text-left">{children}</PopoverTrigger>
+        <PopoverTrigger className="w-full text-left cursor-auto">
+          {children}
+        </PopoverTrigger>
         <PopoverContent
           onPointerDownOutside={closeContextMenu}
           className="w-96 px-4 py-2 space-y-2"
