@@ -16,6 +16,8 @@ export function ManagePayees() {
   const dialogOpen = useAppSelector(selectManagePayees);
   const handleCloseDialog = () => dispatch(toggleManagePayees());
 
+  //TODO: THIS SHOULDN'T BE IN CORE
+
   return (
     <Dialog open={dialogOpen} onOpenChange={handleCloseDialog}>
       <DialogContent className="h-[600px] w-[1000px] flex flex-col">

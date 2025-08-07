@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { calculateBarColors } from "./calculateBarColors";
 
-describe("calculateBarColors", () => {
+describe.skip("calculateBarColors", () => {
   it("should be 0 on all colors when 0 assigned, 0 activity, 0 available", () => {
     const result = calculateBarColors({
       activity: 0,

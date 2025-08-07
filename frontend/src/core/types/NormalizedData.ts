@@ -30,6 +30,8 @@ export type Category = {
   // type: "EXPENSE" | "INCOME";
   categoryGroupId: string;
   name: string;
+  months: string[];
+  position: number;
 };
 
 export type NormalizedData = {

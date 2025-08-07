@@ -2304,12 +2304,7 @@ describe("RTA allocation", () => {
         ])
         .expect(200);
 
-      await compareRTAMonthsToExpected([10, 10], cookie, true);
-
-      // expect(testMonths[0].activity).toBe(10);
-      // expect(testMonths[0].available).toBe(10);
-      // expect(testMonths[1].activity).toBe(0);
-      // expect(testMonths[1].available).toBe(10);
+      await compareRTAMonthsToExpected([10, 10], cookie);
     });
   });
 
