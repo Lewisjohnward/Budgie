@@ -5,12 +5,14 @@ import { useEffect } from "react";
 
 export function useMonthSelector(months: string[]) {
   const dispatch = useAppDispatch();
-  const monthState = useAppSelector(month);
+  const { monthIndex } = useAppSelector(month);
   const formattedMonths = months.map((month) => formatDate(month));
 
   const now = new Date();
 
-  const currentMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+  const currentMonth = `${now.getUTCFullYear()}-${String(
+    now.getUTCMonth() + 1
+  ).padStart(2, "0")}`;
   const currentMonthIndex = months.indexOf(currentMonth);
 
   const selectCurrentMonth = () => {
@@ -20,30 +22,26 @@ export function useMonthSelector(months: string[]) {
   const next = () =>
     dispatch(
       selectMonthIndex(
-        monthState.month + 1 < months.length
-          ? monthState.month + 1
-          : monthState.month,
-      ),
+        monthIndex + 1 < months.length ? monthIndex + 1 : monthIndex
+      )
     );
   const prev = () =>
     dispatch(
-      selectMonthIndex(
-        monthState.month - 1 >= 0 ? monthState.month - 1 : monthState.month,
-      ),
+      selectMonthIndex(monthIndex - 1 >= 0 ? monthIndex - 1 : monthIndex)
     );
 
   useEffect(() => {
     selectCurrentMonth();
   }, []);
 
-  const current = formattedMonths[monthState.month] ?? "";
+  const current = formattedMonths[monthIndex] ?? "";
 
-  const canGoNext = monthState.month < months.length - 1;
-  const canGoPrev = monthState.month > 0;
-  const isCurrentMonth = currentMonthIndex === monthState.month;
+  const canGoNext = monthIndex < months.length - 1;
+  const canGoPrev = monthIndex > 0;
+  const isCurrentMonth = currentMonthIndex === monthIndex;
 
   return {
-    index: monthState.month,
+    monthIndex,
     isCurrentMonth,
     current,
     next,
@@ -54,4 +52,4 @@ export function useMonthSelector(months: string[]) {
   };
 }
 
-export type MonthType = ReturnType<typeof useMonthSelector>;
+export type MonthSelectorType = ReturnType<typeof useMonthSelector>;

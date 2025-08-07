@@ -1,12 +1,14 @@
+// THIS IS USED TO PERSIST THE SELECTED MONTH INDEX WHEN USER NAVIGATES FROM BUDGET
+
 import { createSlice, PayloadAction } from "@reduxjs/toolkit/react";
 import { RootState } from "@/core/store/store";
 
 export type MonthState = {
-  month: number;
+  monthIndex: number;
 };
 
 const initialState: MonthState = {
-  month: 0,
+  monthIndex: 0,
 };
 
 const monthSlice = createSlice({
@@ -14,7 +16,7 @@ const monthSlice = createSlice({
   initialState,
   reducers: {
     selectMonthIndex: (state, action: PayloadAction<number>) => {
-      state.month = action.payload;
+      state.monthIndex = action.payload;
     },
   },
 });

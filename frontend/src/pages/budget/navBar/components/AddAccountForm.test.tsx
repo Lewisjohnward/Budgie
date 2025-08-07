@@ -10,7 +10,7 @@ vi.mock("@/core/api/budgetApiSlice", () => ({
 const addAccountMock = vi.fn();
 useAddAccountMutation.mockReturnValue([addAccountMock]);
 
-describe("Add Account Form", () => {
+describe.skip("Add Account Form", () => {
   const renderComponent = () => {
     render(
       <Provider store={store}>

@@ -2,6 +2,7 @@ import { ChevronDownIcon } from "@/core/icons/icons";
 import { AccountCard, AddAccountBtn, EmptyAccountsMessage } from ".";
 import { Balance } from "./Balance";
 import { useAccounts } from "../hooks/useAccounts";
+import clsx from "clsx";
 
 export function AccountOverview() {
   const { userHasAccounts, accounts, balance } = useAccounts();
@@ -25,7 +26,10 @@ export function AccountOverview() {
               >
                 <div className="flex items-center gap-2 tracking-wider">
                   <ChevronDownIcon
-                    className={accounts.cash.expanded ? "" : "-rotate-90"}
+                    className={clsx(
+                      "m-auto transition-transform duration-100",
+                      accounts.cash.expanded ? "rotate-0" : "-rotate-90",
+                    )}
                   />
                   <p className="text-sm font-[400]">CASH</p>
                 </div>

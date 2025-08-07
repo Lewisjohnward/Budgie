@@ -4,34 +4,29 @@ export type AllocationData = {
   categories: Record<string, Category>;
 };
 
-type Month = {
+export type Month = {
   id: string;
   month: string;
   activity: number;
   assigned: number;
   available: number;
-  categoryGroupIds: string[];
-  totalSpent: number;
-  totalBudget: number;
+  categoryId: string;
 };
 
-type CategoryGroup = {
+export type CategoryGroup = {
   id: string;
   name: string;
   categories: string[];
-  budgetLimit: number;
-  totalSpent: Record<string, number>;
 };
 
-type Category = {
+export type Category = {
   id: string;
   userId: string;
   name: string;
-  amounts: Record<string, number>;
   categoryGroupId: string;
-  budgetLimit: number;
-  totalSpent: Record<string, number>;
+  position: number;
   months: string[];
+  transactions: string[];
 };
 
 export type MappedMonth = Month & {
