@@ -36,6 +36,8 @@ export default function Allocation() {
     uncategorisedGroup,
   } = useAllocation();
 
+  const currency = "£";
+
   return (
     <AllocationContainer>
       <HeaderContainer>
@@ -84,10 +86,10 @@ export default function Allocation() {
               </div>
               <p className="px-[5px] text-right">-</p>
               <CategoryCell>
-                {uncategorisedGroup.month.activity.toFixed(2)}
+                {currency} {uncategorisedGroup.month.activity.toFixed(2)}
               </CategoryCell>
               <CategoryCell>
-                {uncategorisedGroup.month.available.toFixed(2)}
+                <Available value={uncategorisedGroup.month.available} />
               </CategoryCell>
             </CategoryGridRow>
           </CategoriesContainer>
@@ -118,7 +120,14 @@ export default function Allocation() {
                         </AddCategoryPopover>
                       </div>
                       <CategoryCell>
+                        {currency} {categoryGroup.assigned}
+                      </CategoryCell>
+                      <CategoryCell>
+                        {currency} {categoryGroup.activity}
+                      </CategoryCell>
+                      <CategoryCell>
                         <span className="px-2">
+                          {currency} {categoryGroup.available}
                         </span>
                       </CategoryCell>
                     </CategoryGridRow>
@@ -231,6 +240,7 @@ function CategoryRow({
   month: MappedMonth;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const currency = "£";
 
   const handleClick = () => {
     inputRef.current?.focus();
@@ -275,7 +285,9 @@ function CategoryRow({
             assigned={month.assigned}
             monthId={month.id}
           />
-          <CategoryCell>{month.activity.toFixed(2)}</CategoryCell>
+          <CategoryCell>
+            {currency} {month.activity.toFixed(2)}
+          </CategoryCell>
           <CategoryCell>
             <Available value={month.available} />
           </CategoryCell>

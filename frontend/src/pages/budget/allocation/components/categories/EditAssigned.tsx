@@ -19,17 +19,15 @@ export const EditAssigned = forwardRef<
   const [isFocused, setIsFocused] = useState(false);
   const currency = "£";
 
-  const { register, handleSubmit, reset, getValues, setValue } = useForm<Month>(
-    {
-      defaultValues: {
-        assigned: "",
-        monthId,
-      },
-      resolver: zodResolver(MonthSchema),
+  const { register, handleSubmit, reset, setValue } = useForm<Month>({
+    defaultValues: {
+      assigned: "",
+      monthId,
     },
-  );
+    resolver: zodResolver(MonthSchema),
+  });
 
-  const valueWithCurrency = `${assigned.toFixed(2)}`;
+  const valueWithCurrency = `${currency} ${assigned.toFixed(2)}`;
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement, Element>) => {
     setIsFocused(true);
@@ -56,6 +54,8 @@ export const EditAssigned = forwardRef<
   };
 
   const onSubmit = (updatedValue: Month) => {
+    setValue("assigned", valueWithCurrency);
+
     if (Number(updatedValue.assigned) === Number(assigned)) return;
     editMonth(updatedValue);
     reset();
@@ -78,14 +78,3 @@ export const EditAssigned = forwardRef<
     </form>
   );
 });
-
-function Available({ value }: { value: number }) {
-  const style =
-    value < 0
-      ? "bg-rose-300 text-red-950"
-      : value > 0
-        ? "bg-green-200"
-        : "bg-slate-200 text-slate-500";
-
-  return <span className={`${style} rounded-lg`}>{value.toFixed(2)}</span>;
-}
