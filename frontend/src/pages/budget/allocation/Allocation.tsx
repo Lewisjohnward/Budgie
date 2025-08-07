@@ -22,6 +22,7 @@ import { Available } from "./components/categories/Available";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
 import { MappedMonth } from "@/core/types/Allocation";
 import { CirclePlus } from "lucide-react";
+import { calculateBarColors } from "./utils/calculateBarColors";
 
 export default function Allocation() {
   const {
@@ -229,6 +230,10 @@ function CategoryRow({
   const handleClick = () => {
     inputRef.current?.focus();
   };
+
+  const { activity, available, assigned } = month;
+  const values = calculateBarColors({ activity, available, assigned });
+
   return (
     <CategoryContextMenu category={category}>
       <div
@@ -240,10 +245,23 @@ function CategoryRow({
           <div className="flex items-center min-w-0 gap-4">
             <Checkbox className="size-3 rounded-[2px] shadow-none" />
             <div className="w-5/6">
+              <div className="flex justify-between items-center gap-8">
               <p className="truncate">{category.name}</p>
+                <div className="flex gap-2">
+                  <p className="text-sm font-[500] text-gray-600 whitespace-nowrap">
+                    {values.message?.important ?? ""}
+                  </p>
+                  {values.message?.text && (
+                    <p className="text-sm text-gray-600 whitespace-nowrap">
+                      {values.message.text ?? ""}
+                    </p>
+                  )}
+                </div>
+              </div>
               <ProgressBar
-                activity={month.activity}
-                available={month.available}
+                spent={values.green}
+                available={values.lightGreen}
+                overspent={values.red}
               />
             </div>
           </div>
