@@ -42,14 +42,7 @@ export default function Navbar() {
           />
         </>
       }
-      accounts={
-        navbar.open && (
-          <AccountOverview
-            expanded={navbar.accountsExpanded}
-            toggleExpanded={navbar.toggleAccountsExpanded}
-          />
-        )
-      }
+      accounts={navbar.open && <AccountOverview />}
       toggleButton={
         <ToggleMenu open={navbar.open} toggle={navbar.toggleOpen} />
       }
