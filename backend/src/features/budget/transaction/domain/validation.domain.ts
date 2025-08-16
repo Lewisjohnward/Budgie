@@ -9,7 +9,6 @@
  * @throws Error if the transaction date is in the future.
  */
 
-import { toZonedTime } from "date-fns-tz";
 import { isAfterUtc as isFutureDate } from "../utils/isAfterUtc";
 import { TransactionPayload } from "../transaction.schema";
 import { Transaction } from "@prisma/client";
@@ -19,7 +18,7 @@ export function validateTransaction(
 ) {
   // check that transaction is not in the future
   const transactionDate = new Date(transaction.date ?? Date.now());
-  const utcNow = toZonedTime(new Date(), "UTC");
+  const utcNow = new Date();
 
   if (isFutureDate(transactionDate, utcNow)) {
     throw new Error("transaction is in the future, rejected");
