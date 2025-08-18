@@ -15,7 +15,7 @@
 import { Prisma, PrismaClient } from "@prisma/client";
 import { categoryRepository } from "../../../../../../shared/repository/categoryRepositoryImpl";
 import { ZERO } from "../../../../../../shared/constants/zero";
-import { getIntermediateMonths } from "../../../../transaction/utils/getIntermediateMonths";
+import { getMonthRange } from "../../../utils/getMonthRange";
 import { roundToStartOfMonth } from "../../../../../../shared/utils/roundToStartOfMonth";
 
 const MAX_MONTHS = 12;
@@ -33,7 +33,13 @@ export const insertMissingMonths = async (
     ),
   );
 
-  const missingMonths = getIntermediateMonths(transactionDate, earliestMonth);
+  const startDate = earliestMonth < transactionDate ? earliestMonth : transactionDate;
+  const endDate = earliestMonth > transactionDate ? earliestMonth : transactionDate;
+
+  const missingMonths = getMonthRange(startDate, endDate, {
+    startInclusive: true,
+    endInclusive: false,
+  });
 
   const categories = await categoryRepository.getAllCategoryIds(prisma, userId);
 
