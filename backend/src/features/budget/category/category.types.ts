@@ -21,7 +21,11 @@ type NormalisedCategory = Omit<Category, "months"> & {
   categoryGroupId: string;
 };
 
-type NormalisedMonth = Omit<Month, "activity" | "assigned" | "available"> & {
+type NormalisedMonth = Omit<
+  Month,
+  "activity" | "assigned" | "available" | "month"
+> & {
+  month: string;
   categoryId: string;
   activity: number;
   assigned: number;

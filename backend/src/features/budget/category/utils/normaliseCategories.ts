@@ -26,7 +26,7 @@ export function normaliseCategories(categoryGroups: CategoryGroup[]) {
           acc.months[month.id] = {
             id: month.id,
             categoryId: cat.id,
-            month: month.month,
+            month: month.month.toISOString(),
             activity: convertDecimalToNumber(month.activity),
             assigned: convertDecimalToNumber(month.assigned),
             available: convertDecimalToNumber(month.available),

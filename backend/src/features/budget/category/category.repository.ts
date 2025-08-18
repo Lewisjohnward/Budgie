@@ -96,6 +96,20 @@ export interface CategoryRepository {
     rtaCategoryId: string,
   ): Promise<Month[]>;
 
+  /**
+   * Retrieves the most recent month entry for each category belonging to a user.
+   *
+   * @param tx - The Prisma transaction client.
+   * @param userId - The ID of the user.
+   * @returns A promise that resolves to an array of the most recent Month objects, one for each category.
+   *          
+   */
+
+  getMostRecentMonths(
+    tx: Prisma.TransactionClient,
+    userId: string,
+  ): Promise<Month[]>;
+
   // ──────────────── Month Mutation ────────────────
 
   createMonths(

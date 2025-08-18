@@ -3,19 +3,19 @@ import app from "../../app";
 import { NormalisedCategories } from "../../features/budget/category/category.types";
 import { getAccounts, getCategories } from "../utils/getData";
 import { createTestAccount } from "../utils/createTestAccount";
+import { addAccount, addTransaction } from "../utils/transaction";
 import { login, registerUser } from "../utils/auth";
 
 describe("Budget", () => {
   it.todo("Should prevent users accessing/updating other users data");
 
-  let cookie: string;
-
-  beforeEach(async () => {
-    await registerUser();
-    cookie = await login();
-  });
-
   describe("Categories", () => {
+    let cookie: string;
+
+    beforeEach(async () => {
+      await registerUser();
+      cookie = await login();
+    });
     describe("Delete category", () => {
       it.todo("should recalculate position of other categories");
       it.todo("should throw error if user doesn't own category");
@@ -185,6 +185,12 @@ describe("Budget", () => {
   });
 
   describe("Category groups", () => {
+    let cookie: string;
+
+    beforeEach(async () => {
+      await registerUser();
+      cookie = await login();
+    });
     describe("create", () => {
       it.todo("should prevent name collision");
       it.todo("should create a category group");
@@ -209,6 +215,12 @@ describe("Budget", () => {
   });
 
   describe("Account", () => {
+    let cookie: string;
+
+    beforeEach(async () => {
+      await registerUser();
+      cookie = await login();
+    });
     describe("create", () => {
       it.todo("prevent name collisions");
       it.todo("should add account with initial balance");
@@ -261,6 +273,12 @@ describe("Budget", () => {
   });
 
   describe("Transaction", () => {
+    let cookie: string;
+
+    beforeEach(async () => {
+      await registerUser();
+      cookie = await login();
+    });
     describe("Adding transaction", () => {
       it.todo(
         "should throw error if user tries adding to account not owned by themselves",
@@ -302,7 +320,7 @@ describe("Budget", () => {
       "should throw error if category id provided doesn't exist/ not owned by user",
     );
 
-    it.skip("When adding a transaction with no account, returns 400", async () => { });
+    it.skip("When adding a transaction with no account, returns 400", async () => {});
 
     it.todo("Should return error when user doesn't own category");
 
@@ -352,100 +370,577 @@ describe("Budget", () => {
     });
   });
 
-  describe("Ready to assign", () => { });
+  describe("Ready to assign", () => {});
 
   describe("Months", () => {
-    it("should prevent user from assigning to uncategorised category month", async () => {
-      const { categories } = await getCategories(cookie);
+    describe("assigning", () => {
+      let cookie: string;
 
-      const uncategorisedCategory = Object.values(categories).find(
-        (c) => c.name === "Uncategorised Transactions",
-      );
+      beforeEach(async () => {
+        await registerUser();
+        cookie = await login();
+      });
+      it("should prevent user from assigning to uncategorised category month", async () => {
+        const { categories } = await getCategories(cookie);
 
-      if (!uncategorisedCategory)
-        throw new Error("Unable to find uncategorised category");
+        const uncategorisedCategory = Object.values(categories).find(
+          (c) => c.name === "Uncategorised Transactions",
+        );
 
-      const res = await request(app)
-        .patch("/budget/assign")
-        .set("Authorization", `Bearer ${cookie}`)
-        .send({
-          assigned: "10",
-          monthId: uncategorisedCategory.months[0],
+        if (!uncategorisedCategory)
+          throw new Error("Unable to find uncategorised category");
+
+        const res = await request(app)
+          .patch("/budget/assign")
+          .set("Authorization", `Bearer ${cookie}`)
+          .send({
+            assigned: "10",
+            monthId: uncategorisedCategory.months[0],
+          });
+
+        expect(res.status).toBe(403);
+      });
+
+      it.todo("Should correctly update assigned for category month");
+      it.todo("should prevent user from accessing another users months");
+      it.todo("should prevent user from assigning to rta category");
+
+      it("should update available/activity when deleting an inflow transaction", async () => {
+        const testTransaction = {
+          inflow: "10",
+          memo: "test",
+        };
+        const testAccountData = {
+          name: "test account",
+          type: "BANK",
+          balance: 0,
+        };
+        const resAddAccount = await request(app)
+          .post("/budget/account")
+          .set("Authorization", `Bearer ${cookie}`)
+          .send(testAccountData)
+          .expect(200);
+
+        const { accounts } = await getAccounts(cookie);
+        const { categories } = await getCategories(cookie);
+
+        const testCategory = Object.values(categories).find(
+          (cat) => cat.name === "test category",
+        );
+        if (!testCategory) throw new Error("No category found");
+
+        const testAccount = Object.values(accounts).find(
+          (account) => account.name == "test account",
+        );
+
+        if (!testAccount) throw new Error("No account found");
+
+        const { id: accountId } = testAccount;
+
+        const resAddTransaction = await request(app)
+          .post("/budget/transaction")
+          .set("Authorization", `Bearer ${cookie}`)
+          .send({
+            ...testTransaction,
+            categoryId: testCategory.id,
+            accountId,
+          })
+          .expect(200);
+
+        const { transactions } = await getAccounts(cookie);
+
+        const transaction = Object.values(transactions).find(
+          (t) => t.memo === "test",
+        );
+
+        if (!transaction) throw new Error("Unable to find test transaction");
+
+        await request(app)
+          .delete("/budget/transaction")
+          .set("Authorization", `Bearer ${cookie}`)
+          .send({ transactionIds: [transaction.id] })
+          .expect(200);
+
+        const { months } = await getCategories(cookie);
+
+        const testMonths = Object.values(months).filter(
+          (month) => month.categoryId === testCategory.id,
+        );
+
+        expect(testMonths[0].activity).toBe(0);
+        expect(testMonths[0].available).toBe(0);
+        expect(testMonths[1].activity).toBe(0);
+        expect(testMonths[1].available).toBe(0);
+      });
+    });
+    describe("Login in future", () => {
+      let cookie: string;
+
+      beforeEach(async () => {
+        jest.useFakeTimers({
+          doNotFake: ["nextTick", "setImmediate", "setTimeout", "setInterval"],
+        });
+      });
+
+      afterEach(() => {
+        jest.useRealTimers();
+      });
+
+      it("should create a month when logging in after a month gap", async () => {
+        // create account and make sure there is 2 months
+        jest.setSystemTime(new Date("2025-05-01"));
+        await registerUser();
+        cookie = await login();
+
+        const { categories: initialCategories, months: initialMonths } =
+          await getCategories(cookie);
+
+        const initialTestCategory = Object.values(initialCategories).find(
+          (cat) => cat.name === "test category",
+        );
+        expect(initialTestCategory).toBeTruthy();
+        if (!initialTestCategory) throw new Error("testCategory is Undefined");
+
+        const initialTestCategoryMonths = initialTestCategory.months.map(
+          (monthId) => initialMonths[monthId],
+        );
+
+        const initialAllCategoriesHaveCorrectMonths = Object.values(
+          initialCategories,
+        ).every((category) => category.months.length === 2);
+        expect(initialAllCategoriesHaveCorrectMonths).toBe(true);
+        expect(initialTestCategoryMonths.length).toBe(2);
+
+        const initialMonthDates = initialTestCategoryMonths.map(
+          (m) => new Date(m.month),
+        );
+        expect(initialMonthDates).toEqual([
+          new Date("2025-05-01"),
+          new Date("2025-06-01"),
+        ]);
+
+        // login and make sure there is 3 months
+        jest.setSystemTime(new Date("2025-07-01"));
+        cookie = await login();
+        const { categories: updatedCategories, months: updatedMonths } =
+          await getCategories(cookie);
+        const updatedTestCategory = Object.values(updatedCategories).find(
+          (cat) => cat.name === "test category",
+        );
+        expect(updatedTestCategory).toBeTruthy();
+        if (!updatedTestCategory) throw new Error("testCategory is Undefined");
+
+        const updatedTestCategoryMonths = updatedTestCategory.months.map(
+          (monthId) => updatedMonths[monthId],
+        );
+
+        const updatedAllCategoriesHaveCorrectMonths = Object.values(
+          updatedCategories,
+        ).every((category) => category.months.length === 3);
+        expect(updatedAllCategoriesHaveCorrectMonths).toBe(true);
+        expect(updatedTestCategoryMonths.length).toBe(3);
+
+        const updatedMonthDates = updatedTestCategoryMonths.map(
+          (m) => new Date(m.month),
+        );
+        expect(updatedMonthDates).toEqual([
+          new Date("2025-05-01"),
+          new Date("2025-06-01"),
+          new Date("2025-07-01"),
+        ]);
+      });
+
+      it("should create 12 missing months when logging in after a year gap", async () => {
+        // create account and make sure there is 2 months
+        jest.setSystemTime(new Date("2025-05-01"));
+        await registerUser();
+        cookie = await login();
+
+        const { categories: initialCategories, months: initialMonths } =
+          await getCategories(cookie);
+
+        const initialTestCategory = Object.values(initialCategories).find(
+          (cat) => cat.name === "test category",
+        );
+        expect(initialTestCategory).toBeTruthy();
+        if (!initialTestCategory) throw new Error("testCategory is Undefined");
+
+        const initialTestCategoryMonths = initialTestCategory.months.map(
+          (monthId) => initialMonths[monthId],
+        );
+
+        const initialAllCategoriesHaveCorrectMonths = Object.values(
+          initialCategories,
+        ).every((category) => category.months.length === 2);
+        expect(initialAllCategoriesHaveCorrectMonths).toBe(true);
+        expect(initialTestCategoryMonths.length).toBe(2);
+
+        const initialMonthDates = initialTestCategoryMonths.map(
+          (m) => new Date(m.month),
+        );
+        expect(initialMonthDates).toEqual([
+          new Date("2025-05-01"),
+          new Date("2025-06-01"),
+        ]);
+
+        // login and make sure there is 12 months
+        jest.setSystemTime(new Date("2026-05-01"));
+        cookie = await login();
+        const { categories: updatedCategories, months: updatedMonths } =
+          await getCategories(cookie);
+        const updatedTestCategory = Object.values(updatedCategories).find(
+          (cat) => cat.name === "test category",
+        );
+        expect(updatedTestCategory).toBeTruthy();
+        if (!updatedTestCategory) throw new Error("testCategory is Undefined");
+
+        const updatedTestCategoryMonths = updatedTestCategory.months.map(
+          (monthId) => updatedMonths[monthId],
+        );
+
+        const updatedAllCategoriesHaveCorrectMonths = Object.values(
+          updatedCategories,
+        ).every((category) => category.months.length === 13);
+        expect(updatedAllCategoriesHaveCorrectMonths).toBe(true);
+        expect(updatedTestCategoryMonths.length).toBe(13);
+
+        const updatedMonthDates = updatedTestCategoryMonths.map(
+          (m) => new Date(m.month),
+        );
+        expect(updatedMonthDates).toEqual([
+          new Date("2025-05-01"),
+          new Date("2025-06-01"),
+          new Date("2025-07-01"),
+          new Date("2025-08-01"),
+          new Date("2025-09-01"),
+          new Date("2025-10-01"),
+          new Date("2025-11-01"),
+          new Date("2025-12-01"),
+          new Date("2026-01-01"),
+          new Date("2026-02-01"),
+          new Date("2026-03-01"),
+          new Date("2026-04-01"),
+          new Date("2026-05-01"),
+        ]);
+      });
+
+      it("should not have a daylight saving issue, try 31/03/2025", async () => {
+        // create account and make sure there is 2 months
+        jest.setSystemTime(new Date("2025-01-01"));
+        await registerUser();
+        cookie = await login();
+
+        const { categories: initialCategories, months: initialMonths } =
+          await getCategories(cookie);
+
+        const initialTestCategory = Object.values(initialCategories).find(
+          (cat) => cat.name === "test category",
+        );
+        expect(initialTestCategory).toBeTruthy();
+        if (!initialTestCategory) throw new Error("testCategory is Undefined");
+
+        const initialTestCategoryMonths = initialTestCategory.months.map(
+          (monthId) => initialMonths[monthId],
+        );
+
+        const initialAllCategoriesHaveCorrectMonths = Object.values(
+          initialCategories,
+        ).every((category) => category.months.length === 2);
+        expect(initialAllCategoriesHaveCorrectMonths).toBe(true);
+        expect(initialTestCategoryMonths.length).toBe(2);
+
+        const initialMonthDates = initialTestCategoryMonths.map(
+          (m) => new Date(m.month),
+        );
+        expect(initialMonthDates).toEqual([
+          new Date("2025-01-01"),
+          new Date("2025-02-01"),
+        ]);
+
+        // login and make sure there is 3 months
+        jest.setSystemTime(new Date("2025-03-31"));
+        cookie = await login();
+        const { categories: updatedCategories, months: updatedMonths } =
+          await getCategories(cookie);
+        const updatedTestCategory = Object.values(updatedCategories).find(
+          (cat) => cat.name === "test category",
+        );
+        expect(updatedTestCategory).toBeTruthy();
+        if (!updatedTestCategory) throw new Error("testCategory is Undefined");
+
+        const updatedTestCategoryMonths = updatedTestCategory.months.map(
+          (monthId) => updatedMonths[monthId],
+        );
+
+        const updatedAllCategoriesHaveCorrectMonths = Object.values(
+          updatedCategories,
+        ).every((category) => category.months.length === 3);
+        expect(updatedAllCategoriesHaveCorrectMonths).toBe(true);
+        expect(updatedTestCategoryMonths.length).toBe(3);
+
+        const updatedMonthDates = updatedTestCategoryMonths.map(
+          (m) => new Date(m.month),
+        );
+        expect(updatedMonthDates).toEqual([
+          new Date("2025-01-01"),
+          new Date("2025-02-01"),
+          new Date("2025-03-01"),
+        ]);
+      });
+
+      it("should not have a daylight saving issue during UK October DST transition (fall back)", async () => {
+        // UK DST ends on last Sunday in October (clocks fall back from BST to GMT)
+        // Register in September, then login during/after October DST transition
+
+        // create account and make sure there is 2 months
+        jest.setSystemTime(new Date("2025-08-01"));
+        await registerUser();
+        cookie = await login();
+
+        const { categories: initialCategories, months: initialMonths } =
+          await getCategories(cookie);
+
+        const initialTestCategory = Object.values(initialCategories).find(
+          (cat) => cat.name === "test category",
+        );
+        expect(initialTestCategory).toBeTruthy();
+        if (!initialTestCategory) throw new Error("testCategory is Undefined");
+
+        const initialTestCategoryMonths = initialTestCategory.months.map(
+          (monthId) => initialMonths[monthId],
+        );
+
+        const initialAllCategoriesHaveCorrectMonths = Object.values(
+          initialCategories,
+        ).every((category) => category.months.length === 2);
+        expect(initialAllCategoriesHaveCorrectMonths).toBe(true);
+        expect(initialTestCategoryMonths.length).toBe(2);
+
+        const initialMonthDates = initialTestCategoryMonths.map(
+          (m) => new Date(m.month),
+        );
+        expect(initialMonthDates).toEqual([
+          new Date("2025-08-01"),
+          new Date("2025-09-01"),
+        ]);
+
+        // Login after October DST transition (clocks fall back)
+        // October 26, 2025 is the last Sunday in October when UK DST ends
+        jest.setSystemTime(new Date("2025-10-28"));
+        cookie = await login();
+
+        const { categories: updatedCategories, months: updatedMonths } =
+          await getCategories(cookie);
+        const updatedTestCategory = Object.values(updatedCategories).find(
+          (cat) => cat.name === "test category",
+        );
+        expect(updatedTestCategory).toBeTruthy();
+        if (!updatedTestCategory) throw new Error("testCategory is Undefined");
+
+        const updatedTestCategoryMonths = updatedTestCategory.months.map(
+          (monthId) => updatedMonths[monthId],
+        );
+
+        const updatedAllCategoriesHaveCorrectMonths = Object.values(
+          updatedCategories,
+        ).every((category) => category.months.length === 3);
+
+        expect(updatedAllCategoriesHaveCorrectMonths).toBe(true);
+        expect(updatedTestCategoryMonths.length).toBe(3);
+
+        const updatedMonthDates = updatedTestCategoryMonths.map(
+          (m) => new Date(m.month),
+        );
+        expect(updatedMonthDates).toEqual([
+          new Date("2025-08-01"),
+          new Date("2025-09-01"),
+          new Date("2025-10-01"),
+        ]);
+      });
+
+      describe("Balance Carry-over Logic", () => {
+        let cookie: string;
+        let initialCategories: any;
+        let testAccount: any;
+        let readyToAssignCategory: any;
+        let testCategory: any;
+
+        beforeEach(async () => {
+          jest.setSystemTime(new Date("2025-05-01T00:00:00.000Z"));
+          await registerUser();
+          cookie = await login();
+
+          const { categories } = await getCategories(cookie);
+          initialCategories = categories;
+
+          await addAccount(cookie);
+          const { accounts } = await getAccounts(cookie);
+
+          readyToAssignCategory = Object.values(initialCategories).find(
+            (cat: any) => cat.name === "Ready to Assign",
+          );
+          testCategory = Object.values(initialCategories).find(
+            (cat: any) => cat.name === "test category",
+          );
+          testAccount = Object.values(accounts).find(
+            (account: any) => account.name == "test account",
+          );
+
+          if (!readyToAssignCategory) throw new Error("RTA category not found");
+          if (!testCategory) throw new Error("Test category not found");
+          if (!testAccount) throw new Error("Test account not found");
         });
 
-      expect(res.status).toBe(403);
-    });
+        it("should carry across negative RTA balances", async () => {
+          const testTransaction = {
+            date: "2025-05-01T00:00:00.000Z",
+            outflow: "10",
+            memo: "test",
+            categoryId: readyToAssignCategory.id,
+            accountId: testAccount.id,
+          };
+          const res = await addTransaction(cookie, testTransaction);
+          expect(res.status).toBe(200);
 
-    it.todo("Should correctly update assigned for category month");
-    it.todo("should prevent user from accessing another users months");
-    it.todo("should prevent user from assigning to rta category");
+          jest.setSystemTime(new Date("2025-08-01T00:00:00.000Z"));
+          cookie = await login();
 
-    it("should update available/activity when deleting an inflow transaction", async () => {
-      const testTransaction = {
-        inflow: "10",
-        memo: "test",
-      };
-      const testAccountData = {
-        name: "test account",
-        type: "BANK",
-        balance: 0,
-      };
-      const resAddAccount = await request(app)
-        .post("/budget/account")
-        .set("Authorization", `Bearer ${cookie}`)
-        .send(testAccountData)
-        .expect(200);
+          const { categories: updatedCategories, months: updatedMonths } =
+            await getCategories(cookie);
 
-      const { accounts } = await getAccounts(cookie);
-      const { categories } = await getCategories(cookie);
+          const updatedRtaCategory = Object.values(updatedCategories).find(
+            (cat: any) => cat.id === readyToAssignCategory.id,
+          );
+          if (!updatedRtaCategory) return;
 
-      const testCategory = Object.values(categories).find(
-        (cat) => cat.name === "test category",
-      );
-      if (!testCategory) throw new Error("No category found");
+          const rtaMonths = Object.values(updatedMonths).filter(
+            (month: any) => month.categoryId === updatedRtaCategory.id,
+          );
 
-      const testAccount = Object.values(accounts).find(
-        (account) => account.name == "test account",
-      );
+          for (let i = 5; i <= 8; i++) {
+            const monthStr = `2025-${i.toString().padStart(2, "0")}`;
+            const month = rtaMonths.find((m: any) =>
+              m.month.startsWith(monthStr),
+            );
+            expect(month).toBeDefined();
+            expect(month?.available).toBe(-10);
+          }
+        });
 
-      if (!testAccount) throw new Error("No account found");
+        it("should carry across positive RTA balances", async () => {
+          const testTransaction = {
+            date: "2025-05-01T00:00:00.000Z",
+            inflow: "10",
+            memo: "test",
+            categoryId: readyToAssignCategory.id,
+            accountId: testAccount.id,
+          };
+          const res = await addTransaction(cookie, testTransaction);
+          expect(res.status).toBe(200);
 
-      const { id: accountId } = testAccount;
+          jest.setSystemTime(new Date("2025-08-01T00:00:00.000Z"));
+          cookie = await login();
 
-      const resAddTransaction = await request(app)
-        .post("/budget/transaction")
-        .set("Authorization", `Bearer ${cookie}`)
-        .send({
-          ...testTransaction,
-          categoryId: testCategory.id,
-          accountId,
-        })
-        .expect(200);
+          const { categories: updatedCategories, months: updatedMonths } =
+            await getCategories(cookie);
 
-      const { transactions } = await getAccounts(cookie);
+          const updatedRtaCategory = Object.values(updatedCategories).find(
+            (cat: any) => cat.id === readyToAssignCategory.id,
+          );
+          if (!updatedRtaCategory) return;
 
-      const transaction = Object.values(transactions).find(
-        (t) => t.memo === "test",
-      );
+          const rtaMonths = Object.values(updatedMonths).filter(
+            (month: any) => month.categoryId === updatedRtaCategory.id,
+          );
 
-      if (!transaction) throw new Error("Unable to find test transaction");
+          for (let i = 5; i <= 8; i++) {
+            const monthStr = `2025-${i.toString().padStart(2, "0")}`;
+            const month = rtaMonths.find((m: any) =>
+              m.month.startsWith(monthStr),
+            );
+            expect(month).toBeDefined();
+            expect(month?.available).toBe(10);
+          }
+        });
 
-      await request(app)
-        .delete("/budget/transaction")
-        .set("Authorization", `Bearer ${cookie}`)
-        .send({ transactionIds: [transaction.id] })
-        .expect(200);
+        it("should carry across positive category balances", async () => {
+          const testTransaction = {
+            date: "2025-05-01T00:00:00.000Z",
+            inflow: "10",
+            memo: "test",
+            categoryId: testCategory.id,
+            accountId: testAccount.id,
+          };
+          const res = await addTransaction(cookie, testTransaction);
+          expect(res.status).toBe(200);
 
-      const { months } = await getCategories(cookie);
+          jest.setSystemTime(new Date("2025-08-01T00:00:00.000Z"));
+          cookie = await login();
 
-      const testMonths = Object.values(months).filter(
-        (month) => month.categoryId === testCategory.id,
-      );
+          const { categories: updatedCategories, months: updatedMonths } =
+            await getCategories(cookie);
 
-      expect(testMonths[0].activity).toBe(0);
-      expect(testMonths[0].available).toBe(0);
-      expect(testMonths[1].activity).toBe(0);
-      expect(testMonths[1].available).toBe(0);
+          const updatedTestCategory = Object.values(updatedCategories).find(
+            (cat: any) => cat.id === testCategory.id,
+          );
+          if (!updatedTestCategory) return;
+
+          const testMonths = Object.values(updatedMonths).filter(
+            (month: any) => month.categoryId === updatedTestCategory.id,
+          );
+
+          for (let i = 5; i <= 8; i++) {
+            const monthStr = `2025-${i.toString().padStart(2, "0")}`;
+            const month = testMonths.find((m: any) =>
+              m.month.startsWith(monthStr),
+            );
+            expect(month).toBeDefined();
+            expect(month?.available).toBe(10);
+          }
+        });
+
+        it("should not carry across negative category balances", async () => {
+          const testTransaction = {
+            date: "2025-05-01T00:00:00.000Z",
+            outflow: "10",
+            memo: "test",
+            categoryId: testCategory.id,
+            accountId: testAccount.id,
+          };
+          const res = await addTransaction(cookie, testTransaction);
+          expect(res.status).toBe(200);
+
+          jest.setSystemTime(new Date("2025-08-01T00:00:00.000Z"));
+          cookie = await login();
+
+          const { categories: updatedCategories, months: updatedMonths } =
+            await getCategories(cookie);
+
+          const updatedTestCategory = Object.values(updatedCategories).find(
+            (cat: any) => cat.id === testCategory.id,
+          );
+          if (!updatedTestCategory) return;
+
+          const testMonths = Object.values(updatedMonths).filter(
+            (month: any) => month.categoryId === updatedTestCategory.id,
+          );
+
+          const mayMonth = testMonths.find((m: any) =>
+            m.month.startsWith("2025-05"),
+          );
+          expect(mayMonth).toBeDefined();
+          expect(mayMonth?.available).toBe(-10);
+
+          for (let i = 6; i <= 8; i++) {
+            const monthStr = `2025-${i.toString().padStart(2, "0")}`;
+            const month = testMonths.find((m: any) =>
+              m.month.startsWith(monthStr),
+            );
+            expect(month).toBeDefined();
+            expect(month?.available).toBe(0);
+          }
+        });
+      });
     });
   });
 });

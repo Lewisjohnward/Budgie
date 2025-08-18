@@ -109,6 +109,8 @@ export const login = async (
       next(new InvalidCredentialsError());
       return;
     }
+    await categoryService.months.ensureMonthsContinuity(prisma, user.id);
+
     const accessToken = GenerateAccessToken({
       _id: user.id,
       email: user.email,
