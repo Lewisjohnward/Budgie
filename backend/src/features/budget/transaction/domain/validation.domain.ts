@@ -13,8 +13,10 @@ import { isAfterUtc as isFutureDate } from "../utils/isAfterUtc";
 import { TransactionPayload } from "../transaction.schema";
 import { Transaction } from "@prisma/client";
 
+type TransactionDateOnly = Pick<TransactionPayload, "date"> | Pick<Transaction, "date">;
+
 export function validateTransaction(
-  transaction: TransactionPayload | Transaction,
+  transaction: TransactionDateOnly,
 ) {
   // check that transaction is not in the future
   const transactionDate = new Date(transaction.date ?? Date.now());
