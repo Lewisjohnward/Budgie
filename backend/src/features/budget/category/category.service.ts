@@ -5,6 +5,7 @@ import { initialiseCategories } from "./application/services/initialiseCategorie
 import { isCategoryProtected } from "./application/services/isCategoryProtected";
 import { createMonthsForCategory } from "./application/services/months/createMonthsForCategory";
 import { insertMissingMonths } from "./application/services/months/insertMissingMonths";
+import { ensureMonthsContinuity } from "./application/services/months/ensureMonthsContinuity";
 import { recalculateCategoryMonthsForTransactions } from "./application/services/months/recalculateForTransactions";
 import { calculateMonthsAvailable } from "./application/services/rta/calculateMonthsAvailable";
 import { updateMonthsActivityForTransactions } from "./application/services/rta/updateMonthsActivityForTransactions";
@@ -18,6 +19,7 @@ export const categoryService = {
     recalculateCategoryMonthsForTransactions,
     insertMissingMonths,
     createMonthsForCategory,
+    ensureMonthsContinuity,
   },
   categories: {
     initialiseCategories,

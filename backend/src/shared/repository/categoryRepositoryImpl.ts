@@ -136,6 +136,34 @@ export const categoryRepository: CategoryRepository = {
     });
   },
 
+  getMostRecentMonths: async function(
+    tx: Prisma.TransactionClient,
+    userId: string,
+  ): Promise<Month[]> {
+    const mostRecentMonths = (await tx.$queryRaw(
+      Prisma.sql`
+    SELECT DISTINCT ON ("categoryId")
+        m.id,
+        m."categoryId",
+        m.month,
+        m.activity,
+        m.assigned,
+        m.available
+    FROM
+        "Month" m
+    JOIN
+        "Category" c ON m."categoryId" = c.id
+    WHERE
+        c."userId" = ${userId}
+    ORDER BY
+        m."categoryId",
+        m.month DESC;
+      `,
+    )) as Month[];
+
+    return mostRecentMonths;
+  },
+
   // ──────────────── Month Mutation ────────────────
   createMonths: async (tx, months) => {
     await tx.month.createMany({ data: months, skipDuplicates: true });
