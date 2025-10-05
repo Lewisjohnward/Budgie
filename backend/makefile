@@ -19,13 +19,13 @@ help:
 	@echo "Database Management:"
 	@echo "  run-db                     Start database container."
 	@echo "  setup-db                   Set up database schema (generate client, run migrations)."
-	@echo "  db-remove                  Stop and remove the database container."
-	@echo "  db-remove-data             Remove the database data volume."
+	@echo "  stop-db                    Stop and remove the database container."
+	@echo "  remove-db-data             Remove the database data volume."
 	@echo "  prisma-gui                 Open Prisma Studio GUI."
 	@echo ""
 	@echo "Testing:"
 	@echo "  run-integration-test-db    (Manual) Start the integration test database."
-	@echo "  remove-integration-test-db (Manual) Stop and remove the test database."
+	@echo "  stop-integration-test-db   (Manual) Stop and remove the test database."
 	@echo ""
 	@echo "Backup & Restore:"
 	@echo "  backup-budgie-data         Back up the database data volume."
@@ -56,20 +56,29 @@ setup-db:
 	npx prisma migrate dev --name init --schema=$(PRISMA_SCHEMA_PATH)
 
 # Cleanup Commands
-db-remove:
+stop-db:
 	@echo "Stopping and removing $(DB_NAME) container..."
 	-docker container stop $(DB_NAME)
 	-docker container rm $(DB_NAME)
 
-db-remove-data:
-	@echo "Removing persistent data volume..."
-	-docker volume rm $(DB_VOLUME_NAME)
+remove-db-data:
+	@echo 'WARNING: This will permanently delete the database volume: $(DB_VOLUME_NAME).'
+	@printf "Are you sure you want to continue? [y/N] "; \
+	read REPLY; \
+	case $$REPLY in \
+		[yY]) \
+			echo "Removing persistent data volume..."; \
+			docker volume rm $(DB_VOLUME_NAME) || true; \
+			;; \
+		*) \
+			echo "Aborted."; \
+			;; \
+	esac
 
 # Development Tools
 prisma-gui:
 	npx prisma studio --schema=$(PRISMA_SCHEMA_PATH)
 
-# Integration Testing
 run-integration-test-db:
 	@echo "Starting test database container..."
 	docker run --name $(INTEGRATION_TEST_DB_NAME) \
@@ -79,7 +88,7 @@ run-integration-test-db:
 		-p $(TEST_DB_PORT):5432 \
 		-d postgres
 
-remove-integration-test-db:
+stop-integration-test-db:
 	@echo "Stopping and removing $(INTEGRATION_TEST_DB_NAME) container..."
 	-docker container stop $(INTEGRATION_TEST_DB_NAME)
 	-docker container rm $(INTEGRATION_TEST_DB_NAME)
