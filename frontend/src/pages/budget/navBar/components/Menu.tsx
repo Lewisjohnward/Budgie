@@ -15,6 +15,7 @@ import { logOut } from "@/core/slices/authSlice";
 import { useLogoutMutation } from "@/core/api/authApiSlice";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
 import { toggleManagePayees } from "@/core/slices/dialogSlice";
+import { apiSlice } from "@/core/api/apiSlice";
 
 // TODO: Hookup Navigate to settings button
 
@@ -43,8 +44,9 @@ const useMenuActions = () => {
   async function handleLogout() {
     dispatch(logOut());
     logout();
+    dispatch(apiSlice.util.resetApiState());
   }
-  const toggleDialog = () => dispatch(toggleManagePayees()); 
+  const toggleDialog = () => dispatch(toggleManagePayees());
   return { handleLogout, toggleDialog };
 };
 
