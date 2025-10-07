@@ -9,7 +9,7 @@ TEST_DB_PORT=5433
 INTEGRATION_TEST_DB_NAME=budgie_test_db
 PRISMA_SCHEMA_PATH=src/shared/prisma/schema.prisma
 
-.PHONY: help run-db setup-db db-remove db-remove-data wipe-db-reset-be prisma-gui run-integration-test-db remove-integration-test-db test-integration backup-pgdata restore-pgdata start-be-db-with-restore
+.PHONY: help run-db setup-db db-remove-data prisma-gui run-integration-test-db remove-integration-test-db backup-db-data restore-db-data
 
 .DEFAULT_GOAL := help
 
@@ -28,8 +28,8 @@ help:
 	@echo "  stop-integration-test-db   (Manual) Stop and remove the test database."
 	@echo ""
 	@echo "Backup & Restore:"
-	@echo "  backup-budgie-data         Back up the database data volume."
-	@echo "  restore-budgie-data        Restore the database from a backup."
+	@echo "  backup-db-data         Back up the database data volume."
+	@echo "  restore-db-data        Restore the database from a backup."
 	@echo ""
 	@echo "How to restore the database:"
 	@echo "  1. Stop the backend"
@@ -95,7 +95,7 @@ stop-integration-test-db:
 
 
 # Backup & Restore
-backup-budgie-data:
+backup-db-data:
 	@echo "Backing up db data..."
 	@BACKUP_FILE="budgie_backup_$(shell date +%Y-%m-%d_%H-%M-%S).tar.gz"; \
 	echo "Creating backup: $$BACKUP_FILE"; \
@@ -105,7 +105,7 @@ backup-budgie-data:
 	  alpine \
 	  tar czf /backup/$$BACKUP_FILE -C /volume .
 
-restore-budgie-data:
+restore-db-data:
 	@echo "Restoring db data from latest backup..."
 	@LATEST_BACKUP=$(shell ls -t budgie_backup_*.tar.gz 2>/dev/null | head -n 1); \
 	if [ -z "$$LATEST_BACKUP" ]; then \
