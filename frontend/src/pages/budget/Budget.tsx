@@ -16,7 +16,7 @@ export default function BudgetPage() {
   }
     return <main className="flex h-dvh">
       <Navbar />
-      <div className="flex-grow">
+      <div className="flex-grow overflow-scroll">
         <Outlet />
       </div>
       <ManagePayees />
