@@ -4,42 +4,44 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/core/components/uiLibrary/popover";
-import { usePopover } from "@/pages/budget/account/components/transactionFormRow/selectCategory";
 import { ChevronDown } from "lucide-react";
 import { useFormContext } from "react-hook-form";
+import { PopoverArrow } from "@radix-ui/react-popover";
+import { SelectDateModel } from "../../../hooks/useTransactionFormRow";
 
-export function DatePickerDemo() {
+type SelectDateProps = {
+  selectDate: SelectDateModel;
+};
+
+export function SelectDate({ selectDate }: SelectDateProps) {
   const { setValue, watch } = useFormContext();
 
   const date = watch("date");
-  const setDate = (date: Date | undefined) => {
-    if (!date) {
-      setValue("date", date, { shouldDirty: true });
+
+  const handlePointerDownOutside = (e: Event) => {
+    // Don't close if clicking the input
+    if (selectDate.ref.current?.contains(e.target as Node)) {
+      e.preventDefault();
       return;
     }
-    const utcDate = new Date(
-      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
-    );
-    setValue("date", utcDate, { shouldDirty: true });
+    selectDate.popover.close();
   };
 
-  const popover = usePopover();
-  const input = "12/12/25";
-  const handleInputChange = () => { };
-
   return (
-    <Popover open={popover.isOpen}>
+    <Popover open={selectDate.popover.isOpen}>
       <PopoverTrigger asChild>
         <div className="flex items-center pr-2 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 rounded-sm overflow-hidden">
           <input
             className="px-2 w-full rounded-sm text-ellipsis focus:outline-none focus:ring-0"
             placeholder="Payee"
-            onFocus={popover.handleOpen}
-            value={input}
-            onChange={handleInputChange}
+            ref={selectDate.ref}
+            onFocus={selectDate.popover.open}
+            value={selectDate.input}
+            // onBlur={selectDate.onBlur}
+            onChange={selectDate.onChange}
             onKeyDown={(e) => {
               if (e.key === "Tab") {
-                popover.handleClose();
+                selectDate.popover.close();
               }
             }}
           />
@@ -48,14 +50,16 @@ export function DatePickerDemo() {
       </PopoverTrigger>
       <PopoverContent
         onOpenAutoFocus={(e) => e.preventDefault()}
-        onPointerDownOutside={popover.handleClose}
+        onPointerDownOutside={handlePointerDownOutside}
         className="w-auto p-0 border border-white"
       >
+        <PopoverArrow className="w-8 h-2 fill-white" />
         <Calendar
           mode="single"
           className="border-sky-950"
+          month={date}
           selected={date}
-          onSelect={setDate}
+          onSelect={selectDate.select}
         />
       </PopoverContent>
     </Popover>

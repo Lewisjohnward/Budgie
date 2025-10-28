@@ -26,7 +26,7 @@ export function CategoryGroupRow({
     <>
       <ExpandButton open={categoryGroup.open} onClick={onExpandClick} />
       <div className="flex min-w-0 items-center gap-2">
-        <Checkbox className="size-3 rounded-[2px] shadow-none" />
+        <Checkbox className="[&_svg]:h-3 [&_svg]:w-3 size-3 rounded-[2px] shadow-none" />
         <p className={`${darkBlueText} font-bold truncate`}>
           {categoryGroup.name}
         </p>

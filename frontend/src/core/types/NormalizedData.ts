@@ -41,7 +41,7 @@ export type NormalizedData = {
   categoryGroups: { [key: string]: CategoryGroup };
 };
 
-type CategoryGroup = {
+export type CategoryGroup = {
   id: string;
   name: string;
   categories: string[];
