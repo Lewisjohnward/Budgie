@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { AssignView } from "./AssignView";
 import { SelectedCategoriesState } from "../hooks/useSelectedCategories";
 import { Category } from "@/core/types/NormalizedData";
 import { useState } from "react";
@@ -55,7 +54,7 @@ const createMockSelectedCategories = (
   },
   currentMonthName: "January",
   open: true,
-  toggleOpen: () => {},
+  toggleOpen: () => { },
   ...overrides,
 });
 
@@ -65,19 +64,19 @@ const createMockAutoAssign = (
   assign: {
     amount: () => 0,
     display: true,
-    handler: () => {},
+    handler: () => { },
   },
   modal: {
     open: false,
-    toggleOpen: () => {},
+    toggleOpen: () => { },
     fundingState: null,
-    onConfirm: () => {},
-    onClose: () => {},
-    onNextMonth: () => {},
+    onConfirm: () => { },
+    onClose: () => { },
+    onNextMonth: () => { },
   },
   ui: {
     open: true,
-    toggleOpen: () => {},
+    toggleOpen: () => { },
   },
   ...overrides,
 });
@@ -85,11 +84,11 @@ const createMockAutoAssign = (
 const createMockNotes = (overrides: Partial<NotesState> = {}): NotesState => ({
   notes: {
     text: "",
-    setText: () => {},
+    setText: () => { },
   },
   ui: {
     open: true,
-    toggle: () => {},
+    toggle: () => { },
   },
   ...overrides,
 });
@@ -180,7 +179,7 @@ export const WithSelectedCategories: Story = {
       assign: {
         amount: () => 500.0,
         display: true,
-        handler: () => {},
+        handler: () => { },
       },
     }),
     notes: createMockNotes(),
@@ -216,7 +215,7 @@ export const HighBudgetAmounts: Story = {
       assign: {
         amount: () => 2500.0,
         display: true,
-        handler: () => {},
+        handler: () => { },
       },
     }),
     notes: createMockNotes(),
@@ -242,11 +241,11 @@ export const AutoAssignClosed: Story = {
       assign: {
         amount: () => 300.0,
         display: true,
-        handler: () => {},
+        handler: () => { },
       },
       ui: {
         open: false,
-        toggleOpen: () => {},
+        toggleOpen: () => { },
       },
     }),
     notes: createMockNotes(),
@@ -276,7 +275,7 @@ export const CategoryDetailsClosed: Story = {
       assign: {
         amount: () => 150.0,
         display: true,
-        handler: () => {},
+        handler: () => { },
       },
     }),
     notes: createMockNotes(),
@@ -308,7 +307,7 @@ export const NoFundingAvailable: Story = {
       assign: {
         amount: () => 0,
         display: false,
-        handler: () => {},
+        handler: () => { },
       },
     }),
     notes: createMockNotes(),
@@ -346,11 +345,11 @@ export const MixedStates: Story = {
       assign: {
         amount: () => 1200.0,
         display: true,
-        handler: () => {},
+        handler: () => { },
       },
       ui: {
         open: false,
-        toggleOpen: () => {},
+        toggleOpen: () => { },
       },
     }),
     notes: createMockNotes(),

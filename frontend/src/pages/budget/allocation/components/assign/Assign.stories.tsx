@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Assign } from "./Assign";
 import { Provider } from "react-redux";
 import { createStore } from "@/core/store/store";
+import { Assign } from "./components";
 
 const store = createStore();
 

@@ -35,7 +35,7 @@ export function CategoryRow({
   const currency = "£";
 
   const selected = selectedCategoryState.selected.some(
-    (c) => c.id === category.id,
+    (c) => c.id === category.id
   );
 
   const { data } = useGetCategoriesQuery();
@@ -44,7 +44,7 @@ export function CategoryRow({
     inputRef.current?.focus();
     if (e.ctrlKey) {
       const exists = selectedCategoryState.selected.some(
-        (c) => c.id === category.id,
+        (c) => c.id === category.id
       );
       if (exists) {
         dispatch(removeCategories([category]));
@@ -68,19 +68,19 @@ export function CategoryRow({
           if (selectedCategoryState.selected.length === 1) {
             const selectedCategories = categories.slice(
               endIndex,
-              prevIndex + 1,
+              prevIndex + 1
             );
             const newCategories = selectedCategories.filter(
               (cat) =>
                 !selectedCategoryState.selected.some(
-                  (selected) => selected.id === cat.id,
-                ),
+                  (selected) => selected.id === cat.id
+                )
             );
             dispatch(addCategories(newCategories));
           } else {
             const categoriesToRemove = categories.slice(
               endIndex + 1,
-              prevIndex + 1,
+              prevIndex + 1
             );
             dispatch(removeCategories(categoriesToRemove));
           }
@@ -89,8 +89,8 @@ export function CategoryRow({
           const newCategories = selectedCategories.filter(
             (cat) =>
               !selectedCategoryState.selected.some(
-                (selected) => selected.id === cat.id,
-              ),
+                (selected) => selected.id === cat.id
+              )
           );
           dispatch(addCategories(newCategories));
         }
@@ -122,7 +122,7 @@ export function CategoryRow({
           <EmptyCell />
           <div className="flex items-center min-w-0 gap-4">
             <Checkbox
-              className="size-3 rounded-[2px] shadow-none"
+              className="[&_svg]:h-3 [&_svg]:w-3 size-3 rounded-[2px] shadow-none"
               checked={selected}
               onClick={(e) => {
                 e.stopPropagation();

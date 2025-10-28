@@ -16,7 +16,7 @@ export function UncategorisedRow({
     <>
       <EmptyCell />
       <div className="flex items-center gap-4">
-        <Checkbox className="size-3 rounded-[2px] shadow-none" />
+        <Checkbox className="[&_svg]:h-3 [&_svg]:w-3 size-3 rounded-[2px] shadow-none" />
         <p>Uncategorised Transactions</p>
       </div>
       <p className="px-[5px] text-right">-</p>
