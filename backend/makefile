@@ -1,5 +1,6 @@
 # Database Configuration
-DB_NAME=budgie_db
+DB_CONTAINER_NAME=budgie_db
+DB_NAME=mydb
 DB_VOLUME_NAME=budgie_data
 DB_USER=myuser
 DB_PASSWORD=mypassword
@@ -32,17 +33,15 @@ help:
 	@echo "  restore-db-data        Restore the database from a backup."
 	@echo ""
 	@echo "How to restore the database:"
-	@echo "  1. Stop the backend"
-	@echo "  2. Stop the database"
-	@echo "  3. Remove the database data volume"
-	@echo "  4. Restore the database"
-	@echo "  5. Start the database"
-	@echo "  6. Start the backend"
+	@echo "  1. Ensure the database container is running (make run-db)"
+	@echo "  2. Run: make restore-db-data"
+	@echo "  3. Confirm when prompted"
+	@echo "  Note: The database will be dropped and recreated from backup"
 
 # Development Database
 run-db:
 	@echo "Starting PostgreSQL container..."
-	docker run --name $(DB_NAME) \
+	docker run --name $(DB_CONTAINER_NAME) \
 		-e POSTGRES_USER=$(DB_USER) \
 		-e POSTGRES_PASSWORD=$(DB_PASSWORD) \
 		-e POSTGRES_DB=$(DB_NAME) \
@@ -57,9 +56,9 @@ setup-db:
 
 # Cleanup Commands
 stop-db:
-	@echo "Stopping and removing $(DB_NAME) container..."
-	-docker container stop $(DB_NAME)
-	-docker container rm $(DB_NAME)
+	@echo "Stopping and removing $(DB_CONTAINER_NAME) container..."
+	-docker container stop $(DB_CONTAINER_NAME)
+	-docker container rm $(DB_CONTAINER_NAME)
 
 remove-db-data:
 	@echo 'WARNING: This will permanently delete the database volume: $(DB_VOLUME_NAME).'
@@ -96,26 +95,36 @@ stop-integration-test-db:
 
 # Backup & Restore
 backup-db-data:
-	@echo "Backing up db data..."
-	@BACKUP_FILE="budgie_backup_$(shell date +%Y-%m-%d_%H-%M-%S).tar.gz"; \
+	@echo "Backing up database using pg_dump..."
+	@BACKUP_FILE="budgie_backup_$(shell date +%Y-%m-%d_%H-%M-%S).dump"; \
 	echo "Creating backup: $$BACKUP_FILE"; \
-	docker run --rm \
-	  -v $(DB_VOLUME_NAME):/volume \
-	  -v $(shell pwd):/backup \
-	  alpine \
-	  tar czf /backup/$$BACKUP_FILE -C /volume .
+	docker exec $(DB_CONTAINER_NAME) pg_dump -U $(DB_USER) -Fc -d $(DB_NAME) > $$BACKUP_FILE && \
+	echo "Backup completed successfully: $$BACKUP_FILE"
 
 restore-db-data:
-	@echo "Restoring db data from latest backup..."
-	@LATEST_BACKUP=$(shell ls -t budgie_backup_*.tar.gz 2>/dev/null | head -n 1); \
+	@echo "Restoring database from latest backup..."
+	@LATEST_BACKUP=$(shell ls -t budgie_backup_*.dump 2>/dev/null | head -n 1); \
 	if [ -z "$$LATEST_BACKUP" ]; then \
 		echo "Error: No backup file found."; \
 		exit 1; \
 	fi; \
 	echo "Using backup file: $$LATEST_BACKUP"; \
-	docker volume create $(DB_VOLUME_NAME); \
-	docker run --rm \
-	  -v $(DB_VOLUME_NAME):/volume \
-	  -v $(shell pwd):/backup \
-	  alpine \
-	  sh -c "cd /volume && tar xzf /backup/$$LATEST_BACKUP"
+	echo "WARNING: This will drop and recreate the database."; \
+	printf "Are you sure you want to continue? [y/N] "; \
+	read REPLY; \
+	case $$REPLY in \
+		[yY]) \
+			echo "Terminating active connections to database..."; \
+			docker exec $(DB_CONTAINER_NAME) psql -U $(DB_USER) -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = '$(DB_NAME)' AND pid <> pg_backend_pid();"; \
+			echo "Dropping existing database..."; \
+			docker exec $(DB_CONTAINER_NAME) psql -U $(DB_USER) -d postgres -c "DROP DATABASE IF EXISTS $(DB_NAME);"; \
+			echo "Creating fresh database..."; \
+			docker exec $(DB_CONTAINER_NAME) psql -U $(DB_USER) -d postgres -c "CREATE DATABASE $(DB_NAME);"; \
+			echo "Restoring from backup..."; \
+			docker exec -i $(DB_CONTAINER_NAME) pg_restore -U $(DB_USER) -d $(DB_NAME) --clean --if-exists -v < $$LATEST_BACKUP && \
+			echo "Restore completed successfully."; \
+			;; \
+		*) \
+			echo "Aborted."; \
+			;; \
+	esac
