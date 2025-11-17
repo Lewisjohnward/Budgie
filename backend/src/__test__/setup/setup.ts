@@ -4,7 +4,7 @@ import { prisma } from "../../shared/prisma/client";
 
 module.exports = async () => {
   process.env.DATABASE_URL =
-    "postgresql://user:password@localhost:5433/app_test";
+    "postgresql://myuser:mypassword@localhost:5433/budgie_test_db";
 
   const schemaPath = path.resolve(
     __dirname,
