@@ -20,7 +20,7 @@ type MonthSlice = Pick<Month, "month" | "activity" | "available" | "assigned">;
 
 export const calculateCategoryMonths = <M extends MonthSlice>(
   categoryMonths: M[],
-  changeInAssigned: Decimal,
+  changeInAssigned: Decimal
 ) => {
   const clone = categoryMonths.map((m) => ({ ...m }));
 
@@ -94,7 +94,7 @@ export function calculateMonthsByCategoryId(
     (Omit<Transaction, "id"> & { id?: string })[]
   >,
   monthsGroupedByCategoryId: Record<string, Month[]>,
-  mode: OperationMode,
+  mode: OperationMode
 ) {
   const updatedMonthsByCategoryId: Record<string, Month[]> = {};
 
@@ -135,43 +135,44 @@ import { OperationMode } from "../../../../shared/enums/operation-mode";
 type TxSlice = Pick<Transaction, "inflow" | "outflow" | "date">;
 
 export const adjustMonthsForMultipleTransactions = <
-  M extends Pick<Month, "month" | "activity" | "available">,
+  M extends Pick<Month, "month" | "activity" | "available" | "assigned">
 >(
   txs: Array<TxSlice>,
   months: M[],
-  mode: OperationMode,
+  mode: OperationMode
 ) => {
-  const clone = txs.map((tx) => ({ ...tx }));
+  const clone = months.map((m) => ({ ...m }));
 
-  for (const tx of clone) {
+  for (const tx of txs) {
     const { inflow, outflow, date: txDate } = tx;
     const baseChange = inflow.sub(outflow);
     const change = mode === OperationMode.Add ? baseChange.neg() : baseChange;
 
-    const monthIndex = months.findIndex(
-      (m) => m.month.getTime() >= txDate.getTime(),
+    const monthIndex = clone.findIndex(
+      (m) => m.month.getTime() >= txDate.getTime()
     );
 
     if (monthIndex === -1) continue;
     let remainingPositiveAvailable: Decimal = ZERO;
-    for (let i = monthIndex; i < months.length; i++) {
-      const month = months[i];
+    for (let i = monthIndex; i < clone.length; i++) {
+      const month = clone[i];
       if (month.month.getTime() === txDate.getTime()) {
         month.activity = month.activity.sub(change);
         month.available = month.available.sub(change);
       }
 
       if (month.month.getTime() > txDate.getTime()) {
-        month.available = remainingPositiveAvailable.add(month.activity);
+        month.available = month.activity
+          .add(month.assigned)
+          .add(remainingPositiveAvailable);
       }
-
       remainingPositiveAvailable = month.available.gte(0)
         ? month.available
         : ZERO;
     }
   }
 
-  return months;
+  return clone;
 };
 
 /**

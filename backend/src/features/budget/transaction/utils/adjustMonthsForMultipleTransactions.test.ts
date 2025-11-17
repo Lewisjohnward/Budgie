@@ -1,10 +1,10 @@
 import { Month, Transaction } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
-import { adjustMonthsForMultipleTransactions } from "./adjustMonthsForMultipleTransactions";
 import { OperationMode } from "../../../../shared/enums/operation-mode";
+import { adjustMonthsForMultipleTransactions } from "../../category/domain/month.domain";
 
 type TxStub = Pick<Transaction, "inflow" | "outflow" | "date">;
-type MonthStub = Pick<Month, "month" | "activity" | "available">;
+type MonthStub = Pick<Month, "month" | "activity" | "available" | "assigned">;
 
 const expectDecimalToBe = (received: Decimal, expected: number) =>
   expect(received.toNumber()).toBe(expected);
@@ -20,14 +20,16 @@ describe("adjustMonthsTxToDelete", () => {
         },
       ];
 
-      const months: MonthStub[] = [
+      const months = [
         {
           month: new Date("2025-06-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(100),
           available: new Decimal(100),
         },
         {
           month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(100),
         },
@@ -36,13 +38,86 @@ describe("adjustMonthsTxToDelete", () => {
       const updatedMonths = adjustMonthsForMultipleTransactions(
         txs,
         months,
-        OperationMode.Delete,
+        OperationMode.Delete
       );
 
       expectDecimalToBe(updatedMonths[0].activity, 0);
       expectDecimalToBe(updatedMonths[0].available, 0);
       expectDecimalToBe(updatedMonths[1].activity, 0);
       expectDecimalToBe(updatedMonths[1].available, 0);
+    });
+
+    it("should adjust activity and available when deleting inflow transaction with assigned", () => {
+      const txs: TxStub[] = [
+        {
+          inflow: new Decimal(100),
+          outflow: new Decimal(0),
+          date: new Date("2025-06-01T00:00:00Z"),
+        },
+      ];
+
+      const months = [
+        {
+          month: new Date("2025-06-01T00:00:00Z"),
+          assigned: new Decimal(100),
+          activity: new Decimal(100),
+          available: new Decimal(200),
+        },
+        {
+          month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(20),
+          activity: new Decimal(0),
+          available: new Decimal(220),
+        },
+      ];
+
+      const updatedMonths = adjustMonthsForMultipleTransactions(
+        txs,
+        months,
+        OperationMode.Delete
+      );
+
+      expectDecimalToBe(updatedMonths[0].activity, 0);
+      expectDecimalToBe(updatedMonths[0].available, 100);
+      expectDecimalToBe(updatedMonths[1].activity, 0);
+      expectDecimalToBe(updatedMonths[1].available, 120);
+    });
+
+    // this one is where i changed it!!
+    it("should adjust activity and available when deleting outflow transaction with assigned", () => {
+      const txs: TxStub[] = [
+        {
+          inflow: new Decimal(0),
+          outflow: new Decimal(100),
+          date: new Date("2025-06-01T00:00:00Z"),
+        },
+      ];
+
+      const months = [
+        {
+          month: new Date("2025-06-01T00:00:00Z"),
+          assigned: new Decimal(200),
+          activity: new Decimal(-100),
+          available: new Decimal(100),
+        },
+        {
+          month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(0),
+          activity: new Decimal(0),
+          available: new Decimal(100),
+        },
+      ];
+
+      const updatedMonths = adjustMonthsForMultipleTransactions(
+        txs,
+        months,
+        OperationMode.Delete
+      );
+
+      expectDecimalToBe(updatedMonths[0].activity, 0);
+      expectDecimalToBe(updatedMonths[0].available, 200);
+      expectDecimalToBe(updatedMonths[1].activity, 0);
+      expectDecimalToBe(updatedMonths[1].available, 200);
     });
 
     it("should adjust activity and available when deleting outflow transaction", () => {
@@ -57,11 +132,13 @@ describe("adjustMonthsTxToDelete", () => {
       const months: MonthStub[] = [
         {
           month: new Date("2025-06-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(-100),
           available: new Decimal(-100),
         },
         {
           month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
@@ -70,7 +147,7 @@ describe("adjustMonthsTxToDelete", () => {
       const updatedMonths = adjustMonthsForMultipleTransactions(
         txs,
         months,
-        OperationMode.Delete,
+        OperationMode.Delete
       );
 
       expectDecimalToBe(updatedMonths[0].activity, 0);
@@ -90,21 +167,25 @@ describe("adjustMonthsTxToDelete", () => {
       const months: MonthStub[] = [
         {
           month: new Date("2025-06-01T00:00:00Z"),
-          activity: new Decimal(0),
-          available: new Decimal(0),
+          assigned: new Decimal(0),
+          activity: new Decimal(-40),
+          available: new Decimal(-40),
         },
         {
           month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(-40),
           available: new Decimal(-40),
         },
         {
           month: new Date("2025-08-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(-10),
           available: new Decimal(-10),
         },
         {
           month: new Date("2025-09-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
@@ -113,14 +194,14 @@ describe("adjustMonthsTxToDelete", () => {
       const updatedMonths = adjustMonthsForMultipleTransactions(
         txs,
         months,
-        OperationMode.Delete,
+        OperationMode.Delete
       );
 
-      expectDecimalToBe(updatedMonths[0].activity, 40);
-      expectDecimalToBe(updatedMonths[0].available, 40);
+      expectDecimalToBe(updatedMonths[0].activity, 0);
+      expectDecimalToBe(updatedMonths[0].available, 0);
 
       expectDecimalToBe(updatedMonths[1].activity, -40);
-      expectDecimalToBe(updatedMonths[1].available, 0);
+      expectDecimalToBe(updatedMonths[1].available, -40);
 
       expectDecimalToBe(updatedMonths[2].activity, -10);
       expectDecimalToBe(updatedMonths[2].available, -10);
@@ -141,11 +222,13 @@ describe("adjustMonthsTxToDelete", () => {
       const months: MonthStub[] = [
         {
           month: new Date("2025-06-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(-200),
           available: new Decimal(-200),
         },
         {
           month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
@@ -154,7 +237,7 @@ describe("adjustMonthsTxToDelete", () => {
       const updatedMonths = adjustMonthsForMultipleTransactions(
         txs,
         months,
-        OperationMode.Delete,
+        OperationMode.Delete
       );
 
       expectDecimalToBe(updatedMonths[0].activity, -100);
@@ -175,11 +258,13 @@ describe("adjustMonthsTxToDelete", () => {
       const months: MonthStub[] = [
         {
           month: new Date("2025-06-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(-200),
           available: new Decimal(-200),
         },
         {
           month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
@@ -188,7 +273,7 @@ describe("adjustMonthsTxToDelete", () => {
       const updatedMonths = adjustMonthsForMultipleTransactions(
         txs,
         months,
-        OperationMode.Delete,
+        OperationMode.Delete
       );
 
       expectDecimalToBe(updatedMonths[0].activity, -200);
@@ -209,16 +294,19 @@ describe("adjustMonthsTxToDelete", () => {
       const months: MonthStub[] = [
         {
           month: new Date("2025-06-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(10),
           available: new Decimal(10),
         },
         {
           month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(-10),
           available: new Decimal(0),
         },
         {
           month: new Date("2025-08-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(-10),
           available: new Decimal(-10),
         },
@@ -227,7 +315,7 @@ describe("adjustMonthsTxToDelete", () => {
       const updatedMonths = adjustMonthsForMultipleTransactions(
         txs,
         months,
-        OperationMode.Delete,
+        OperationMode.Delete
       );
 
       expectDecimalToBe(updatedMonths[0].activity, 0);
@@ -250,16 +338,19 @@ describe("adjustMonthsTxToDelete", () => {
       const months: MonthStub[] = [
         {
           month: new Date("2025-06-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
         {
           month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
         {
           month: new Date("2025-08-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
@@ -268,7 +359,7 @@ describe("adjustMonthsTxToDelete", () => {
       const updatedMonths = adjustMonthsForMultipleTransactions(
         txs,
         months,
-        OperationMode.Delete,
+        OperationMode.Delete
       );
 
       expectDecimalToBe(updatedMonths[0].activity, -10);
@@ -291,16 +382,19 @@ describe("adjustMonthsTxToDelete", () => {
       const months: MonthStub[] = [
         {
           month: new Date("2025-06-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
         {
           month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
         {
           month: new Date("2025-08-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
@@ -309,7 +403,7 @@ describe("adjustMonthsTxToDelete", () => {
       const updatedMonths = adjustMonthsForMultipleTransactions(
         txs,
         months,
-        OperationMode.Delete,
+        OperationMode.Delete
       );
 
       expectDecimalToBe(updatedMonths[0].activity, 10);
@@ -332,11 +426,13 @@ describe("adjustMonthsTxToDelete", () => {
       const months: MonthStub[] = [
         {
           month: new Date("2025-06-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(-10),
           available: new Decimal(-10),
         },
         {
           month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
@@ -345,7 +441,7 @@ describe("adjustMonthsTxToDelete", () => {
       const updatedMonths = adjustMonthsForMultipleTransactions(
         txs,
         months,
-        OperationMode.Delete,
+        OperationMode.Delete
       );
 
       expectDecimalToBe(updatedMonths[0].activity, -20);
@@ -366,11 +462,13 @@ describe("adjustMonthsTxToDelete", () => {
       const months: MonthStub[] = [
         {
           month: new Date("2025-06-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(-5),
           available: new Decimal(-5),
         },
         {
           month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
@@ -379,13 +477,48 @@ describe("adjustMonthsTxToDelete", () => {
       const updatedMonths = adjustMonthsForMultipleTransactions(
         txs,
         months,
-        OperationMode.Delete,
+        OperationMode.Delete
       );
 
       expectDecimalToBe(updatedMonths[0].activity, 5);
       expectDecimalToBe(updatedMonths[0].available, 5);
       expectDecimalToBe(updatedMonths[1].activity, 0);
       expectDecimalToBe(updatedMonths[1].available, 5);
+    });
+    it("should correctly handle deleting transactions in past ", () => {
+      const txs: TxStub[] = [
+        {
+          inflow: new Decimal(0),
+          outflow: new Decimal(300),
+          date: new Date("2025-06-01T00:00:00Z"),
+        },
+      ];
+
+      const months: MonthStub[] = [
+        {
+          month: new Date("2025-06-01T00:00:00Z"),
+          assigned: new Decimal(0),
+          activity: new Decimal(-300),
+          available: new Decimal(-300),
+        },
+        {
+          month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(25),
+          activity: new Decimal(-250),
+          available: new Decimal(-225),
+        },
+      ];
+
+      const updatedMonths = adjustMonthsForMultipleTransactions(
+        txs,
+        months,
+        OperationMode.Delete
+      );
+
+      expectDecimalToBe(updatedMonths[0].activity, 0);
+      expectDecimalToBe(updatedMonths[0].available, 0);
+      expectDecimalToBe(updatedMonths[1].activity, -250);
+      expectDecimalToBe(updatedMonths[1].available, -225);
     });
   });
 
@@ -399,14 +532,16 @@ describe("adjustMonthsTxToDelete", () => {
         },
       ];
 
-      const months: MonthStub[] = [
+      const months = [
         {
           month: new Date("2025-06-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
         {
           month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
@@ -415,13 +550,83 @@ describe("adjustMonthsTxToDelete", () => {
       const updatedMonths = adjustMonthsForMultipleTransactions(
         txs,
         months,
-        OperationMode.Add,
+        OperationMode.Add
       );
 
       expectDecimalToBe(updatedMonths[0].activity, 100);
       expectDecimalToBe(updatedMonths[0].available, 100);
       expectDecimalToBe(updatedMonths[1].activity, 0);
       expectDecimalToBe(updatedMonths[1].available, 100);
+    });
+    it("should correctly add inflow tx in past", () => {
+      const txs: TxStub[] = [
+        {
+          inflow: new Decimal(200),
+          outflow: new Decimal(0),
+          date: new Date("2025-06-01T00:00:00Z"),
+        },
+      ];
+
+      const months = [
+        {
+          month: new Date("2025-06-01T00:00:00Z"),
+          assigned: new Decimal(0),
+          activity: new Decimal(0),
+          available: new Decimal(300),
+        },
+        {
+          month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(250),
+          activity: new Decimal(-250),
+          available: new Decimal(300),
+        },
+      ];
+
+      const updatedMonths = adjustMonthsForMultipleTransactions(
+        txs,
+        months,
+        OperationMode.Add
+      );
+
+      expectDecimalToBe(updatedMonths[0].activity, 200);
+      expectDecimalToBe(updatedMonths[0].available, 500);
+      expectDecimalToBe(updatedMonths[1].activity, -250);
+      expectDecimalToBe(updatedMonths[1].available, 500);
+    });
+    it("should correctly outflow add tx in past", () => {
+      const txs: TxStub[] = [
+        {
+          inflow: new Decimal(0),
+          outflow: new Decimal(300),
+          date: new Date("2025-06-01T00:00:00Z"),
+        },
+      ];
+
+      const months = [
+        {
+          month: new Date("2025-06-01T00:00:00Z"),
+          assigned: new Decimal(0),
+          activity: new Decimal(0),
+          available: new Decimal(300),
+        },
+        {
+          month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(250),
+          activity: new Decimal(-250),
+          available: new Decimal(300),
+        },
+      ];
+
+      const updatedMonths = adjustMonthsForMultipleTransactions(
+        txs,
+        months,
+        OperationMode.Add
+      );
+
+      expectDecimalToBe(updatedMonths[0].activity, -300);
+      expectDecimalToBe(updatedMonths[0].available, 0);
+      expectDecimalToBe(updatedMonths[1].activity, -250);
+      expectDecimalToBe(updatedMonths[1].available, 0);
     });
     it("fix the single transaction bug", () => {
       const txs: TxStub[] = [
@@ -432,24 +637,28 @@ describe("adjustMonthsTxToDelete", () => {
         },
       ];
 
-      const months: MonthStub[] = [
+      const months = [
         {
           month: new Date("2025-06-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(40),
           available: new Decimal(40),
         },
         {
           month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(-40),
           available: new Decimal(0),
         },
         {
           month: new Date("2025-08-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(-10),
           available: new Decimal(-10),
         },
         {
           month: new Date("2025-09-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
@@ -458,7 +667,7 @@ describe("adjustMonthsTxToDelete", () => {
       const updatedMonths = adjustMonthsForMultipleTransactions(
         txs,
         months,
-        OperationMode.Add,
+        OperationMode.Add
       );
 
       expectDecimalToBe(updatedMonths[0].activity, 0);
@@ -482,19 +691,22 @@ describe("adjustMonthsTxToDelete", () => {
         },
       ];
 
-      const months: MonthStub[] = [
+      const months = [
         {
           month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(-40),
           available: new Decimal(0),
         },
         {
           month: new Date("2025-08-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(-10),
           available: new Decimal(-10),
         },
         {
           month: new Date("2025-09-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
@@ -503,7 +715,7 @@ describe("adjustMonthsTxToDelete", () => {
       const updatedMonths = adjustMonthsForMultipleTransactions(
         txs,
         months,
-        OperationMode.Add,
+        OperationMode.Add
       );
 
       expectDecimalToBe(updatedMonths[0].activity, -80);
@@ -524,19 +736,22 @@ describe("adjustMonthsTxToDelete", () => {
         },
       ];
 
-      const months: MonthStub[] = [
+      const months = [
         {
           month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(-40),
           available: new Decimal(0),
         },
         {
           month: new Date("2025-08-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(-10),
           available: new Decimal(-10),
         },
         {
           month: new Date("2025-09-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
@@ -545,7 +760,7 @@ describe("adjustMonthsTxToDelete", () => {
       const updatedMonths = adjustMonthsForMultipleTransactions(
         txs,
         months,
-        OperationMode.Add,
+        OperationMode.Add
       );
 
       expectDecimalToBe(updatedMonths[0].activity, 0);
@@ -566,19 +781,22 @@ describe("adjustMonthsTxToDelete", () => {
         },
       ];
 
-      const months: MonthStub[] = [
+      const months = [
         {
           month: new Date("2025-07-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(-40),
           available: new Decimal(0),
         },
         {
           month: new Date("2025-08-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(-10),
           available: new Decimal(-10),
         },
         {
           month: new Date("2025-09-01T00:00:00Z"),
+          assigned: new Decimal(0),
           activity: new Decimal(0),
           available: new Decimal(0),
         },
@@ -587,7 +805,7 @@ describe("adjustMonthsTxToDelete", () => {
       const updatedMonths = adjustMonthsForMultipleTransactions(
         txs,
         months,
-        OperationMode.Add,
+        OperationMode.Add
       );
 
       expectDecimalToBe(updatedMonths[0].activity, 60);
@@ -615,19 +833,22 @@ describe("adjustMonthsTxToDelete", () => {
           },
         ];
 
-        const months: MonthStub[] = [
+        const months = [
           {
             month: new Date("2025-07-01T00:00:00Z"),
+            assigned: new Decimal(0),
             activity: new Decimal(-40),
             available: new Decimal(0),
           },
           {
             month: new Date("2025-08-01T00:00:00Z"),
+            assigned: new Decimal(0),
             activity: new Decimal(-10),
             available: new Decimal(-10),
           },
           {
             month: new Date("2025-09-01T00:00:00Z"),
+            assigned: new Decimal(0),
             activity: new Decimal(0),
             available: new Decimal(0),
           },
@@ -636,7 +857,7 @@ describe("adjustMonthsTxToDelete", () => {
         const updatedMonths = adjustMonthsForMultipleTransactions(
           txs,
           months,
-          OperationMode.Add,
+          OperationMode.Add
         );
 
         expectDecimalToBe(updatedMonths[0].activity, 90);
@@ -662,19 +883,22 @@ describe("adjustMonthsTxToDelete", () => {
           },
         ];
 
-        const months: MonthStub[] = [
+        const months = [
           {
             month: new Date("2025-07-01T00:00:00Z"),
+            assigned: new Decimal(0),
             activity: new Decimal(-40),
             available: new Decimal(0),
           },
           {
             month: new Date("2025-08-01T00:00:00Z"),
+            assigned: new Decimal(0),
             activity: new Decimal(-10),
             available: new Decimal(-10),
           },
           {
             month: new Date("2025-09-01T00:00:00Z"),
+            assigned: new Decimal(0),
             activity: new Decimal(0),
             available: new Decimal(0),
           },
@@ -683,7 +907,7 @@ describe("adjustMonthsTxToDelete", () => {
         const updatedMonths = adjustMonthsForMultipleTransactions(
           txs,
           months,
-          OperationMode.Add,
+          OperationMode.Add
         );
 
         expectDecimalToBe(updatedMonths[0].activity, 60);
