@@ -11,7 +11,7 @@ import { selectSelectedCategories } from "../../slices/selectedCategorySlice";
 import { month } from "../../slices/monthSlice";
 import { toMonthKey } from "../../utils/dateUtils";
 
-const useCategoriesData = () => {
+export const useCategoriesData = () => {
   const { data } = useGetCategoriesQuery();
   if (!data) {
     return {

@@ -52,7 +52,7 @@ const emptyAccount: AccountOverview = {
   id: "",
 };
 
-const useData = () => {
+export const useData = () => {
   const { data } = useGetAccountsQuery();
   if (!data) {
     throw new Error("Account data is not available");
