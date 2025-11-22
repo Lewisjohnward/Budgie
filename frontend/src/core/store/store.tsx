@@ -5,6 +5,7 @@ import settingsReducer from "@/core/slices/settingsSlice";
 import selectedCategoryReducer from "@/pages/budget/allocation/slices/selectedCategorySlice";
 import transactionFormRowReducer from "@/pages/budget/account/slices/transactionFormRowSlice";
 import monthReducer from "@/pages/budget/allocation/slices/monthSlice";
+import reflectMonthReducer from "@/pages/budget/reflect/slices/reflectMonthSlice";
 import { apiSlice } from "../api/apiSlice";
 
 export const createStore = () =>
@@ -14,6 +15,7 @@ export const createStore = () =>
       dialogs: dialogReducer,
       transactionFormRow: transactionFormRowReducer,
       month: monthReducer,
+      reflectMonth: reflectMonthReducer,
       settings: settingsReducer,
       selectedCategories: selectedCategoryReducer,
 

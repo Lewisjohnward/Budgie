@@ -11,6 +11,7 @@ import {
   NotFoundPage,
   SignUpPage,
 } from "@/pages";
+import { SpendingBreakdown, SpendingTrends } from "@/pages/budget/reflect/Reflect";
 import { RedirectIfAuth, RequireAuth, PersistLogin } from "@/core/components";
 import AccountSettings from "@/pages/accountSettings/AccountSettings";
 
@@ -47,6 +48,20 @@ const router = createBrowserRouter([
           {
             path: "reflect",
             element: <Reflect />,
+            children: [
+              {
+                path: "",
+                element: <Navigate to="spending-breakdown" replace />,
+              },
+              {
+                path: "spending-breakdown",
+                element: <SpendingBreakdown />,
+              },
+              {
+                path: "spending-trends",
+                element: <SpendingTrends />,
+              },
+            ],
           },
           {
             path: "account/:accountId",
