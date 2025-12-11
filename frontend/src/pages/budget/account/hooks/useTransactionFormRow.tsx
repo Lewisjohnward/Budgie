@@ -291,8 +291,8 @@ export const useTransactionFormRow = (accountId: string) => {
   };
 
   const handleSaveTransaction = () => {
+    const formValues = transactionForm.getValues();
     if (addTransactionState.mode === TransactionFormMode.Edit) {
-      const formValues = transactionForm.getValues();
       console.log("edit transaction", formValues);
 
       editTransaction([
@@ -300,7 +300,7 @@ export const useTransactionFormRow = (accountId: string) => {
           id: addTransactionState.transactionId,
           accountId: formValues.accountId,
           categoryId: formValues.categoryId || "",
-          payeeId: formValues.payeeId || null,
+          payeeId: formValues.payeeId ? formValues.payeeId : undefined,
           memo: formValues.memo || null,
           date: formValues.date.toISOString(),
           inflow: formValues.inflow || "0",
@@ -311,7 +311,20 @@ export const useTransactionFormRow = (accountId: string) => {
         },
       ]);
     } else {
-      addTransaction(transactionForm.getValues());
+      console.log(transactionForm.getValues());
+      addTransaction({
+        id: addTransactionState.transactionId,
+        accountId: formValues.accountId,
+        categoryId: formValues.categoryId || "",
+        payeeId: formValues.payeeId ? formValues.payeeId : undefined,
+        memo: formValues.memo || null,
+        date: formValues.date.toISOString(),
+        inflow: formValues.inflow || "0",
+        outflow: formValues.outflow || "0",
+        cleared: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
     }
     transactionForm.reset();
     closeAddTransactionForm();
@@ -319,7 +332,19 @@ export const useTransactionFormRow = (accountId: string) => {
 
   const handleSaveAndAddAnotherTransaction = () => {
     transactionForm.handleSubmit((data: TransactionFormData) => {
-      addTransaction(data);
+      addTransaction({
+        id: addTransactionState.transactionId,
+        accountId: data.accountId,
+        categoryId: data.categoryId || "",
+        payeeId: data.payeeId ? data.payeeId : undefined,
+        memo: data.memo || null,
+        date: data.date.toISOString(),
+        inflow: data.inflow || "0",
+        outflow: data.outflow || "0",
+        cleared: false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
     })();
     transactionForm.reset();
   };

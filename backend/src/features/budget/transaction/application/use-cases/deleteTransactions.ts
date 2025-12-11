@@ -3,67 +3,99 @@ import { transactionRepository } from "../../../../../shared/repository/transact
 import { accountService } from "../../../account/account.service";
 import { prisma } from "../../../../../shared/prisma/client";
 import { categoryRepository } from "../../../../../shared/repository/categoryRepositoryImpl";
-import { splitTransactionsByRtaCategory } from "../../utils/splitTransactionsByRtaCategory";
+import { splitTransactionsByType } from "../../utils/splitTransactionsByType";
 import { categoryService } from "../../../category/category.service";
+import { transactionService } from "../../transaction.service";
+import { DeleteTransactionPayload } from "../../transaction.schema";
 
-export const deleteTransactions = async (
-  userId: string,
-  transactionIds: string[],
-) => {
+/**
+ * Deletes transactions and handles all related data updates in a single transaction.
+ *
+ * This function:
+ * 1. Retrieves the transactions to be deleted
+ * 2. Handles transfer transactions by finding their pairs
+ * 3. For non-transfer transactions:
+ *    - Updates category months (for non-RTA transactions)
+ *    - Updates RTA (Ready To Assign) activity and available amounts
+ * 4. Deletes all transactions (both regular and their transfer pairs)
+ * 5. Updates account balances for all affected accounts
+ *
+ * @param {DeleteTransactionPayload} payload - The payload containing:
+ *   - userId: string - ID of the user performing the deletion
+ *   - transactionIds: string[] - Array of transaction IDs to be deleted
+ *
+ * @throws {NoTransactionsFoundError} If no transactions are found with the provided IDs
+ *
+ * @example
+ * await deleteTransactions({
+ *   userId: 'user-123',
+ *   transactionIds: ['tx-1', 'tx-2']
+ * });
+ */
+
+export const deleteTransactions = async (payload: DeleteTransactionPayload) => {
+  const { userId, transactionIds } = payload;
   await prisma.$transaction(async (tx) => {
-    if (transactionIds.length === 0) return;
-
-    // get txs to delete
-    const transactionsToDelete =
-      await transactionRepository.getTransactionsById(
+    const { normalTransactions, allTransferTransactions } =
+      await transactionService.getTransactionsWithPairs(
         tx,
-        transactionIds,
         userId,
+        transactionIds
       );
 
-    if (transactionsToDelete.length === 0) return;
-    // get rta category
-    // TODO: MOVE THIS into domain?
-    const rtaCategoryId = await categoryRepository.getRtaCategoryId(tx, userId);
-
-    const { rtaTransactions, categorisedTransactions } =
-      splitTransactionsByRtaCategory(transactionsToDelete, rtaCategoryId);
-
-    // update months for deleted transactions
-    if (categorisedTransactions.length > 0) {
-      await categoryService.months.recalculateCategoryMonthsForTransactions(
+    if (normalTransactions.length > 0) {
+      const rtaCategoryId = await categoryRepository.getRtaCategoryId(
         tx,
-        categorisedTransactions,
-        OperationMode.Delete,
+        userId
+      );
+
+      const { rtaTransactions, nonRtaTransactions } = splitTransactionsByType(
+        normalTransactions,
+        rtaCategoryId
+      );
+
+      // update months for deleted transactions
+      if (nonRtaTransactions.length > 0) {
+        await categoryService.months.recalculateCategoryMonthsForTransactions(
+          tx,
+          nonRtaTransactions,
+          OperationMode.Delete
+        );
+      }
+
+      // update rta activity for deleted transactions
+      if (rtaTransactions.length > 0) {
+        await categoryService.rta.updateMonthsActivityForTransactions(
+          tx,
+          userId,
+          rtaCategoryId,
+          rtaTransactions,
+          OperationMode.Delete
+        );
+      }
+
+      await categoryService.rta.calculateMonthsAvailable(
+        tx,
+        userId,
+        rtaCategoryId
       );
     }
 
-    // update rta activity for deleted transactions
-    if (rtaTransactions.length > 0) {
-      await categoryService.rta.updateMonthsActivityForTransactions(
-        tx,
-        userId,
-        rtaCategoryId,
-        rtaTransactions,
-        OperationMode.Delete,
-      );
-    }
+    const allTransactionIds = [
+      ...normalTransactions,
+      ...allTransferTransactions,
+    ].map((tx) => tx.id);
 
-    // DELETE TRANSACTIONS
-    await transactionRepository.deleteTransactions(tx, transactionIds, userId);
-
-    // update account balances
-    await accountService.updateAccountBalances(
+    await transactionRepository.deleteTransactions(
       tx,
-      transactionsToDelete,
-      OperationMode.Delete,
+      allTransactionIds,
+      userId
     );
 
-    // update rta months
-    await categoryService.rta.calculateMonthsAvailable(
+    await accountService.updateAccountBalances(
       tx,
-      userId,
-      rtaCategoryId,
+      [...normalTransactions, ...allTransferTransactions],
+      OperationMode.Delete
     );
   });
 };

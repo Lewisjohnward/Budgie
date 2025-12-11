@@ -1,3 +1,11 @@
+import { Prisma, PrismaClient } from "@prisma/client";
+import { OperationMode } from "../../../../../../shared/enums/operation-mode";
+import { categoryRepository } from "../../../../../../shared/repository/categoryRepositoryImpl";
+import { aggregateNetActivityByMonth } from "../../../domain/rta.domain";
+import { calculateRtaMonthsActivity } from "../../../domain/rta.domain";
+import { roundTransactionsToStartOfMonth } from "../../../utils/roundTransactionsToStartOfMonth";
+import { NormalTransactionEntity } from "../../../../transaction/transaction.types";
+
 /**
  * Updates the activity field of RTA (Ready-To-Assign) months based on a set of transactions and operation mode.
  *
@@ -14,38 +22,31 @@
  * @param mode - Operation mode indicating whether transactions are added or deleted.
  */
 
-import { Prisma, PrismaClient, Transaction } from "@prisma/client";
-import { OperationMode } from "../../../../../../shared/enums/operation-mode";
-import { categoryRepository } from "../../../../../../shared/repository/categoryRepositoryImpl";
-import { aggregateNetActivityByMonth } from "../../../domain/rta.domain";
-import { calculateRtaMonthsActivity } from "../../../domain/rta.domain";
-import { roundTransactionsToStartOfMonth } from "../../../utils/roundTransactionsToStartOfMonth";
-
 export const updateMonthsActivityForTransactions = async (
   prisma: PrismaClient | Prisma.TransactionClient,
   userId: string,
   rtaCategoryId: string,
-  transactions: (Omit<Transaction, "id"> & { id?: string })[],
-  mode: OperationMode,
+  transactions: NormalTransactionEntity[],
+  mode: OperationMode
 ) => {
-  // TODO: THIS CAN BE OPTIMISED, ONLY NEED FROM EARLIEST DATE OF TRANSACTION[]
   const rtaMonths = await categoryRepository.getAllRtaMonths(
     prisma,
     userId,
-    rtaCategoryId,
+    rtaCategoryId
   );
+
   const transactionsRoundedToStartOfMonth =
     roundTransactionsToStartOfMonth(transactions);
 
   const groupedRtaTransactionsByMonth = aggregateNetActivityByMonth(
-    transactionsRoundedToStartOfMonth,
+    transactionsRoundedToStartOfMonth
   );
 
   // update rta months that have txs that are deleted
   const updatedRtaMonths = calculateRtaMonthsActivity(
     rtaMonths,
     groupedRtaTransactionsByMonth,
-    mode,
+    mode
   );
 
   await categoryRepository.updateMonths(prisma, updatedRtaMonths);

@@ -1,9 +1,9 @@
-import { Transaction } from "@prisma/client";
 import { roundToStartOfMonth } from "../../../../shared/utils/roundToStartOfMonth";
+import { NormalTransactionEntity } from "../../transaction/transaction.types";
 
 export const roundTransactionsToStartOfMonth = (
-  transactions: (Omit<Transaction, "id"> & { id?: string })[],
-) => {
+  transactions: NormalTransactionEntity[]
+): NormalTransactionEntity[] => {
   return transactions.map((t) => ({
     ...t,
     date: roundToStartOfMonth(t.date),

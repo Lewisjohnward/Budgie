@@ -8,18 +8,21 @@ export const testUser = {
   password: "testpasswordABC$",
 };
 
-export const login = async () => {
-  const res = await request(app).post("/user/auth/login").send(testUser);
+export const login = async (
+  user: { email: string; password: string } = testUser
+) => {
+  const res = await request(app).post("/user/auth/login").send(user);
   const cookie = res.body;
 
   return cookie;
 };
 
-export const registerUser = async () => {
-  const res = await request(app).post("/user/auth/register").send(testUser);
+export const registerUser = async (
+  user: { email: string; password: string } = testUser
+) => {
+  const res = await request(app).post("/user/auth/register").send(user);
 
   const cookie = res.body;
-  const user = await prisma.user.findFirstOrThrow({});
 
   const res1 = await request(app)
     .post("/budget/categorygroup")
@@ -37,7 +40,7 @@ export const registerUser = async () => {
   const { categoryGroups } = responseBody;
 
   const testCategoryGroup = Object.values(categoryGroups).find(
-    (categoryGroup) => categoryGroup.name === "test category group",
+    (categoryGroup) => categoryGroup.name === "test category group"
   );
 
   if (!testCategoryGroup) throw new Error("Unable to find test category group");

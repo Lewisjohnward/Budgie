@@ -69,7 +69,10 @@ export const deleteCategory = async ({
       }));
 
       //TODO: NEED TO PASS TX update transaction needs to go into service
-      await transactionUseCase.updateTransactions(userId, updatedTransactions);
+      await transactionUseCase.updateTransactions({
+        userId,
+        transactions: updatedTransactions,
+      });
 
       await categoryRepository.deleteMonthsByCategoryId(tx, categoryId);
 

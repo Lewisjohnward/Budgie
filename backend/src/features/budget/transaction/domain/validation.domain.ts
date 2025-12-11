@@ -10,19 +10,17 @@
  */
 
 import { isAfterUtc as isFutureDate } from "../utils/isAfterUtc";
-import { TransactionPayload } from "../transaction.schema";
-import { Transaction } from "@prisma/client";
+import { TransactionData } from "../transaction.schema";
+import { FutureDateError } from "../transaction.errors";
 
-type TransactionDateOnly = Pick<TransactionPayload, "date"> | Pick<Transaction, "date">;
+type TransactionDateOnly = Pick<TransactionData, "date">;
 
-export function validateTransaction(
-  transaction: TransactionDateOnly,
-) {
+export function validateTransaction(transaction: TransactionDateOnly) {
   // check that transaction is not in the future
   const transactionDate = new Date(transaction.date ?? Date.now());
   const utcNow = new Date();
 
   if (isFutureDate(transactionDate, utcNow)) {
-    throw new Error("transaction is in the future, rejected");
+    throw new FutureDateError();
   }
 }

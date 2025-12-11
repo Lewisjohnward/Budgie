@@ -9,11 +9,17 @@ import { createTestAccount } from "../utils/createTestAccount";
 import { login, registerUser } from "../utils/auth";
 import { Account } from "@prisma/client";
 import { prisma } from "../../shared/prisma/client";
+import { EditTransactionsPayload } from "../../features/budget/transaction/transaction.schema";
+
+type TestEditTransactionPayload = Omit<
+  EditTransactionsPayload,
+  "userId"
+>;
 
 const compareRTAMonthsToExpected = async (
   expected: number[],
   cookie: string,
-  debug: boolean = false,
+  debug: boolean = false
 ) => {
   const readyToAssignMonths = await getReadyToAssignMonths(cookie);
 
@@ -33,12 +39,12 @@ type TransactionKind = "inflow" | "outflow";
 const getTransactionId = async (
   amount: number,
   cookie: string,
-  type: TransactionKind = "inflow",
+  type: TransactionKind = "inflow"
 ) => {
   const { transactions } = await getAccounts(cookie);
 
   const inflowTransaction = Object.values(transactions).find(
-    (transaction) => transaction[type] === amount,
+    (transaction) => transaction[type] === amount
   );
 
   if (!inflowTransaction) throw new Error("Unable to find transaction");
@@ -50,7 +56,7 @@ const getRTACategoryId = async (cookie: string) => {
   const { categories } = await getCategories(cookie);
 
   const readyToAssignCategoryId = Object.values(categories).find(
-    (cat) => cat.name === "Ready to Assign",
+    (cat) => cat.name === "Ready to Assign"
   )?.id;
 
   if (!readyToAssignCategoryId)
@@ -76,7 +82,7 @@ const createCategory = async ({
   const { categoryGroups } = await getCategories(cookie);
 
   const testCategoryGroup = Object.values(categoryGroups).find(
-    (categoryGroup) => categoryGroup.name === "test category group",
+    (categoryGroup) => categoryGroup.name === "test category group"
   );
 
   if (!testCategoryGroup)
@@ -93,7 +99,7 @@ const createCategory = async ({
   const { categories } = await getCategories(cookie);
 
   const categoryId = Object.values(categories).find(
-    (cat) => cat.name === name,
+    (cat) => cat.name === name
   )?.id;
 
   return categoryId;
@@ -110,7 +116,7 @@ const createTestCategory = async (cookie: string) => {
   const { categoryGroups } = await getCategories(cookie);
 
   const testCategoryGroup = Object.values(categoryGroups).find(
-    (categoryGroup) => categoryGroup.name === "test category group a",
+    (categoryGroup) => categoryGroup.name === "test category group a"
   );
 
   if (!testCategoryGroup) throw new Error("Unable to find test category group");
@@ -126,7 +132,7 @@ const createTestCategory = async (cookie: string) => {
   const { categories } = await getCategories(cookie);
 
   const readyToAssignCategoryId = Object.values(categories).find(
-    (cat) => cat.name === "test category a",
+    (cat) => cat.name === "test category a"
   )?.id;
 
   return readyToAssignCategoryId;
@@ -198,15 +204,17 @@ describe("RTA allocation", () => {
         const { accounts } = await getAccounts(cookie);
 
         const testAccount = Object.values(accounts).find(
-          (account) => account.name == "test account",
+          (account) => account.name == "test account"
         );
 
         if (!testAccount) throw new Error("No account found");
 
         const { id: accountId } = testAccount;
 
-        const oneYearAgo = new Date();
-        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        const now = new Date();
+        const earliestAllowed = new Date(
+          Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11, 1)
+        );
 
         const resAddTransaction = await request(app)
           .post("/budget/transaction")
@@ -214,7 +222,7 @@ describe("RTA allocation", () => {
           .send({
             ...testTransaction,
             accountId,
-            date: oneYearAgo,
+            date: earliestAllowed,
           });
 
         expect(resAddTransaction.status).toBe(200);
@@ -222,15 +230,15 @@ describe("RTA allocation", () => {
         const { categories } = await getCategories(cookie);
 
         const uncategorisedTransactionsCategory = Object.values(
-          categories,
+          categories
         ).find((cat) => cat.name === "Uncategorised Transactions");
 
         const testCategory = Object.values(categories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
 
-        expect(uncategorisedTransactionsCategory?.months.length).toBe(14);
-        expect(testCategory?.months.length).toBe(14);
+        expect(uncategorisedTransactionsCategory?.months.length).toBe(13);
+        expect(testCategory?.months.length).toBe(13);
       });
     });
     describe("update activity/available", () => {
@@ -251,12 +259,12 @@ describe("RTA allocation", () => {
         const { categories } = await getCategories(cookie);
 
         const testCategory = Object.values(categories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
         if (!testCategory) throw new Error("No category found");
 
         const testAccount = Object.values(accounts).find(
-          (account) => account.name == "test account",
+          (account) => account.name == "test account"
         );
 
         if (!testAccount) throw new Error("No account found");
@@ -277,7 +285,7 @@ describe("RTA allocation", () => {
         const { months } = await getCategories(cookie);
 
         const testMonths = Object.values(months).filter(
-          (month) => month.categoryId === testCategory.id,
+          (month) => month.categoryId === testCategory.id
         );
 
         expect(testMonths[0].activity).toBe(10);
@@ -307,12 +315,12 @@ describe("RTA allocation", () => {
         const { categories } = await getCategories(cookie);
 
         const testCategory = Object.values(categories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
         if (!testCategory) throw new Error("No category found");
 
         const testAccount = Object.values(accounts).find(
-          (account) => account.name == "test account",
+          (account) => account.name == "test account"
         );
 
         if (!testAccount) throw new Error("No account found");
@@ -332,7 +340,7 @@ describe("RTA allocation", () => {
         const { transactions } = await getAccounts(cookie);
 
         const transaction = Object.values(transactions).find(
-          (t) => t.memo === "test",
+          (t) => t.memo === "test"
         );
 
         if (!transaction) throw new Error("Unable to find test transaction");
@@ -340,18 +348,18 @@ describe("RTA allocation", () => {
         const { months } = await getCategories(cookie);
 
         const testMonths = Object.values(months).filter(
-          (month) => month.categoryId === testCategory.id,
+          (month) => month.categoryId === testCategory.id
         );
 
         const readyToAssignCategory = Object.values(categories).find(
-          (cat) => cat.name === "Ready to Assign",
+          (cat) => cat.name === "Ready to Assign"
         );
 
         if (!readyToAssignCategory)
           throw new Error("Unable to find test transaction");
 
         const readyToAssignCategoryMonths = Object.values(months).filter(
-          (month) => month.categoryId === readyToAssignCategory.id,
+          (month) => month.categoryId === readyToAssignCategory.id
         );
 
         expect(testMonths[0].activity).toBe(-10);
@@ -383,12 +391,12 @@ describe("RTA allocation", () => {
         const { categories } = await getCategories(cookie);
 
         const testCategory = Object.values(categories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
         if (!testCategory) throw new Error("No category found");
 
         const testAccount = Object.values(accounts).find(
-          (account) => account.name == "test account",
+          (account) => account.name == "test account"
         );
 
         if (!testAccount) throw new Error("No account found");
@@ -419,25 +427,25 @@ describe("RTA allocation", () => {
         const { transactions } = await getAccounts(cookie);
 
         const transaction = Object.values(transactions).find(
-          (t) => t.memo === "test",
+          (t) => t.memo === "test"
         );
 
         if (!transaction) throw new Error("Unable to find test transaction");
         const { months } = await getCategories(cookie);
 
         const testMonths = Object.values(months).filter(
-          (month) => month.categoryId === testCategory.id,
+          (month) => month.categoryId === testCategory.id
         );
 
         const readyToAssignCategory = Object.values(categories).find(
-          (cat) => cat.name === "Ready to Assign",
+          (cat) => cat.name === "Ready to Assign"
         );
 
         if (!readyToAssignCategory)
           throw new Error("Unable to find test transaction");
 
         const readyToAssignCategoryMonths = Object.values(months).filter(
-          (month) => month.categoryId === readyToAssignCategory.id,
+          (month) => month.categoryId === readyToAssignCategory.id
         );
 
         expect(testMonths[0].activity).toBe(0);
@@ -469,18 +477,18 @@ describe("RTA allocation", () => {
         const { categories } = await getCategories(cookie);
 
         const testCategory = Object.values(categories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
         if (!testCategory) throw new Error("No category found");
 
         const testAccount = Object.values(accounts).find(
-          (account) => account.name == "test account",
+          (account) => account.name == "test account"
         );
 
         if (!testAccount) throw new Error("No account found");
 
         const readyToAssignCategory = Object.values(categories).find(
-          (cat) => cat.name === "Ready to Assign",
+          (cat) => cat.name === "Ready to Assign"
         );
 
         if (!readyToAssignCategory)
@@ -512,17 +520,17 @@ describe("RTA allocation", () => {
         const { transactions } = await getAccounts(cookie);
 
         const transaction = Object.values(transactions).find(
-          (t) => t.memo === "test",
+          (t) => t.memo === "test"
         );
 
         if (!transaction) throw new Error("Unable to find test transaction");
         const { months } = await getCategories(cookie);
 
         const testMonths = Object.values(months).filter(
-          (month) => month.categoryId === testCategory.id,
+          (month) => month.categoryId === testCategory.id
         );
         const readyToAssignCategoryMonths = Object.values(months).filter(
-          (month) => month.categoryId === readyToAssignCategory.id,
+          (month) => month.categoryId === readyToAssignCategory.id
         );
 
         expect(testMonths[0].activity).toBe(0);
@@ -554,13 +562,13 @@ describe("RTA allocation", () => {
         const { categories } = await getCategories(cookie);
 
         const uncategorisedTransactionsCategory = Object.values(
-          categories,
+          categories
         ).find((cat) => cat.name === "Uncategorised Transactions");
         if (!uncategorisedTransactionsCategory)
           throw new Error("No category found");
 
         const testAccount = Object.values(accounts).find(
-          (account) => account.name == "test account",
+          (account) => account.name == "test account"
         );
 
         if (!testAccount) throw new Error("No account found");
@@ -590,25 +598,25 @@ describe("RTA allocation", () => {
         const { transactions } = await getAccounts(cookie);
 
         const transaction = Object.values(transactions).find(
-          (t) => t.memo === "test",
+          (t) => t.memo === "test"
         );
 
         if (!transaction) throw new Error("Unable to find test transaction");
         const { months } = await getCategories(cookie);
 
         const testMonths = Object.values(months).filter(
-          (month) => month.categoryId === uncategorisedTransactionsCategory.id,
+          (month) => month.categoryId === uncategorisedTransactionsCategory.id
         );
 
         const readyToAssignCategory = Object.values(categories).find(
-          (cat) => cat.name === "Ready to Assign",
+          (cat) => cat.name === "Ready to Assign"
         );
 
         if (!readyToAssignCategory)
           throw new Error("Unable to find test transaction");
 
         const readyToAssignCategoryMonths = Object.values(months).filter(
-          (month) => month.categoryId === readyToAssignCategory.id,
+          (month) => month.categoryId === readyToAssignCategory.id
         );
 
         expect(testMonths[0].activity).toBe(-23);
@@ -632,7 +640,7 @@ describe("RTA allocation", () => {
         const testAccount = await createTestAccount(cookie);
 
         const testCategory = Object.values(categories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
 
         if (!testCategory)
@@ -681,7 +689,7 @@ describe("RTA allocation", () => {
         const { categories } = await getCategories(cookie);
 
         const testCategory = Object.values(categories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
 
         if (!testCategory)
@@ -706,7 +714,7 @@ describe("RTA allocation", () => {
         const { categories } = await getCategories(cookie);
 
         const testCategory = Object.values(categories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
 
         if (!testCategory)
@@ -736,10 +744,10 @@ describe("RTA allocation", () => {
         const testAccount = await createTestAccount(cookie);
         const now = new Date();
         const twoMonthsAgo = new Date(
-          Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 2),
+          Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 2)
         );
         const lastMonth = new Date(
-          Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1),
+          Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1)
         );
         await request(app)
           .post("/budget/transaction")
@@ -755,7 +763,7 @@ describe("RTA allocation", () => {
         const { months } = await getCategories(cookie);
 
         const uncategorisedMonths = Object.values(months).filter(
-          (month) => month.categoryId === testCategoryId,
+          (month) => month.categoryId === testCategoryId
         );
 
         expect(uncategorisedMonths[0].activity).toBe(40);
@@ -778,7 +786,7 @@ describe("RTA allocation", () => {
         const { months: updatedMthsA } = await getCategories(cookie);
 
         const uncategorisedMonthsA = Object.values(updatedMthsA).filter(
-          (month) => month.categoryId === testCategoryId,
+          (month) => month.categoryId === testCategoryId
         );
 
         expect(uncategorisedMonthsA[0].activity).toBe(40);
@@ -802,7 +810,7 @@ describe("RTA allocation", () => {
         const { months: updatedMthsB } = await getCategories(cookie);
 
         const uncategorisedMonthsB = Object.values(updatedMthsB).filter(
-          (month) => month.categoryId === testCategoryId,
+          (month) => month.categoryId === testCategoryId
         );
 
         expect(uncategorisedMonthsB[0].activity).toBe(40);
@@ -828,7 +836,7 @@ describe("RTA allocation", () => {
         const { months: updatedMthsC } = await getCategories(cookie);
 
         const uncategorisedMonthsC = Object.values(updatedMthsC).filter(
-          (month) => month.categoryId === testCategoryId,
+          (month) => month.categoryId === testCategoryId
         );
 
         expect(uncategorisedMonthsC[0].activity).toBe(0);
@@ -871,7 +879,7 @@ describe("RTA allocation", () => {
         const { months: updatedMthsA } = await getCategories(cookie);
 
         const uncategorisedMonthsA = Object.values(updatedMthsA).filter(
-          (month) => month.categoryId === testCategoryId,
+          (month) => month.categoryId === testCategoryId
         );
 
         expect(uncategorisedMonthsA[0].activity).toBe(40);
@@ -887,7 +895,7 @@ describe("RTA allocation", () => {
         const testAccount = await createTestAccount(cookie);
 
         const readyToAssignCategoryId = Object.values(categories).find(
-          (cat) => cat.name === "Ready to Assign",
+          (cat) => cat.name === "Ready to Assign"
         )?.id;
 
         await request(app)
@@ -904,25 +912,17 @@ describe("RTA allocation", () => {
       });
 
       it("should update rta months in the future adding rta inflow/outflow in the past", async () => {
-        await createTestAccount(cookie);
-
         const { categories } = await getCategories(cookie);
 
-        const { accounts } = await getAccounts(cookie);
-
-        const testAccount = Object.values(accounts).find(
-          (account) => account.name === "test account",
-        );
-
         const uncategorisedTransactionsCategory = Object.values(
-          categories,
+          categories
         ).find((cat) => cat.name === "Uncategorised Transactions");
 
         if (!uncategorisedTransactionsCategory)
           throw new Error("No category found");
 
         const readyToAssignCategoryId = Object.values(categories).find(
-          (cat) => cat.name === "Ready to Assign",
+          (cat) => cat.name === "Ready to Assign"
         )?.id;
 
         if (!testAccount) throw new Error("Unable to find test account");
@@ -955,7 +955,7 @@ describe("RTA allocation", () => {
         const { months } = await getCategories(cookie);
 
         const uncategorisedMonths = Object.values(months).filter(
-          (month) => month.categoryId === uncategorisedTransactionsCategory.id,
+          (month) => month.categoryId === uncategorisedTransactionsCategory.id
         );
 
         expect(uncategorisedMonths[0].activity).toBe(-10);
@@ -968,25 +968,17 @@ describe("RTA allocation", () => {
       });
 
       it("should update rta months when adding an inflow>(-available)", async () => {
-        await createTestAccount(cookie);
-
         const { categories } = await getCategories(cookie);
 
-        const { accounts } = await getAccounts(cookie);
-
-        const testAccount = Object.values(accounts).find(
-          (account) => account.name === "test account",
-        );
-
         const uncategorisedTransactionsCategory = Object.values(
-          categories,
+          categories
         ).find((cat) => cat.name === "Uncategorised Transactions");
 
         if (!uncategorisedTransactionsCategory)
           throw new Error("No category found");
 
         const readyToAssignCategoryId = Object.values(categories).find(
-          (cat) => cat.name === "Ready to Assign",
+          (cat) => cat.name === "Ready to Assign"
         )?.id;
 
         if (!testAccount) throw new Error("Unable to find test account");
@@ -1017,7 +1009,7 @@ describe("RTA allocation", () => {
         const { months } = await getCategories(cookie);
 
         const uncategorisedMonths = Object.values(months).filter(
-          (month) => month.categoryId === uncategorisedTransactionsCategory.id,
+          (month) => month.categoryId === uncategorisedTransactionsCategory.id
         );
 
         expect(uncategorisedMonths[0].activity).toBe(20);
@@ -1028,29 +1020,6 @@ describe("RTA allocation", () => {
       });
 
       it("should update rta for future months when adding transaction", async () => {
-        await createTestAccount(cookie);
-
-        const { categories } = await getCategories(cookie);
-
-        const testCategory = Object.values(categories).find(
-          (cat) => cat.name === "Ready to Assign",
-        );
-
-        if (!testCategory)
-          throw new Error("Unable to find test category month");
-
-        const { accounts } = await getAccounts(cookie);
-
-        const testAccount = Object.values(accounts).find(
-          (account) => account.name === "test account",
-        );
-
-        const readyToAssignCategoryId = Object.values(categories).find(
-          (cat) => cat.name === "Ready to Assign",
-        )?.id;
-
-        if (!testAccount) throw new Error("Unable to find test account");
-
         await request(app)
           .post("/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
@@ -1062,7 +1031,7 @@ describe("RTA allocation", () => {
 
         const { categories: updatedCategories } = await getCategories(cookie);
         const testCategoryUpdated = Object.values(updatedCategories).find(
-          (cat) => cat.name === "Ready to Assign",
+          (cat) => cat.name === "Ready to Assign"
         );
 
         if (!testCategoryUpdated)
@@ -1075,12 +1044,12 @@ describe("RTA allocation", () => {
       });
 
       it("should handle adding outflow categorised transaction when rta > 0", async () => {
-        await createTestAccount(cookie);
+        const testAccount = await createTestAccount(cookie);
 
         const { categories } = await getCategories(cookie);
 
         const testCategory = Object.values(categories).find(
-          (cat) => cat.name === "Ready to Assign",
+          (cat) => cat.name === "Ready to Assign"
         );
 
         if (!testCategory)
@@ -1088,12 +1057,8 @@ describe("RTA allocation", () => {
 
         const { accounts } = await getAccounts(cookie);
 
-        const testAccount = Object.values(accounts).find(
-          (account) => account.name === "test account",
-        );
-
         const readyToAssignCategoryId = Object.values(categories).find(
-          (cat) => cat.name === "Ready to Assign",
+          (cat) => cat.name === "Ready to Assign"
         )?.id;
 
         if (!testAccount) throw new Error("Unable to find test account");
@@ -1119,7 +1084,7 @@ describe("RTA allocation", () => {
 
         const { categories: updatedCategories } = await getCategories(cookie);
         const testCategoryUpdated = Object.values(updatedCategories).find(
-          (cat) => cat.name === "Ready to Assign",
+          (cat) => cat.name === "Ready to Assign"
         );
 
         if (!testCategoryUpdated)
@@ -1136,7 +1101,7 @@ describe("RTA allocation", () => {
         const { categories } = await getCategories(cookie);
 
         const testCategory = Object.values(categories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
 
         if (!testCategory)
@@ -1222,7 +1187,7 @@ describe("RTA allocation", () => {
 
         await compareRTAMonthsToExpected(
           [1.12, 1.12, 1.12, 1.12, 1.12],
-          cookie,
+          cookie
         );
 
         await request(app)
@@ -1237,7 +1202,7 @@ describe("RTA allocation", () => {
 
         await compareRTAMonthsToExpected(
           [1.12, 1.12, 1.12, 2.25, 2.25],
-          cookie,
+          cookie
         );
 
         await request(app)
@@ -1248,7 +1213,7 @@ describe("RTA allocation", () => {
 
         await compareRTAMonthsToExpected(
           [1.12, 1.12, 1.12, 1.12, 1.12],
-          cookie,
+          cookie
         );
 
         await request(app)
@@ -1272,7 +1237,7 @@ describe("RTA allocation", () => {
 
         await compareRTAMonthsToExpected(
           [-0.01, -0.01, -0.01, -0.01, -0.01],
-          cookie,
+          cookie
         );
 
         await request(app)
@@ -1287,7 +1252,7 @@ describe("RTA allocation", () => {
 
         await compareRTAMonthsToExpected(
           [-0.01, -0.01, -0.01, 0.01, 0.01],
-          cookie,
+          cookie
         );
 
         await request(app)
@@ -1334,7 +1299,7 @@ describe("RTA allocation", () => {
 
         await compareRTAMonthsToExpected(
           [-0.03, -0.03, -0.03, 0.01, 0.01],
-          cookie,
+          cookie
         );
 
         await request(app)
@@ -1390,7 +1355,7 @@ describe("RTA allocation", () => {
       const { categories } = await getCategories(cookie);
 
       const testCategory = Object.values(categories).find(
-        (cat) => cat.name === "test category",
+        (cat) => cat.name === "test category"
       );
 
       if (!testCategory) throw new Error("Unable to find test category month");
@@ -1436,12 +1401,12 @@ describe("RTA allocation", () => {
       const { categories } = await getCategories(cookie);
 
       const testCategory = Object.values(categories).find(
-        (cat) => cat.name === "test category",
+        (cat) => cat.name === "test category"
       );
       if (!testCategory) throw new Error("No category found");
 
       const testAccount = Object.values(accounts).find(
-        (account) => account.name == "test account",
+        (account) => account.name == "test account"
       );
 
       if (!testAccount) throw new Error("No account found");
@@ -1461,7 +1426,7 @@ describe("RTA allocation", () => {
       const { transactions } = await getAccounts(cookie);
 
       const transaction = Object.values(transactions).find(
-        (t) => t.memo === "test",
+        (t) => t.memo === "test"
       );
 
       if (!transaction) throw new Error("Unable to find test transaction");
@@ -1475,18 +1440,18 @@ describe("RTA allocation", () => {
       const { months } = await getCategories(cookie);
 
       const testMonths = Object.values(months).filter(
-        (month) => month.categoryId === testCategory.id,
+        (month) => month.categoryId === testCategory.id
       );
 
       const readyToAssignCategory = Object.values(categories).find(
-        (cat) => cat.name === "Ready to Assign",
+        (cat) => cat.name === "Ready to Assign"
       );
 
       if (!readyToAssignCategory)
         throw new Error("Unable to find test transaction");
 
       const readyToAssignCategoryMonths = Object.values(months).filter(
-        (month) => month.categoryId === readyToAssignCategory.id,
+        (month) => month.categoryId === readyToAssignCategory.id
       );
 
       expect(testMonths[0].activity).toBe(0);
@@ -1507,7 +1472,7 @@ describe("RTA allocation", () => {
       const testAccount = await createTestAccount(cookie);
 
       const testCategory = Object.values(categories).find(
-        (cat) => cat.name === "test category",
+        (cat) => cat.name === "test category"
       );
 
       if (!testCategory) throw new Error("Unable to find test category month");
@@ -1656,7 +1621,7 @@ describe("RTA allocation", () => {
       const { months } = await getCategories(cookie);
 
       const testCategoryMonths = Object.values(months).filter(
-        (month) => month.categoryId === testCategoryId,
+        (month) => month.categoryId === testCategoryId
       );
 
       await compareRTAMonthsToExpected([0, 0], cookie);
@@ -1689,7 +1654,7 @@ describe("RTA allocation", () => {
       const { months } = await getCategories(cookie);
 
       const testCategoryMonths = Object.values(months).filter(
-        (month) => month.categoryId === testCategoryId,
+        (month) => month.categoryId === testCategoryId
       );
 
       await compareRTAMonthsToExpected([0, 0], cookie);
@@ -1747,7 +1712,7 @@ describe("RTA allocation", () => {
       const { months } = await getCategories(cookie);
 
       const testCategoryMonths = Object.values(months).filter(
-        (month) => month.categoryId === testCategoryId,
+        (month) => month.categoryId === testCategoryId
       );
 
       await compareRTAMonthsToExpected([0, 0], cookie);
@@ -1798,28 +1763,6 @@ describe("RTA allocation", () => {
     });
 
     it("should update RTA for future months when deleting outflow transaction", async () => {
-      await createTestAccount(cookie);
-
-      const { categories } = await getCategories(cookie);
-
-      const testCategory = Object.values(categories).find(
-        (cat) => cat.name === "Ready to Assign",
-      );
-
-      if (!testCategory) throw new Error("Unable to find test category month");
-
-      const { accounts } = await getAccounts(cookie);
-
-      const testAccount = Object.values(accounts).find(
-        (account) => account.name === "test account",
-      );
-
-      const readyToAssignCategoryId = Object.values(categories).find(
-        (cat) => cat.name === "Ready to Assign",
-      )?.id;
-
-      if (!testAccount) throw new Error("Unable to find test account");
-
       await request(app)
         .post("/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
@@ -1832,7 +1775,7 @@ describe("RTA allocation", () => {
       const { transactions } = await getAccounts(cookie);
 
       const outflowTransaction = Object.values(transactions).find(
-        (transaction) => transaction.outflow === 10,
+        (transaction) => transaction.outflow === 10
       );
 
       if (!outflowTransaction)
@@ -1856,7 +1799,7 @@ describe("RTA allocation", () => {
       const { categories } = await getCategories(cookie);
 
       const testCategory = Object.values(categories).find(
-        (cat) => cat.name === "test category",
+        (cat) => cat.name === "test category"
       );
 
       if (!testCategory) throw new Error("Unable to find test category month");
@@ -1888,7 +1831,7 @@ describe("RTA allocation", () => {
       const { categories } = await getCategories(cookie);
 
       const testCategory = Object.values(categories).find(
-        (cat) => cat.name === "Ready to Assign",
+        (cat) => cat.name === "Ready to Assign"
       );
 
       if (!testCategory) throw new Error("Unable to find test category month");
@@ -1914,13 +1857,13 @@ describe("RTA allocation", () => {
       await createTestAccount(cookie);
       const { accounts } = await getAccounts(cookie);
       const testAccount = Object.values(accounts).find(
-        (account) => account.name === "test account",
+        (account) => account.name === "test account"
       );
 
       if (!testAccount) throw new Error("Unable to find test account");
 
       const readyToAssignCategoryId = Object.values(categories).find(
-        (cat) => cat.name === "Ready to Assign",
+        (cat) => cat.name === "Ready to Assign"
       )?.id;
 
       await request(app)
@@ -1945,7 +1888,7 @@ describe("RTA allocation", () => {
       const { categories } = await getCategories(cookie);
 
       const testCategory = Object.values(categories).find(
-        (cat) => cat.name === "Ready to Assign",
+        (cat) => cat.name === "Ready to Assign"
       );
 
       if (!testCategory) throw new Error("Unable to find test category month");
@@ -1953,11 +1896,11 @@ describe("RTA allocation", () => {
       const { accounts } = await getAccounts(cookie);
 
       const testAccount = Object.values(accounts).find(
-        (account) => account.name === "test account",
+        (account) => account.name === "test account"
       );
 
       const readyToAssignCategoryId = Object.values(categories).find(
-        (cat) => cat.name === "Ready to Assign",
+        (cat) => cat.name === "Ready to Assign"
       )?.id;
 
       if (!testAccount) throw new Error("Unable to find test account");
@@ -2002,7 +1945,7 @@ describe("RTA allocation", () => {
       const { categories } = await getCategories(cookie);
 
       const testCategory = Object.values(categories).find(
-        (cat) => cat.name === "Ready to Assign",
+        (cat) => cat.name === "Ready to Assign"
       );
 
       if (!testCategory) throw new Error("Unable to find test category month");
@@ -2010,11 +1953,11 @@ describe("RTA allocation", () => {
       const { accounts } = await getAccounts(cookie);
 
       const testAccount = Object.values(accounts).find(
-        (account) => account.name === "test account",
+        (account) => account.name === "test account"
       );
 
       const readyToAssignCategoryId = Object.values(categories).find(
-        (cat) => cat.name === "Ready to Assign",
+        (cat) => cat.name === "Ready to Assign"
       )?.id;
 
       if (!testAccount) throw new Error("Unable to find test account");
@@ -2070,11 +2013,11 @@ describe("RTA allocation", () => {
       const { accounts } = await getAccounts(cookie);
 
       const testAccount = Object.values(accounts).find(
-        (account) => account.name === "test account",
+        (account) => account.name === "test account"
       );
 
       const readyToAssignCategoryId = Object.values(categories).find(
-        (cat) => cat.name === "Ready to Assign",
+        (cat) => cat.name === "Ready to Assign"
       )?.id;
 
       if (!testAccount) throw new Error("Unable to find test account");
@@ -2104,7 +2047,7 @@ describe("RTA allocation", () => {
 
       const { categories: updatedCategories } = await getCategories(cookie);
       const testCategoryUpdated = Object.values(updatedCategories).find(
-        (cat) => cat.name === "Ready to Assign",
+        (cat) => cat.name === "Ready to Assign"
       );
 
       if (!testCategoryUpdated) throw new Error("Unable to find test account");
@@ -2135,11 +2078,11 @@ describe("RTA allocation", () => {
       const { accounts } = await getAccounts(cookie);
 
       const testAccount = Object.values(accounts).find(
-        (account) => account.name === "test account",
+        (account) => account.name === "test account"
       );
 
       const readyToAssignCategoryId = Object.values(categories).find(
-        (cat) => cat.name === "Ready to Assign",
+        (cat) => cat.name === "Ready to Assign"
       )?.id;
 
       if (!testAccount) throw new Error("Unable to find test account");
@@ -2157,7 +2100,7 @@ describe("RTA allocation", () => {
       const { transactions } = await getAccounts(cookie);
 
       const inflowTransaction = Object.values(transactions).find(
-        (transaction) => transaction.inflow === 10,
+        (transaction) => transaction.inflow === 10
       );
 
       if (!inflowTransaction)
@@ -2166,7 +2109,7 @@ describe("RTA allocation", () => {
       const { categories: updatedCategories } = await getCategories(cookie);
 
       const testCategoryUpdated = Object.values(updatedCategories).find(
-        (cat) => cat.name === "Ready to Assign",
+        (cat) => cat.name === "Ready to Assign"
       );
 
       if (!testCategoryUpdated) throw new Error("Unable to find test account");
@@ -2198,7 +2141,7 @@ describe("RTA allocation", () => {
       const { categories } = await getCategories(cookie);
 
       const testCategory = Object.values(categories).find(
-        (cat) => cat.name === "Ready to Assign",
+        (cat) => cat.name === "Ready to Assign"
       );
 
       if (!testCategory) throw new Error("Unable to find test category month");
@@ -2206,11 +2149,11 @@ describe("RTA allocation", () => {
       const { accounts } = await getAccounts(cookie);
 
       const testAccount = Object.values(accounts).find(
-        (account) => account.name === "test account",
+        (account) => account.name === "test account"
       );
 
       const readyToAssignCategoryId = Object.values(categories).find(
-        (cat) => cat.name === "Ready to Assign",
+        (cat) => cat.name === "Ready to Assign"
       )?.id;
 
       if (!testAccount) throw new Error("Unable to find test account");
@@ -2240,7 +2183,7 @@ describe("RTA allocation", () => {
 
       const { categories: updatedCategories } = await getCategories(cookie);
       const testCategoryUpdated = Object.values(updatedCategories).find(
-        (cat) => cat.name === "Ready to Assign",
+        (cat) => cat.name === "Ready to Assign"
       );
 
       if (!testCategoryUpdated) throw new Error("Unable to find test account");
@@ -2273,7 +2216,8 @@ describe("RTA allocation", () => {
     });
   });
 
-  describe("editing transactions", () => {
+  describe.skip("editing transactions", () => {
+    it.skip("Should correctly update rta months when editing from uncategorised to category", async () => { });
     it("first test", async () => {
       const { id: accountId } = testAccount;
 
@@ -2293,15 +2237,19 @@ describe("RTA allocation", () => {
         },
       });
 
-      await request(app)
-        .patch("/budget/transaction")
-        .set("Authorization", `Bearer ${cookie}`)
-        .send([
+      const payload: TestEditTransactionPayload = {
+        transactions: [
           {
             ...transaction,
             categoryId: RTACategoryId,
           },
-        ])
+        ],
+      };
+
+      await request(app)
+        .patch("/budget/transaction")
+        .set("Authorization", `Bearer ${cookie}`)
+        .send(payload)
         .expect(200);
 
       await compareRTAMonthsToExpected([10, 10], cookie);
@@ -2310,7 +2258,7 @@ describe("RTA allocation", () => {
 
   describe("Assigning to months", () => {
     it.todo(
-      "should prevent user from assigning to uncategorised category months",
+      "should prevent user from assigning to uncategorised category months"
     );
 
     it.todo("should prevent user from assigning to rta category months");

@@ -58,6 +58,6 @@ export const insertMissingMonths = async (
   }
 
   if (monthEntries.length > 0) {
-    categoryRepository.createMonths(prisma, monthEntries);
+    await categoryRepository.createMonths(prisma, monthEntries);
   }
 };

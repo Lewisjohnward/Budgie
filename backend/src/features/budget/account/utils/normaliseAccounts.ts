@@ -26,13 +26,21 @@ export function normaliseAccounts(data: { accounts: Account[] }) {
 
     account.transactions.forEach((transaction) => {
       const transactionId = transaction.id;
-      const categoryId = transaction.category ? transaction.category.id : null;
 
       normalisedData.transactions[transaction.id] = {
-        ...transaction,
+        id: transaction.id,
+        accountId: transaction.accountId,
+        categoryId: transaction.categoryId,
+        payeeId: transaction.payeeId,
+        date: transaction.date,
         inflow: convertDecimalToNumber(transaction.inflow),
         outflow: convertDecimalToNumber(transaction.outflow),
-        category: categoryId,
+        transferAccountId: transaction.transferAccountId,
+        transferTransactionId: transaction.transferTransactionId,
+        memo: transaction.memo,
+        cleared: transaction.cleared,
+        createdAt: transaction.createdAt,
+        updatedAt: transaction.updatedAt,
       };
       normalisedData.accounts[account.id].transactions.push(transactionId);
 

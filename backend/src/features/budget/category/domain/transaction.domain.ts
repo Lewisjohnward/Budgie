@@ -13,7 +13,8 @@ import { groupBy } from "../utils/groupBy";
 import { Transaction } from "@prisma/client";
 
 export function groupTransactionsByCategoryId(
-  transactions: (Omit<Transaction, "id"> & { id?: string })[],
+  transactions: (Omit<Transaction, "id"> & { id?: string })[]
 ) {
+  //@ts-ignore-error: due to change in transaction categoryId to string | null to have transfer transactions
   return groupBy(transactions, (tx) => tx.categoryId);
 }

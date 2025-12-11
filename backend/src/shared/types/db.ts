@@ -16,8 +16,6 @@ type Account = Prisma.AccountGetPayload<{
   };
 }>;
 
-type Transaction = Prisma.TransactionGetPayload<{
-  include: { category: true };
-}>;
+type Transaction = Prisma.TransactionGetPayload<{}>;
 
 export type { CategoryGroup, Category, Month, Account, Transaction };
