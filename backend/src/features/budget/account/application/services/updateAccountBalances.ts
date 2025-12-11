@@ -1,3 +1,8 @@
+import { Prisma, Transaction } from "@prisma/client";
+import { calculateBalanceChangePerAccount } from "../../domain/account.domain";
+import { accountRepository } from "../../../../../shared/repository/accountRepositoryImpl";
+import { OperationMode } from "../../../../../shared/enums/operation-mode";
+
 /**
  * Updates account balances based on a list of transactions and the operation mode.
  *
@@ -9,19 +14,14 @@
  * @param mode - The operation mode indicating whether transactions are being added or deleted.
  */
 
-import { Prisma, Transaction } from "@prisma/client";
-import { calculateBalanceChangePerAccount } from "../../domain/account.domain";
-import { accountRepository } from "../../../../../shared/repository/accountRepositoryImpl";
-import { OperationMode } from "../../../../../shared/enums/operation-mode";
-
 export const updateAccountBalances = async (
   prisma: Prisma.TransactionClient,
   transactions: Transaction[],
-  mode: OperationMode,
+  mode: OperationMode
 ) => {
   const accountBalanceChanges = calculateBalanceChangePerAccount(
     transactions,
-    mode,
+    mode
   );
 
   await accountRepository.updateAccountBalances(prisma, accountBalanceChanges);

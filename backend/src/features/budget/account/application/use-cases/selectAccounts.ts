@@ -11,6 +11,9 @@ export const selectAccounts = async (userId: string) => {
     },
     include: {
       transactions: {
+        orderBy: {
+          date: "asc",
+        },
         include: {
           category: {
             include: {

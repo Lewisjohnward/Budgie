@@ -38,7 +38,7 @@ export interface CategoryRepository {
 
   getUncategorisedCategoryId(
     tx: Prisma.TransactionClient,
-    userId: string,
+    userId: string
   ): Promise<string>;
 
   // ──────────────── Category Mutation ────────────────

@@ -1,77 +1,60 @@
-import { OperationMode } from "../../../../../shared/enums/operation-mode";
 import { prisma } from "../../../../../shared/prisma/client";
-import { categoryRepository } from "../../../../../shared/repository/categoryRepositoryImpl";
-import { transactionRepository } from "../../../../../shared/repository/transactionRepositoryImpl";
 import { accountService } from "../../../account/account.service";
-import { categoryService } from "../../../category/category.service";
-import { validateTransaction } from "../../domain/validation.domain";
-import { TransactionPayload } from "../../transaction.schema";
+import { TransactionData } from "../../transaction.schema";
+import { transactionService } from "../../transaction.service";
+import { assertTransactionDateWithinLast12Months } from "../../utils/assertTransactionDateWithinLast12Months";
+
+/**
+ * Orchestrates insertion of a new transaction for a user.
+ *
+ * Responsibilities:
+ * - Executes the operation inside a database transaction
+ * - Validates that the source account is owned by the user
+ * - Determines whether the transaction is a transfer or a normal transaction
+ * - Delegates all creation and side-effects to the appropriate transaction service
+ *
+ * Notes:
+ * - Schema-level validation (dates, inflow/outflow rules, mutually exclusive fields)
+ *   is assumed to have already occurred before this function is called.
+ * - Transfer transactions are fully handled by `insertTransferTransaction`.
+ * - Normal transactions (including category resolution, month updates, and balance
+ *   recalculation) are fully handled by `insertNormalTransaction`.
+ *
+ * @param userId - ID of the user creating the transaction
+ * @param transaction - Validated transaction input data
+ *
+ * @throws {Error} If the user does not own the source account
+ * @throws {SameAccountTransferError} If a transfer targets the same account
+ */
 
 export const insertTransaction = async (
   userId: string,
-  transaction: TransactionPayload,
+  transaction: TransactionData
 ) => {
-  const { accountId, categoryId } = transaction;
+  const { accountId, transferAccountId } = transaction;
+
+  const date = transaction.date ?? new Date();
+
+  if (date !== undefined) {
+    assertTransactionDateWithinLast12Months(date);
+  }
 
   await prisma.$transaction(async (tx) => {
-    const account = await accountService.getAccount(tx, accountId, userId);
+    // check the account is owned by user
+    await accountService.getAccount(tx, accountId, userId);
 
-    if (categoryId) {
-      await categoryService.categories.checkUserOwnsCategory(
-        tx,
-        userId,
-        categoryId,
-      );
+    if (transferAccountId) {
+      await transactionService.insertTransferTransaction(tx, userId, {
+        ...transaction,
+        date,
+        transferAccountId,
+      });
+      return;
     }
 
-    validateTransaction(transaction);
-
-    const uncategorisedCategoryId =
-      await categoryRepository.getUncategorisedCategoryId(tx, userId);
-
-    const rtaCategoryId = await categoryRepository.getRtaCategoryId(tx, userId);
-
-    const newTransaction = await transactionRepository.createTransaction(tx, {
+    await transactionService.insertNormalTransaction(tx, userId, {
       ...transaction,
-      accountId: account.id,
-      categoryId: transaction.categoryId ?? uncategorisedCategoryId,
+      date,
     });
-
-    const isRtaTransaction = newTransaction.categoryId === rtaCategoryId;
-
-    // insert the missing months
-    await categoryService.months.insertMissingMonths(
-      tx,
-      userId,
-      newTransaction.date,
-    );
-
-    if (!isRtaTransaction) {
-      await categoryService.months.recalculateCategoryMonthsForTransactions(
-        tx,
-        [newTransaction],
-        OperationMode.Add,
-      );
-    } else {
-      await categoryService.rta.updateMonthsActivityForTransactions(
-        tx,
-        userId,
-        rtaCategoryId,
-        [newTransaction],
-        OperationMode.Add,
-      );
-    }
-
-    await accountService.updateAccountBalances(
-      tx,
-      [newTransaction],
-      OperationMode.Add,
-    );
-
-    await categoryService.rta.calculateMonthsAvailable(
-      tx,
-      userId,
-      rtaCategoryId,
-    );
   });
 };

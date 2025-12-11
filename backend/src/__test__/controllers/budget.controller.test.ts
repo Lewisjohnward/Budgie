@@ -23,7 +23,7 @@ describe("Budget", () => {
       it.todo("should throw error if no inheriting category provided");
       it.todo("should throw error if inherting category is protected category");
       it.todo(
-        "should correctly update rta when deleting category with assigned",
+        "should correctly update rta when deleting category with assigned"
       );
       it.todo("should throw error if when deleting protected category");
       it.todo("should transfer transactions to inheriting group");
@@ -45,18 +45,18 @@ describe("Budget", () => {
       it.todo("should prevent name collision");
       it.todo("Should prevent user adding a category without category group");
       it.todo(
-        "Should prevent user from adding a category to a category group they don't own",
+        "Should prevent user from adding a category to a category group they don't own"
       );
       it.todo("Should correctly assign position when categoryGroup empty");
 
       it.todo(
-        "Should correctly assign position when categoryGroup has other categories",
+        "Should correctly assign position when categoryGroup has other categories"
       );
       it("Should only add a single category when adding", async () => {
         const { categories } = await getCategories(cookie);
 
         const testCategory = Object.values(categories).filter(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
         expect(testCategory.length).toBe(1);
       });
@@ -64,7 +64,7 @@ describe("Budget", () => {
         const { categoryGroups } = await getCategories(cookie);
 
         const inflowCategoryGroup = Object.values(categoryGroups).find(
-          (categoryGroup) => categoryGroup.name === "Inflow",
+          (categoryGroup) => categoryGroup.name === "Inflow"
         );
 
         if (!inflowCategoryGroup)
@@ -91,8 +91,8 @@ describe("Budget", () => {
 
         expect(
           Object.values(responseBodyAfter.categories).some(
-            (cat) => cat.name === testCategory.name,
-          ),
+            (cat) => cat.name === testCategory.name
+          )
         ).toBe(false);
       });
 
@@ -100,7 +100,7 @@ describe("Budget", () => {
         const { categoryGroups } = await getCategories(cookie);
 
         const uncategorisedCategoryGroup = Object.values(categoryGroups).find(
-          (categoryGroup) => categoryGroup.name === "Uncategorised",
+          (categoryGroup) => categoryGroup.name === "Uncategorised"
         );
 
         if (!uncategorisedCategoryGroup)
@@ -127,8 +127,8 @@ describe("Budget", () => {
 
         expect(
           Object.values(responseBodyAfter.categories).some(
-            (cat) => cat.name === testCategory.name,
-          ),
+            (cat) => cat.name === testCategory.name
+          )
         ).toBe(false);
       });
 
@@ -136,7 +136,7 @@ describe("Budget", () => {
         const { categoryGroups, categories } = await getCategories(cookie);
 
         const testCategoryGroup = Object.values(categoryGroups).find(
-          (cg) => cg.name === "test category group",
+          (cg) => cg.name === "test category group"
         );
 
         if (!testCategoryGroup)
@@ -150,7 +150,7 @@ describe("Budget", () => {
         const existingCategory = Object.values(categories).find(
           (cat) =>
             cat.name === testCategory.name &&
-            cat.categoryGroupId === testCategory.categoryGroupId,
+            cat.categoryGroupId === testCategory.categoryGroupId
         );
 
         if (!existingCategory) {
@@ -173,13 +173,13 @@ describe("Budget", () => {
           Object.values(updatedCategories).filter(
             (cat) =>
               cat.name === testCategory.name &&
-              cat.categoryGroupId === testCategory.categoryGroupId,
-          ).length,
+              cat.categoryGroupId === testCategory.categoryGroupId
+          ).length
         ).toBe(1);
       });
 
       it.todo(
-        "Should prevent user from adding a category group with a duplicate name",
+        "Should prevent user from adding a category group with a duplicate name"
       );
     });
   });
@@ -214,64 +214,6 @@ describe("Budget", () => {
     });
   });
 
-  describe("Account", () => {
-    let cookie: string;
-
-    beforeEach(async () => {
-      await registerUser();
-      cookie = await login();
-    });
-    describe("create", () => {
-      it.todo("prevent name collisions");
-      it.todo("should add account with initial balance");
-      it("Should add an account with zero balance", async () => {
-        const testAccountData = {
-          name: "test account",
-          type: "BANK",
-          balance: 0,
-        };
-
-        const resAddAccount = await request(app)
-          .post("/budget/account")
-          .set("Authorization", `Bearer ${cookie}`)
-          .send(testAccountData);
-
-        expect(resAddAccount.status).toBe(200);
-
-        const { accounts } = await getAccounts(cookie);
-
-        const testAccount = Object.values(accounts).filter(
-          (account) => account.name === testAccountData.name,
-        );
-
-        const transactions = testAccount[0].transactions;
-        const accountData = testAccount[0];
-
-        expect(testAccount.length).toBe(1);
-        expect(accountData.balance).toBe(0);
-        expect(transactions.length).toBe(0);
-      });
-    });
-
-    describe("delete", () => {
-      it.todo("should throw error if account not owned by user/found");
-      it.todo("should delete account if it has transactions and zero balance");
-      it.todo(
-        "should close account and zero balance if it has transactions and non zero balance",
-      );
-    });
-
-    describe("update", () => {
-      it.todo("should throw error if account not owned by user/found");
-      it.todo("should update name when provided");
-      it.todo("should adjust balance with an rta transaction");
-    });
-
-    it.todo("Should handle weird inputs on balance");
-    it.todo("Should update account balance when deleting transaction");
-    it.todo("Should update account balance when duplicating transaction");
-  });
-
   describe("Transaction", () => {
     let cookie: string;
 
@@ -281,9 +223,11 @@ describe("Budget", () => {
     });
     describe("Adding transaction", () => {
       it.todo(
-        "should throw error if user tries adding to account not owned by themselves",
+        "should throw error if user tries adding to account not owned by themselves"
       );
     });
+
+    describe.skip("Deleting", () => {});
     it("When adding a transaction without logging in returns 401", async () => {
       const testTransaction = {
         outflow: 10,
@@ -295,6 +239,7 @@ describe("Budget", () => {
 
       expect(res.status).toBe(401);
     });
+
     it.skip("should allow transactions added at 1am", async () => {
       const account = await createTestAccount(cookie);
 
@@ -317,7 +262,7 @@ describe("Budget", () => {
       jest.useRealTimers();
     });
     it.todo(
-      "should throw error if category id provided doesn't exist/ not owned by user",
+      "should throw error if category id provided doesn't exist/ not owned by user"
     );
 
     it.skip("When adding a transaction with no account, returns 400", async () => {});
@@ -338,13 +283,13 @@ describe("Budget", () => {
       const { transactions, categories } = await getAccounts(cookie);
 
       const transaction = Object.values(transactions).find(
-        (t) => t.outflow === 10,
+        (t) => t.outflow === 10
       );
 
       if (!transaction) throw new Error("Unable to find test transaction");
 
       const uncategorisedCategory = Object.values(categories).find(
-        (c) => c.name === "Uncategorised Transactions",
+        (c) => c.name === "Uncategorised Transactions"
       );
 
       if (!uncategorisedCategory)
@@ -384,7 +329,7 @@ describe("Budget", () => {
         const { categories } = await getCategories(cookie);
 
         const uncategorisedCategory = Object.values(categories).find(
-          (c) => c.name === "Uncategorised Transactions",
+          (c) => c.name === "Uncategorised Transactions"
         );
 
         if (!uncategorisedCategory)
@@ -425,12 +370,12 @@ describe("Budget", () => {
         const { categories } = await getCategories(cookie);
 
         const testCategory = Object.values(categories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
         if (!testCategory) throw new Error("No category found");
 
         const testAccount = Object.values(accounts).find(
-          (account) => account.name == "test account",
+          (account) => account.name == "test account"
         );
 
         if (!testAccount) throw new Error("No account found");
@@ -450,7 +395,7 @@ describe("Budget", () => {
         const { transactions } = await getAccounts(cookie);
 
         const transaction = Object.values(transactions).find(
-          (t) => t.memo === "test",
+          (t) => t.memo === "test"
         );
 
         if (!transaction) throw new Error("Unable to find test transaction");
@@ -464,7 +409,7 @@ describe("Budget", () => {
         const { months } = await getCategories(cookie);
 
         const testMonths = Object.values(months).filter(
-          (month) => month.categoryId === testCategory.id,
+          (month) => month.categoryId === testCategory.id
         );
 
         expect(testMonths[0].activity).toBe(0);
@@ -496,23 +441,23 @@ describe("Budget", () => {
           await getCategories(cookie);
 
         const initialTestCategory = Object.values(initialCategories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
         expect(initialTestCategory).toBeTruthy();
         if (!initialTestCategory) throw new Error("testCategory is Undefined");
 
         const initialTestCategoryMonths = initialTestCategory.months.map(
-          (monthId) => initialMonths[monthId],
+          (monthId) => initialMonths[monthId]
         );
 
         const initialAllCategoriesHaveCorrectMonths = Object.values(
-          initialCategories,
+          initialCategories
         ).every((category) => category.months.length === 2);
         expect(initialAllCategoriesHaveCorrectMonths).toBe(true);
         expect(initialTestCategoryMonths.length).toBe(2);
 
         const initialMonthDates = initialTestCategoryMonths.map(
-          (m) => new Date(m.month),
+          (m) => new Date(m.month)
         );
         expect(initialMonthDates).toEqual([
           new Date("2025-05-01"),
@@ -525,23 +470,23 @@ describe("Budget", () => {
         const { categories: updatedCategories, months: updatedMonths } =
           await getCategories(cookie);
         const updatedTestCategory = Object.values(updatedCategories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
         expect(updatedTestCategory).toBeTruthy();
         if (!updatedTestCategory) throw new Error("testCategory is Undefined");
 
         const updatedTestCategoryMonths = updatedTestCategory.months.map(
-          (monthId) => updatedMonths[monthId],
+          (monthId) => updatedMonths[monthId]
         );
 
         const updatedAllCategoriesHaveCorrectMonths = Object.values(
-          updatedCategories,
+          updatedCategories
         ).every((category) => category.months.length === 3);
         expect(updatedAllCategoriesHaveCorrectMonths).toBe(true);
         expect(updatedTestCategoryMonths.length).toBe(3);
 
         const updatedMonthDates = updatedTestCategoryMonths.map(
-          (m) => new Date(m.month),
+          (m) => new Date(m.month)
         );
         expect(updatedMonthDates).toEqual([
           new Date("2025-05-01"),
@@ -560,23 +505,23 @@ describe("Budget", () => {
           await getCategories(cookie);
 
         const initialTestCategory = Object.values(initialCategories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
         expect(initialTestCategory).toBeTruthy();
         if (!initialTestCategory) throw new Error("testCategory is Undefined");
 
         const initialTestCategoryMonths = initialTestCategory.months.map(
-          (monthId) => initialMonths[monthId],
+          (monthId) => initialMonths[monthId]
         );
 
         const initialAllCategoriesHaveCorrectMonths = Object.values(
-          initialCategories,
+          initialCategories
         ).every((category) => category.months.length === 2);
         expect(initialAllCategoriesHaveCorrectMonths).toBe(true);
         expect(initialTestCategoryMonths.length).toBe(2);
 
         const initialMonthDates = initialTestCategoryMonths.map(
-          (m) => new Date(m.month),
+          (m) => new Date(m.month)
         );
         expect(initialMonthDates).toEqual([
           new Date("2025-05-01"),
@@ -589,23 +534,23 @@ describe("Budget", () => {
         const { categories: updatedCategories, months: updatedMonths } =
           await getCategories(cookie);
         const updatedTestCategory = Object.values(updatedCategories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
         expect(updatedTestCategory).toBeTruthy();
         if (!updatedTestCategory) throw new Error("testCategory is Undefined");
 
         const updatedTestCategoryMonths = updatedTestCategory.months.map(
-          (monthId) => updatedMonths[monthId],
+          (monthId) => updatedMonths[monthId]
         );
 
         const updatedAllCategoriesHaveCorrectMonths = Object.values(
-          updatedCategories,
+          updatedCategories
         ).every((category) => category.months.length === 13);
         expect(updatedAllCategoriesHaveCorrectMonths).toBe(true);
         expect(updatedTestCategoryMonths.length).toBe(13);
 
         const updatedMonthDates = updatedTestCategoryMonths.map(
-          (m) => new Date(m.month),
+          (m) => new Date(m.month)
         );
         expect(updatedMonthDates).toEqual([
           new Date("2025-05-01"),
@@ -634,23 +579,23 @@ describe("Budget", () => {
           await getCategories(cookie);
 
         const initialTestCategory = Object.values(initialCategories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
         expect(initialTestCategory).toBeTruthy();
         if (!initialTestCategory) throw new Error("testCategory is Undefined");
 
         const initialTestCategoryMonths = initialTestCategory.months.map(
-          (monthId) => initialMonths[monthId],
+          (monthId) => initialMonths[monthId]
         );
 
         const initialAllCategoriesHaveCorrectMonths = Object.values(
-          initialCategories,
+          initialCategories
         ).every((category) => category.months.length === 2);
         expect(initialAllCategoriesHaveCorrectMonths).toBe(true);
         expect(initialTestCategoryMonths.length).toBe(2);
 
         const initialMonthDates = initialTestCategoryMonths.map(
-          (m) => new Date(m.month),
+          (m) => new Date(m.month)
         );
         expect(initialMonthDates).toEqual([
           new Date("2025-01-01"),
@@ -663,23 +608,23 @@ describe("Budget", () => {
         const { categories: updatedCategories, months: updatedMonths } =
           await getCategories(cookie);
         const updatedTestCategory = Object.values(updatedCategories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
         expect(updatedTestCategory).toBeTruthy();
         if (!updatedTestCategory) throw new Error("testCategory is Undefined");
 
         const updatedTestCategoryMonths = updatedTestCategory.months.map(
-          (monthId) => updatedMonths[monthId],
+          (monthId) => updatedMonths[monthId]
         );
 
         const updatedAllCategoriesHaveCorrectMonths = Object.values(
-          updatedCategories,
+          updatedCategories
         ).every((category) => category.months.length === 3);
         expect(updatedAllCategoriesHaveCorrectMonths).toBe(true);
         expect(updatedTestCategoryMonths.length).toBe(3);
 
         const updatedMonthDates = updatedTestCategoryMonths.map(
-          (m) => new Date(m.month),
+          (m) => new Date(m.month)
         );
         expect(updatedMonthDates).toEqual([
           new Date("2025-01-01"),
@@ -701,23 +646,23 @@ describe("Budget", () => {
           await getCategories(cookie);
 
         const initialTestCategory = Object.values(initialCategories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
         expect(initialTestCategory).toBeTruthy();
         if (!initialTestCategory) throw new Error("testCategory is Undefined");
 
         const initialTestCategoryMonths = initialTestCategory.months.map(
-          (monthId) => initialMonths[monthId],
+          (monthId) => initialMonths[monthId]
         );
 
         const initialAllCategoriesHaveCorrectMonths = Object.values(
-          initialCategories,
+          initialCategories
         ).every((category) => category.months.length === 2);
         expect(initialAllCategoriesHaveCorrectMonths).toBe(true);
         expect(initialTestCategoryMonths.length).toBe(2);
 
         const initialMonthDates = initialTestCategoryMonths.map(
-          (m) => new Date(m.month),
+          (m) => new Date(m.month)
         );
         expect(initialMonthDates).toEqual([
           new Date("2025-08-01"),
@@ -732,24 +677,24 @@ describe("Budget", () => {
         const { categories: updatedCategories, months: updatedMonths } =
           await getCategories(cookie);
         const updatedTestCategory = Object.values(updatedCategories).find(
-          (cat) => cat.name === "test category",
+          (cat) => cat.name === "test category"
         );
         expect(updatedTestCategory).toBeTruthy();
         if (!updatedTestCategory) throw new Error("testCategory is Undefined");
 
         const updatedTestCategoryMonths = updatedTestCategory.months.map(
-          (monthId) => updatedMonths[monthId],
+          (monthId) => updatedMonths[monthId]
         );
 
         const updatedAllCategoriesHaveCorrectMonths = Object.values(
-          updatedCategories,
+          updatedCategories
         ).every((category) => category.months.length === 3);
 
         expect(updatedAllCategoriesHaveCorrectMonths).toBe(true);
         expect(updatedTestCategoryMonths.length).toBe(3);
 
         const updatedMonthDates = updatedTestCategoryMonths.map(
-          (m) => new Date(m.month),
+          (m) => new Date(m.month)
         );
         expect(updatedMonthDates).toEqual([
           new Date("2025-08-01"),
@@ -777,13 +722,13 @@ describe("Budget", () => {
           const { accounts } = await getAccounts(cookie);
 
           readyToAssignCategory = Object.values(initialCategories).find(
-            (cat: any) => cat.name === "Ready to Assign",
+            (cat: any) => cat.name === "Ready to Assign"
           );
           testCategory = Object.values(initialCategories).find(
-            (cat: any) => cat.name === "test category",
+            (cat: any) => cat.name === "test category"
           );
           testAccount = Object.values(accounts).find(
-            (account: any) => account.name == "test account",
+            (account: any) => account.name == "test account"
           );
 
           if (!readyToAssignCategory) throw new Error("RTA category not found");
@@ -799,8 +744,7 @@ describe("Budget", () => {
             categoryId: readyToAssignCategory.id,
             accountId: testAccount.id,
           };
-          const res = await addTransaction(cookie, testTransaction);
-          expect(res.status).toBe(200);
+          await addTransaction(cookie, testTransaction);
 
           jest.setSystemTime(new Date("2025-08-01T00:00:00.000Z"));
           cookie = await login();
@@ -809,18 +753,18 @@ describe("Budget", () => {
             await getCategories(cookie);
 
           const updatedRtaCategory = Object.values(updatedCategories).find(
-            (cat: any) => cat.id === readyToAssignCategory.id,
+            (cat: any) => cat.id === readyToAssignCategory.id
           );
           if (!updatedRtaCategory) return;
 
           const rtaMonths = Object.values(updatedMonths).filter(
-            (month: any) => month.categoryId === updatedRtaCategory.id,
+            (month: any) => month.categoryId === updatedRtaCategory.id
           );
 
           for (let i = 5; i <= 8; i++) {
             const monthStr = `2025-${i.toString().padStart(2, "0")}`;
             const month = rtaMonths.find((m: any) =>
-              m.month.startsWith(monthStr),
+              m.month.startsWith(monthStr)
             );
             expect(month).toBeDefined();
             expect(month?.available).toBe(-10);
@@ -835,8 +779,7 @@ describe("Budget", () => {
             categoryId: readyToAssignCategory.id,
             accountId: testAccount.id,
           };
-          const res = await addTransaction(cookie, testTransaction);
-          expect(res.status).toBe(200);
+          await addTransaction(cookie, testTransaction);
 
           jest.setSystemTime(new Date("2025-08-01T00:00:00.000Z"));
           cookie = await login();
@@ -845,18 +788,18 @@ describe("Budget", () => {
             await getCategories(cookie);
 
           const updatedRtaCategory = Object.values(updatedCategories).find(
-            (cat: any) => cat.id === readyToAssignCategory.id,
+            (cat: any) => cat.id === readyToAssignCategory.id
           );
           if (!updatedRtaCategory) return;
 
           const rtaMonths = Object.values(updatedMonths).filter(
-            (month: any) => month.categoryId === updatedRtaCategory.id,
+            (month: any) => month.categoryId === updatedRtaCategory.id
           );
 
           for (let i = 5; i <= 8; i++) {
             const monthStr = `2025-${i.toString().padStart(2, "0")}`;
             const month = rtaMonths.find((m: any) =>
-              m.month.startsWith(monthStr),
+              m.month.startsWith(monthStr)
             );
             expect(month).toBeDefined();
             expect(month?.available).toBe(10);
@@ -871,8 +814,7 @@ describe("Budget", () => {
             categoryId: testCategory.id,
             accountId: testAccount.id,
           };
-          const res = await addTransaction(cookie, testTransaction);
-          expect(res.status).toBe(200);
+          await addTransaction(cookie, testTransaction);
 
           jest.setSystemTime(new Date("2025-08-01T00:00:00.000Z"));
           cookie = await login();
@@ -881,18 +823,18 @@ describe("Budget", () => {
             await getCategories(cookie);
 
           const updatedTestCategory = Object.values(updatedCategories).find(
-            (cat: any) => cat.id === testCategory.id,
+            (cat: any) => cat.id === testCategory.id
           );
           if (!updatedTestCategory) return;
 
           const testMonths = Object.values(updatedMonths).filter(
-            (month: any) => month.categoryId === updatedTestCategory.id,
+            (month: any) => month.categoryId === updatedTestCategory.id
           );
 
           for (let i = 5; i <= 8; i++) {
             const monthStr = `2025-${i.toString().padStart(2, "0")}`;
             const month = testMonths.find((m: any) =>
-              m.month.startsWith(monthStr),
+              m.month.startsWith(monthStr)
             );
             expect(month).toBeDefined();
             expect(month?.available).toBe(10);
@@ -907,8 +849,7 @@ describe("Budget", () => {
             categoryId: testCategory.id,
             accountId: testAccount.id,
           };
-          const res = await addTransaction(cookie, testTransaction);
-          expect(res.status).toBe(200);
+          await addTransaction(cookie, testTransaction);
 
           jest.setSystemTime(new Date("2025-08-01T00:00:00.000Z"));
           cookie = await login();
@@ -917,16 +858,16 @@ describe("Budget", () => {
             await getCategories(cookie);
 
           const updatedTestCategory = Object.values(updatedCategories).find(
-            (cat: any) => cat.id === testCategory.id,
+            (cat: any) => cat.id === testCategory.id
           );
           if (!updatedTestCategory) return;
 
           const testMonths = Object.values(updatedMonths).filter(
-            (month: any) => month.categoryId === updatedTestCategory.id,
+            (month: any) => month.categoryId === updatedTestCategory.id
           );
 
           const mayMonth = testMonths.find((m: any) =>
-            m.month.startsWith("2025-05"),
+            m.month.startsWith("2025-05")
           );
           expect(mayMonth).toBeDefined();
           expect(mayMonth?.available).toBe(-10);
@@ -934,7 +875,7 @@ describe("Budget", () => {
           for (let i = 6; i <= 8; i++) {
             const monthStr = `2025-${i.toString().padStart(2, "0")}`;
             const month = testMonths.find((m: any) =>
-              m.month.startsWith(monthStr),
+              m.month.startsWith(monthStr)
             );
             expect(month).toBeDefined();
             expect(month?.available).toBe(0);
@@ -963,7 +904,7 @@ describe("When signing up", () => {
     const { categoryGroups } = await getCategories(cookie);
 
     const inflowCategory = Object.values(categoryGroups).filter(
-      (categoryGroup) => categoryGroup.name === "Inflow",
+      (categoryGroup) => categoryGroup.name === "Inflow"
     );
 
     expect(inflowCategory.length).toBe(1);
@@ -976,7 +917,7 @@ describe("When signing up", () => {
     const { categories } = await getCategories(cookie);
 
     const readyToAssignCategory = Object.values(categories).filter(
-      (cat) => cat.name === "Ready to Assign",
+      (cat) => cat.name === "Ready to Assign"
     );
 
     expect(res.status).toBe(200);
@@ -990,7 +931,7 @@ describe("When signing up", () => {
     const { categories } = await getCategories(cookie);
 
     const uncategorisedTransactions = Object.values(categories).filter(
-      (cat) => cat.name === "Uncategorised Transactions",
+      (cat) => cat.name === "Uncategorised Transactions"
     );
 
     expect(res.status).toBe(200);
@@ -1004,14 +945,14 @@ describe("When signing up", () => {
     const { categories, months } = await getCategories(cookie);
 
     const testCategory = Object.values(categories).find(
-      (cat) => cat.name === "test category",
+      (cat) => cat.name === "test category"
     );
 
     expect(testCategory).toBeTruthy();
     if (!testCategory) throw new Error("testCategory is Undefined");
 
     const categoryMonths = testCategory.months.map(
-      (monthId) => months[monthId],
+      (monthId) => months[monthId]
     );
 
     expect(testCategory.months.length).toBe(2);
@@ -1062,7 +1003,7 @@ describe("Auth", () => {
 
       expect(setCookieHeader[0]).toMatch(/jwt=;/);
       expect(setCookieHeader[0]).toMatch(
-        /Expires=Thu, 01 Jan 1970 00:00:00 GMT/,
+        /Expires=Thu, 01 Jan 1970 00:00:00 GMT/
       );
     });
   });

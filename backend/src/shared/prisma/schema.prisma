@@ -9,23 +9,24 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(uuid())
-  email        String    @unique
-  password     String
-  salt         String
-  refreshToken String?   @unique
+  id            String               @id @default(uuid())
+  email         String               @unique
+  password      String
+  salt          String
+  refreshToken  String?              @unique
   // budgets  Budget[]
-  accounts     Account[]
-  resetTokens PasswordResetToken[]
+  accounts      Account[]
+  payees        Payee[]
+  resetTokens   PasswordResetToken[]
 }
 
 model PasswordResetToken {
-  id         String   @id @default(uuid())
-  tokenHash  String   @unique
-  expiresAt  DateTime
-  userId     String
-  user       User     @relation(fields: [userId], references: [id])
-  
+  id        String   @id @default(uuid())
+  tokenHash String   @unique
+  expiresAt DateTime
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
   @@index([userId])
   @@index([expiresAt])
 }
@@ -55,25 +56,26 @@ model Category {
   userId          String
   categoryGroupId String
   // budgetId     String
-  name            String        
+  name            String
   position        Int
   // budget       Budget        @relation(fields: [budgetId], references: [id])
   transactions    Transaction[]
-  categoryGroup        CategoryGroup @relation(fields: [categoryGroupId], references: [id], onDelete: Cascade)
-  months Month[]
+  categoryGroup   CategoryGroup @relation(fields: [categoryGroupId], references: [id], onDelete: Cascade)
+  months          Month[]
+  payees          Payee[]       @relation("PayeeDefaultCategory")
 }
 
 model Month {
-  id         String       @id @default(uuid())
+  id         String   @id @default(uuid())
   categoryId String
-  month      DateTime  
-  activity Decimal   @default(0)
-  assigned Decimal   @default(0)
-  available Decimal  @default(0)
+  month      DateTime
+  activity   Decimal  @default(0)
+  assigned   Decimal  @default(0)
+  available  Decimal  @default(0)
 
-  category  Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
-  @@unique([ categoryId, month])
+  @@unique([categoryId, month])
 }
 
 enum CategoryType {
@@ -83,7 +85,7 @@ enum CategoryType {
 
 model Account {
   id           String        @id @default(uuid())
-  position     Int        @default (autoincrement())
+  position     Int           @default(autoincrement())
   userId       String
   name         String
   open         Boolean       @default(true)
@@ -101,32 +103,44 @@ enum AccountType {
 }
 
 model Transaction {
-  id         String   @id @default(uuid())
-  accountId  String
-  categoryId String
-  payeeId    String?
+  id             String   @id @default(uuid())
+  accountId      String
+  categoryId     String?
+  payeeId        String?
   // budgetId    String
-  date       DateTime @default(now())
-  inflow     Decimal @default(0)
-  outflow    Decimal @default(0)
-  memo       String?
-  cleared    Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  account    Account  @relation(fields: [accountId], references: [id])
-  category   Category? @relation(fields: [categoryId], references: [id])
-  payee   Payee? @relation(fields: [payeeId], references: [id])
+  date           DateTime @default(now())
+  inflow         Decimal  @default(0)
+  outflow        Decimal  @default(0)
+
+  // transfer transaction between accounts
+  transferAccountId     String?
+  transferTransactionId String?      @unique
+  transferTransaction   Transaction? @relation("TransferPair", fields: [transferTransactionId], references: [id], onDelete: Cascade)
+  pairedTransaction     Transaction? @relation("TransferPair")
+
+  memo         String?
+  cleared      Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  account      Account       @relation(fields: [accountId], references: [id])
+  category     Category?     @relation(fields: [categoryId], references: [id])
+  payee        Payee?        @relation(fields: [payeeId], references: [id])
   // budget      Budget      @relation(fields: [budgetId], references: [id])
 }
 
 model Payee {
- id String @id @default(uuid())
- name String
- transactions Transaction[]
+  id                           String   @id @default(uuid())
+  userId                       String
+  name                         String
+  defaultCategoryId            String?
+  includeInPayeeList           Boolean  @default(true)
+  automaticallyCategorisePayee Boolean  @default(true)
+  createdAt                    DateTime @default(now())
+  updatedAt                    DateTime @updatedAt
+
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  defaultCategory Category?     @relation("PayeeDefaultCategory", fields: [defaultCategoryId], references: [id], onDelete: SetNull)
+  transactions    Transaction[]
+
+  @@unique([userId, name])
 }
-
-
-
-
-
-

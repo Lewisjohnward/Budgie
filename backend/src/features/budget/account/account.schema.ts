@@ -32,7 +32,7 @@ export const addAccountSchema = z.object({
   type: AccountTypeEnum,
   balance: z.preprocess(
     (val) => new Decimal(val as any),
-    z.instanceof(Decimal),
+    z.instanceof(Decimal)
   ),
 });
 
@@ -67,11 +67,7 @@ type NormalisedAccount = Omit<Account, "transactions" | "balance"> & {
   balance: number;
 };
 
-type NormalisedTransaction = Omit<
-  Transaction,
-  "category" | "inflow" | "outflow"
-> & {
-  category: string | null;
+type NormalisedTransaction = Omit<Transaction, "inflow" | "outflow"> & {
   inflow: number;
   outflow: number;
 };

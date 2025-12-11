@@ -1,3 +1,14 @@
+import { Prisma, PrismaClient } from "@prisma/client";
+import { categoryRepository } from "../../../../../../shared/repository/categoryRepositoryImpl";
+import { OperationMode } from "../../../../../../shared/enums/operation-mode";
+import {
+  calculateMonthsByCategoryId,
+  groupMonthsByCategoryId,
+} from "../../../domain/month.domain";
+import { groupTransactionsByCategoryId } from "../../../domain/transaction.domain";
+import { roundTransactionsToStartOfMonth } from "../../../utils/roundTransactionsToStartOfMonth";
+import { NormalTransactionEntity } from "../../../../transaction/transaction.types";
+
 /**
  * Updates category month records based on multiple transactions.
  *
@@ -12,20 +23,10 @@
  * @param mode - Operation mode specifying whether transactions are added or deleted.
  */
 
-import { Prisma, PrismaClient, Transaction } from "@prisma/client";
-import { categoryRepository } from "../../../../../../shared/repository/categoryRepositoryImpl";
-import { OperationMode } from "../../../../../../shared/enums/operation-mode";
-import {
-  calculateMonthsByCategoryId,
-  groupMonthsByCategoryId,
-} from "../../../domain/month.domain";
-import { groupTransactionsByCategoryId } from "../../../domain/transaction.domain";
-import { roundTransactionsToStartOfMonth } from "../../../utils/roundTransactionsToStartOfMonth";
-
 export const recalculateCategoryMonthsForTransactions = async (
   prisma: PrismaClient | Prisma.TransactionClient,
-  transactions: (Omit<Transaction, "id"> & { id?: string })[],
-  mode: OperationMode,
+  transactions: NormalTransactionEntity[],
+  mode: OperationMode
 ) => {
   if (transactions.length === 0) return;
   // get the unique category Ids
@@ -46,7 +47,7 @@ export const recalculateCategoryMonthsForTransactions = async (
     await categoryRepository.getMonthsForCategoriesStartingFrom(
       prisma,
       transactionCategoryIds,
-      earliestMonthToUpdate,
+      earliestMonthToUpdate
     );
 
   // group months by categoryId
@@ -60,7 +61,7 @@ export const recalculateCategoryMonthsForTransactions = async (
   const updatedMonthsByCategoryId = calculateMonthsByCategoryId(
     categorisedTransactionsGroupedByCategoryId,
     monthsGroupedByCategoryId,
-    mode,
+    mode
   );
 
   // Flatten all updated months from the map into a single array

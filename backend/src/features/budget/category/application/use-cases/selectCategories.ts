@@ -12,21 +12,13 @@ export const selectCategories = async (userId: string) => {
   // // merge and structure nested tree here
   // return buildCategoryTree(groups, categories, months);
 
-  const categoryGroups = await prisma.categoryGroup.findMany({
-    where: {
-      userId,
-    },
-    include: {
-      categories: {
-        orderBy: {
-          position: "asc",
-        },
-        include: {
-          months: {
-            orderBy: {
-              month: "asc",
-            },
-          },
+  const [categoryGroups, memos] = await prisma.$transaction([
+    prisma.categoryGroup.findMany({
+      where: { userId },
+      include: {
+        categories: {
+          orderBy: { position: "asc" },
+          include: { months: { orderBy: { month: "asc" } } },
         },
       },
     },
