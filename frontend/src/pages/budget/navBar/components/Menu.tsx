@@ -16,6 +16,7 @@ import { useLogoutMutation } from "@/core/api/authApiSlice";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
 import { toggleManagePayees } from "@/core/slices/dialogSlice";
 import { apiSlice } from "@/core/api/apiSlice";
+import { Link } from "react-router-dom";
 
 // TODO: Hookup Navigate to settings button
 
@@ -61,9 +62,11 @@ export function MenuContent() {
           <User />
           <span>Profile</span>
         </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Settings />
-          <span>Settings</span>
+        <DropdownMenuItem asChild>
+          <Link to={"/settings"}>
+            <Settings />
+            <span>Settings</span>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={toggleDialog}>
           <MdOutlineManageAccounts />
