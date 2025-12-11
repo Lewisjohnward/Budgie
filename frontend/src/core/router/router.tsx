@@ -9,9 +9,10 @@ import {
   LandingPage,
   LoginPage,
   NotFoundPage,
-  SignUpPage
+  SignUpPage,
 } from "@/pages";
 import { RedirectIfAuth, RequireAuth, PersistLogin } from "@/core/components";
+import AccountSettings from "@/pages/accountSettings/AccountSettings";
 
 const router = createBrowserRouter([
   {
@@ -22,6 +23,10 @@ const router = createBrowserRouter([
       {
         path: "",
         element: <LandingPage />,
+      },
+      {
+        path: "settings",
+        element: <AccountSettings />,
       },
       {
         path: "budget",
