@@ -18,6 +18,8 @@ model User {
   accounts      Account[]
   payees        Payee[]
   resetTokens   PasswordResetToken[]
+  
+  monthMemos          MonthMemo[]
 }
 
 model PasswordResetToken {
@@ -76,6 +78,17 @@ model Month {
   category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
   @@unique([categoryId, month])
+}
+
+model MonthMemo {
+  id      String   @id @default(uuid())
+  userId  String
+  month   DateTime
+  content String   @default("")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month])
 }
 
 enum CategoryType {

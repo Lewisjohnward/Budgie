@@ -9,6 +9,8 @@ import {
   createTransferDestinationTransaction,
   createTransferSourceTransaction,
 } from "./create/createTransferTransaction";
+import { categoryService } from "../../../category/category.service";
+import { memoService } from "../../../memo/memo.service";
 
 export async function insertTransferTransaction(
   tx: Prisma.TransactionClient,
@@ -75,4 +77,14 @@ export async function insertTransferTransaction(
     [sourceTransaction, destinationTransaction],
     OperationMode.Add
   );
+
+  // insert the missing months
+  await categoryService.months.insertMissingMonths(
+    tx,
+    userId,
+    sourceTransaction.date
+  );
+
+  // insert the missing memos
+  await memoService.insertMissingMemos(tx, userId, sourceTransaction.date);
 }

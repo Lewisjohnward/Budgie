@@ -1,6 +1,15 @@
 import { prisma } from "../../../../../shared/prisma/client";
+import {
+  CategoryGroupWithCategoriesAndMonths,
+  Memo,
+} from "../../category.types";
 
-export const selectCategories = async (userId: string) => {
+export const selectCategories = async (
+  userId: string
+): Promise<{
+  categoryGroups: CategoryGroupWithCategoriesAndMonths[];
+  memos: Memo[];
+}> => {
   // const groups = await getCategoryGroupsByUserId(userId);
   // const groupIds = groups.map((g) => g.id);
   //
@@ -21,7 +30,17 @@ export const selectCategories = async (userId: string) => {
           include: { months: { orderBy: { month: "asc" } } },
         },
       },
-    },
-  });
-  return categoryGroups;
+    }),
+    prisma.monthMemo.findMany({
+      where: { userId },
+      orderBy: { month: "asc" },
+      select: {
+        id: true,
+        month: true,
+        content: true,
+      },
+    }),
+  ]);
+
+  return { categoryGroups, memos };
 };

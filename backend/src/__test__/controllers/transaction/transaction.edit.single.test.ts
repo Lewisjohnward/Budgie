@@ -15,6 +15,7 @@ import {
   getUncategorisedCategory,
 } from "../../utils/category";
 import { getPayees, getPayeeByName } from "../../utils/payee";
+import { LENGTH_ON_SIGNUP } from "../../utils/memo";
 
 describe("Transaction Single Edit", () => {
   let cookie: string;
@@ -336,35 +337,95 @@ describe("Transaction Single Edit", () => {
       });
     });
     describe("Side Effects", () => {
-      it("Should correctly add months if date is in the past", async () => {
-        const account1 = await createTestAccount(cookie, 0);
-        const testCategory = await getTestCategory(cookie);
-        const date = new Date(2025, 6, 15, 1, 0, 0).toISOString();
+      describe("Memo Months", () => {
+        it("Should backfill memo months when editing a normal transaction into the past", async () => {
+          // Baseline: signup created 2 memos (current + next)
+          const { memoByMonth: before, monthKeys: beforeKeys } =
+            await getCategories(cookie);
 
-        const transactionPayload: TransactionPayload = {
-          accountId: account1.id,
-          categoryId: testCategory.id,
-          outflow: "10",
-        };
+          expect(Object.keys(before)).toHaveLength(LENGTH_ON_SIGNUP);
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
-        const pastDate = new Date(date);
-        pastDate.setFullYear(pastDate.getFullYear() - 1);
-        const newDate = pastDate.toISOString();
+          const existingKey = beforeKeys[0];
+          expect(existingKey).toBeDefined();
+          const existingId = before[existingKey].id;
 
-        const editTransactionPayload: EditSingleTransactionInput = {
-          date: newDate,
-        };
+          // Create a normal transaction (in current window / default date)
+          const account1 = await createTestAccount(cookie, 0);
 
-        await editSingleTransaction(
-          cookie,
-          newTransaction!.id,
-          editTransactionPayload
-        );
+          const created = await addTransaction(cookie, {
+            accountId: account1.id,
+            outflow: "10",
+          });
 
-        const categoryMonths = await getCategoryMonths(cookie, testCategory.id);
+          // Move it earlier than earliest memo (but still inside the allowed 12-month window)
+          const now = new Date();
+          const past = new Date(
+            Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 10, 1)
+          );
+          const pastDate = past.toISOString();
+          const pastKey = pastDate.slice(0, 7);
 
-        expect(categoryMonths.length).toBe(14);
+          expect(before[pastKey]).toBeUndefined();
+
+          await editSingleTransaction(cookie, created!.id, {
+            date: pastDate,
+          });
+
+          const { memoByMonth: after, monthKeys: afterKeys } =
+            await getCategories(cookie);
+
+          // Backfilled memo exists for the past month
+          expect(after[pastKey]).toBeDefined();
+
+          // Existing memo IDs must not change
+          expect(after[existingKey].id).toBe(existingId);
+
+          // Window is capped to 12 total
+          expect(afterKeys).toHaveLength(12);
+          expect(Object.keys(after)).toHaveLength(12);
+
+          expect(Object.keys(after).sort()).toEqual([...afterKeys].sort());
+        });
+      });
+      describe("Category Months", () => {
+        it("Should correctly add category months if date is in the past", async () => {
+          const account1 = await createTestAccount(cookie, 0);
+          const testCategory = await getTestCategory(cookie);
+
+          const transactionPayload: TransactionPayload = {
+            accountId: account1.id,
+            categoryId: testCategory.id,
+            outflow: "10",
+          };
+
+          const newTransaction = await addTransaction(
+            cookie,
+            transactionPayload
+          );
+
+          const now = new Date();
+
+          const pastWithinWindow = new Date(
+            Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 10, 1, 0, 0, 0)
+          );
+
+          const editTransactionPayload: EditSingleTransactionInput = {
+            date: pastWithinWindow.toISOString(),
+          };
+
+          await editSingleTransaction(
+            cookie,
+            newTransaction!.id,
+            editTransactionPayload
+          );
+
+          const categoryMonths = await getCategoryMonths(
+            cookie,
+            testCategory.id
+          );
+
+          expect(categoryMonths.length).toBe(12);
+        });
       });
     });
   });
@@ -419,7 +480,7 @@ describe("Transaction Single Edit", () => {
 
         expect(res.status).toBe(400);
       });
-      it("Should return 400 if payeeName is \"\" - empty string", async () => {
+      it('Should return 400 if payeeName is "" - empty string', async () => {
         const account1 = await createTestAccount(cookie, 0);
 
         const transactionPayload: TransactionPayload = {
@@ -441,7 +502,7 @@ describe("Transaction Single Edit", () => {
 
         expect(res.status).toBe(400);
       });
-      it("Should return 400 if payeeName is \" \" - empty string", async () => {
+      it('Should return 400 if payeeName is " " - empty string', async () => {
         const account1 = await createTestAccount(cookie, 0);
 
         const transactionPayload: TransactionPayload = {
@@ -2065,7 +2126,7 @@ describe("Transaction Single Edit", () => {
           });
         });
         describe("Category Months", () => {
-          it.skip("Should backfill category months when editing a transfer transaction into the past", async () => { });
+          it.skip("Should backfill category months when editing a transfer transaction into the past", async () => {});
         });
       });
     });

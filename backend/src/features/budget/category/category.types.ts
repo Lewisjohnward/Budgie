@@ -1,6 +1,6 @@
 import { Month, Prisma } from "@prisma/client";
 
-export type NormalisedCategories = {
+export type NormalisedCategoryData = {
   categoryGroups: {
     [key: string]: NormalisedCategoryGroup;
   };
@@ -12,7 +12,28 @@ export type NormalisedCategories = {
   };
 };
 
-type NormalisedCategoryGroup = Omit<CategoryGroup, "categories" | "userId"> & {
+type MemoByMonth = Record<
+  string,
+  { id: string; month: string; content: string }
+>;
+
+export type NormalisedData = NormalisedCategoryData & {
+  monthKeys: string[];
+  memoByMonth: MemoByMonth;
+};
+
+export type Memo = Prisma.MonthMemoGetPayload<{
+  select: {
+    id: true;
+    month: true;
+    content: true;
+  };
+}>;
+
+type NormalisedCategoryGroup = Omit<
+  CategoryGroupWithCategoriesAndMonths,
+  "categories" | "userId"
+> & {
   categories: string[];
 };
 
@@ -32,7 +53,7 @@ type NormalisedMonth = Omit<
   available: number;
 };
 
-type CategoryGroup = Prisma.CategoryGroupGetPayload<{
+type CategoryGroupWithCategoriesAndMonths = Prisma.CategoryGroupGetPayload<{
   include: { categories: { include: { months: true } } };
 }>;
 
@@ -52,4 +73,10 @@ type Transaction = Prisma.TransactionGetPayload<{
   include: { category: true };
 }>;
 
-export type { CategoryGroup, Category, Month, Account, Transaction };
+export type {
+  CategoryGroupWithCategoriesAndMonths,
+  Category,
+  Month,
+  Account,
+  Transaction,
+};

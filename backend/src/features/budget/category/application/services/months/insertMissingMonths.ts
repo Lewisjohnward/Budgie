@@ -22,25 +22,28 @@ const MAX_MONTHS = 12;
 export const insertMissingMonths = async (
   prisma: PrismaClient | Prisma.TransactionClient,
   userId: string,
-  transactionDate: Date,
+  transactionDate: Date
 ) => {
   const existingMonths = await categoryRepository.getPastMonths(prisma, userId);
 
   const earliestMonth = roundToStartOfMonth(
     existingMonths.reduce(
       (min, { month }) => (month < min ? month : min),
-      new Date(),
-    ),
+      new Date()
+    )
   );
 
-  const startDate = earliestMonth < transactionDate ? earliestMonth : transactionDate;
-  const endDate = earliestMonth > transactionDate ? earliestMonth : transactionDate;
+  const startDate =
+    earliestMonth < transactionDate ? earliestMonth : transactionDate;
+  const endDate =
+    earliestMonth > transactionDate ? earliestMonth : transactionDate;
 
   const missingMonths = getMonthRange(startDate, endDate, {
     startInclusive: true,
     endInclusive: false,
   });
 
+  // TODO:(lewis 2026-01-30 18:23) for user
   const categories = await categoryRepository.getAllCategoryIds(prisma, userId);
 
   const recentMonths = missingMonths.slice(-MAX_MONTHS);

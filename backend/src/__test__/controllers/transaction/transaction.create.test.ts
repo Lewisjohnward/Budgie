@@ -6,6 +6,8 @@ import { createTestAccount } from "../../utils/createTestAccount";
 import { addTransaction } from "../../utils/transaction";
 import { login, registerUser } from "../../utils/auth";
 import { TransactionPayload } from "../../../features/budget/transaction/transaction.schema";
+import { LENGTH_ON_SIGNUP } from "../../utils/memo";
+import { prisma } from "../../../shared/prisma/client";
 
 describe("Transaction Create", () => {
   let cookie: string;
@@ -278,7 +280,7 @@ describe("Transaction Create", () => {
         });
       });
       describe("Category Months", () => {
-        it("Should create months when adding a transaction in the past", async () => {
+        it("Should create category months when adding a transaction in the past", async () => {
           const account = await createTestAccount(cookie);
 
           const { months: monthsBefore } = await getCategories(cookie);
@@ -550,18 +552,10 @@ describe("Transaction Create", () => {
           expect(Object.keys(after)).toHaveLength(12);
         });
       });
-
       describe("Category Months", () => {
-        it("Should create category months when adding a transfer transaction in the past", async () => {
+        it("Should create months when adding a transfer transaction in the past", async () => {
           const account1 = await createTestAccount(cookie);
           const account2 = await createTestAccount(cookie);
-
-          const { months: monthsBefore } = await getCategories(cookie);
-
-          const beforeMonthSet = new Set(
-            Object.values(monthsBefore).map((m) => m.month)
-          );
-          expect(beforeMonthSet.size).toBe(2);
 
           const now = new Date();
           const past = new Date(
@@ -569,21 +563,59 @@ describe("Transaction Create", () => {
           );
           const pastDate = past.toISOString();
 
-          const transferTransactionPayload: TransactionPayload = {
+          const transferTransaction: TransactionPayload = {
             accountId: account1.id,
             outflow: "10",
             transferAccountId: account2.id,
             date: pastDate,
           };
 
-          await addTransaction(cookie, transferTransactionPayload);
+          await addTransaction(cookie, transferTransaction, 200);
 
-          const { months: monthsAfter } = await getCategories(cookie);
+          const { accounts, transactions } = await getAccounts(cookie);
 
-          const afterMonthSet = new Set(
-            Object.values(monthsAfter).map((m) => m.month)
+          // Verify account balances updated correctly
+          const updatedAccount1 = accounts[account1.id];
+          const updatedAccount2 = accounts[account2.id];
+
+          expect(updatedAccount1.balance).toBe(-10);
+          expect(updatedAccount2.balance).toBe(10);
+
+          // Verify two transfer transactions were created
+          const transactionArray = Object.values(transactions);
+          const transferTransactions = transactionArray.filter(
+            (t) => t.transferAccountId !== null
           );
-          expect(afterMonthSet.size).toBe(12);
+
+          expect(transferTransactions).toHaveLength(2);
+
+          // Verify source transaction
+          const sourceTransaction = transferTransactions.find(
+            (t) => t.accountId === account1.id
+          );
+
+          expect(sourceTransaction).toBeDefined();
+          expect(sourceTransaction?.outflow).toBe(10);
+          expect(sourceTransaction?.inflow).toBe(0);
+          expect(sourceTransaction?.categoryId).toBeNull();
+
+          // Verify destination transaction
+          const destinationTransaction = transferTransactions.find(
+            (t) => t.accountId === account2.id
+          );
+
+          expect(destinationTransaction).toBeDefined();
+          expect(destinationTransaction?.inflow).toBe(10);
+          expect(destinationTransaction?.outflow).toBe(0);
+          expect(destinationTransaction?.categoryId).toBeNull();
+
+          expect(sourceTransaction!.transferTransactionId).toBe(
+            destinationTransaction!.id
+          );
+
+          expect(destinationTransaction!.transferTransactionId).toBe(
+            sourceTransaction!.id
+          );
         });
       });
     });
