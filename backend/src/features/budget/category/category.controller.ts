@@ -10,12 +10,15 @@ import { categoryUseCase } from "./category.useCase";
 export const getCategories = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
-    const categories = await categoryUseCase.getCategories(req.user!._id);
-    const normalizedCategories = normaliseCategories(categories);
-    res.status(200).json({ ...normalizedCategories });
+    const { categoryGroups, memos } = await categoryUseCase.getCategories(
+      req.user!._id
+    );
+    const normalizedCategories = normaliseCategories(categoryGroups, memos);
+
+    res.status(200).json(normalizedCategories);
   } catch (error) {
     next(error);
   }
@@ -24,7 +27,7 @@ export const getCategories = async (
 export const createCategory = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const payload = createCategorySchema.parse({
@@ -41,7 +44,7 @@ export const createCategory = async (
 export const updateCategory = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const payload = editCategorySchema.parse({
@@ -60,7 +63,7 @@ export const updateCategory = async (
 export const deleteCategory = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const payload = deleteCategorySchema.parse({

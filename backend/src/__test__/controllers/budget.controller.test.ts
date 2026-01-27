@@ -1,6 +1,6 @@
 import request from "supertest";
 import app from "../../app";
-import { NormalisedCategories } from "../../features/budget/category/category.types";
+import { NormalisedCategoryData } from "../../features/budget/category/category.types";
 import { getAccounts, getCategories } from "../utils/getData";
 import { createTestAccount } from "../utils/createTestAccount";
 import { addAccount, addTransaction } from "../utils/transaction";
@@ -87,7 +87,7 @@ describe("Budget", () => {
           .set("Authorization", `Bearer ${cookie}`);
 
         const responseBodyAfter =
-          categoriesResponseAfter.body as NormalisedCategories;
+          categoriesResponseAfter.body as NormalisedCategoryData;
 
         expect(
           Object.values(responseBodyAfter.categories).some(
@@ -123,7 +123,7 @@ describe("Budget", () => {
           .set("Authorization", `Bearer ${cookie}`);
 
         const responseBodyAfter =
-          categoriesResponseAfter.body as NormalisedCategories;
+          categoriesResponseAfter.body as NormalisedCategoryData;
 
         expect(
           Object.values(responseBodyAfter.categories).some(
@@ -227,7 +227,7 @@ describe("Budget", () => {
       );
     });
 
-    describe.skip("Deleting", () => {});
+    describe.skip("Deleting", () => { });
     it("When adding a transaction without logging in returns 401", async () => {
       const testTransaction = {
         outflow: 10,
@@ -265,7 +265,7 @@ describe("Budget", () => {
       "should throw error if category id provided doesn't exist/ not owned by user"
     );
 
-    it.skip("When adding a transaction with no account, returns 400", async () => {});
+    it.skip("When adding a transaction with no account, returns 400", async () => { });
 
     it.todo("Should return error when user doesn't own category");
 
@@ -315,7 +315,7 @@ describe("Budget", () => {
     });
   });
 
-  describe("Ready to assign", () => {});
+  describe("Ready to assign", () => { });
 
   describe("Months", () => {
     describe("assigning", () => {

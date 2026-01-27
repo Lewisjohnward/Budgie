@@ -110,6 +110,13 @@ export const editTransaction = async (
       afterTxSnapshot.mainTx.date
     );
 
+    // insert the missing memos
+    await memoService.insertMissingMemos(
+      tx,
+      userId,
+      afterTxSnapshot.mainTx.date
+    );
+
     if (!beforeTxSnapshot.isTransfer) {
       await recalcMonthsFor(
         tx,

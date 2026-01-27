@@ -8,6 +8,7 @@ import categorygroupRoutes from "./categorygroup/categorygroup.routes";
 import payeeRoutes from "./payee/payee.routes";
 import assignRoutes from "./assign/assign.routes";
 import transactionRoutes from "./transaction/transaction.routes";
+import memoRoutes from "./memo/memo.routes";
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use("/categorygroup", categorygroupRoutes);
 router.use("/transaction", transactionRoutes);
 router.use("/payees", payeeRoutes);
 router.use("/assign", assignRoutes);
+router.use("/memo", memoRoutes);
 
 export default router;

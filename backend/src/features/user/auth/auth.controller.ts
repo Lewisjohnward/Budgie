@@ -23,11 +23,12 @@ import {
 } from "./utils/password";
 import { categoryService } from "../../budget/category/category.service";
 import { prisma } from "../../../shared/prisma/client";
+import { memoService } from "../../budget/memo/memo.service";
 
 export const register = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   const { email, password } = req.body;
 
@@ -54,6 +55,10 @@ export const register = async (
       salt,
     });
     await categoryService.categories.initialiseCategories(user.id);
+
+    await prisma.$transaction(async (tx) => {
+      await memoService.initialiseMemos(tx, user.id);
+    });
 
     const accessToken = GenerateAccessToken({
       _id: user.id,
@@ -82,7 +87,7 @@ export const register = async (
 export const login = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   const { email, password } = req.body;
 
@@ -102,7 +107,7 @@ export const login = async (
     const validPassword = await ValidatePassword(
       password,
       user.password,
-      user.salt,
+      user.salt
     );
 
     if (!validPassword) {
@@ -133,7 +138,7 @@ export const login = async (
 export const logout = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const cookies = req.cookies;
@@ -169,7 +174,7 @@ export const logout = async (
 export const refresh = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const cookies = req.cookies;

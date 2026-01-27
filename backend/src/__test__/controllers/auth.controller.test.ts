@@ -2,6 +2,9 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import request from "supertest";
 import app from "../../app";
+import { getCategories } from "../utils/getData";
+import { LENGTH_ON_SIGNUP } from "../utils/memo";
+import { login } from "../utils/auth";
 
 const prisma = new PrismaClient();
 
@@ -11,86 +14,128 @@ describe("Auth Controller", () => {
     const testPassword = "ValidPass123!";
     let testUserId: string;
 
-    it("should register a new user successfully", async () => {
-      const response = await request(app).post("/user/auth/register").send({
-        email: testEmail,
-        password: testPassword,
+    describe("Error Cases", () => {
+      it("should return 400 if email is missing", async () => {
+        const response = await request(app).post("/user/autħ/register").send({
+          password: testPassword,
+        });
+
+        expect(response.status).toBe(400);
       });
 
-      expect(response.status).toBe(200);
+      it("should return 400 if password is missing", async () => {
+        const response = await request(app).post("/user/auth/register").send({
+          email: testEmail,
+        });
 
-      const user = await prisma.user.findUnique({
-        where: { email: testEmail },
+        expect(response.status).toBe(400);
       });
 
-      expect(user).not.toBeNull();
-      expect(user?.email).toBe(testEmail);
-      expect(user?.salt).toBeDefined();
-      const isPasswordValid = await bcrypt.compare(
-        testPassword,
-        user?.password || "",
-      );
-      expect(isPasswordValid).toBe(true);
+      it("should return 401 if email is invalid", async () => {
+        const response = await request(app).post("/user/auth/register").send({
+          email: "invalid-email",
+          password: testPassword,
+        });
+
+        expect(response.status).toBe(401);
+      });
+
+      it("should return 400 if email is already registered", async () => {
+        await request(app).post("/user/auth/register").send({
+          email: testEmail,
+          password: testPassword,
+        });
+
+        const response = await request(app).post("/user/auth/register").send({
+          email: testEmail,
+          password: "AnotherPassword123!",
+        });
+
+        expect(response.status).toBe(400);
+      });
     });
 
-    it("should return 400 if email is missing", async () => {
-      const response = await request(app).post("/user/autħ/register").send({
-        password: testPassword,
-      });
+    describe("Success", () => {
+      it("should register a new user successfully", async () => {
+        const response = await request(app).post("/user/auth/register").send({
+          email: testEmail,
+          password: testPassword,
+        });
 
-      expect(response.status).toBe(400);
+        expect(response.status).toBe(200);
+
+        const user = await prisma.user.findUnique({
+          where: { email: testEmail },
+        });
+
+        expect(user).not.toBeNull();
+        expect(user?.email).toBe(testEmail);
+        expect(user?.salt).toBeDefined();
+        const isPasswordValid = await bcrypt.compare(
+          testPassword,
+          user?.password || ""
+        );
+        expect(isPasswordValid).toBe(true);
+      });
     });
 
-    it("should return 400 if password is missing", async () => {
-      const response = await request(app).post("/user/auth/register").send({
-        email: testEmail,
+    describe("InitialiseUser", () => {
+      it("should create default categories for new users", async () => {
+        await request(app).post("/user/auth/register").send({
+          email: testEmail,
+          password: testPassword,
+        });
+
+        const user = await prisma.user.findUnique({
+          where: { email: testEmail },
+        });
+        if (!user) {
+          expect(user).toBeDefined();
+          throw new Error("User not created");
+        }
+
+        testUserId = user.id;
+        const categories = await prisma.category.findMany({
+          where: { userId: user.id },
+        });
+        expect(categories.length).toBeGreaterThan(0);
       });
+      it("Should have a memo month entry for each month on signup", async () => {
+        await request(app).post("/user/auth/register").send({
+          email: testEmail,
+          password: testPassword,
+        });
 
-      expect(response.status).toBe(400);
-    });
+        const cookie = await login({
+          email: testEmail,
+          password: testPassword,
+        });
 
-    it("should return 401 if email is invalid", async () => {
-      const response = await request(app).post("/user/auth/register").send({
-        email: "invalid-email",
-        password: testPassword,
+        const { months, memoByMonth, monthKeys } = await getCategories(cookie);
+
+        expect(monthKeys.length).toBeGreaterThan(0);
+
+        for (const key of monthKeys) {
+          const memo = memoByMonth[key];
+
+          expect(memo).toBeDefined();
+          expect(memo.id).toEqual(expect.any(String));
+          expect(memo.content).toEqual(expect.any(String));
+
+          expect(memo.month.slice(0, 7)).toBe(key);
+        }
+
+        expect(Object.keys(memoByMonth).sort()).toEqual([...monthKeys].sort());
+
+        const monthKeysFromMonths = [
+          ...new Set(
+            Object.values(months).map((m: any) => m.month.slice(0, 7))
+          ),
+        ].sort();
+
+        expect([...monthKeys].sort()).toEqual(monthKeysFromMonths);
+        expect(Object.keys(memoByMonth)).toHaveLength(LENGTH_ON_SIGNUP);
       });
-
-      expect(response.status).toBe(401);
-    });
-
-    it("should return 400 if email is already registered", async () => {
-      await request(app).post("/user/auth/register").send({
-        email: testEmail,
-        password: testPassword,
-      });
-
-      const response = await request(app).post("/user/auth/register").send({
-        email: testEmail,
-        password: "AnotherPassword123!",
-      });
-
-      expect(response.status).toBe(400);
-    });
-
-    it("should create default categories for new users", async () => {
-      await request(app).post("/user/auth/register").send({
-        email: testEmail,
-        password: testPassword,
-      });
-
-      const user = await prisma.user.findUnique({
-        where: { email: testEmail },
-      });
-      if (!user) {
-        expect(user).toBeDefined();
-        throw new Error("User not created");
-      }
-
-      testUserId = user.id;
-      const categories = await prisma.category.findMany({
-        where: { userId: user.id },
-      });
-      expect(categories.length).toBeGreaterThan(0);
     });
   });
 

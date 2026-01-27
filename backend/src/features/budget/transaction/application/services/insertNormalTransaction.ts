@@ -9,6 +9,7 @@ import {
   NormalTransactionEntity,
   NormalTransactionInsertData,
 } from "../../transaction.types";
+import { memoService } from "../../../memo/memo.service";
 
 export async function insertNormalTransaction(
   tx: Prisma.TransactionClient,
@@ -67,6 +68,9 @@ export async function insertNormalTransaction(
     userId,
     newTransaction.date
   );
+
+  // insert the missing memos
+  await memoService.insertMissingMemos(tx, userId, newTransaction.date);
 
   if (!isRtaTransaction) {
     await categoryService.months.recalculateCategoryMonthsForTransactions(

@@ -1,7 +1,15 @@
-import { CategoryGroup, NormalisedCategories } from "../category.types";
+import {
+  CategoryGroupWithCategoriesAndMonths,
+  Memo,
+  NormalisedCategoryData,
+  NormalisedData,
+} from "../category.types";
 import { convertDecimalToNumber } from "../../../../shared/utils/convertDecimalToNumber";
 
-export function normaliseCategories(categoryGroups: CategoryGroup[]) {
+export function normaliseCategories(
+  categoryGroups: CategoryGroupWithCategoriesAndMonths[],
+  memos: Memo[]
+): NormalisedData {
   const normalisedData = categoryGroups.reduce(
     (acc, categoryGroup) => {
       acc.categoryGroups[categoryGroup.id] = {
@@ -11,7 +19,6 @@ export function normaliseCategories(categoryGroups: CategoryGroup[]) {
 
         categories: categoryGroup.categories.map((cat) => cat.id),
       };
-
       categoryGroup.categories.forEach((cat) => {
         acc.categories[cat.id] = {
           id: cat.id,
@@ -40,7 +47,35 @@ export function normaliseCategories(categoryGroups: CategoryGroup[]) {
       categoryGroups: {},
       categories: {},
       months: {},
-    } as NormalisedCategories,
+    } as NormalisedCategoryData
   );
-  return normalisedData;
+
+  const monthKeys = [
+    ...new Set(
+      Object.values(normalisedData.months).map((m) => m.month.slice(0, 7))
+    ),
+  ].sort();
+
+  const memoByMonth: Record<
+    string,
+    { id: string; month: string; content: string }
+  > = {};
+
+  for (const key of monthKeys) {
+    const memo = memos.find((m) => m.month.toISOString().slice(0, 7) === key);
+
+    if (!memo) {
+      // This should not happen if backend invariants are correct
+      // but leaving this undefined makes bugs obvious
+      continue;
+    }
+
+    memoByMonth[key] = {
+      id: memo.id,
+      month: memo.month.toISOString(),
+      content: memo.content,
+    };
+  }
+
+  return { ...normalisedData, monthKeys, memoByMonth };
 }

@@ -1,6 +1,6 @@
 import request from "supertest";
 import app from "../../app";
-import { NormalisedCategories } from "../../features/budget/category/category.types";
+import { NormalisedCategoryData } from "../../features/budget/category/category.types";
 import { prisma } from "../../shared/prisma/client";
 
 export const testUser = {
@@ -35,7 +35,7 @@ export const registerUser = async (
     .get("/budget/category")
     .set("Authorization", `Bearer ${cookie}`);
 
-  const responseBody = categoriesResponse.body as NormalisedCategories;
+  const responseBody = categoriesResponse.body as NormalisedCategoryData;
 
   const { categoryGroups } = responseBody;
 
