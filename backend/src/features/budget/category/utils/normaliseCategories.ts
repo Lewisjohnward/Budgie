@@ -1,38 +1,53 @@
 import {
   CategoryGroupWithCategoriesAndMonths,
-  Memo,
+  MonthMemo,
   NormalisedCategoryData,
   NormalisedData,
+  asCategoryGroupId,
+  asCategoryId,
+  asMonthId,
 } from "../category.types";
 import { convertDecimalToNumber } from "../../../../shared/utils/convertDecimalToNumber";
 
+const createEmptyNormalisedCategoryData = (): NormalisedCategoryData => ({
+  categoryGroups: {},
+  categories: {},
+  months: {},
+});
+
 export function normaliseCategories(
   categoryGroups: CategoryGroupWithCategoriesAndMonths[],
-  memos: Memo[]
+  memos: MonthMemo[]
 ): NormalisedData {
-  const normalisedData = categoryGroups.reduce(
+  const normalisedData: NormalisedCategoryData = categoryGroups.reduce(
     (acc, categoryGroup) => {
-      acc.categoryGroups[categoryGroup.id] = {
-        id: categoryGroup.id,
+      const groupId = asCategoryGroupId(categoryGroup.id);
+
+      acc.categoryGroups[groupId] = {
+        id: groupId,
         name: categoryGroup.name,
         position: categoryGroup.position,
-
-        categories: categoryGroup.categories.map((cat) => cat.id),
+        categories: categoryGroup.categories.map((cat) => asCategoryId(cat.id)),
       };
+
       categoryGroup.categories.forEach((cat) => {
-        acc.categories[cat.id] = {
-          id: cat.id,
+        const categoryId = asCategoryId(cat.id);
+
+        acc.categories[categoryId] = {
+          id: categoryId,
           userId: cat.userId,
-          categoryGroupId: cat.categoryGroupId,
+          categoryGroupId: asCategoryGroupId(cat.categoryGroupId),
           name: cat.name,
-          months: cat.months.map((month) => month.id),
+          months: cat.months.map((m) => asMonthId(m.id)),
           position: cat.position,
         };
 
         cat.months.forEach((month) => {
-          acc.months[month.id] = {
-            id: month.id,
-            categoryId: cat.id,
+          const monthId = asMonthId(month.id);
+
+          acc.months[monthId] = {
+            id: monthId,
+            categoryId,
             month: month.month.toISOString(),
             activity: convertDecimalToNumber(month.activity),
             assigned: convertDecimalToNumber(month.assigned),
@@ -43,11 +58,7 @@ export function normaliseCategories(
 
       return acc;
     },
-    {
-      categoryGroups: {},
-      categories: {},
-      months: {},
-    } as NormalisedCategoryData
+    createEmptyNormalisedCategoryData()
   );
 
   const monthKeys = [

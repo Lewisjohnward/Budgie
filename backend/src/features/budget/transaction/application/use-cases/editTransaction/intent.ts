@@ -166,7 +166,7 @@ export async function buildEditIntent(
 
       updateData.category = { connect: { id: uncategorisedCategoryId } };
     } else {
-      const category = await categoryService.categories.checkUserOwnsCategory(
+      const category = await categoryService.categories.getCategory(
         tx,
         userId,
         payload.categoryId

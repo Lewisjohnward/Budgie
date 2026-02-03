@@ -1,4 +1,4 @@
-import { checkUserOwnsCategory } from "./application/services/assertUserOwnsCategory";
+import { getCategory } from "./application/services/getCategory";
 import { checkCategoryNameIsUniqueInGroup } from "./application/services/checkCategoryNameIsUniqueInGroup";
 import { getNextCategoryPosition } from "./application/services/getNextCategoryPosition";
 import { initialiseCategories } from "./application/services/initialiseCategories";
@@ -23,7 +23,7 @@ export const categoryService = {
   },
   categories: {
     initialiseCategories,
-    checkUserOwnsCategory,
+    getCategory,
     checkCategoryNameIsUniqueInGroup,
     getNextCategoryPosition,
     isCategoryProtected,
