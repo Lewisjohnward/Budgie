@@ -60,7 +60,7 @@ export const applyCategoryChange = async (
 ): Promise<void> => {
   if (transactions.length === 0) return;
 
-  const nextCategory = await categoryService.categories.checkUserOwnsCategory(
+  const nextCategory = await categoryService.categories.getCategory(
     tx,
     userId,
     categoryId

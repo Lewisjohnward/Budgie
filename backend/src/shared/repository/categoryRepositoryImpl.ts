@@ -5,7 +5,7 @@ import { CategoryRepository } from "../../features/budget/category/category.repo
 export const categoryRepository: CategoryRepository = {
   // ──────────────── Category Retrieval ────────────────
   getCategory: async (tx, userId, categoryId) => {
-    return await tx.category.findUnique({ where: { id: categoryId, userId } });
+    return await tx.category.findFirst({ where: { id: categoryId, userId } });
   },
 
   getCategoryIdByGroupAndName: async (tx, userId, categoryGroupId, name) => {
@@ -121,10 +121,10 @@ export const categoryRepository: CategoryRepository = {
     });
   },
 
-  getMonth: async function(
+  getMonth: async function (
     tx: Prisma.TransactionClient,
     userId: string,
-    monthId: string,
+    monthId: string
   ): Promise<Month> {
     return await tx.month.findUniqueOrThrow({
       where: {
@@ -136,9 +136,9 @@ export const categoryRepository: CategoryRepository = {
     });
   },
 
-  getMostRecentMonths: async function(
+  getMostRecentMonths: async function (
     tx: Prisma.TransactionClient,
-    userId: string,
+    userId: string
   ): Promise<Month[]> {
     const mostRecentMonths = (await tx.$queryRaw(
       Prisma.sql`
@@ -158,7 +158,7 @@ export const categoryRepository: CategoryRepository = {
     ORDER BY
         m."categoryId",
         m.month DESC;
-      `,
+      `
     )) as Month[];
 
     return mostRecentMonths;
@@ -183,8 +183,8 @@ export const categoryRepository: CategoryRepository = {
             available: m.available,
             assigned: m.assigned,
           },
-        }),
-      ),
+        })
+      )
     );
   },
 };

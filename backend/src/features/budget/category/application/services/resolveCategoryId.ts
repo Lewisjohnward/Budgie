@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { checkUserOwnsCategory } from "./assertUserOwnsCategory";
+import { getCategory } from "./getCategory";
 import { categoryRepository } from "../../../../../shared/repository/categoryRepositoryImpl";
 
 /**
@@ -21,7 +21,7 @@ export const resolveCategoryId = async (
   categoryId?: string
 ): Promise<string> => {
   if (categoryId) {
-    await checkUserOwnsCategory(tx, userId, categoryId);
+    await getCategory(tx, userId, categoryId);
     return categoryId;
   }
 

@@ -33,11 +33,7 @@ export async function insertNormalTransaction(
       : undefined;
 
   if (categoryId) {
-    await categoryService.categories.checkUserOwnsCategory(
-      tx,
-      userId,
-      categoryId
-    );
+    await categoryService.categories.getCategory(tx, userId, categoryId);
   }
 
   // TODO:(lewis 2026-01-26 11:31) needs to go in service in categories

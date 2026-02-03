@@ -36,7 +36,7 @@ export const editPayee = async (payload: EditPayeePayload) => {
     }
 
     if (newDefaultCategoryId) {
-      await categoryService.categories.checkUserOwnsCategory(
+      await categoryService.categories.getCategory(
         tx,
         userId,
         newDefaultCategoryId

@@ -16,7 +16,7 @@ export const deleteCategory = async ({
     const categoryToDelete = await categoryRepository.getCategory(
       tx,
       userId,
-      categoryId,
+      categoryId
     );
 
     if (!categoryToDelete) {
@@ -26,7 +26,7 @@ export const deleteCategory = async ({
     await categoryService.categories.isCategoryProtected(
       tx,
       userId,
-      categoryToDelete.id,
+      categoryToDelete.id
     );
 
     const transactions =
@@ -42,22 +42,22 @@ export const deleteCategory = async ({
       await categoryService.rta.calculateMonthsAvailable(
         tx,
         userId,
-        rtaCategoryId,
+        rtaCategoryId
       );
     } else {
       if (!inheritingCategoryId) {
         throw new InheritingCategoryIdNotProvidedError();
       }
-      await categoryService.categories.checkUserOwnsCategory(
+      await categoryService.categories.getCategory(
         tx,
         userId,
-        inheritingCategoryId,
+        inheritingCategoryId
       );
 
       await categoryService.categories.isCategoryProtected(
         tx,
         userId,
-        inheritingCategoryId,
+        inheritingCategoryId
       );
 
       const uncategorisedTransactionId =
