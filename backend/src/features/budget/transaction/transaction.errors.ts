@@ -73,12 +73,32 @@ export class UpdatedNormalTransactionsNotFoundError extends TransactionInvariant
   }
 }
 
+export class TransferDestinationMissingPairIdError extends TransactionInvariantError {
+  constructor(meta?: Record<string, unknown>) {
+    super(
+      "Invariant violated: transfer destination transferTransactionId must be provided",
+      meta
+    );
+    this.name = "TransferDestinationMissingPairIdError";
+  }
+}
+
+export class PairedTransactionNotTransferError extends TransactionInvariantError {
+  constructor(meta?: Record<string, unknown>) {
+    super(
+      "Invariant violated: paired transaction is not transfer",
+      meta
+    );
+    this.name = "PairedTransactionNotTransferError";
+  }
+}
+
 export class UpdatedTransferTransactionsMismatchError extends TransactionInvariantError {
   constructor(meta?: Record<string, unknown>) {
     super(
       "Invariant violated: mismatch between expected and updated transfer transaction ids",
       meta
     );
-    this.name = "UpdatedTransferTransactionsMismatchError";
-  }
+    this.name = "UpdatedTransferTransactionsMismatchError"
+ }
 }

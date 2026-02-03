@@ -1,6 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { PayeeNotFoundError } from "../../payee.errors";
 import { payeeRepository } from "../../../../../shared/repository/payeeRepositoryImpl";
+import { type PayeeId } from "../../payee.types";
+import { type UserId } from "../../../../user/auth/auth.types";
 
 /**
  * Verifies that one or more payees belong to the specified user.
@@ -14,8 +16,8 @@ import { payeeRepository } from "../../../../../shared/repository/payeeRepositor
 
 export const checkUserOwnsPayees = async (
   tx: Prisma.TransactionClient,
-  payeeIds: string | string[],
-  userId: string
+  payeeIds: PayeeId | PayeeId[],
+  userId: UserId
 ) => {
   const idsArray = Array.isArray(payeeIds) ? payeeIds : [payeeIds];
 

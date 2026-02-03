@@ -1,17 +1,18 @@
 import { Prisma } from "@prisma/client";
 import { MemoRepository } from "../../features/budget/memo/memo.repository";
-import { Memo } from "../../features/budget/memo/memo.types";
+import { db, type MemoId } from "../../features/budget/memo/memo.types";
+import { type UserId } from "../../features/user/auth/auth.types";
 
 export const memoRepository: MemoRepository = {
   getMemo: async function(
     tx: Prisma.TransactionClient,
-    userId: string,
-    id: string
-  ): Promise<Memo | null> {
+    userId: UserId,
+    memoId: MemoId
+  ): Promise<db.Memo | null> {
     const memo = await tx.monthMemo.findFirst({
       where: {
         userId: userId,
-        id,
+        id: memoId,
       },
     });
 
@@ -19,12 +20,12 @@ export const memoRepository: MemoRepository = {
   },
   updateMemo: async function(
     tx: Prisma.TransactionClient,
-    id: string,
+    memoId: MemoId,
     content: string
-  ): Promise<Memo> {
+  ): Promise<db.Memo> {
     return await tx.monthMemo.update({
       where: {
-        id,
+        id: memoId,
       },
       data: {
         content,

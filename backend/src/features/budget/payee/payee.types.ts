@@ -1,9 +1,3 @@
-import type { Prisma } from "@prisma/client";
-
-export type Payee = Prisma.PayeeGetPayload<object>;
-
-export type NormalisedPayees = {
-  payees: {
-    [key: string]: Payee;
-  };
-};
+export * as db from "./types/payee.prisma";
+export * from "./types/payee.domain";
+export * from "./types/payee.normalised";

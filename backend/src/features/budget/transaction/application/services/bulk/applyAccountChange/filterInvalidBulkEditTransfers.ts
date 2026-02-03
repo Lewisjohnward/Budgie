@@ -1,30 +1,33 @@
+import { type AccountId } from "../../../../../account/account.types";
+import {
+  type TransactionId,
+  type DomainTransferTransaction,
+} from "../../../../transaction.types";
+
 /**
- * Filters out transfer transactions that would violate account-change invariants.
+ * Filters transfer transactions that would violate account-change rules.
  *
- * A transfer transaction is excluded from the update if:
- * - The user selected both sides of the same transfer pair, or
- * - The target account is the transfer's counterpart account
- *   (`targetAccountId === transferAccountId`), which would result in an
- *   invalid or self-referential transfer.
+ * This function removes transfer transactions from the update list if:
+ * 1. Both sides of the same transfer pair were selected by the user.
+ * 2. The target account is the transfer's counterpart account
+ *    (`targetAccountId === transferAccountId`), which would create an
+ *    invalid or self-referential transfer.
  *
- * This function is pure and does not perform any side effects. It is intended
- * to be used as a defensive step before applying accountId updates.
+ * This is a pure, side-effect-free function intended as a defensive check
+ * before performing bulk account updates on transactions.
  *
- * @param transactionIds All transaction ids selected by the user.
- * @param selectedTransferTransactions Transfer transactions among the selected ids.
- * @param targetAccountId The account id transactions are being moved to.
+ * @param transactionIds - All transaction IDs selected by the user for account change.
+ * @param selectedTransferTransactions - Transfer transactions among the selected IDs.
+ * @param targetAccountId - The account ID that the selected transactions are being moved to.
  *
- * @returns A filtered list of transaction ids that can be safely updated
- *          without violating transfer invariants.
+ * @returns A filtered list of transaction IDs that can safely be updated without
+ * violating transfer invariants.
  */
-
-import { TransferTransactionEntity } from "../../../../transaction.types";
-
 export const filterInvalidBulkEditTransfers = (
-  transactionIds: string[],
-  selectedTransferTransactions: TransferTransactionEntity[],
-  targetAccountId: string
-): string[] => {
+  transactionIds: TransactionId[],
+  selectedTransferTransactions: DomainTransferTransaction[],
+  targetAccountId: AccountId
+): TransactionId[] => {
   if (selectedTransferTransactions.length === 0) {
     return transactionIds;
   }

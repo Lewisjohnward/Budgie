@@ -2,29 +2,42 @@ import { Prisma } from "@prisma/client";
 import { checkUserOwnsPayees } from "./checkUserOwnsPayees";
 import { checkPayeeNameIsUnique } from "./checkPayeeNameIsUnique";
 import { createPayee } from "./createPayee";
+import { type PayeeId } from "../../payee.types";
+import { type UserId } from "../../../../user/auth/auth.types";
 
 /**
- * Resolves the payee ID to use for a transaction
+ * Resolves the payee ID to use for a transaction, ensuring ownership and uniqueness.
  *
- * If a payeeId is provided, validates that the user owns it.
- * If a payeeName is provided, validates uniqueness and creates a new payee.
- * Returns undefined if neither is provided.
+ * Workflow:
+ * 1. If `payeeId` is provided:
+ *    - Verifies that the user owns the payee using `checkUserOwnsPayees`.
+ *    - Returns the validated `payeeId`.
+ * 2. If `payeeName` is provided (and `payeeId` is not):
+ *    - Ensures no existing payee has the same name via `checkPayeeNameIsUnique`.
+ *    - Creates a new payee with the given name using `createPayee`.
+ *    - Returns the newly created payee's ID.
+ * 3. If neither `payeeId` nor `payeeName` is provided:
+ *    - Returns `undefined`.
  *
- * @param tx - The Prisma transaction client
- * @param userId - The ID of the user
- * @param payeeId - Optional ID of an existing payee to use
- * @param payeeName - Optional name for a new payee to create
- * @returns The resolved payee ID, or undefined if no payee is specified
- * @throws {PayeeNotFoundError} - If the provided payeeId doesn't exist or doesn't belong to the user
- * @throws {PayeeAlreadyExistsError} - If the provided payeeName already exists for the user
+ * This function guarantees that the returned ID is valid and belongs to the user,
+ * or creates a new payee if necessary.
+ *
+ * @param tx - Prisma transaction client used for database operations.
+ * @param userId - ID of the user performing the operation.
+ * @param payeeId - Optional existing payee ID to validate and use.
+ * @param payeeName - Optional name for creating a new payee if `payeeId` is not provided.
+ *
+ * @returns The resolved `PayeeId` to use for the transaction, or `undefined` if no payee is specified.
+ *
+ * @throws {PayeeNotFoundError} - If `payeeId` is provided but the payee does not exist or is not owned by the user.
+ * @throws {PayeeAlreadyExistsError} - If `payeeName` is provided but a payee with that name already exists for the user.
  */
-
 export const resolvePayeeId = async (
   tx: Prisma.TransactionClient,
-  userId: string,
-  payeeId?: string,
+  userId: UserId,
+  payeeId?: PayeeId,
   payeeName?: string
-): Promise<string | undefined> => {
+): Promise<PayeeId | undefined> => {
   if (payeeId) {
     await checkUserOwnsPayees(tx, payeeId, userId);
     return payeeId;

@@ -1,13 +1,15 @@
 import { Prisma } from "@prisma/client";
 import { payeeRepository } from "../../../../../shared/repository/payeeRepositoryImpl";
 import { PayeeAlreadyExistsError } from "../../payee.errors";
+import { type PayeeId } from "../../payee.types";
+import { type CategoryId } from "../../../category/category.types";
 
 /**
  * Updates one or more payees with the same field values.
  * Supports both single payee ID and array of payee IDs for efficient batch updates.
  *
  * @param tx - The Prisma transaction client
- * @param payeeIds - The ID(s) of the payee(s) to update (string or array of strings)
+ * @param payeeIds - The ID(s) of the payee(s) to update (PayeeId or array of PayeeId)
  * @param data - The fields to update
  * @param data.name - Optional new name (only for single payee updates)
  * @param data.defaultCategoryId - Optional new default category ID
@@ -15,13 +17,12 @@ import { PayeeAlreadyExistsError } from "../../payee.errors";
  * @param data.includeInPayeeList - Optional flag to show/hide payee(s) in payee list
  * @throws {PayeeAlreadyExistsError} - If renaming to a name that already exists (P2002 race condition)
  */
-
 export const updatePayees = async (
   tx: Prisma.TransactionClient,
-  payeeIds: string | string[],
+  payeeIds: PayeeId | PayeeId[],
   data: {
     name?: string;
-    defaultCategoryId?: string | null;
+    defaultCategoryId?: CategoryId | null;
     automaticallyCategorisePayee?: boolean;
     includeInPayeeList?: boolean;
   }

@@ -1,20 +1,23 @@
 /**
- * Groups transactions by their `categoryId`.
+ * Groups an array of normal transactions by their `categoryId`.
  *
- * - Returns a mapping of each `categoryId` to the list of transactions assigned to it.
- * - Useful for aggregating or processing transactions on a per-category basis.
- * - Works with both persisted and new (optional `id`) transactions.
+ * Each key in the returned record corresponds to a `categoryId`, and the
+ * associated value is an array of transactions belonging to that category.
  *
- * @param transactions - The list of transactions to group.
- * @returns A record mapping category IDs to arrays of their corresponding transactions.
+ * This is useful for:
+ * - Aggregating transactions per category
+ * - Calculating category-specific totals or metrics
+ * - Organizing transactions for month/category updates
+ *
+ * @param transactions - Array of `DomainNormalTransaction` objects to group.
+ * @returns A record mapping each `categoryId` to an array of transactions assigned to it.
  */
 
+import { type DomainNormalTransaction } from "../../transaction/transaction.types";
 import { groupBy } from "../utils/groupBy";
-import { Transaction } from "@prisma/client";
 
 export function groupTransactionsByCategoryId(
-  transactions: (Omit<Transaction, "id"> & { id?: string })[]
+  transactions: DomainNormalTransaction[]
 ) {
-  //@ts-ignore-error: due to change in transaction categoryId to string | null to have transfer transactions
   return groupBy(transactions, (tx) => tx.categoryId);
 }

@@ -1,12 +1,13 @@
 import { Prisma } from "@prisma/client";
 import { PayeeRepository } from "../../features/budget/payee/payee.repository";
-import { Payee } from "../../features/budget/payee/payee.types";
+import { type PayeeId, type db } from "../../features/budget/payee/payee.types";
+import { type UserId } from "../../features/user/auth/auth.types";
 
 export const payeeRepository: PayeeRepository = {
   getPayees: function(
     tx: Prisma.TransactionClient,
-    userId: string
-  ): Promise<Payee[]> {
+    userId: UserId
+  ): Promise<db.Payee[]> {
     return tx.payee.findMany({
       where: {
         userId,
@@ -19,9 +20,9 @@ export const payeeRepository: PayeeRepository = {
 
   getPayeeByIdAndUserId: function(
     tx: Prisma.TransactionClient,
-    payeeId: string,
-    userId: string
-  ): Promise<Payee | null> {
+    payeeId: PayeeId,
+    userId: UserId
+  ): Promise<db.Payee | null> {
     return tx.payee.findUnique({
       where: {
         id: payeeId,
@@ -31,10 +32,10 @@ export const payeeRepository: PayeeRepository = {
   },
   getPayeeByNameAndUserId: function(
     tx: Prisma.TransactionClient,
-    userId: string,
+    userId: UserId,
     name: string,
-    excludePayeeId?: string
-  ): Promise<Payee | null> {
+    excludePayeeId?: PayeeId
+  ): Promise<db.Payee | null> {
     return tx.payee.findFirst({
       where: {
         userId: userId,
@@ -45,8 +46,8 @@ export const payeeRepository: PayeeRepository = {
   },
   countPayeesByIdsAndUserId: async function(
     tx: Prisma.TransactionClient,
-    payeeIds: string[],
-    userId: string
+    payeeIds: PayeeId[],
+    userId: UserId
   ): Promise<number> {
     return await tx.payee.count({
       where: {
@@ -58,9 +59,9 @@ export const payeeRepository: PayeeRepository = {
 
   createPayee: async function(
     tx: Prisma.TransactionClient,
-    userId: string,
+    userId: UserId,
     name: string
-  ): Promise<Payee> {
+  ): Promise<db.Payee> {
     return await tx.payee.create({
       data: {
         userId: userId,
@@ -71,7 +72,7 @@ export const payeeRepository: PayeeRepository = {
 
   updatePayee: async function(
     tx: Prisma.TransactionClient,
-    payeeId: string,
+    payeeId: PayeeId,
     data: {
       name?: string;
       defaultCategoryId?: string | null;
@@ -99,7 +100,7 @@ export const payeeRepository: PayeeRepository = {
   },
   updatePayees: async function(
     tx: Prisma.TransactionClient,
-    payeeIds: string[],
+    payeeIds: PayeeId[],
     data: {
       includeInPayeeList?: boolean;
     }
@@ -117,7 +118,7 @@ export const payeeRepository: PayeeRepository = {
   },
   deletePayees: async function(
     tx: Prisma.TransactionClient,
-    payeeIds: string[]
+    payeeIds: PayeeId[]
   ): Promise<void> {
     await tx.payee.deleteMany({
       where: {

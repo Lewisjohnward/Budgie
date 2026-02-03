@@ -1,11 +1,12 @@
 import { Prisma } from "@prisma/client";
 import { TransactionSnapshot } from "./getTransactionSnapshotWithPair";
-import { EditSingleTransactionPayload } from "../../../transaction.schema";
 import { ZERO } from "../../../../../../shared/constants/zero";
 import { categoryService } from "../../../../category/category.service";
-import { categoryRepository } from "../../../../../../shared/repository/categoryRepositoryImpl";
 import { accountService } from "../../../../account/account.service";
 import { payeeService } from "../../../../payee/payee.service";
+import { type EditTransactionCommand } from "./editTransaction";
+import { type AccountId } from "../../../../account/account.types";
+import { type UserId } from "../../../../../user/auth/auth.types";
 
 /**
  * Represents a fully-resolved intent to edit a single transaction.
@@ -21,7 +22,7 @@ import { payeeService } from "../../../../payee/payee.service";
  */
 
 export type EditTransactionIntent = {
-  updateData: Prisma.TransactionUpdateInput;
+  updateData: Prisma.TransactionUncheckedUpdateInput;
   transfer: TransferIntent;
 };
 
@@ -39,10 +40,14 @@ export type EditTransactionIntent = {
  */
 
 export type TransferIntent =
-  | { type: "none" } // no change to transfer state
-  | { type: "remove" } // transfer -> normal
-  | { type: "create"; targetAccountId: string } // normal -> transfer
-  | { type: "change"; targetAccountId: string }; // transfer A -> transfer B
+  // no change to transfer state
+  | { type: "none" }
+  // transfer -> normal
+  | { type: "remove" }
+  // normal -> transfer
+  | { type: "create"; targetAccountId: AccountId }
+  // transfer A -> transfer B
+  | { type: "change"; targetAccountId: AccountId };
 
 /**
  * Resolves how the transfer state of a transaction should change based on
@@ -67,7 +72,7 @@ export type TransferIntent =
 
 export const resolveTransferIntent = (
   snapshot: TransactionSnapshot,
-  payload: EditSingleTransactionPayload
+  payload: EditTransactionCommand
 ): TransferIntent => {
   if (payload.transferAccountId === undefined) {
     return { type: "none" };
@@ -126,9 +131,9 @@ export const resolveTransferIntent = (
 
 export async function buildEditIntent(
   tx: Prisma.TransactionClient,
-  userId: string,
+  userId: UserId,
   snapshot: TransactionSnapshot,
-  payload: EditSingleTransactionPayload
+  payload: EditTransactionCommand
 ): Promise<EditTransactionIntent> {
   const updateData: Prisma.TransactionUpdateInput = {};
   const transfer = resolveTransferIntent(snapshot, payload);
@@ -157,12 +162,12 @@ export async function buildEditIntent(
   } else if (payload.categoryId !== undefined || transferToNormal) {
     if (payload.categoryId === null) {
       const uncategorisedCategoryId =
-        await categoryRepository.getUncategorisedCategoryId(tx, userId);
+        await categoryService.categories.getUncategorisedCategoryId(tx, userId);
 
       updateData.category = { connect: { id: uncategorisedCategoryId } };
     } else if (payload.categoryId === undefined) {
       const uncategorisedCategoryId =
-        await categoryRepository.getUncategorisedCategoryId(tx, userId);
+        await categoryService.categories.getUncategorisedCategoryId(tx, userId);
 
       updateData.category = { connect: { id: uncategorisedCategoryId } };
     } else {

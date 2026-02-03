@@ -1,44 +1,51 @@
 import { Prisma } from "@prisma/client";
-import { Payee } from "./payee.types";
+import { db, type PayeeId } from "./payee.types";
+import { type CategoryId } from "../category/category.types";
+import { type UserId } from "../../user/auth/auth.types";
 
 export interface PayeeRepository {
   // ──────────────── Payee Retrieval ────────────────
 
-  getPayees(tx: Prisma.TransactionClient, userId: string): Promise<Payee[]>;
+  getPayees(tx: Prisma.TransactionClient, userId: UserId): Promise<db.Payee[]>;
 
   getPayeeByIdAndUserId(
     tx: Prisma.TransactionClient,
-    payeeId: string,
-    userId: string
-  ): Promise<Payee | null>;
+    payeeId: PayeeId,
+    userId: UserId
+  ): Promise<db.Payee | null>;
 
+  /**
+   * Finds a payee by name for a specific user.
+   *
+   * Optionally ignores a specific payee ID, used when checking for duplicates during updates.
+   */
   getPayeeByNameAndUserId(
     tx: Prisma.TransactionClient,
-    userId: string,
+    userId: UserId,
     name: string,
-    excludePayeeId?: string
-  ): Promise<Payee | null>;
+    excludePayeeId?: PayeeId
+  ): Promise<db.Payee | null>;
 
   countPayeesByIdsAndUserId(
     tx: Prisma.TransactionClient,
-    payeeIds: string[],
-    userId: string
+    payeeIds: PayeeId[],
+    userId: UserId
   ): Promise<number>;
 
   // ──────────────── Payee Mutation ────────────────
 
   createPayee(
     tx: Prisma.TransactionClient,
-    userId: string,
+    userId: UserId,
     name: string
-  ): Promise<Payee>;
+  ): Promise<db.Payee>;
 
   updatePayee(
     tx: Prisma.TransactionClient,
-    payeeId: string,
+    payeeId: PayeeId,
     data: {
       name?: string;
-      defaultCategoryId?: string | null;
+      defaultCategoryId?: CategoryId | null;
       automaticallyCategorisePayee?: boolean;
       includeInPayeeList?: boolean;
     }
@@ -46,11 +53,14 @@ export interface PayeeRepository {
 
   updatePayees(
     tx: Prisma.TransactionClient,
-    payeeIds: string[],
+    payeeIds: PayeeId[],
     data: {
       includeInPayeeList?: boolean;
     }
   ): Promise<void>;
 
-  deletePayees(tx: Prisma.TransactionClient, payeeIds: string[]): Promise<void>;
+  deletePayees(
+    tx: Prisma.TransactionClient,
+    payeeIds: PayeeId[]
+  ): Promise<void>;
 }

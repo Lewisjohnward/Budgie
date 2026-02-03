@@ -1,8 +1,39 @@
 import { prisma } from "../../../../../shared/prisma/client";
 import { payeeService } from "../../payee.service";
-import { payeeRepository } from "../../../../../shared/repository/payeeRepositoryImpl";
 import { transactionService } from "../../../transaction/transaction.service";
 import { DeletePayeePayload } from "../../payee.schema";
+import { asPayeeId, type PayeeId } from "../../payee.types";
+import { asUserId, type UserId } from "../../../../user/auth/auth.types";
+
+type DeletePayeeCommand = Omit<
+  DeletePayeePayload,
+  "userId" | "payeeId" | "replacementPayeeId"
+> & {
+  userId: UserId;
+  payeeId: PayeeId;
+  replacementPayeeId?: PayeeId | null;
+};
+
+/**
+ * Converts a raw DeletePayeePayload into a DeletePayeeCommand
+ * with a branded PayeeId.
+ *
+ * @param p - The original delete payee payload
+ * @returns A payload with payeeId cast as a PayeeId
+ */
+export const toDeletePayeeCommand = (
+  p: DeletePayeePayload
+): DeletePayeeCommand => ({
+  ...p,
+  userId: asUserId(p.userId),
+  payeeId: asPayeeId(p.payeeId),
+  replacementPayeeId:
+    p.replacementPayeeId === null
+      ? null
+      : p.replacementPayeeId
+        ? asPayeeId(p.replacementPayeeId)
+        : undefined,
+});
 
 /**
  * Deletes a payee and updates all associated transactions.
@@ -17,7 +48,7 @@ import { DeletePayeePayload } from "../../payee.schema";
  */
 
 export const deletePayee = async (payload: DeletePayeePayload) => {
-  const { userId, payeeId, replacementPayeeId } = payload;
+  const { userId, payeeId, replacementPayeeId } = toDeletePayeeCommand(payload);
 
   await prisma.$transaction(async (tx) => {
     // Verify user owns payee (and replacement payee if provided)

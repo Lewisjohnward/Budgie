@@ -1,6 +1,35 @@
 import { prisma } from "../../../../../shared/prisma/client";
 import { payeeService } from "../../payee.service";
-import { EditPayeesInBulkPayload } from "../../payee.schema";
+import { type EditPayeesInBulkPayload } from "../../payee.schema";
+import { asPayeeId, type PayeeId } from "../../payee.types";
+import { asUserId, type UserId } from "../../../../user/auth/auth.types";
+
+/**
+ * Command type for editing multiple payees in bulk.
+ * Ensures all IDs are strongly branded.
+ */
+export type EditPayeesInBulkCommand = Omit<
+  EditPayeesInBulkPayload,
+  "userId" | "payeeIds"
+> & {
+  userId: UserId;
+  payeeIds: PayeeId[];
+};
+
+/**
+ * Converts a raw payload into a strongly-typed EditPayeesInBulkCommand.
+ *
+ * @param p - The original EditPayeesInBulkPayload
+ * @returns A strongly-typed command with all payeeIds branded
+ */
+
+export const toEditPayeesInBulkCommand = (
+  p: EditPayeesInBulkPayload
+): EditPayeesInBulkCommand => ({
+  ...p,
+  userId: asUserId(p.userId),
+  payeeIds: p.payeeIds.map(asPayeeId),
+});
 
 /**
  * Updates multiple payees in bulk with the same field values.
@@ -16,7 +45,7 @@ import { EditPayeesInBulkPayload } from "../../payee.schema";
  */
 
 export const editPayeesInBulk = async (payload: EditPayeesInBulkPayload) => {
-  const { userId, payeeIds, updates } = payload;
+  const { userId, payeeIds, updates } = toEditPayeesInBulkCommand(payload);
 
   await prisma.$transaction(async (tx) => {
     // Verify user owns all payees

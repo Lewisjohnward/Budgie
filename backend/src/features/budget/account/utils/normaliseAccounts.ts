@@ -1,8 +1,8 @@
 import { convertDecimalToNumber } from "../../../../shared/utils/convertDecimalToNumber";
-import { Account } from "../../category/category.types";
+import { db } from "../../category/category.types";
 import { NormalisedAccounts } from "../account.schema";
 
-export function normaliseAccounts(data: { accounts: Account[] }) {
+export function normaliseAccounts(data: { accounts: db.Account[] }) {
   const normalisedData: NormalisedAccounts = {
     accounts: {},
     transactions: {},

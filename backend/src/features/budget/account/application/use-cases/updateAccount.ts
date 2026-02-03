@@ -1,11 +1,29 @@
 import { accountRepository } from "../../../../../shared/repository/accountRepositoryImpl";
 import { transactionService } from "../../../transaction/transaction.service";
-import { EditAccountSchema } from "../../account.schema";
+import { type EditAccountPayload } from "../../account.schema";
 import { accountService } from "../../../account/account.service";
 import { prisma } from "../../../../../shared/prisma/client";
+import { type AccountId, asAccountId } from "../../account.types";
+import { asUserId, type UserId } from "../../../../user/auth/auth.types";
 
-export const updateAccount = async (payload: EditAccountSchema) => {
-  const { accountId, userId, name, balanceAdjustment } = payload;
+export type EditAccountCommand = Omit<EditAccountPayload, "id" | "userId"> & {
+  accountId: AccountId;
+  userId: UserId;
+};
+
+export const toEditAccountCommand = (
+  p: EditAccountPayload
+): EditAccountCommand => ({
+  ...p,
+  userId: asUserId(p.userId),
+  accountId: asAccountId(p.accountId),
+});
+
+export const editAccount = async (
+  payload: EditAccountPayload
+): Promise<void> => {
+  const { accountId, userId, name, balanceAdjustment } =
+    toEditAccountCommand(payload);
 
   await prisma.$transaction(async (tx) => {
     const account = await accountService.getAccount(tx, accountId, userId);
@@ -22,7 +40,7 @@ export const updateAccount = async (payload: EditAccountSchema) => {
           tx,
           userId,
           account.id,
-          balanceChange,
+          balanceChange
         );
       }
     }

@@ -1,8 +1,9 @@
 import { prisma } from "../../../../../shared/prisma/client";
+import { UserId } from "../../../../user/auth/auth.types";
 import { getMonth } from "../../utils/getMonth";
 
 // TODO: NEEDS TO BE CLEANED UP REPOSITORY
-export const initialiseCategories = async (userId: string) => {
+export const initialiseCategories = async (userId: UserId) => {
   const { startOfCurrentMonth, nextMonth } = getMonth();
   const categoryGroupData = [
     {

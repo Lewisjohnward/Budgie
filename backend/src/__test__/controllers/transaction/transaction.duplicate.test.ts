@@ -2,7 +2,7 @@ import { getAccounts } from "../../utils/getData";
 import { createTestAccount } from "../../utils/createTestAccount";
 import { addTransaction, duplicateTransactions } from "../../utils/transaction";
 import { login, registerUser } from "../../utils/auth";
-import { TransactionPayload } from "../../../features/budget/transaction/transaction.schema";
+import { type InsertTransactionInput } from "../../../features/budget/transaction/transaction.schema";
 
 describe("Transaction Duplicate", () => {
   let cookie: string;
@@ -36,16 +36,12 @@ describe("Transaction Duplicate", () => {
 
       const account1 = await createTestAccount(cookie, 0);
 
-      const transactionPayload: TransactionPayload = {
+      const transactionPayload: InsertTransactionInput = {
         accountId: account1.id,
         outflow: "10",
       };
 
-      const transaction = await addTransaction(
-        cookie,
-        transactionPayload,
-        200
-      );
+      const transaction = await addTransaction(cookie, transactionPayload, 200);
 
       await duplicateTransactions(cookieA, [transaction!.id], 404);
     });
@@ -57,13 +53,13 @@ describe("Transaction Duplicate", () => {
       const account2 = await createTestAccount(cookie, 0);
       const account3 = await createTestAccount(cookie, 0);
 
-      const transactionPayload1: TransactionPayload = {
+      const transactionPayload1: InsertTransactionInput = {
         accountId: account1.id,
         transferAccountId: account2.id,
         outflow: "10",
       };
 
-      const transactionPayload2: TransactionPayload = {
+      const transactionPayload2: InsertTransactionInput = {
         accountId: account1.id,
         transferAccountId: account3.id,
         inflow: "10",
@@ -75,9 +71,7 @@ describe("Transaction Duplicate", () => {
 
       // Get the original transactions
       const originalResponse = await getAccounts(cookie);
-      const originalTransactions = Object.values(
-        originalResponse.transactions
-      );
+      const originalTransactions = Object.values(originalResponse.transactions);
 
       const [originalTx1, originalTx2, originalTx3, originalTx4] =
         originalTransactions;
@@ -129,7 +123,7 @@ describe("Transaction Duplicate", () => {
       const account1 = await createTestAccount(cookie, 0);
       const account2 = await createTestAccount(cookie, 0);
 
-      const transactionPayload: TransactionPayload = {
+      const transactionPayload: InsertTransactionInput = {
         accountId: account1.id,
         transferAccountId: account2.id,
         outflow: "10",
@@ -138,9 +132,7 @@ describe("Transaction Duplicate", () => {
       await addTransaction(cookie, transactionPayload, 200);
 
       const originalResponse = await getAccounts(cookie);
-      const originalTransactions = Object.values(
-        originalResponse.transactions
-      );
+      const originalTransactions = Object.values(originalResponse.transactions);
 
       const [transferTx1, transferTx2] = originalTransactions;
 
@@ -168,42 +160,28 @@ describe("Transaction Duplicate", () => {
       const account1 = await createTestAccount(cookie, 0);
       const account2 = await createTestAccount(cookie, 0);
 
-      const transactionPayload1: TransactionPayload = {
+      const transactionPayload1: InsertTransactionInput = {
         accountId: account1.id,
         transferAccountId: account2.id,
         outflow: "10",
       };
 
-      const transactionPayload2: TransactionPayload = {
+      const transactionPayload2: InsertTransactionInput = {
         accountId: account1.id,
         inflow: "10",
       };
 
-      const transactionPayload3: TransactionPayload = {
+      const transactionPayload3: InsertTransactionInput = {
         accountId: account1.id,
         outflow: "10",
       };
 
-      const transferTx = await addTransaction(
-        cookie,
-        transactionPayload1,
-        200
-      );
-      const normalTx1 = await addTransaction(
-        cookie,
-        transactionPayload2,
-        200
-      );
-      const normalTx2 = await addTransaction(
-        cookie,
-        transactionPayload3,
-        200
-      );
+      const transferTx = await addTransaction(cookie, transactionPayload1, 200);
+      const normalTx1 = await addTransaction(cookie, transactionPayload2, 200);
+      const normalTx2 = await addTransaction(cookie, transactionPayload3, 200);
 
       const originalResponse = await getAccounts(cookie);
-      const originalTransactions = Object.values(
-        originalResponse.transactions
-      );
+      const originalTransactions = Object.values(originalResponse.transactions);
 
       expect(originalTransactions).toHaveLength(4);
 
@@ -238,7 +216,7 @@ describe("Transaction Duplicate", () => {
       const account1 = await createTestAccount(cookie, 0);
       const account2 = await createTestAccount(cookie, 0);
 
-      const transactionPayload: TransactionPayload = {
+      const transactionPayload: InsertTransactionInput = {
         accountId: account1.id,
         transferAccountId: account2.id,
         outflow: "10",
@@ -249,9 +227,7 @@ describe("Transaction Duplicate", () => {
 
       // Get the original transactions
       const originalResponse = await getAccounts(cookie);
-      const originalTransactions = Object.values(
-        originalResponse.transactions
-      );
+      const originalTransactions = Object.values(originalResponse.transactions);
 
       // Original transfer pair (indices 0 and 1)
       const [originalTx1, originalTx2] = originalTransactions;

@@ -1,5 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { transactionRepository } from "../../../../../shared/repository/transactionRepositoryImpl";
+import { type PayeeId } from "../../../payee/payee.types";
+import { type UserId } from "../../../../user/auth/auth.types";
 
 /**
  * Updates the payee ID for all transactions associated with one or more payees.
@@ -25,9 +27,9 @@ import { transactionRepository } from "../../../../../shared/repository/transact
 
 export const updatePayeeForTransactions = async (
   tx: Prisma.TransactionClient,
-  userId: string,
-  payeeId: string | string[],
-  newPayeeId: string | null
+  userId: UserId,
+  payeeId: PayeeId | PayeeId[],
+  newPayeeId: PayeeId | null
 ): Promise<void> => {
   await transactionRepository.updateTransactionsPayee(
     tx,

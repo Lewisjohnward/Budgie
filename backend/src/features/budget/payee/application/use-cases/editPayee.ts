@@ -1,24 +1,86 @@
 import { prisma } from "../../../../../shared/prisma/client";
 import { payeeService } from "../../payee.service";
 import { categoryService } from "../../../category/category.service";
-import { EditPayeePayload } from "../../payee.schema";
+import { type EditPayeePayload } from "../../payee.schema";
+import {
+  asCategoryId,
+  type CategoryId,
+} from "../../../category/category.types";
+import { asPayeeId, type PayeeId } from "../../payee.types";
+import { asUserId, type UserId } from "../../../../user/auth/auth.types";
 
 /**
- * Updates one or more fields of an existing payee.
- * At least one update field must be provided.
+ * Represents the payload for editing a payee, with a branded `CategoryId`.
  *
- * @param payload - The edit payee payload
- * @param payload.userId - The ID of the user performing the operation
- * @param payload.payeeId - The ID of the payee to edit
- * @param payload.newName - Optional new name for the payee
- * @param payload.newDefaultCategoryId - Optional new default category ID (or null to clear)
- * @param payload.automaticallyCategorisePayee - Optional flag to enable/disable automatic categorization
- * @param payload.includeInPayeeList - Optional flag to show/hide payee in payee list
- * @throws {PayeeNotFoundError} - If user doesn't own the payee or category (404)
- * @throws {PayeeAlreadyExistsError} - If renaming to a name that already exists (409)
+ * - Converts the `newDefaultCategoryId` from a string to a branded `CategoryId`.
+ * - Preserves `null` if explicitly provided.
+ * - Omits the original `newDefaultCategoryId` from `EditPayeePayload`.
+ */
+export type EditPayeeCommand = Omit<
+  EditPayeePayload,
+  "userId" | "payeeId" | "newDefaultCategoryId"
+> & {
+  userId: UserId;
+  payeeId: PayeeId;
+  newDefaultCategoryId?: CategoryId | null;
+};
+
+/**
+ * Converts an `EditPayeePayload` into a command with branded types.
+ *
+ * - Ensures `newDefaultCategoryId` is either a branded `CategoryId`, `null`, or `undefined`.
+ * - Allows downstream services to safely work with typed category IDs.
+ *
+ * @param payload - The raw edit payee payload from the API or caller.
+ * @returns A new object with the `newDefaultCategoryId` properly branded.
+ */
+const toEditPayeeCommand = (p: EditPayeePayload): EditPayeeCommand => ({
+  ...p,
+  userId: asUserId(p.userId),
+  payeeId: asPayeeId(p.payeeId),
+  newDefaultCategoryId:
+    p.newDefaultCategoryId === null
+      ? null
+      : p.newDefaultCategoryId
+        ? asCategoryId(p.newDefaultCategoryId)
+        : undefined,
+});
+
+/**
+ * Edits a payee's details for a given user.
+ *
+ * This function allows updating the payee's:
+ * - Name
+ * - Default category
+ * - Automatic categorization behavior
+ * - Inclusion in the payee list
+ *
+ * The function enforces the following invariants:
+ * - The payee must belong to the specified user.
+ * - The new payee name (if provided) must be unique for the user.
+ * - The new default category (if provided) must exist and be owned by the user.
+ *
+ * All updates are performed within a single database transaction to ensure
+ * atomicity.
+ *
+ * @param payload - The raw payload for editing the payee. This is converted
+ *                  internally to `EditPayeeCommand` to enforce type branding.
+ * @param payload.userId - The ID of the user performing the update.
+ * @param payload.payeeId - The ID of the payee to edit.
+ * @param payload.newName - Optional new name for the payee.
+ * @param payload.newDefaultCategoryId - Optional new default category ID (branded) for the payee.
+ * @param payload.automaticallyCategorisePayee - Optional flag to enable automatic categorization.
+ * @param payload.includeInPayeeList - Optional flag to include/exclude the payee from the list.
+ *
+ * @returns A promise that resolves once the payee has been successfully updated.
+ *
+ * @throws Will throw an error if:
+ * - The payee does not belong to the user.
+ * - The new payee name is not unique.
+ * - The new default category does not exist or is not owned by the user.
  */
 
-export const editPayee = async (payload: EditPayeePayload) => {
+export const editPayee = async (payload: EditPayeePayload): Promise<void> => {
   const {
     userId,
     payeeId,
@@ -26,7 +88,7 @@ export const editPayee = async (payload: EditPayeePayload) => {
     newDefaultCategoryId,
     automaticallyCategorisePayee,
     includeInPayeeList,
-  } = payload;
+  } = toEditPayeeCommand(payload);
 
   await prisma.$transaction(async (tx) => {
     await payeeService.checkUserOwnsPayees(tx, payeeId, userId);

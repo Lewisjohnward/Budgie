@@ -1,3 +1,11 @@
+import { Prisma, PrismaClient } from "@prisma/client";
+import { categoryRepository } from "../../../../../../shared/repository/categoryRepositoryImpl";
+import { groupMonthlyAssignedNegativeAvailable } from "../../../../../../shared/utils/groupMonthlyAssignedNegativeAvailable";
+import { calculateRtaAvailablePerMonth } from "../../../domain/rta.domain";
+import { categoryService } from "../../../category.service";
+import { CategoryId } from "../../../category.types";
+import { type UserId } from "../../../../../user/auth/auth.types";
+
 /**
  * Calculates and updates the available amounts for RTA (Ready-To-Assign) months for a given user and category.
  *
@@ -10,27 +18,22 @@
  * @param userId - The user identifier for whom the RTA months are calculated.
  * @param rtaCategoryId - The category ID representing RTA months.
  */
-
-import { Prisma, PrismaClient } from "@prisma/client";
-import { categoryRepository } from "../../../../../../shared/repository/categoryRepositoryImpl";
-import { groupMonthlyAssignedNegativeAvailable } from "../../../../../../shared/utils/groupMonthlyAssignedNegativeAvailable";
-import { calculateRtaAvailablePerMonth } from "../../../domain/rta.domain";
-
 export const calculateMonthsAvailable = async (
   prisma: PrismaClient | Prisma.TransactionClient,
-  userId: string,
-  rtaCategoryId: string,
+  userId: UserId,
+  rtaCategoryId: CategoryId
 ) => {
-  const allCategoryMonths = await categoryRepository.getAllMonthsForCategories(
-    prisma,
-    userId,
-    rtaCategoryId,
-  );
+  const allCategoryMonths =
+    await categoryService.months.getAllMonthsForCategories(
+      prisma,
+      userId,
+      rtaCategoryId
+    );
   // get all (updated) rta months
-  const allRtaMonths = await categoryRepository.getAllRtaMonths(
+  const allRtaMonths = await categoryService.months.getAllRtaMonths(
     prisma,
     userId,
-    rtaCategoryId,
+    rtaCategoryId
   );
   // group category groups by total negative per month
   const monthlyAssignedNegativeAvailable =
@@ -39,7 +42,7 @@ export const calculateMonthsAvailable = async (
   // calculate rta available per month
   const updatedMonths = calculateRtaAvailablePerMonth(
     allRtaMonths,
-    monthlyAssignedNegativeAvailable,
+    monthlyAssignedNegativeAvailable
   );
 
   // update rta months

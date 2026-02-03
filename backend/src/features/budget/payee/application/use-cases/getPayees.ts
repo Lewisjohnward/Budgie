@@ -1,20 +1,36 @@
-import { normalisePayees } from "../../utils/normalisePayees";
 import { payeeRepository } from "../../../../../shared/repository/payeeRepositoryImpl";
 import { prisma } from "../../../../../shared/prisma/client";
+import { payeeMapper } from "../../payee.mapper";
+import { normalisePayees } from "../../utils/normalisePayees";
+import { asUserId } from "../../../../user/auth/auth.types";
+import { NormalisedPayees } from "../../payee.types";
 
 /**
- * Retrieves all payees and account payees for a user and returns them in a normalized format.
+ * Fetches all payees for a user and returns them in a normalized structure.
  *
- * Regular payees are user-created entities for tracking merchants, vendors, etc.
- * Account payees represent accounts that can be used as transfer destinations in transactions.
+ * This includes:
+ * - **Regular payees**: user-created entities representing merchants, vendors, or common payees.
+ * - **Account payees**: special payees corresponding to the user's accounts, used for transfer transactions.
  *
- * @param userId - The ID of the user whose payees to retrieve
- * @returns A normalized object containing both payees and accountPayees, each keyed by their respective IDs
+ * The results are normalized for fast lookup, with each payee keyed by its ID.
+ *
+ * @param userId - The ID of the user whose payees are being retrieved.
+ *
+ * @returns A promise that resolves to an object containing:
+ *  - `payees`: Map of regular payees keyed by payee ID.
+ *  - `accountPayees`: Map of account payees keyed by payee ID.
+ *
+ * @example
+ * const { payees, accountPayees } = await getPayees("user-123");
+ * console.log(payees["payee-1"].name);
  */
 
-export const getPayees = async (userId: string) => {
+export const getPayees = async (userId: string): Promise<NormalisedPayees> => {
+  const uId = asUserId(userId);
   return await prisma.$transaction(async (tx) => {
-    const payees = await payeeRepository.getPayees(tx, userId);
+    const rows = await payeeRepository.getPayees(tx, uId);
+
+    const payees = rows.map((r) => payeeMapper.toDomainPayee(r));
 
     return normalisePayees(payees);
   });

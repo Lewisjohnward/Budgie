@@ -1,6 +1,11 @@
-import { Month } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 import { groupBy } from "../utils/groupBy";
+import type { DomainMonth } from "../types/month.domain";
+
+type MonthSlice = Pick<
+  DomainMonth,
+  "month" | "activity" | "available" | "assigned"
+>;
 
 /**
  * Adjusts a list of monthly category data based on a change in assigned funds.
@@ -15,9 +20,6 @@ import { groupBy } from "../utils/groupBy";
  * @param changeInAssigned - The amount to add to the first month's `assigned` value.
  * @returns A new array of months with updated `assigned` and `available` values.
  */
-
-type MonthSlice = Pick<Month, "month" | "activity" | "available" | "assigned">;
-
 export const calculateCategoryMonths = <M extends MonthSlice>(
   categoryMonths: M[],
   changeInAssigned: Decimal
@@ -87,16 +89,16 @@ export const calculateCategoryMonths = <M extends MonthSlice>(
  * @param mode - Indicates whether transactions are being added or deleted.
  * @returns An updated mapping of category ID to the adjusted list of months.
  */
-
-export function calculateMonthsByCategoryId(
+export function calculateMonthsByCategoryId<M extends MonthSlice>(
   categorisedTransactionsGroupedByCategoryId: Record<
     string,
-    (Omit<Transaction, "id"> & { id?: string })[]
+    // TODO:(lewis 2026-02-10 13:47) dont like this type
+    (Omit<DomainNormalTransaction, "id"> & { id?: string })[]
   >,
-  monthsGroupedByCategoryId: Record<string, Month[]>,
+  monthsGroupedByCategoryId: Record<string, M[]>,
   mode: OperationMode
 ) {
-  const updatedMonthsByCategoryId: Record<string, Month[]> = {};
+  const updatedMonthsByCategoryId: Record<string, M[]> = {};
 
   // loop over each category Id: [txs]
   for (const categoryId in categorisedTransactionsGroupedByCategoryId) {
@@ -113,6 +115,12 @@ export function calculateMonthsByCategoryId(
   return updatedMonthsByCategoryId;
 }
 
+import { ZERO } from "../../../../shared/constants/zero";
+import { OperationMode } from "../../../../shared/enums/operation-mode";
+import { DomainNormalTransaction } from "../../transaction/transaction.types";
+
+type TxSlice = { inflow: Decimal; outflow: Decimal; date: Date };
+
 /**
  * Adjusts each month's `activity` and `available` fields based on a list of transactions,
  * either adding or removing them depending on the operation mode.
@@ -127,15 +135,8 @@ export function calculateMonthsByCategoryId(
  * @param mode - Whether transactions are being added or removed.
  * @returns A new array of adjusted months.
  */
-
-import { Transaction } from "@prisma/client";
-import { ZERO } from "../../../../shared/constants/zero";
-import { OperationMode } from "../../../../shared/enums/operation-mode";
-
-type TxSlice = Pick<Transaction, "inflow" | "outflow" | "date">;
-
 export const adjustMonthsForMultipleTransactions = <
-  M extends Pick<Month, "month" | "activity" | "available" | "assigned">
+  M extends Pick<DomainMonth, "month" | "activity" | "available" | "assigned">,
 >(
   txs: Array<TxSlice>,
   months: M[],
@@ -184,7 +185,8 @@ export const adjustMonthsForMultipleTransactions = <
  * @param categoryMonths - An array of `Month` objects, each with a `categoryId`.
  * @returns A record mapping each `categoryId` to an array of `Month` instances.
  */
-
-export function groupMonthsByCategoryId(categoryMonths: Month[]) {
-  return groupBy(categoryMonths, (categoryMonths) => categoryMonths.categoryId);
+export function groupMonthsByCategoryId<M extends { categoryId: string }>(
+  categoryMonths: M[]
+) {
+  return groupBy(categoryMonths, (m) => m.categoryId);
 }

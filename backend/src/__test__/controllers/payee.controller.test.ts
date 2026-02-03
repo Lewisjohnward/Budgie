@@ -67,8 +67,6 @@ describe("Payee", () => {
       expect(testPayee.defaultCategoryId).toBeNull();
       expect(testPayee.includeInPayeeList).toBe(true);
       expect(testPayee.automaticallyCategorisePayee).toBe(true);
-      expect(new Date(testPayee.createdAt).getTime()).toBeGreaterThan(0);
-      expect(testPayee.createdAt).toBe(testPayee.updatedAt);
       expect(transactionArray.length).toBe(1);
       expect(testTransaction.payeeId).toBe(testPayee.id);
     });

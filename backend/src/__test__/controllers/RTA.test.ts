@@ -7,14 +7,8 @@ import {
 } from "../utils/getData";
 import { createTestAccount } from "../utils/createTestAccount";
 import { login, registerUser } from "../utils/auth";
-import { Account } from "@prisma/client";
+import { type db } from "../../features/budget/account/account.types";
 import { prisma } from "../../shared/prisma/client";
-import { EditTransactionsPayload } from "../../features/budget/transaction/transaction.schema";
-
-type TestEditTransactionPayload = Omit<
-  EditTransactionsPayload,
-  "userId"
->;
 
 const compareRTAMonthsToExpected = async (
   expected: number[],
@@ -169,7 +163,7 @@ const addTransaction = async ({
 describe("RTA allocation", () => {
   let cookie: string;
   let RTACategoryId: string;
-  let testAccount: Account;
+  let testAccount: db.Account;
 
   beforeEach(async () => {
     await registerUser();
@@ -2217,7 +2211,7 @@ describe("RTA allocation", () => {
   });
 
   describe.skip("editing transactions", () => {
-    it.skip("Should correctly update rta months when editing from uncategorised to category", async () => { });
+    it.skip("Should correctly update rta months when editing from uncategorised to category", async () => {});
     it("first test", async () => {
       const { id: accountId } = testAccount;
 
@@ -2237,7 +2231,7 @@ describe("RTA allocation", () => {
         },
       });
 
-      const payload: TestEditTransactionPayload = {
+      const payload = {
         transactions: [
           {
             ...transaction,

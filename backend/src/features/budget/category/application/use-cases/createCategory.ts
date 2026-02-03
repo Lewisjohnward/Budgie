@@ -1,39 +1,61 @@
 import { prisma } from "../../../../../shared/prisma/client";
-import { categoryRepository } from "../../../../../shared/repository/categoryRepositoryImpl";
+import { asUserId, UserId } from "../../../../user/auth/auth.types";
 import { categoryGroupService } from "../../../categorygroup/categoryGroup.service";
-import { CreateCategoryPayload } from "../../category.schema";
+import {
+  asCategoryGroupId,
+  type CategoryGroupId,
+} from "../../../categorygroup/categoryGroup.types";
+import { type CreateCategoryPayload } from "../../category.schema";
 import { categoryService } from "../../category.service";
 
-export const createCategory = async (payload: CreateCategoryPayload) => {
+export type CreateCategoryCommand = Omit<
+  CreateCategoryPayload,
+  "userId" | "categoryGroupId"
+> & {
+  userId: UserId;
+  categoryGroupId: CategoryGroupId;
+};
+
+export const toCreateCategoryCommand = (
+  p: CreateCategoryPayload
+): CreateCategoryCommand => ({
+  ...p,
+  userId: asUserId(p.userId),
+  categoryGroupId: asCategoryGroupId(p.categoryGroupId),
+});
+
+export const createCategory = async (
+  payload: CreateCategoryPayload
+): Promise<void> => {
   await prisma.$transaction(async (tx) => {
-    const { userId, categoryGroupId, name } = payload;
+    const { userId, categoryGroupId, name } = toCreateCategoryCommand(payload);
 
     await categoryGroupService.ensureUserOwnsCategoryGroup(
       tx,
       userId,
-      categoryGroupId,
+      categoryGroupId
     );
 
     await categoryGroupService.isProtectedCategoryGroup(
       tx,
       userId,
-      categoryGroupId,
+      categoryGroupId
     );
 
     await categoryService.categories.checkCategoryNameIsUniqueInGroup(
       tx,
       userId,
       categoryGroupId,
-      name,
+      name
     );
 
     const nextPosition =
       await categoryService.categories.getNextCategoryPosition(
         tx,
-        categoryGroupId,
+        categoryGroupId
       );
 
-    const newCategory = await categoryRepository.createCategory(tx, {
+    const newCategory = await categoryService.categories.createCategory(tx, {
       ...payload,
       position: nextPosition,
     });
@@ -41,7 +63,7 @@ export const createCategory = async (payload: CreateCategoryPayload) => {
     await categoryService.months.createMonthsForCategory(
       tx,
       userId,
-      newCategory.id,
+      newCategory.id
     );
   });
 };

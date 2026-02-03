@@ -1,3 +1,11 @@
+import { v4 as uuidv4 } from "uuid";
+import { asTransactionId, type TransactionId } from "../transaction.types";
+
+type TransactionWithIdAndMemo = {
+  id: TransactionId;
+  memo?: string | null;
+};
+
 /**
  * Creates shallow copies of the given transactions, marking them as duplicates.
  *
@@ -8,13 +16,28 @@
  * @returns A new list of transaction objects without IDs and with modified memos.
  */
 
-import { Transaction } from "@prisma/client";
-
-export function createDuplicatedTxs(
-  transactions: Transaction[],
-): (Omit<Transaction, "id"> & { id?: string })[] {
-  return transactions.map(({ id, ...data }) => ({
-    ...data,
-    memo: data.memo ? `${data.memo} (copy)` : "(copy)",
+export function createDuplicatedTxs<T extends TransactionWithIdAndMemo>(
+  transactions: readonly T[]
+): T[] {
+  return transactions.map((tx) => ({
+    ...tx,
+    id: asTransactionId(uuidv4()),
+    memo: tx.memo ? `${tx.memo} (copy)` : "(copy)",
   }));
 }
+
+// TODO:(lewis 2026-02-10 14:46) use this when memo is an empty string in schema
+// import type {
+//   DomainNormalTransacton,
+//   NormalTransactionInsertData,
+// } from "../transaction.types";
+//
+// export function createDuplicatedTxs(
+//   transactions: readonly DomainNormalTransacton[]
+// ): NormalTransactionInsertData[] {
+//     return transactions.map(({ id, ...data }) => ({
+//     ...data,
+//     memo: `${data.memo} (copy)`,
+//     // categoryId stays optional/required exactly as your insert type says
+//   }));
+// }

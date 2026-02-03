@@ -1,13 +1,13 @@
 import {
-  CategoryGroupWithCategoriesAndMonths,
-  MonthMemo,
-  NormalisedCategoryData,
-  NormalisedData,
-  asCategoryGroupId,
   asCategoryId,
   asMonthId,
+  db,
+  type MemoByMonth,
+  type NormalisedCategoryData,
+  type NormalisedData,
 } from "../category.types";
 import { convertDecimalToNumber } from "../../../../shared/utils/convertDecimalToNumber";
+import { asCategoryGroupId } from "../../categorygroup/categoryGroup.types";
 
 const createEmptyNormalisedCategoryData = (): NormalisedCategoryData => ({
   categoryGroups: {},
@@ -16,8 +16,8 @@ const createEmptyNormalisedCategoryData = (): NormalisedCategoryData => ({
 });
 
 export function normaliseCategories(
-  categoryGroups: CategoryGroupWithCategoriesAndMonths[],
-  memos: MonthMemo[]
+  categoryGroups: db.CategoryGroupWithCategoriesAndMonths[],
+  memos: db.MonthMemo[]
 ): NormalisedData {
   const normalisedData: NormalisedCategoryData = categoryGroups.reduce(
     (acc, categoryGroup) => {
@@ -35,7 +35,6 @@ export function normaliseCategories(
 
         acc.categories[categoryId] = {
           id: categoryId,
-          userId: cat.userId,
           categoryGroupId: asCategoryGroupId(cat.categoryGroupId),
           name: cat.name,
           months: cat.months.map((m) => asMonthId(m.id)),
@@ -67,10 +66,7 @@ export function normaliseCategories(
     ),
   ].sort();
 
-  const memoByMonth: Record<
-    string,
-    { id: string; month: string; content: string }
-  > = {};
+  const memoByMonth: MemoByMonth = {};
 
   for (const key of monthKeys) {
     const memo = memos.find((m) => m.month.toISOString().slice(0, 7) === key);

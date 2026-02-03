@@ -1,23 +1,24 @@
 import { Prisma } from "@prisma/client";
 import { memoRepository } from "../../../../../shared/repository/memoRepositoryImpl";
 import { NoMemoFoundError } from "../../memo.errors";
-import { Memo } from "../../memo.types";
+import { memoMapper } from "../../memo.mapper";
+import { type DomainMemo, type MemoId } from "../../memo.types";
+import { type UserId } from "../../../../user/auth/auth.types";
 
 /**
  * Returns a memo owned by the given user.
  *
  * @throws {NoMemoFoundError} If the memo does not exist or is not owned by the user.
  */
-
 export const getMemo = async (
   tx: Prisma.TransactionClient,
-  memoId: string,
-  userId: string
-): Promise<Memo> => {
+  userId: UserId,
+  memoId: MemoId
+): Promise<DomainMemo> => {
   const memo = await memoRepository.getMemo(tx, userId, memoId);
 
   if (!memo) {
     throw new NoMemoFoundError();
   }
-  return memo;
+  return memoMapper.toDomainMemo(memo);
 };

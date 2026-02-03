@@ -3,6 +3,39 @@ import { payeeService } from "../../payee.service";
 import { transactionService } from "../../../transaction/transaction.service";
 import { DeletePayeesInBulkPayload } from "../../payee.schema";
 import { ReplacementPayeeIsInDeleteList } from "../../payee.errors";
+import { asPayeeId, type PayeeId } from "../../payee.types";
+import { asUserId, type UserId } from "../../../../user/auth/auth.types";
+
+/**
+ * Command type for deleting multiple payees in bulk.
+ * Ensures all payee IDs are strongly typed with PayeeId.
+ */
+export type DeletePayeesInBulkCommand = Omit<
+  DeletePayeesInBulkPayload,
+  "userId" | "payeeIds" | "replacementPayeeId"
+> & {
+  userId: UserId;
+  payeeIds: PayeeId[];
+  replacementPayeeId?: PayeeId;
+};
+
+/**
+ * Converts a raw payload into a DeletePayeesInBulkCommand.
+ * All payee IDs are cast to PayeeId.
+ *
+ * @param p - The original DeletePayeesInBulkPayload
+ * @returns A strongly-typed DeletePayeesInBulkCommand
+ */
+export const toDeletePayeesInBulkCommand = (
+  p: DeletePayeesInBulkPayload
+): DeletePayeesInBulkCommand => ({
+  ...p,
+  userId: asUserId(p.userId),
+  payeeIds: p.payeeIds.map(asPayeeId),
+  replacementPayeeId: p.replacementPayeeId
+    ? asPayeeId(p.replacementPayeeId)
+    : undefined,
+});
 
 /**
  * Deletes multiple payees in bulk and updates all associated transactions.
@@ -20,7 +53,8 @@ import { ReplacementPayeeIsInDeleteList } from "../../payee.errors";
 export const deletePayeesInBulk = async (
   payload: DeletePayeesInBulkPayload
 ) => {
-  const { userId, payeeIds, replacementPayeeId } = payload;
+  const { userId, payeeIds, replacementPayeeId } =
+    toDeletePayeesInBulkCommand(payload);
 
   await prisma.$transaction(async (tx) => {
     // Fail early: check replacement payee isn't in delete list

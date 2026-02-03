@@ -1,6 +1,5 @@
 import { OperationMode } from "../../../../../shared/enums/operation-mode";
 import { prisma } from "../../../../../shared/prisma/client";
-import { categoryRepository } from "../../../../../shared/repository/categoryRepositoryImpl";
 import { transactionRepository } from "../../../../../shared/repository/transactionRepositoryImpl";
 import { accountService } from "../../../account/account.service";
 import { categoryService } from "../../../category/category.service";
@@ -8,7 +7,38 @@ import { transactionService } from "../../transaction.service";
 import { createDuplicatedTxs } from "../../utils/createDuplicateTxs";
 import { duplicateTransferTransactions } from "../../utils/duplicateTransferTransactions";
 import { splitTransactionsByType } from "../../utils/splitTransactionsByType";
-import { DuplicateTransactionsPayload } from "../../transaction.schema";
+import { type DuplicateTransactionsPayload } from "../../transaction.schema";
+import { asTransactionId, type TransactionId } from "../../transaction.types";
+import { asUserId, UserId } from "../../../../user/auth/auth.types";
+
+/**
+ * Command type for duplicating transactions.
+ *
+ * Wraps `DuplicateTransactionsPayload` and brands the transaction IDs.
+ */
+export type DuplicateTransactionsCommand = Omit<
+  DuplicateTransactionsPayload,
+  "userId" | "transactionIds"
+> & {
+  userId: UserId;
+  transactionIds: TransactionId[];
+};
+
+/**
+ * Converts a raw duplicate transactions payload into a command with branded IDs.
+ *
+ * @param payload - The raw duplication payload from API or caller
+ * @returns A payload with transaction IDs properly branded
+ */
+export const toDuplicateTransactionsCommand = (
+  p: DuplicateTransactionsPayload
+): DuplicateTransactionsCommand => ({
+  ...p,
+  userId: asUserId(p.userId),
+  transactionIds: p.transactionIds.map((p) => asTransactionId(p)),
+});
+
+// TODO:(lewis 2026-02-10 14:27) going to need a jsdocs update
 
 /**
  * Creates duplicates of specified transactions while maintaining their relationships and updating all necessary data.
@@ -41,8 +71,8 @@ import { DuplicateTransactionsPayload } from "../../transaction.schema";
 
 export const duplicateTransactions = async (
   payload: DuplicateTransactionsPayload
-) => {
-  const { userId, transactionIds } = payload;
+): Promise<void> => {
+  const { userId, transactionIds } = toDuplicateTransactionsCommand(payload);
 
   await prisma.$transaction(async (tx) => {
     const { normalTransactions, allTransferTransactions } =
@@ -52,7 +82,10 @@ export const duplicateTransactions = async (
         transactionIds
       );
 
-    const rtaCategoryId = await categoryRepository.getRtaCategoryId(tx, userId);
+    const rtaCategoryId = await categoryService.rta.getRtaCategoryId(
+      tx,
+      userId
+    );
 
     const duplicatedTransferTxs = duplicateTransferTransactions(
       allTransferTransactions
@@ -63,8 +96,8 @@ export const duplicateTransactions = async (
       rtaCategoryId
     );
 
-    const nonRtaTxsWithoutIds = createDuplicatedTxs(nonRtaTransactions);
-    const rtaTxsWithoutIds = createDuplicatedTxs(rtaTransactions);
+    const duplicatedNonRtaTxs = createDuplicatedTxs(nonRtaTransactions);
+    const duplicatedRtaTxs = createDuplicatedTxs(rtaTransactions);
 
     // handle non transfer transactions
     if (normalTransactions.length > 0) {
@@ -98,8 +131,8 @@ export const duplicateTransactions = async (
     // Insert all transactions
     await transactionRepository.createTransactions(tx, [
       ...duplicatedTransferTxs,
-      ...rtaTxsWithoutIds,
-      ...nonRtaTxsWithoutIds,
+      ...duplicatedRtaTxs,
+      ...duplicatedNonRtaTxs,
     ]);
 
     // Update account balances for the duplicated transfers

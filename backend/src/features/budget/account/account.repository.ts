@@ -1,31 +1,39 @@
-import { Account, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
-import { AddAccountPayload } from "./account.schema";
+import { type AddAccountPayload } from "./account.schema";
+import { type AccountId, type db } from "./account.types";
+import { type UserId } from "../../user/auth/auth.types";
 
 export interface AccountRepository {
   getAccount(
     tx: Prisma.TransactionClient,
-    accountId: string,
-    userId: string,
-  ): Promise<Account | null>;
+    accountId: AccountId,
+    userId: UserId
+  ): Promise<db.Account | null>;
 
   createAccount(
     tx: Prisma.TransactionClient,
-    payload: AddAccountPayload,
-  ): Promise<Account>;
+    payload: AddAccountPayload
+  ): Promise<db.Account>;
 
-  deleteAccount(tx: Prisma.TransactionClient, accountId: string): Promise<void>;
+  deleteAccount(
+    tx: Prisma.TransactionClient,
+    accountId: AccountId
+  ): Promise<void>;
 
-  closeAccount(tx: Prisma.TransactionClient, accountId: string): Promise<void>;
+  closeAccount(
+    tx: Prisma.TransactionClient,
+    accountId: AccountId
+  ): Promise<void>;
 
   updateAccount(
     tx: Prisma.TransactionClient,
-    accountId: string,
-    name: string,
+    accountId: AccountId,
+    name: string
   ): Promise<void>;
 
   updateAccountBalances(
     tx: Prisma.TransactionClient,
-    accountBalanceChanges: { [accountId: string]: Decimal },
+    accountBalanceChanges: Record<AccountId, Decimal>
   ): Promise<void>;
 }

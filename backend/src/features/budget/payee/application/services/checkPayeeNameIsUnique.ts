@@ -1,6 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { PayeeAlreadyExistsError } from "../../payee.errors";
 import { payeeRepository } from "../../../../../shared/repository/payeeRepositoryImpl";
+import { type PayeeId } from "../../payee.types";
+import { type UserId } from "../../../../user/auth/auth.types";
 
 /**
  * Checks if a payee name is unique for a specific user
@@ -11,12 +13,11 @@ import { payeeRepository } from "../../../../../shared/repository/payeeRepositor
  * @param excludePayeeId - Optional ID of a payee to exclude from the uniqueness check (for updates)
  * @throws {PayeeAlreadyExistsError} - If a payee with the same name already exists for the user
  */
-
 export const checkPayeeNameIsUnique = async (
   tx: Prisma.TransactionClient,
-  userId: string,
+  userId: UserId,
   name: string,
-  excludePayeeId?: string
+  excludePayeeId?: PayeeId
 ) => {
   const existingPayee = await payeeRepository.getPayeeByNameAndUserId(
     tx,

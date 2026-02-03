@@ -1,28 +1,44 @@
-import { Prisma, Transaction } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { calculateBalanceChangePerAccount } from "../../domain/account.domain";
 import { accountRepository } from "../../../../../shared/repository/accountRepositoryImpl";
 import { OperationMode } from "../../../../../shared/enums/operation-mode";
+import { type Decimal } from "@prisma/client/runtime/library";
+import { type AccountId } from "../../account.types";
 
 /**
- * Updates account balances based on a list of transactions and the operation mode.
- *
- * - Calculates the net balance changes per account using `calculateBalanceChangePerAccount`.
- * - Applies these balance changes by calling `budgetRepository.updateAccountBalances` with the provided Prisma transaction client.
- *
- * @param prisma - The Prisma transaction client to ensure atomic database updates.
- * @param transactions - The list of transactions that affect account balances.
- * @param mode - The operation mode indicating whether transactions are being added or deleted.
+ * Represents a transaction that affects an account balance.
+ * Used by services that calculate net balance changes.
  */
+export type BalanceAffectingTransaction = {
+  accountId: AccountId;
+  inflow: Decimal;
+  outflow: Decimal;
+};
 
+/**
+ * A mapping of account IDs to their net balance change.
+ * Used internally by the balance update service.
+ */
+export type BalanceChangeMap = Record<AccountId, Decimal>;
+
+/**
+ * Updates account balances based on a list of transactions and an operation mode.
+ *
+ * Steps:
+ * 1. Calculates the net balance change per account using `calculateBalanceChangePerAccount`.
+ * 2. Calls the repository to apply these changes atomically using the provided Prisma transaction client.
+ *
+ * @param tx - Prisma transaction client for atomic updates.
+ * @param transactions - List of transactions that impact account balances.
+ * @param mode - Indicates whether transactions are being added or removed.
+ */
 export const updateAccountBalances = async (
-  prisma: Prisma.TransactionClient,
-  transactions: Transaction[],
+  tx: Prisma.TransactionClient,
+  transactions: BalanceAffectingTransaction[],
   mode: OperationMode
-) => {
-  const accountBalanceChanges = calculateBalanceChangePerAccount(
-    transactions,
-    mode
-  );
+): Promise<void> => {
+  const accountBalanceChanges: BalanceChangeMap =
+    calculateBalanceChangePerAccount(transactions, mode);
 
-  await accountRepository.updateAccountBalances(prisma, accountBalanceChanges);
+  await accountRepository.updateAccountBalances(tx, accountBalanceChanges);
 };

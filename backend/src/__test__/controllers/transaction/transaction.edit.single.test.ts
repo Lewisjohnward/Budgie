@@ -1,12 +1,13 @@
 import { v4 as uuidv4 } from "uuid";
 import { getAccounts, getCategories } from "../../utils/getData";
 import { createTestAccount } from "../../utils/createTestAccount";
-import { addTransaction, editSingleTransaction } from "../../utils/transaction";
-import { login, registerUser } from "../../utils/auth";
 import {
-  EditSingleTransactionInput,
-  TransactionPayload,
-} from "../../../features/budget/transaction/transaction.schema";
+  addTransaction,
+  editSingleTransaction,
+  TestInsertTransactionInputWithoutUserId,
+} from "../../utils/transaction";
+import { login, registerUser } from "../../utils/auth";
+import { type EditSingleTransactionInput } from "../../../features/budget/transaction/transaction.schema";
 import {
   getCategoryMonths,
   getRTACategory,
@@ -28,7 +29,7 @@ describe("Transaction Single Edit", () => {
     it("Should return 400 when updating a transaction providing no fields", async () => {
       const account1 = await createTestAccount(cookie, 0);
 
-      const transactionPayload: TransactionPayload = {
+      const transactionPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
         outflow: "10",
       };
@@ -48,7 +49,7 @@ describe("Transaction Single Edit", () => {
     it("Should return 400 when updating a transaction providing both transferAccountId and catgoryId", async () => {
       const account1 = await createTestAccount(cookie, 0);
 
-      const transactionPayload: TransactionPayload = {
+      const transactionPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
         outflow: "10",
       };
@@ -96,7 +97,7 @@ describe("Transaction Single Edit", () => {
 
       const account2 = await createTestAccount(cookie2, 0);
 
-      const transactionPayload: TransactionPayload = {
+      const transactionPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: account2.id,
         outflow: "10",
       };
@@ -125,7 +126,7 @@ describe("Transaction Single Edit", () => {
       it("Should return 400 if accountId is not a uuid", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -149,7 +150,7 @@ describe("Transaction Single Edit", () => {
       it("Should return 404 when updating a transaction using an invalid account", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -173,7 +174,7 @@ describe("Transaction Single Edit", () => {
       it("Should return 404 when editing a transaction using an unowned account", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -210,7 +211,7 @@ describe("Transaction Single Edit", () => {
         const account1 = await createTestAccount(cookie, 0);
         const account2 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -260,7 +261,7 @@ describe("Transaction Single Edit", () => {
 
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -280,7 +281,7 @@ describe("Transaction Single Edit", () => {
       it("Should prevent changing date to the future", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -309,7 +310,7 @@ describe("Transaction Single Edit", () => {
         const account1 = await createTestAccount(cookie, 0);
         const date = new Date(2025, 6, 15, 1, 0, 0).toISOString();
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -392,7 +393,7 @@ describe("Transaction Single Edit", () => {
           const account1 = await createTestAccount(cookie, 0);
           const testCategory = await getTestCategory(cookie);
 
-          const transactionPayload: TransactionPayload = {
+          const transactionPayload: TestInsertTransactionInputWithoutUserId = {
             accountId: account1.id,
             categoryId: testCategory.id,
             outflow: "10",
@@ -434,7 +435,7 @@ describe("Transaction Single Edit", () => {
       it("Should return 400 if payeeId is not a uuid", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -458,7 +459,7 @@ describe("Transaction Single Edit", () => {
       it("Should return 400 if both payeeName and payeeId are provided", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -483,7 +484,7 @@ describe("Transaction Single Edit", () => {
       it('Should return 400 if payeeName is "" - empty string', async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -505,7 +506,7 @@ describe("Transaction Single Edit", () => {
       it('Should return 400 if payeeName is " " - empty string', async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -527,7 +528,7 @@ describe("Transaction Single Edit", () => {
       it("Should return 404 if uuid doesn't correspond to payee", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -551,7 +552,7 @@ describe("Transaction Single Edit", () => {
       it("Should return 404 if payee is not owned by user", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -597,7 +598,7 @@ describe("Transaction Single Edit", () => {
       it("Should update payeeId correctly", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload1: TransactionPayload = {
+        const transactionPayload1: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           payeeName: "Initial Payee",
           outflow: "10",
@@ -605,7 +606,7 @@ describe("Transaction Single Edit", () => {
 
         await addTransaction(cookie, transactionPayload1);
 
-        const transactionPayload2: TransactionPayload = {
+        const transactionPayload2: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           payeeName: "Second Payee",
           outflow: "10",
@@ -643,7 +644,7 @@ describe("Transaction Single Edit", () => {
       it("Should update create payee when providing payeeName", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload1: TransactionPayload = {
+        const transactionPayload1: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           payeeName: "Initial Payee",
           outflow: "10",
@@ -673,7 +674,7 @@ describe("Transaction Single Edit", () => {
       it("Should clear payeeId if providing null", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           payeeName: "Test Payee",
           outflow: "10",
@@ -706,7 +707,7 @@ describe("Transaction Single Edit", () => {
       it("If a new payee is provided, create entry", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -746,7 +747,7 @@ describe("Transaction Single Edit", () => {
       it("Should return 400 if categoryId is not a uuid", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -770,7 +771,7 @@ describe("Transaction Single Edit", () => {
       it("Should return 404 when updating a transaction using a nonexistent categoryId", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -794,7 +795,7 @@ describe("Transaction Single Edit", () => {
       it("Should return 404 when editing a transaction using an unowned categoryId", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -833,7 +834,7 @@ describe("Transaction Single Edit", () => {
         const categoryArray = Object.values(categories);
         const category = categoryArray[0];
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -865,7 +866,7 @@ describe("Transaction Single Edit", () => {
         const category = categoryArray[0];
         const uncategorisedCategory = await getUncategorisedCategory(cookie);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           categoryId: category.id,
           outflow: "10",
@@ -898,7 +899,7 @@ describe("Transaction Single Edit", () => {
         const rtaCategory = await getRTACategory(cookie);
         const testCategory = await getTestCategory(cookie);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           categoryId: testCategory.id,
           outflow: "10",
@@ -933,7 +934,7 @@ describe("Transaction Single Edit", () => {
         const rtaCategory = await getRTACategory(cookie);
         const testCategory = await getTestCategory(cookie);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           categoryId: rtaCategory.id,
           inflow: "10",
@@ -969,7 +970,7 @@ describe("Transaction Single Edit", () => {
         const uncategorisedCategory = await getUncategorisedCategory(cookie);
         const testCategory = await getTestCategory(cookie);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           categoryId: uncategorisedCategory.id,
           outflow: "10",
@@ -1007,7 +1008,7 @@ describe("Transaction Single Edit", () => {
         const uncategorisedCategory = await getUncategorisedCategory(cookie);
         const testCategory = await getTestCategory(cookie);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           categoryId: uncategorisedCategory.id,
           inflow: "10",
@@ -1047,7 +1048,7 @@ describe("Transaction Single Edit", () => {
       it("Should return 400 if memo is over 100 characters", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -1073,7 +1074,7 @@ describe("Transaction Single Edit", () => {
       it("Should update transaction memo correctly", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -1100,7 +1101,7 @@ describe("Transaction Single Edit", () => {
         // should set memo to "" - an empty string
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -1126,7 +1127,7 @@ describe("Transaction Single Edit", () => {
       it.skip("Should clear memo correctly", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -1156,7 +1157,7 @@ describe("Transaction Single Edit", () => {
       it("Should return 400 if providing both inflow + outflow", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -1181,7 +1182,7 @@ describe("Transaction Single Edit", () => {
       it("Should update inflow/outflow correctly", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -1211,7 +1212,7 @@ describe("Transaction Single Edit", () => {
         // should not allow anymore
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -1239,7 +1240,7 @@ describe("Transaction Single Edit", () => {
       it.skip("Should update inflow -> 0 correctly", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           inflow: "10",
         };
@@ -1268,7 +1269,7 @@ describe("Transaction Single Edit", () => {
       it.skip("Should update outflow -> inflow 0 correctly", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -1298,7 +1299,7 @@ describe("Transaction Single Edit", () => {
       it("Should correctly update account balance when updating outflow -> outflow", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -1322,7 +1323,7 @@ describe("Transaction Single Edit", () => {
       it("Should correctly update account balance when updating inflow -> inflow", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           inflow: "10",
         };
@@ -1346,7 +1347,7 @@ describe("Transaction Single Edit", () => {
       it("Should correctly update account balance when updating outflow -> inflow", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -1370,7 +1371,7 @@ describe("Transaction Single Edit", () => {
       it("Should correctly update account balance when updating inflow -> outflow", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           inflow: "10",
         };
@@ -1399,7 +1400,7 @@ describe("Transaction Single Edit", () => {
 
           const rtaCategory = await getRTACategory(cookie);
 
-          const transactionPayload: TransactionPayload = {
+          const transactionPayload: TestInsertTransactionInputWithoutUserId = {
             accountId: account1.id,
             categoryId: rtaCategory.id,
             inflow: "10",
@@ -1432,7 +1433,7 @@ describe("Transaction Single Edit", () => {
 
           const rtaCategory = await getRTACategory(cookie);
 
-          const transactionPayload: TransactionPayload = {
+          const transactionPayload: TestInsertTransactionInputWithoutUserId = {
             accountId: account1.id,
             categoryId: rtaCategory.id,
             outflow: "10",
@@ -1465,7 +1466,7 @@ describe("Transaction Single Edit", () => {
 
           const rtaCategory = await getRTACategory(cookie);
 
-          const transactionPayload: TransactionPayload = {
+          const transactionPayload: TestInsertTransactionInputWithoutUserId = {
             accountId: account1.id,
             categoryId: rtaCategory.id,
             inflow: "10",
@@ -1498,7 +1499,7 @@ describe("Transaction Single Edit", () => {
 
           const rtaCategory = await getRTACategory(cookie);
 
-          const transactionPayload: TransactionPayload = {
+          const transactionPayload: TestInsertTransactionInputWithoutUserId = {
             accountId: account1.id,
             categoryId: rtaCategory.id,
             outflow: "10",
@@ -1531,7 +1532,7 @@ describe("Transaction Single Edit", () => {
 
           const rtaCategory = await getRTACategory(cookie);
 
-          const transactionPayload: TransactionPayload = {
+          const transactionPayload: TestInsertTransactionInputWithoutUserId = {
             accountId: account1.id,
             categoryId: rtaCategory.id,
             outflow: "10",
@@ -1564,7 +1565,7 @@ describe("Transaction Single Edit", () => {
 
           const rtaCategory = await getRTACategory(cookie);
 
-          const transactionPayload: TransactionPayload = {
+          const transactionPayload: TestInsertTransactionInputWithoutUserId = {
             accountId: account1.id,
             categoryId: rtaCategory.id,
             inflow: "10",
@@ -1599,7 +1600,7 @@ describe("Transaction Single Edit", () => {
 
           const testCategory = await getTestCategory(cookie);
 
-          const transactionPayload: TransactionPayload = {
+          const transactionPayload: TestInsertTransactionInputWithoutUserId = {
             accountId: account1.id,
             categoryId: testCategory.id,
             inflow: "10",
@@ -1636,7 +1637,7 @@ describe("Transaction Single Edit", () => {
 
           const testCategory = await getTestCategory(cookie);
 
-          const transactionPayload: TransactionPayload = {
+          const transactionPayload: TestInsertTransactionInputWithoutUserId = {
             accountId: account1.id,
             categoryId: testCategory.id,
             outflow: "10",
@@ -1681,7 +1682,7 @@ describe("Transaction Single Edit", () => {
 
           const testCategory = await getTestCategory(cookie);
 
-          const transactionPayload: TransactionPayload = {
+          const transactionPayload: TestInsertTransactionInputWithoutUserId = {
             accountId: account1.id,
             categoryId: testCategory.id,
             outflow: "10",
@@ -1726,7 +1727,7 @@ describe("Transaction Single Edit", () => {
 
           const testCategory = await getTestCategory(cookie);
 
-          const transactionPayload: TransactionPayload = {
+          const transactionPayload: TestInsertTransactionInputWithoutUserId = {
             accountId: account1.id,
             categoryId: testCategory.id,
             inflow: "10",
@@ -1771,7 +1772,7 @@ describe("Transaction Single Edit", () => {
 
           const testCategory = await getTestCategory(cookie);
 
-          const transactionPayload: TransactionPayload = {
+          const transactionPayload: TestInsertTransactionInputWithoutUserId = {
             accountId: account1.id,
             categoryId: testCategory.id,
             inflow: "10",
@@ -1816,7 +1817,7 @@ describe("Transaction Single Edit", () => {
 
           const testCategory = await getTestCategory(cookie);
 
-          const transactionPayload: TransactionPayload = {
+          const transactionPayload: TestInsertTransactionInputWithoutUserId = {
             accountId: account1.id,
             categoryId: testCategory.id,
             outflow: "10",
@@ -1865,7 +1866,7 @@ describe("Transaction Single Edit", () => {
       const account1 = await createTestAccount(cookie, 0);
       const account2 = await createTestAccount(cookie, 0);
 
-      const transactionPayload: TransactionPayload = {
+      const transactionPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
         transferAccountId: account2.id,
         outflow: "10",
@@ -1906,7 +1907,7 @@ describe("Transaction Single Edit", () => {
       const accountFrom = await createTestAccount(cookie, 0);
       const accountTo = await createTestAccount(cookie, 0);
 
-      const transactionPayload: TransactionPayload = {
+      const transactionPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: accountFrom.id,
         outflow: "10",
         memo: "normal-to-transfer",
@@ -2126,7 +2127,7 @@ describe("Transaction Single Edit", () => {
           });
         });
         describe("Category Months", () => {
-          it.skip("Should backfill category months when editing a transfer transaction into the past", async () => {});
+          it.skip("Should backfill category months when editing a transfer transaction into the past", async () => { });
         });
       });
     });

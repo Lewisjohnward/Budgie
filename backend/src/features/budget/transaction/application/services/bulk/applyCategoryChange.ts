@@ -1,62 +1,54 @@
 import { Prisma } from "@prisma/client";
 import { OperationMode } from "../../../../../../shared/enums/operation-mode";
 import { categoryService } from "../../../../category/category.service";
-import { NormalTransactionEntity } from "../../../transaction.types";
+import { type DomainNormalTransaction } from "../../../transaction.types";
 import { transactionRepository } from "../../../../../../shared/repository/transactionRepositoryImpl";
 import { splitTransactionsByType } from "../../../utils/splitTransactionsByType";
-import { categoryRepository } from "../../../../../../shared/repository/categoryRepositoryImpl";
 import { UpdatedNormalTransactionsNotFoundError } from "../../../transaction.errors";
+import { type CategoryId } from "../../../../category/category.types";
+import { type UserId } from "../../../../../user/auth/auth.types";
 
 /**
- * Applies a bulk category change to a set of normal (non-transfer) transactions
- * and updates all derived category month state based on the before/after change.
+ * Applies a bulk category update to a set of normal (non-transfer) transactions.
  *
- * Behaviour:
- * - Validates that the target category exists and is owned by the user
- * - Filters out transactions that are already assigned to the target category
- * - Performs a bulk update of `categoryId` for the remaining transactions
- * - Re-fetches the updated transactions to establish the "after" state
- * - Updates category month activity by:
- *   - removing allocations associated with the previous category
- *   - adding allocations associated with the new category
- * - Applies special handling when the target category is the
- *   "Ready To Assign" (RTA) category
+ * This function handles both the database update and all downstream side effects
+ * related to category month calculations and RTA (Ready To Assign) activity:
  *
- * Expectations / invariants:
- * - `transactions` must contain only normal (non-transfer) transactions owned
- *   by `userId`
- * - `transactions` represent the "before" state for the same transaction IDs
- *   being updated
- * - After the bulk update, all updated transactions must be re-fetchable as
- *   normal transactions; otherwise an invariant error is thrown
+ * - Validates that the target category exists and belongs to the user.
+ * - Ignores transactions already assigned to the target category.
+ * - Updates `categoryId` for the selected transactions in bulk.
+ * - Re-fetches the updated transactions to establish the "after" state.
+ * - Updates derived month allocations and RTA activity:
+ *   - Removes allocations associated with the previous category.
+ *   - Adds allocations associated with the new category.
+ * - Handles special RTA behavior if the target category is the RTA category.
  *
- * All database operations are executed using the provided Prisma transaction
- * client and must be called from within an existing transaction.
+ * Invariants / Expectations:
+ * - `transactions` must only include normal (non-transfer) transactions owned by `userId`.
+ * - Transactions represent the "before" state of the transactions being updated.
+ * - After the bulk update, all updated transactions must be retrievable as normal
+ *   transactions; otherwise an `UpdatedNormalTransactionsNotFoundError` is thrown.
  *
- * @param {Prisma.TransactionClient} tx
- *        Prisma transaction client. All operations are executed within this
- *        transaction scope.
- * @param {string} userId
- *        User performing the bulk category change. Used for category ownership
- *        checks and derived month updates.
- * @param {string} categoryId
- *        Target category ID to assign to the provided transactions.
- * @param {NormalTransactionEntity[]} transactions
- *        Normal transactions to consider for the category change ("before" state).
- *        Transactions already assigned to the target category are ignored.
+ * All operations are executed using the provided Prisma transaction client and
+ * should be called within an existing transaction for atomicity.
  *
- * @returns {Promise<void>}
+ * @param tx - Prisma transaction client for executing all operations atomically.
+ * @param userId - ID of the user performing the category update.
+ * @param categoryId - Target category ID to assign to the provided transactions.
+ * @param transactions - Normal transactions to consider for the category change.
+ *                       Transactions already assigned to the target category are ignored.
  *
- * @throws {UpdatedNormalTransactionsNotFoundError}
- * Thrown if the updated transactions cannot all be re-fetched as normal
- * transactions after the bulk update, indicating an invariant violation.
+ * @returns A promise that resolves when all transactions have been updated and
+ *          month/RTA side effects applied.
+ *
+ * @throws {UpdatedNormalTransactionsNotFoundError} Thrown if the updated transactions
+ *         cannot all be re-fetched after the bulk update, indicating an invariant violation.
  */
-
 export const applyCategoryChange = async (
   tx: Prisma.TransactionClient,
-  userId: string,
-  categoryId: string,
-  transactions: NormalTransactionEntity[]
+  userId: UserId,
+  categoryId: CategoryId,
+  transactions: DomainNormalTransaction[]
 ): Promise<void> => {
   if (transactions.length === 0) return;
 
@@ -101,7 +93,7 @@ export const applyCategoryChange = async (
   }
 
   // months/RTA side effects based on before/after
-  const rtaCategoryId = await categoryRepository.getRtaCategoryId(tx, userId);
+  const rtaCategoryId = await categoryService.rta.getRtaCategoryId(tx, userId);
 
   const { rtaTransactions, nonRtaTransactions } = splitTransactionsByType(
     transactionsToChange,

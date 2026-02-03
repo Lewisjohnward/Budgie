@@ -3,6 +3,37 @@ import { payeeService } from "../../payee.service";
 import { transactionService } from "../../../transaction/transaction.service";
 import { CombinePayeesPayload } from "../../payee.schema";
 import { TargetPayeeIsInCombineList } from "../../payee.errors";
+import { asPayeeId, type PayeeId } from "../../payee.types";
+import { asUserId, type UserId } from "../../../../user/auth/auth.types";
+
+/**
+ * Command type for combining payees.
+ * Ensures all IDs are strongly typed with PayeeId.
+ */
+export type CombinePayeesCommand = Omit<
+  CombinePayeesPayload,
+  "userId" | "payeeIds" | "targetPayeeId"
+> & {
+  userId: UserId;
+  payeeIds: PayeeId[];
+  targetPayeeId: PayeeId;
+};
+
+/**
+ * Converts a raw payload into a CombinePayeesCommand.
+ * All payee IDs are cast to PayeeId.
+ *
+ * @param p - The original CombinePayeesPayload
+ * @returns A strongly-typed CombinePayeesCommand
+ */
+export const toCombinePayeesCommand = (
+  p: CombinePayeesPayload
+): CombinePayeesCommand => ({
+  ...p,
+  userId: asUserId(p.userId),
+  payeeIds: p.payeeIds.map(asPayeeId),
+  targetPayeeId: asPayeeId(p.targetPayeeId),
+});
 
 /**
  * Combines multiple payees into a single existing target payee.
@@ -18,7 +49,7 @@ import { TargetPayeeIsInCombineList } from "../../payee.errors";
  */
 
 export const combinePayees = async (payload: CombinePayeesPayload) => {
-  const { userId, payeeIds, targetPayeeId } = payload;
+  const { userId, payeeIds, targetPayeeId } = toCombinePayeesCommand(payload);
 
   await prisma.$transaction(async (tx) => {
     // Fail early: verify target is not in the list of payees to combine
@@ -27,7 +58,11 @@ export const combinePayees = async (payload: CombinePayeesPayload) => {
     }
 
     // Verify user owns all payees (including target)
-    await payeeService.checkUserOwnsPayees(tx, [...payeeIds, targetPayeeId], userId);
+    await payeeService.checkUserOwnsPayees(
+      tx,
+      [...payeeIds, targetPayeeId],
+      userId
+    );
 
     // Get payees to delete (all except target)
     const payeesToDelete = payeeIds.filter((id) => id !== targetPayeeId);

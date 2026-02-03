@@ -28,16 +28,50 @@ export class InheritingCategoryIdNotProvidedError extends HttpError {
   constructor() {
     super(
       "You must provide an inheriting category ID to transfer transactions to.",
-      400,
+      400
     );
   }
 }
 
-export class AddingTransactionToProtectedCategoryError extends HttpError {
+export class MonthNotFoundError extends HttpError {
   constructor() {
-    super(
-      "You are not allowed to add transactions to protected categories.",
-      403,
-    );
+    super("Month not found", 404);
+  }
+}
+
+export class DeletingProtectedCategoryError extends HttpError {
+  constructor() {
+    super("You are not allowed to delete to protected categories.", 403);
+  }
+}
+
+export class CategoryInvariantError extends Error {
+  constructor(
+    message: string,
+    readonly meta?: Record<string, unknown>
+  ) {
+    super(message);
+    this.name = "CategoryInvariantError";
+  }
+}
+
+export class RTACategoryIdNotFound extends CategoryInvariantError {
+  constructor(meta?: Record<string, unknown>) {
+    super("Invariant violated: RTA category id not found", meta);
+    this.name = "MissingRTACategoryId";
+  }
+}
+
+export class UncategorisedCategoryIdNotFound extends CategoryInvariantError {
+  constructor(meta?: Record<string, unknown>) {
+    super("Invariant violated: RTA category id not found", meta);
+    this.name = "MissingRTACategoryId";
+  }
+}
+
+export class NoPastMonthsFoundError extends CategoryInvariantError {
+  constructor(meta?: Record<string, unknown>) {
+    super("Invariant violated: Past months not found", meta);
+    this.name = "NoPastMonthsFoundError";
   }
 }

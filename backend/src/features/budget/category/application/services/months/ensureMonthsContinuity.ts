@@ -1,3 +1,12 @@
+import { Prisma, PrismaClient } from "@prisma/client";
+import { categoryRepository } from "../../../../../../shared/repository/categoryRepositoryImpl";
+import { ZERO } from "../../../../../../shared/constants/zero";
+import { getMonthRange } from "../../../utils/getMonthRange";
+import { roundToStartOfMonth } from "../../../../../../shared/utils/roundToStartOfMonth";
+import { categoryService } from "../../../category.service";
+import { asCategoryId } from "../../../category.types";
+import { type UserId } from "../../../../../user/auth/auth.types";
+
 /**
  * Ensures continuity of monthly records for all user categories from their last
  * recorded month up to the current month. This is typically called during login
@@ -10,22 +19,15 @@
  * @param prisma - Prisma client or transaction client for database operations
  * @param userId - The user identifier for whom months are managed
  */
-
-import { Prisma, PrismaClient } from "@prisma/client";
-import { categoryRepository } from "../../../../../../shared/repository/categoryRepositoryImpl";
-import { ZERO } from "../../../../../../shared/constants/zero";
-import { getMonthRange } from "../../../utils/getMonthRange";
-import { roundToStartOfMonth } from "../../../../../../shared/utils/roundToStartOfMonth";
-
 export const ensureMonthsContinuity = async (
   prisma: PrismaClient | Prisma.TransactionClient,
-  userId: string,
+  userId: UserId
 ) => {
   const currentMonth = roundToStartOfMonth(new Date());
 
-  const mostRecentMonths = await categoryRepository.getMostRecentMonths(
+  const mostRecentMonths = await categoryService.months.getMostRecentMonths(
     prisma,
-    userId,
+    userId
   );
 
   const monthsUpToDate = mostRecentMonths[0].month >= currentMonth;
@@ -34,37 +36,39 @@ export const ensureMonthsContinuity = async (
     return;
   }
 
-  const categories = await categoryRepository.getAllCategoryIds(prisma, userId);
-
-  const rtaCategoryId = await categoryRepository.getRtaCategoryId(
+  const categoryIds = await categoryRepository.getAllCategoryIds(
     prisma,
-    userId,
+    userId
+  );
+
+  const rtaCategoryId = await categoryService.rta.getRtaCategoryId(
+    prisma,
+    userId
   );
   const categoryMonthsMap = new Map(
-    mostRecentMonths.map((month) => [month.categoryId, month]),
+    mostRecentMonths.map((month) => [month.categoryId, month])
   );
 
-  const missingMonths = getMonthRange(
-    mostRecentMonths[0].month,
-    currentMonth,
-    { startInclusive: false, endInclusive: true },
-  );
+  const missingMonths = getMonthRange(mostRecentMonths[0].month, currentMonth, {
+    startInclusive: false,
+    endInclusive: true,
+  });
 
   if (missingMonths.length === 0) {
     return;
   }
 
   const mostRecentRtaMonth = mostRecentMonths.find(
-    (m) => m.categoryId === rtaCategoryId,
+    (m) => m.categoryId === rtaCategoryId
   );
 
   const monthEntries: Prisma.MonthCreateManyInput[] = [];
 
-  for (const category of categories) {
+  for (const id of categoryIds) {
     for (const month of missingMonths) {
-      if (category.id === rtaCategoryId) {
+      if (id === rtaCategoryId) {
         monthEntries.push({
-          categoryId: category.id,
+          categoryId: id,
           month,
           activity: ZERO,
           assigned: ZERO,
@@ -72,13 +76,13 @@ export const ensureMonthsContinuity = async (
         });
       } else {
         const mostRecentAvailableForCategory =
-          categoryMonthsMap.get(category.id)?.available || ZERO;
+          categoryMonthsMap.get(asCategoryId(id))?.available || ZERO;
         const available = mostRecentAvailableForCategory.gt(ZERO)
           ? mostRecentAvailableForCategory
           : ZERO;
 
         monthEntries.push({
-          categoryId: category.id,
+          categoryId: id,
           month,
           activity: ZERO,
           assigned: ZERO,

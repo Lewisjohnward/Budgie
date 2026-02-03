@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
-import { Memo } from "./memo.types";
+import { db, type MemoId } from "./memo.types";
+import { type UserId } from "../../user/auth/auth.types";
 
 export interface MemoRepository {
   /**
@@ -7,16 +8,16 @@ export interface MemoRepository {
    *
    * @param tx - Transaction-scoped Prisma client
    * @param userId - ID of the owning user
-   * @param id - Memo ID
+   * @param memoId - Memo ID
    *
    * @returns The memo if found and owned by the user, otherwise null.
    */
 
   getMemo(
     tx: Prisma.TransactionClient,
-    userId: string,
-    id: string
-  ): Promise<Memo | null>;
+    userId: UserId,
+    memoId: MemoId
+  ): Promise<db.Memo | null>;
 
   /**
    * Updates the content of an existing memo.
@@ -30,9 +31,9 @@ export interface MemoRepository {
 
   updateMemo(
     tx: Prisma.TransactionClient,
-    id: string,
+    memoId: MemoId,
     content: string
-  ): Promise<Memo>;
+  ): Promise<db.Memo>;
 
   /**
    * Inserts month memos for the given user.
@@ -46,7 +47,7 @@ export interface MemoRepository {
 
   insertMemos(
     tx: Prisma.TransactionClient,
-    userId: string,
+    userId: UserId,
     months: Date[]
   ): Promise<void>;
 
@@ -63,6 +64,6 @@ export interface MemoRepository {
    */
   getEarliestMemoMonth(
     tx: Prisma.TransactionClient,
-    userId: string
+    userId: UserId
   ): Promise<Date | null>;
 }

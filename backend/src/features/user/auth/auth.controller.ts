@@ -24,6 +24,7 @@ import {
 import { categoryService } from "../../budget/category/category.service";
 import { prisma } from "../../../shared/prisma/client";
 import { memoService } from "../../budget/memo/memo.service";
+import { asUserId } from "./auth.types";
 
 export const register = async (
   req: Request,
@@ -54,10 +55,12 @@ export const register = async (
       password: passwordHash,
       salt,
     });
-    await categoryService.categories.initialiseCategories(user.id);
+
+    const uId = asUserId(user.id);
+    await categoryService.categories.initialiseCategories(uId);
 
     await prisma.$transaction(async (tx) => {
-      await memoService.initialiseMemos(tx, user.id);
+      await memoService.initialiseMemos(tx, uId);
     });
 
     const accessToken = GenerateAccessToken({
@@ -114,7 +117,9 @@ export const login = async (
       next(new InvalidCredentialsError());
       return;
     }
-    await categoryService.months.ensureMonthsContinuity(prisma, user.id);
+
+    const uId = asUserId(user.id);
+    await categoryService.months.ensureMonthsContinuity(prisma, uId);
 
     const accessToken = GenerateAccessToken({
       _id: user.id,

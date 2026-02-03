@@ -1,29 +1,26 @@
 import { Prisma } from "@prisma/client";
 import { transactionRepository } from "../../../../../../shared/repository/transactionRepositoryImpl";
+import { type TransactionId } from "../../../transaction.types";
 
 /**
- * Applies a memo change to a set of transactions.
+ * Applies a memo update to a set of transactions.
  *
- * This function performs a bulk update of the `memo` field for the provided
- * transaction IDs. It does not enforce additional domain invariants and does
- * not perform any derived updates (e.g. balances, categories, or transfers).
+ * This function performs a bulk update of the `memo` field for the specified
+ * transaction IDs. It **does not enforce domain invariants** and does **not**
+ * trigger any derived updates (such as balances, categories, or transfers).
  *
- * Ownership and existence validation are expected to be handled by the caller.
+ * Validation of transaction ownership, existence, or business rules should be
+ * handled by the caller before invoking this function.
  *
- * @param {Prisma.TransactionClient} tx
- *        Prisma transaction client. The update is executed within this
- *        transaction scope.
- * @param {string[]} transactionIds
- *        IDs of the transactions whose memo should be updated.
- * @param {string} memo
- *        Memo value to apply to all specified transactions.
+ * @param tx - Prisma transaction client used to execute the update atomically.
+ * @param transactionIds - Array of transaction IDs whose memo will be updated.
+ * @param memo - The new memo value to set for all specified transactions.
  *
- * @returns {Promise<void>}
+ * @returns A promise that resolves once the memo updates have been applied.
  */
-
 export const applyMemoChange = async (
   tx: Prisma.TransactionClient,
-  transactionIds: string[],
+  transactionIds: TransactionId[],
   memo: string
 ): Promise<void> => {
   await transactionRepository.bulkUpdateMemo(tx, transactionIds, memo);

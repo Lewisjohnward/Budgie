@@ -10,13 +10,13 @@ import { accountUseCase } from "./account.useCase";
 export const getAccounts = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   // TODO: what about pagination if there's loads of transactions?
 
   try {
     const accountsWithTransactions = await accountUseCase.getAccounts(
-      req.user?._id!,
+      req.user?._id!
     );
 
     const data = normaliseAccounts({ accounts: accountsWithTransactions });
@@ -30,7 +30,7 @@ export const getAccounts = async (
 export const addAccount = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const payload = addAccountSchema.parse({
@@ -49,7 +49,7 @@ export const addAccount = async (
 export const editAccount = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     //TODO: NEED TO CHECK THAT USER IS EITHER UPDATING NAME OR ADJUSTING BALANCE, OTHERWISE WASTE OF TIME
@@ -59,7 +59,7 @@ export const editAccount = async (
       ...req.body,
     });
 
-    await accountUseCase.updateAccount(payload);
+    await accountUseCase.editAccount(payload);
     res.sendStatus(200);
   } catch (error) {
     next(error);
@@ -69,7 +69,7 @@ export const editAccount = async (
 export const deleteAccount = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const payload = deleteAccountSchema.parse({

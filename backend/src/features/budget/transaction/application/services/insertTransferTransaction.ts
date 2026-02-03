@@ -4,20 +4,52 @@ import { OperationMode } from "../../../../../shared/enums/operation-mode";
 import { transactionRepository } from "../../../../../shared/repository/transactionRepositoryImpl";
 import { accountService } from "../../../account/account.service";
 import { SameAccountTransferError } from "../../transaction.errors";
-import { TransferTransactionInsertData } from "../../transaction.types";
 import {
   createTransferDestinationTransaction,
   createTransferSourceTransaction,
 } from "./create/createTransferTransaction";
 import { categoryService } from "../../../category/category.service";
 import { memoService } from "../../../memo/memo.service";
+import { type AccountId } from "../../../account/account.types";
+import { type InsertTransactionCommand } from "../use-cases/insertTransaction";
 
+/**
+ * Inserts a **transfer transaction** between two accounts for a given user.
+ *
+ * This function creates both sides of a transfer:
+ * - **Source transaction** – represents money leaving the `accountId`.
+ * - **Destination transaction** – represents money arriving in the `transferAccountId`.
+ *
+ * Behaviour:
+ * - Validates that the destination account exists and is owned by the user.
+ * - Prevents transfers where the source and destination accounts are the same.
+ * - Defaults `inflow` and `outflow` amounts to zero if undefined.
+ * - Persists both transactions atomically and links them via `transferTransactionId`.
+ * - Updates account balances for both accounts.
+ * - Inserts missing months and memos associated with the transaction date.
+ *
+ * Domain invariants:
+ * - Transfers must occur between two distinct accounts.
+ * - `categoryId` is `null` for both source and destination transactions.
+ * - The source transaction ID is referenced in the destination transaction.
+ *
+ * @param tx - Prisma transaction client used for all database operations.
+ * @param userId - The ID of the user performing the transfer.
+ * @param transaction - Details of the transfer transaction, including source and destination accounts, amounts, and date.
+ *
+ * @throws {SameAccountTransferError} If the source and destination accounts are the same.
+ * @throws Will throw if the destination account does not exist or is not owned by the user.
+ *
+ * @returns A promise that resolves once both transactions are successfully created and balances updated.
+ */
 export async function insertTransferTransaction(
   tx: Prisma.TransactionClient,
-  userId: string,
-  transaction: TransferTransactionInsertData
+  command: InsertTransactionCommand & {
+    transferAccountId: AccountId;
+  }
 ): Promise<void> {
   const {
+    userId,
     accountId,
     transferAccountId,
     date,
@@ -25,8 +57,10 @@ export async function insertTransferTransaction(
     outflow,
     // payeeName should be absent anyway, but keep to avoid spreading it
     payeeName: _payeeName,
+    // remove type
+    type: _type,
     ...txInput
-  } = transaction;
+  } = command;
 
   // Validate transfer destination account exists and user owns it
   const destinationAccount = await accountService.getAccount(

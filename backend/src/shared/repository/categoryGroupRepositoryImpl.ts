@@ -1,55 +1,76 @@
-import { CategoryGroup, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { PROTECTED_CATEGORY_GROUP_NAMES } from "../../features/budget/categorygroup/categoryGroup.constants";
 import { CategoryGroupRepository } from "../../features/budget/categorygroup/categoryGroup.repository";
 import {
-  CreateCategoryGroupData,
-  EditCategoryGroupData,
+  type CreateCategoryGroupData,
+  type EditCategoryGroupData,
 } from "../../features/budget/categorygroup/categorygroup.schema";
+import {
+  db,
+  type CategoryGroupId,
+} from "../../features/budget/categorygroup/categoryGroup.types";
+import { type UserId } from "../../features/user/auth/auth.types";
 
 export const categoryGroupRepository: CategoryGroupRepository = {
-  getCategoryGroup: async function (
+  getCategoryGroup: async function(
     tx: Prisma.TransactionClient,
-    userId: string,
-    categoryGroupId: string,
-  ): Promise<CategoryGroup | null> {
-    return await tx.categoryGroup.findFirst({
+    userId: UserId,
+    categoryGroupId: CategoryGroupId
+  ): Promise<db.CategoryGroup | null> {
+    const row = await tx.categoryGroup.findFirst({
       where: {
         id: categoryGroupId,
         userId,
       },
     });
+
+    if (!row) {
+      return null;
+    }
+
+    return row;
   },
 
-  getCategoryGroupId: async (tx, userId, categoryGroupId) => {
-    const found = await tx.categoryGroup.findFirst({
+  existsCategoryGroup: async (tx, userId, categoryGroupId) => {
+    const row = await tx.categoryGroup.findFirst({
       where: { id: categoryGroupId, userId },
       select: { id: true },
     });
-    return found?.id ?? null;
+    return !!row;
   },
 
-  getProtectedCategoryGroupIds: async (tx, userId) => {
-    const groups = await tx.categoryGroup.findMany({
-      where: { userId, name: { in: [...PROTECTED_CATEGORY_GROUP_NAMES] } },
-    });
-    return groups.map((c) => c.id);
-  },
-
-  createCategoryGroup: async function (
+  isProtectedCategoryGroup: async (
     tx: Prisma.TransactionClient,
-    categoryGroup: CreateCategoryGroupData,
+    userId: UserId,
+    categoryGroupId: CategoryGroupId
+  ): Promise<boolean> => {
+    const row = await tx.categoryGroup.findFirst({
+      where: {
+        id: categoryGroupId,
+        userId,
+        name: { in: Array.from(PROTECTED_CATEGORY_GROUP_NAMES) },
+      },
+      select: { id: true },
+    });
+
+    return !!row;
+  },
+
+  createCategoryGroup: async function(
+    tx: Prisma.TransactionClient,
+    categoryGroup: CreateCategoryGroupData
   ): Promise<void> {
     await tx.categoryGroup.create({
       data: categoryGroup,
     });
   },
 
-  getCategoryGroupIdByName: async function (
+  existsCategoryGroupByName: async function(
     tx: Prisma.TransactionClient,
-    userId: string,
-    name: string,
-  ): Promise<string | null> {
-    const categoryGroup = await tx.categoryGroup.findFirst({
+    userId: UserId,
+    name: string
+  ): Promise<boolean> {
+    const row = await tx.categoryGroup.findFirst({
       where: {
         userId,
         name: {
@@ -60,11 +81,11 @@ export const categoryGroupRepository: CategoryGroupRepository = {
       select: { id: true },
     });
 
-    return categoryGroup?.id ?? null;
+    return !!row;
   },
-  updateCategoryGroup: async function (
+  updateCategoryGroup: async function(
     tx: Prisma.TransactionClient,
-    data: EditCategoryGroupData,
+    data: EditCategoryGroupData
   ): Promise<void> {
     await tx.categoryGroup.update({
       where: {
@@ -76,9 +97,9 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     });
   },
 
-  deleteCategoryGroup: async function (
+  deleteCategoryGroup: async function(
     tx: Prisma.TransactionClient,
-    categoryGroupId: string,
+    categoryGroupId: CategoryGroupId
   ): Promise<void> {
     await tx.categoryGroup.delete({
       where: {

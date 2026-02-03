@@ -1,49 +1,67 @@
-import { Month, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { PROTECTED_CATEGORY_NAMES } from "../../features/budget/category/category.constants";
 import { CategoryRepository } from "../../features/budget/category/category.repository";
+import { db } from "../../features/budget/category/category.types";
+import { NoPastMonthsFoundError } from "../../features/budget/category/category.errors";
 
 export const categoryRepository: CategoryRepository = {
   // ──────────────── Category Retrieval ────────────────
   getCategory: async (tx, userId, categoryId) => {
-    return await tx.category.findFirst({ where: { id: categoryId, userId } });
+    const row = await tx.category.findFirst({
+      where: { id: categoryId, userId },
+    });
+
+    if (!row) return null;
+
+    return row;
   },
 
-  getCategoryIdByGroupAndName: async (tx, userId, categoryGroupId, name) => {
-    const categoryId = await tx.category.findFirst({
-      where: { categoryGroupId, userId, name },
+  existsCategoryWithNameInGroup: async (tx, userId, categoryGroupId, name) => {
+    const row = await tx.category.findFirst({
+      where: { userId, categoryGroupId, name },
       select: { id: true },
     });
-    return categoryId?.id ?? null;
+    return !!row;
   },
 
   getAllCategoryIds: async (tx, userId) => {
-    return await tx.category.findMany({
+    const rows = await tx.category.findMany({
       where: { userId },
       select: { id: true },
     });
+    return rows.map((r) => r.id);
   },
 
   getProtectedCategoryIds: async (tx, userId) => {
     const protectedCategories = await tx.category.findMany({
       where: { userId, name: { in: [...PROTECTED_CATEGORY_NAMES] } },
+      select: {
+        id: true,
+      },
     });
     return protectedCategories.map((c) => c.id);
   },
 
   getRtaCategoryId: async (tx, userId) => {
-    const { id } = await tx.category.findFirstOrThrow({
+    const row = await tx.category.findFirst({
       where: { name: "Ready to Assign", userId },
       select: { id: true },
     });
-    return id;
+
+    if (!row) return null;
+
+    return row.id;
   },
 
   getUncategorisedCategoryId: async (tx, userId) => {
-    const { id } = await tx.category.findFirstOrThrow({
+    const row = await tx.category.findFirst({
       where: { name: "Uncategorised Transactions", userId },
       select: { id: true },
     });
-    return id;
+
+    if (!row) return null;
+
+    return row.id;
   },
 
   getMaxCategoryPositionInGroup: async (tx, categoryGroupId) => {
@@ -56,8 +74,10 @@ export const categoryRepository: CategoryRepository = {
   },
 
   // ──────────────── Category Mutation ────────────────
-  createCategory: async (tx, category) => {
-    return await tx.category.create({ data: category });
+  createCategory: async (tx, categoryData) => {
+    const row = await tx.category.create({ data: categoryData });
+
+    return row;
   },
 
   updateCategory: async (tx, categoryId, name, categoryGroupId) => {
@@ -75,20 +95,30 @@ export const categoryRepository: CategoryRepository = {
 
   // ──────────────── Month Retrieval ────────────────
   getExistingMonths: async (tx, userId) => {
-    return await tx.month.findMany({
+    const rows = await tx.month.findMany({
       where: { category: { userId } },
       select: { month: true },
     });
+
+    return rows.map((r) => r.month);
   },
 
-  getPastMonths: async (tx, userId) => {
-    return await tx.month.findMany({
+  getEarliestPastMonth: async (tx, userId): Promise<Date> => {
+    const res = await tx.month.aggregate({
       where: {
         category: { userId },
         month: { lte: new Date() },
       },
-      select: { month: true },
+      _min: { month: true },
     });
+
+    const earliest = res._min.month;
+
+    if (!earliest) {
+      throw new NoPastMonthsFoundError();
+    }
+
+    return earliest;
   },
 
   getAllMonthsForCategories: async (tx, userId, rtaCategoryId) => {
@@ -121,12 +151,8 @@ export const categoryRepository: CategoryRepository = {
     });
   },
 
-  getMonth: async function (
-    tx: Prisma.TransactionClient,
-    userId: string,
-    monthId: string
-  ): Promise<Month> {
-    return await tx.month.findUniqueOrThrow({
+  getMonth: async (tx, userId, monthId) => {
+    return await tx.month.findFirst({
       where: {
         id: monthId,
         category: {
@@ -136,10 +162,7 @@ export const categoryRepository: CategoryRepository = {
     });
   },
 
-  getMostRecentMonths: async function (
-    tx: Prisma.TransactionClient,
-    userId: string
-  ): Promise<Month[]> {
+  getMostRecentMonths: async (tx, userId) => {
     const mostRecentMonths = (await tx.$queryRaw(
       Prisma.sql`
     SELECT DISTINCT ON ("categoryId")
@@ -159,7 +182,7 @@ export const categoryRepository: CategoryRepository = {
         m."categoryId",
         m.month DESC;
       `
-    )) as Month[];
+    )) as db.Month[];
 
     return mostRecentMonths;
   },

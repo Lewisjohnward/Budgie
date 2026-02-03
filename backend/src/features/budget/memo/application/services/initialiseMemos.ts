@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { getMonth } from "../../../category/utils/getMonth";
 import { memoRepository } from "../../../../../shared/repository/memoRepositoryImpl";
+import { type UserId } from "../../../../user/auth/auth.types";
 
 /**
  * Initializes month memos for a newly created user.
@@ -14,7 +15,7 @@ import { memoRepository } from "../../../../../shared/repository/memoRepositoryI
 
 export const initialiseMemos = async (
   tx: Prisma.TransactionClient,
-  userId: string
+  userId: UserId
 ): Promise<void> => {
   const { startOfCurrentMonth, nextMonth } = getMonth();
   const monthsToCreate = [startOfCurrentMonth, nextMonth];

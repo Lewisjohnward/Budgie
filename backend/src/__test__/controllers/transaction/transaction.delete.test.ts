@@ -1,8 +1,11 @@
 import { getAccounts } from "../../utils/getData";
 import { createTestAccount } from "../../utils/createTestAccount";
-import { addTransaction, deleteTransactions } from "../../utils/transaction";
+import {
+  addTransaction,
+  deleteTransactions,
+  TestInsertTransactionInputWithoutUserId,
+} from "../../utils/transaction";
 import { login, registerUser } from "../../utils/auth";
-import { TransactionPayload } from "../../../features/budget/transaction/transaction.schema";
 
 describe("Transaction Delete", () => {
   let cookie: string;
@@ -38,16 +41,12 @@ describe("Transaction Delete", () => {
 
       const account1 = await createTestAccount(cookie, 0);
 
-      const transactionPayload: TransactionPayload = {
+      const transactionPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
         outflow: "10",
       };
 
-      const transaction = await addTransaction(
-        cookie,
-        transactionPayload,
-        200
-      );
+      const transaction = await addTransaction(cookie, transactionPayload, 200);
 
       await deleteTransactions(cookieA, [transaction!.id], 404);
     });
@@ -58,7 +57,7 @@ describe("Transaction Delete", () => {
       const account1 = await createTestAccount(cookie, 0);
       const account2 = await createTestAccount(cookie, 0);
 
-      const transactionPayload: TransactionPayload = {
+      const transactionPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
         transferAccountId: account2.id,
         outflow: "10",
@@ -79,16 +78,12 @@ describe("Transaction Delete", () => {
     it("Should correctly handle normal transactions", async () => {
       const account1 = await createTestAccount(cookie, 0);
 
-      const transactionPayload: TransactionPayload = {
+      const transactionPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
         outflow: "10",
       };
 
-      const transaction = await addTransaction(
-        cookie,
-        transactionPayload,
-        200
-      );
+      const transaction = await addTransaction(cookie, transactionPayload, 200);
 
       await deleteTransactions(cookie, [transaction!.id]);
       const { transactions, accounts } = await getAccounts(cookie);
@@ -104,13 +99,13 @@ describe("Transaction Delete", () => {
       const account1 = await createTestAccount(cookie, 0);
       const account2 = await createTestAccount(cookie, 0);
 
-      const transferTxPayload: TransactionPayload = {
+      const transferTxPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
         transferAccountId: account2.id,
         outflow: "10",
       };
 
-      const txPayload: TransactionPayload = {
+      const txPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
         outflow: "10",
       };
@@ -133,7 +128,7 @@ describe("Transaction Delete", () => {
       const account1 = await createTestAccount(cookie, 0);
       const account2 = await createTestAccount(cookie, 0);
 
-      const transferTxPayload: TransactionPayload = {
+      const transferTxPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
         transferAccountId: account2.id,
         outflow: "10",
