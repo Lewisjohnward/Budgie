@@ -104,6 +104,7 @@ const categoryIdBulk = z.string().uuid();
  */
 
 export const editBulkTransactionsSchema = z.object({
+  userId: z.string().uuid(),
   transactionIds: z.array(z.string().uuid()).min(1),
   updates: z
     .object({

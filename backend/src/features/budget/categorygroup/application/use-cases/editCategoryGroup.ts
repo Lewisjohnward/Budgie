@@ -1,12 +1,35 @@
 import { prisma } from "../../../../../shared/prisma/client";
 import { categoryGroupRepository } from "../../../../../shared/repository/categoryGroupRepositoryImpl";
+import { asUserId, type UserId } from "../../../../user/auth/auth.types";
 import { CategoryGroupNotFoundError } from "../../categoryGroup.errors";
-import { EditCategoryGroupPayload } from "../../categorygroup.schema";
+import { type EditCategoryGroupPayload } from "../../categorygroup.schema";
 import { categoryGroupService } from "../../categoryGroup.service";
+import {
+  asCategoryGroupId,
+  type CategoryGroupId,
+} from "../../categoryGroup.types";
 
 //  TODO: IMPLEMENT CHANGE POSITION
-export const editCategoryGroup = async (payload: EditCategoryGroupPayload) => {
-  const { userId, categoryGroupId, name } = payload;
+export type EditCategoryGroupCommand = Omit<
+  EditCategoryGroupPayload,
+  "userId" | "categoryGroupId"
+> & {
+  userId: UserId;
+  categoryGroupId: CategoryGroupId;
+};
+
+export const toEditCategoryGroupCommand = (
+  p: EditCategoryGroupPayload
+): EditCategoryGroupCommand => ({
+  ...p,
+  userId: asUserId(p.userId),
+  categoryGroupId: asCategoryGroupId(p.categoryGroupId),
+});
+
+export const editCategoryGroup = async (
+  payload: EditCategoryGroupPayload
+): Promise<void> => {
+  const { userId, categoryGroupId, name } = toEditCategoryGroupCommand(payload);
 
   if (!name) return;
 
@@ -14,13 +37,13 @@ export const editCategoryGroup = async (payload: EditCategoryGroupPayload) => {
     await categoryGroupService.isProtectedCategoryGroup(
       tx,
       userId,
-      categoryGroupId,
+      categoryGroupId
     );
 
-    const categorygroup = await categoryGroupRepository.getCategoryGroup(
+    const categorygroup = await categoryGroupService.getCategoryGroup(
       tx,
       userId,
-      categoryGroupId,
+      categoryGroupId
     );
 
     if (!categorygroup) {
@@ -31,7 +54,7 @@ export const editCategoryGroup = async (payload: EditCategoryGroupPayload) => {
       await categoryGroupService.checkCategoryGroupNameIsUnique(
         tx,
         userId,
-        name,
+        name
       );
     }
 

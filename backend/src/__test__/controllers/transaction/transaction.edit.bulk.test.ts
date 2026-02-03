@@ -1,12 +1,13 @@
 import { v4 as uuidv4 } from "uuid";
 import { getAccounts, getCategories } from "../../utils/getData";
 import { createTestAccount } from "../../utils/createTestAccount";
-import { addTransaction, editBulkTransactions } from "../../utils/transaction";
-import { login, registerUser } from "../../utils/auth";
 import {
-  EditBulkTransactionsInput,
-  TransactionPayload,
-} from "../../../features/budget/transaction/transaction.schema";
+  addTransaction,
+  editBulkTransactions,
+  TestEditBulkTransactionsInputWithoutUserId,
+  TestInsertTransactionInputWithoutUserId,
+} from "../../utils/transaction";
+import { login, registerUser } from "../../utils/auth";
 import {
   getRTACategory,
   getTestCategory,
@@ -23,7 +24,7 @@ describe("Transaction Bulk Edit", () => {
 
   describe("Error Cases", () => {
     it("Should return 400 if providing an empty transactionIds array", async () => {
-      const editBulkPayload: EditBulkTransactionsInput = {
+      const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
         transactionIds: [],
         updates: {
           categoryId: uuidv4(),
@@ -33,7 +34,7 @@ describe("Transaction Bulk Edit", () => {
       expect(res.status).toBe(400);
     });
     it("Should return 400 if providing empty updates", async () => {
-      const editBulkPayload: EditBulkTransactionsInput = {
+      const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
         transactionIds: [uuidv4()],
         updates: {},
       };
@@ -71,7 +72,7 @@ describe("Transaction Bulk Edit", () => {
         },
       },
     ])("should return 400 when providing %s", async ({ updates }) => {
-      const payload: EditBulkTransactionsInput = {
+      const payload: TestEditBulkTransactionsInputWithoutUserId = {
         transactionIds: [uuidv4()],
         updates,
       };
@@ -94,12 +95,12 @@ describe("Transaction Bulk Edit", () => {
       const account1 = await createTestAccount(cookie, 0);
       const account2 = await createTestAccount(cookie2, 0);
 
-      const transactionPayloadA: TransactionPayload = {
+      const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
         outflow: "10",
       };
 
-      const transactionPayloadB: TransactionPayload = {
+      const transactionPayloadB: TestInsertTransactionInputWithoutUserId = {
         accountId: account2.id,
         outflow: "10",
       };
@@ -107,7 +108,7 @@ describe("Transaction Bulk Edit", () => {
       const ownedTx = await addTransaction(cookie, transactionPayloadA);
       const unownedTx = await addTransaction(cookie2, transactionPayloadB);
 
-      const editBulkPayload: EditBulkTransactionsInput = {
+      const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
         transactionIds: [ownedTx!.id, unownedTx!.id],
         updates: {
           memo: "hello sir",
@@ -123,7 +124,7 @@ describe("Transaction Bulk Edit", () => {
       it("Should return 400 if categoryId is not a valid uuid", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -132,7 +133,7 @@ describe("Transaction Bulk Edit", () => {
 
         const invalidCategoryId = "not-a-valid-uuid";
 
-        const editBulkPayload: EditBulkTransactionsInput = {
+        const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
           transactionIds: [txA!.id],
           updates: {
             categoryId: invalidCategoryId,
@@ -146,7 +147,7 @@ describe("Transaction Bulk Edit", () => {
       it("Should return 404 if categoryId is not owned by user", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -165,7 +166,7 @@ describe("Transaction Bulk Edit", () => {
 
         const unownedCategory = await getTestCategory(cookie2);
 
-        const editBulkPayload: EditBulkTransactionsInput = {
+        const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
           transactionIds: [txA!.id],
           updates: {
             categoryId: unownedCategory.id,
@@ -179,14 +180,14 @@ describe("Transaction Bulk Edit", () => {
       it("Should return 404 if categoryId is not found", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
 
         const txA = await addTransaction(cookie, transactionPayload);
 
-        const editBulkPayload: EditBulkTransactionsInput = {
+        const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
           transactionIds: [txA!.id],
           updates: {
             categoryId: uuidv4(),
@@ -206,17 +207,17 @@ describe("Transaction Bulk Edit", () => {
         const category = categoryArray[0];
         const newCategoryId = category.id;
 
-        const transactionPayloadA: TransactionPayload = {
+        const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
 
-        const transactionPayloadB: TransactionPayload = {
+        const transactionPayloadB: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
 
-        const transactionPayloadC: TransactionPayload = {
+        const transactionPayloadC: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -227,7 +228,7 @@ describe("Transaction Bulk Edit", () => {
 
         const beforeTxs = [txA!, txB!, txC!];
 
-        const editBulkPayload: EditBulkTransactionsInput = {
+        const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
           transactionIds: [txA!.id, txB!.id, txC!.id],
           updates: {
             categoryId: newCategoryId,
@@ -262,22 +263,22 @@ describe("Transaction Bulk Edit", () => {
         const account1 = await createTestAccount(cookie, 0);
         const testCategory = await getTestCategory(cookie);
 
-        const transactionPayloadA: TransactionPayload = {
+        const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
 
-        const transactionPayloadB: TransactionPayload = {
+        const transactionPayloadB: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
 
-        const transactionPayloadC: TransactionPayload = {
+        const transactionPayloadC: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
 
-        const transactionPayloadD: TransactionPayload = {
+        const transactionPayloadD: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           inflow: "10",
         };
@@ -287,7 +288,7 @@ describe("Transaction Bulk Edit", () => {
         const txC = await addTransaction(cookie, transactionPayloadC, 200);
         const txD = await addTransaction(cookie, transactionPayloadD, 200);
 
-        const editBulkPayload: EditBulkTransactionsInput = {
+        const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
           transactionIds: [txA!.id, txB!.id, txC!.id, txD!.id],
           updates: {
             categoryId: testCategory.id,
@@ -325,22 +326,22 @@ describe("Transaction Bulk Edit", () => {
       it("Should update category months uncategorised -> rta", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayloadA: TransactionPayload = {
+        const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
 
-        const transactionPayloadB: TransactionPayload = {
+        const transactionPayloadB: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
 
-        const transactionPayloadC: TransactionPayload = {
+        const transactionPayloadC: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
 
-        const transactionPayloadD: TransactionPayload = {
+        const transactionPayloadD: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           inflow: "10",
         };
@@ -368,7 +369,7 @@ describe("Transaction Bulk Edit", () => {
         expect(rtaMonthsBefore[1].activity).toBe(0);
         expect(rtaMonthsBefore[1].available).toBe(-20);
 
-        const editBulkPayload: EditBulkTransactionsInput = {
+        const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
           transactionIds: [txA!.id, txB!.id, txC!.id, txD!.id],
           updates: {
             categoryId: rtaCategory.id,
@@ -409,12 +410,12 @@ describe("Transaction Bulk Edit", () => {
         const account2 = await createTestAccount(cookie, 0);
         const testCategory = await getTestCategory(cookie);
 
-        const transactionPayloadA: TransactionPayload = {
+        const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           transferAccountId: account2.id,
           outflow: "10",
         };
-        const transactionPayloadB: TransactionPayload = {
+        const transactionPayloadB: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           transferAccountId: account2.id,
           outflow: "10",
@@ -423,7 +424,7 @@ describe("Transaction Bulk Edit", () => {
         const txA = await addTransaction(cookie, transactionPayloadA, 200);
         const txB = await addTransaction(cookie, transactionPayloadB, 200);
 
-        const editBulkPayload: EditBulkTransactionsInput = {
+        const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
           transactionIds: [txA!.id, txB!.id],
           updates: {
             categoryId: testCategory.id,
@@ -445,7 +446,7 @@ describe("Transaction Bulk Edit", () => {
       it("Should return 400 if accountId is not a uuid", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -454,7 +455,7 @@ describe("Transaction Bulk Edit", () => {
 
         const invalidAccountId = "not-a-valid-uuid";
 
-        const editBulkPayload: EditBulkTransactionsInput = {
+        const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
           transactionIds: [txA!.id],
           updates: {
             accountId: invalidAccountId,
@@ -468,14 +469,14 @@ describe("Transaction Bulk Edit", () => {
       it("Should return 404 if accountId is not found", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
 
         const txA = await addTransaction(cookie, transactionPayload);
 
-        const editBulkPayload: EditBulkTransactionsInput = {
+        const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
           transactionIds: [txA!.id],
           updates: {
             accountId: uuidv4(),
@@ -489,7 +490,7 @@ describe("Transaction Bulk Edit", () => {
       it("Should return 404 if accountId is not owned by user", async () => {
         const account1 = await createTestAccount(cookie, 0);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -508,7 +509,7 @@ describe("Transaction Bulk Edit", () => {
 
         const account2 = await createTestAccount(cookie2, 0);
 
-        const editBulkPayload: EditBulkTransactionsInput = {
+        const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
           transactionIds: [txA!.id],
           updates: {
             accountId: account2.id,
@@ -525,17 +526,17 @@ describe("Transaction Bulk Edit", () => {
         const account1 = await createTestAccount(cookie, 0);
         const account2 = await createTestAccount(cookie, 0);
 
-        const transactionPayloadA: TransactionPayload = {
+        const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
 
-        const transactionPayloadB: TransactionPayload = {
+        const transactionPayloadB: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
 
-        const transactionPayloadC: TransactionPayload = {
+        const transactionPayloadC: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -550,7 +551,7 @@ describe("Transaction Bulk Edit", () => {
         }));
 
         const newAccountId = account2.id;
-        const editBulkPayload: EditBulkTransactionsInput = {
+        const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
           transactionIds: [txA!.id, txB!.id, txC!.id],
           updates: {
             accountId: newAccountId,
@@ -585,17 +586,17 @@ describe("Transaction Bulk Edit", () => {
         const account1 = await createTestAccount(cookie, 0);
         const account2 = await createTestAccount(cookie, 0);
 
-        const transactionPayloadA: TransactionPayload = {
+        const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
 
-        const transactionPayloadB: TransactionPayload = {
+        const transactionPayloadB: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
 
-        const transactionPayloadC: TransactionPayload = {
+        const transactionPayloadC: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
         };
@@ -608,7 +609,7 @@ describe("Transaction Bulk Edit", () => {
         expect(accountsBefore[account1.id].balance).toBe(-30);
         expect(accountsBefore[account2.id].balance).toBe(0);
 
-        const editBulkPayload: EditBulkTransactionsInput = {
+        const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
           transactionIds: [txA!.id, txB!.id, txC!.id],
           updates: {
             accountId: account2.id,
@@ -637,13 +638,13 @@ describe("Transaction Bulk Edit", () => {
         const account2 = await createTestAccount(cookie, 0);
         const account3 = await createTestAccount(cookie, 0);
 
-        const transactionPayloadA: TransactionPayload = {
+        const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           transferAccountId: account2.id,
           outflow: "10",
         };
 
-        const transactionPayloadB: TransactionPayload = {
+        const transactionPayloadB: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           transferAccountId: account2.id,
           outflow: "10",
@@ -657,7 +658,7 @@ describe("Transaction Bulk Edit", () => {
         expect(accountsBefore[account2.id].balance).toBe(20);
         expect(accountsBefore[account3.id].balance).toBe(0);
 
-        const editBulkPayload: EditBulkTransactionsInput = {
+        const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
           transactionIds: [txA!.id, txB!.id],
           updates: {
             accountId: account3.id,
@@ -670,7 +671,6 @@ describe("Transaction Bulk Edit", () => {
         expect(transactions[txA!.id].accountId).toBe(account3.id);
         expect(transactions[txB!.id].accountId).toBe(account3.id);
 
-        // here
         expect(
           transactions[txA!.transferTransactionId!].transferAccountId
         ).toBe(account3.id);
@@ -687,7 +687,7 @@ describe("Transaction Bulk Edit", () => {
         const account2 = await createTestAccount(cookie, 0);
         const account3 = await createTestAccount(cookie, 0);
 
-        const transactionPayloadA: TransactionPayload = {
+        const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           transferAccountId: account2.id,
           outflow: "10",
@@ -703,7 +703,7 @@ describe("Transaction Bulk Edit", () => {
 
         const txB = transactionsBefore[txA?.transferTransactionId!];
 
-        const editBulkPayload: EditBulkTransactionsInput = {
+        const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
           transactionIds: [txA!.id, txB!.id],
           updates: {
             accountId: account3.id,
@@ -734,7 +734,7 @@ describe("Transaction Bulk Edit", () => {
         const account2 = await createTestAccount(cookie, 0);
         const account3 = await createTestAccount(cookie, 0);
 
-        const transactionPayloadA: TransactionPayload = {
+        const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           transferAccountId: account2.id,
           outflow: "10",
@@ -750,7 +750,7 @@ describe("Transaction Bulk Edit", () => {
 
         const txB = transactionsBefore[txA?.transferTransactionId!];
 
-        const editBulkPayload: EditBulkTransactionsInput = {
+        const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
           transactionIds: [txA!.id],
           updates: {
             accountId: account2.id,
@@ -783,17 +783,17 @@ describe("Transaction Bulk Edit", () => {
     it("Should update memo of normal transactions", async () => {
       const account1 = await createTestAccount(cookie, 0);
 
-      const transactionPayloadA: TransactionPayload = {
+      const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
         outflow: "10",
       };
 
-      const transactionPayloadB: TransactionPayload = {
+      const transactionPayloadB: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
         outflow: "10",
       };
 
-      const transactionPayloadC: TransactionPayload = {
+      const transactionPayloadC: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
         outflow: "10",
       };
@@ -804,7 +804,7 @@ describe("Transaction Bulk Edit", () => {
 
       const UPDATED_MEMO = "updated memo";
 
-      const editBulkPayload: EditBulkTransactionsInput = {
+      const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
         transactionIds: [txA!.id, txB!.id, txC!.id],
         updates: {
           memo: UPDATED_MEMO,
@@ -841,17 +841,17 @@ describe("Transaction Bulk Edit", () => {
     it('Should handle " "', async () => {
       const account1 = await createTestAccount(cookie, 0);
 
-      const transactionPayloadA: TransactionPayload = {
+      const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
         outflow: "10",
       };
 
-      const transactionPayloadB: TransactionPayload = {
+      const transactionPayloadB: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
         outflow: "10",
       };
 
-      const transactionPayloadC: TransactionPayload = {
+      const transactionPayloadC: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
         outflow: "10",
       };
@@ -862,7 +862,7 @@ describe("Transaction Bulk Edit", () => {
 
       const UPDATED_MEMO = " ";
 
-      const editBulkPayload: EditBulkTransactionsInput = {
+      const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
         transactionIds: [txA!.id, txB!.id, txC!.id],
         updates: {
           memo: UPDATED_MEMO,
@@ -900,7 +900,7 @@ describe("Transaction Bulk Edit", () => {
       const account1 = await createTestAccount(cookie, 0);
       const account2 = await createTestAccount(cookie, 0);
 
-      const transactionPayloadC: TransactionPayload = {
+      const transactionPayloadC: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
         transferAccountId: account2.id,
         outflow: "10",
@@ -910,7 +910,7 @@ describe("Transaction Bulk Edit", () => {
 
       const UPDATED_MEMO = "updated memo";
 
-      const editBulkPayload: EditBulkTransactionsInput = {
+      const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
         transactionIds: [tx!.id],
         updates: {
           memo: UPDATED_MEMO,

@@ -1,13 +1,18 @@
-import { Prisma, Account } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { AccountRepository } from "../../features/budget/account/account.repository";
 import { Decimal } from "@prisma/client/runtime/library";
-import { AddAccountPayload } from "../../features/budget/account/account.schema";
+import { type AddAccountPayload } from "../../features/budget/account/account.schema";
+import {
+  type AccountId,
+  type db,
+} from "../../features/budget/account/account.types";
+import { type UserId } from "../../features/user/auth/auth.types";
 
 export const accountRepository: AccountRepository = {
   createAccount: async function(
     tx: Prisma.TransactionClient,
-    payload: AddAccountPayload,
-  ): Promise<Account> {
+    payload: AddAccountPayload
+  ): Promise<db.Account> {
     return await tx.account.create({
       data: payload,
     });
@@ -15,20 +20,27 @@ export const accountRepository: AccountRepository = {
 
   getAccount: async function(
     tx: Prisma.TransactionClient,
-    accountId: string,
-    userId: string,
-  ): Promise<Account | null> {
-    return tx.account.findUnique({
+    accountId: AccountId,
+    userId: UserId
+  ): Promise<db.Account | null> {
+    const row = await tx.account.findUnique({
       where: {
         id: accountId,
         userId,
       },
     });
+    if (!row) {
+      return null;
+    }
+    return row;
   },
 
-  updateAccountBalances: async function(
+  // TODO:(lewis 2026-02-05 20:08) this can be improved, surely can do update many
+  updateAccountBalances: async function (
     tx: Prisma.TransactionClient,
-    accountBalanceChanges: { [accountId: string]: Decimal },
+    accountBalanceChanges: {
+      [accountId: string]: Decimal;
+    }
   ): Promise<void> {
     for (const accountId in accountBalanceChanges) {
       await tx.account.update({
@@ -42,7 +54,7 @@ export const accountRepository: AccountRepository = {
 
   deleteAccount: async function(
     tx: Prisma.TransactionClient,
-    accountId: string,
+    accountId: AccountId
   ): Promise<void> {
     await tx.account.delete({
       where: {
@@ -53,7 +65,7 @@ export const accountRepository: AccountRepository = {
 
   closeAccount: async function(
     tx: Prisma.TransactionClient,
-    accountId: string,
+    accountId: AccountId
   ): Promise<void> {
     await tx.account.update({
       where: {
@@ -67,8 +79,8 @@ export const accountRepository: AccountRepository = {
 
   updateAccount: async function(
     tx: Prisma.TransactionClient,
-    accountId: string,
-    name: string,
+    accountId: AccountId,
+    name: string
   ): Promise<void> {
     await tx.account.update({
       where: {

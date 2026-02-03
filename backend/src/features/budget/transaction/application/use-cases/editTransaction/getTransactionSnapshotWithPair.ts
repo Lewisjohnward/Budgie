@@ -1,14 +1,15 @@
 import { Prisma } from "@prisma/client";
-import { Transaction } from "../../../../../../shared/types/db";
 import {
-  NoTransactionsFoundError,
   TransferPairMissingError,
+  PairedTransactionNotTransferError,
 } from "../../../transaction.errors";
+import { getTransactionById } from "../../services/getTransactionById";
 import {
-  NormalTransactionEntity,
-  TransferTransactionEntity,
+  type DomainNormalTransaction,
+  type DomainTransferTransaction,
+  type TransactionId,
 } from "../../../transaction.types";
-import { transactionRepository } from "../../../../../../shared/repository/transactionRepositoryImpl";
+import { type UserId } from "../../../../../user/auth/auth.types";
 
 /**
  * Immutable snapshot of a transaction and its transfer relationship at a specific point in time.
@@ -47,14 +48,14 @@ export type TransactionSnapshot =
 
 type NormalTransactionSnapshot = {
   isTransfer: false;
-  mainTx: NormalTransactionEntity;
+  mainTx: DomainNormalTransaction;
   pairedTx: null;
 };
 
 type TransferTransactionSnapshot = {
   isTransfer: true;
-  mainTx: TransferTransactionEntity;
-  pairedTx: TransferTransactionEntity;
+  mainTx: DomainTransferTransaction;
+  pairedTx: DomainTransferTransaction;
 };
 
 /**
@@ -105,100 +106,39 @@ type TransferTransactionSnapshot = {
 
 export const getTransactionSnapshotWithPair = async (
   tx: Prisma.TransactionClient,
-  userId: string,
-  transactionId: string
+  userId: UserId,
+  transactionId: TransactionId
 ): Promise<TransactionSnapshot> => {
-  const mainTx = await transactionRepository.getTransactionById(
-    tx,
-    userId,
-    transactionId
-  );
-  if (!mainTx) {
-    throw new NoTransactionsFoundError();
-  }
+  const main = await getTransactionById(tx, userId, transactionId);
 
-  const isTransfer = mainTx.transferAccountId !== null;
-
-  // pairedTx is the transaction referenced by transferTransactionId (if present)
-  const pairedTx = mainTx.transferTransactionId
-    ? await transactionRepository.getTransactionById(
-      tx,
-      userId,
-      mainTx.transferTransactionId
-    )
-    : null;
-
-  if (!isTransfer) {
-    assertNormalTx(mainTx);
-
+  if (main.type === "normal") {
+    // safe: mainTx is already DomainNormalTransaction
     return {
       isTransfer: false,
-      mainTx: mainTx as NormalTransactionEntity,
+      mainTx: main,
       pairedTx: null,
     };
   }
 
-  if (!pairedTx) {
+  // main.type === "transfer"
+  // paired transaction must exist
+  if (!main.transferTransactionId) {
     throw new TransferPairMissingError();
   }
 
-  assertTransferTx(mainTx);
-  assertTransferTx(pairedTx);
+  const paired = await getTransactionById(
+    tx,
+    userId,
+    main.transferTransactionId
+  );
+
+  if (paired.type !== "transfer") {
+    throw new PairedTransactionNotTransferError();
+  }
 
   return {
     isTransfer: true,
-    mainTx: mainTx,
-    pairedTx: pairedTx,
+    mainTx: main,
+    pairedTx: paired,
   };
 };
-
-/**
- * Enforce "CreatedNormalTransaction"
- * Common invariants:
- * - transferAccountId must be null
- * - transferTransactionId must be null
- * - categoryId must be a string (NOT null)
- */
-
-function assertNormalTx(
-  tx: Transaction
-): asserts tx is NormalTransactionEntity {
-  if (
-    tx.transferAccountId !== null ||
-    tx.transferTransactionId !== null ||
-    tx.categoryId === null
-  ) {
-    throw new Error(
-      `Invariant failed: normal tx invalid
-transferAccountId=${tx.transferAccountId}
-transferTransactionId=${tx.transferTransactionId}
-categoryId=${tx.categoryId}`
-    );
-  }
-}
-
-/**
- * Enforce "CreatedTransferTransaction".
- * Common invariants:
- * - transferAccountId must be string
- * - transferTransactionId must be string
- * - categoryId must be null(transfers excluded)
- * - paired tx must also satisfy same invariants
- */
-
-function assertTransferTx(
-  tx: Transaction
-): asserts tx is TransferTransactionEntity {
-  if (
-    tx.transferAccountId === null ||
-    tx.transferTransactionId === null ||
-    tx.categoryId !== null
-  ) {
-    throw new Error(
-      `Invariant failed: transfer tx invalid
-transferAccountId=${tx.transferAccountId}
-transferTransactionId=${tx.transferTransactionId}
-categoryId=${tx.categoryId}`
-    );
-  }
-}

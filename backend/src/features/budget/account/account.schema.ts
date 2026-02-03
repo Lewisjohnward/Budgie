@@ -1,7 +1,5 @@
 import { z } from "zod";
 import { Decimal } from "@prisma/client/runtime/library";
-import { Prisma } from "@prisma/client";
-import { CategoryGroup, Transaction } from "../../../shared/types/db";
 
 export const deleteAccountSchema = z.object({
   userId: z.string().uuid(),
@@ -36,40 +34,6 @@ export const addAccountSchema = z.object({
   ),
 });
 
-export type AddAccountPayload = z.infer<typeof addAccountSchema>;
-export type DeleteAccountPayload = z.infer<typeof deleteAccountSchema>;
-export type EditAccountSchema = z.infer<typeof editAccountSchema>;
-
-type Account = Prisma.AccountGetPayload<{
-  include: {
-    transactions: {
-      include: { category: { include: { categoryGroup: true } } };
-    };
-  };
-}>;
-
-export type NormalisedAccounts = {
-  accounts: { [key: string]: NormalisedAccount };
-  transactions: { [key: string]: NormalisedTransaction };
-  categories: { [key: string]: NormalisedCategory };
-  categoryGroups: { [key: string]: NormalisedCategoryGroup };
-};
-
-type NormalisedCategory = {
-  id: string;
-  userId: string;
-  name: string;
-  categoryGroupId: string | null;
-};
-
-type NormalisedAccount = Omit<Account, "transactions" | "balance"> & {
-  transactions: string[];
-  balance: number;
-};
-
-type NormalisedTransaction = Omit<Transaction, "inflow" | "outflow"> & {
-  inflow: number;
-  outflow: number;
-};
-
-type NormalisedCategoryGroup = Omit<CategoryGroup, "categories">;
+export type AddAccountPayload = z.output<typeof addAccountSchema>;
+export type DeleteAccountPayload = z.output<typeof deleteAccountSchema>;
+export type EditAccountPayload = z.output<typeof editAccountSchema>;

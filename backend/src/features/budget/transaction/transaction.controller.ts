@@ -1,58 +1,44 @@
 import { Request, Response, NextFunction } from "express";
 import {
-  deleteTransactionSchema,
+  deleteTransactionsSchema,
   duplicateTransactionsSchema,
-  editTransactionArraySchema,
   editSingleTransactionSchema,
   editBulkTransactionsSchema,
-  transactionSchema,
+  insertTransactionSchema,
 } from "./transaction.schema";
 import { transactionUseCase } from "./transaction.useCase";
 
-export const addTransaction = async (
+/**
+ * Inserts a single transaction.
+ */
+export const insertTransaction = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const transactionPayload = transactionSchema.parse(req.body);
-
-    await transactionUseCase.insertTransaction(
-      req.user?._id!,
-      transactionPayload
-    );
+    const userId = req.user?._id!;
+    const payload = insertTransactionSchema.parse(req.body);
+    await transactionUseCase.insertTransaction({
+      ...payload,
+      userId,
+    });
     res.status(200).json({ message: "Transaction added" });
   } catch (error) {
     next(error);
   }
 };
 
-export const editTransaction = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const payload = editTransactionArraySchema.parse({
-      userId: req.user?._id,
-      ...req.body,
-    });
-
-    await transactionUseCase.updateTransactions(payload);
-
-    res.status(200).json({ message: "Transactions updated" });
-  } catch (error) {
-    next(error);
-  }
-};
-
+/**
+ * Deletes one or more transactions.
+ */
 export const deleteTransactions = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const payload = deleteTransactionSchema.parse({
+    const payload = deleteTransactionsSchema.parse({
       userId: req.user?._id,
       ...req.body,
     });
@@ -65,6 +51,9 @@ export const deleteTransactions = async (
   }
 };
 
+/**
+ * Duplicates one or more transactions.
+ */
 export const duplicateTransactions = async (
   req: Request,
   res: Response,
@@ -85,10 +74,9 @@ export const duplicateTransactions = async (
 };
 
 /**
- * Updates a single transaction with partial fields.
- * Transaction ID comes from URL parameter (req.params.id).
+ * Updates a single transaction with new values.
+ * The transaction ID is provided as a URL parameter.
  */
-
 export const editSingleTransaction = async (
   req: Request,
   res: Response,
@@ -96,7 +84,10 @@ export const editSingleTransaction = async (
 ) => {
   try {
     const transactionId = req.params.id;
-    const payload = editSingleTransactionSchema.parse(req.body);
+    const payload = editSingleTransactionSchema.parse({
+      userId: req.user?._id,
+      ...req.body,
+    });
 
     await transactionUseCase.editTransaction(
       req.user?._id!,
@@ -112,18 +103,20 @@ export const editSingleTransaction = async (
 
 /**
  * Updates multiple transactions in bulk with the same field values.
- * Currently supports updating categoryId and accountId.
+ * This is for applying the same change to many transactions at once, e.g., changing the category for all.
  */
-
 export const editTransactionsBulk = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const payload = editBulkTransactionsSchema.parse(req.body);
+    const payload = editBulkTransactionsSchema.parse({
+      userId: req.user?._id,
+      ...req.body,
+    });
 
-    await transactionUseCase.editTransactions(req.user?._id!, payload);
+    await transactionUseCase.editTransactions(payload);
 
     res.status(200).json({ message: "Transactions updated" });
   } catch (error) {

@@ -22,9 +22,9 @@ export const editMemo = async (
   const userId = req.user?._id!;
 
   try {
-    const payload = editMemoSchema.parse({ id: memoId, ...req.body });
+    const payload = editMemoSchema.parse({ ...req.body, userId, memoId });
 
-    await memoUseCase.editMemo(userId, payload);
+    await memoUseCase.editMemo(payload);
 
     res.sendStatus(200);
   } catch (error) {

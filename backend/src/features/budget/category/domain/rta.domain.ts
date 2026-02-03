@@ -1,8 +1,9 @@
-import { Month, Transaction } from "@prisma/client";
 import { ZERO } from "../../../../shared/constants/zero";
 import { getMonthKey } from "../../../../shared/utils/getMonthKey";
 import { Decimal } from "@prisma/client/runtime/library";
 import { OperationMode } from "../../../../shared/enums/operation-mode";
+import { type DomainNormalTransaction } from "../../transaction/transaction.types";
+import type { DomainMonth } from "../types/month.domain";
 
 /**
  * Aggregates net activity of RTA transactions grouped by month.
@@ -14,10 +15,7 @@ import { OperationMode } from "../../../../shared/enums/operation-mode";
  * @param rtaTxs - A list of RTA transactions (optional `id` for new/duplicated).
  * @returns A record mapping month strings (e.g., "2025-07") to summed net `Decimal` values.
  */
-
-export function aggregateNetActivityByMonth(
-  rtaTxs: (Omit<Transaction, "id"> & { id?: string })[],
-) {
+export function aggregateNetActivityByMonth(rtaTxs: DomainNormalTransaction[]) {
   const groupedRtaTxsByMonth: Record<string, Decimal> = {};
 
   for (const tx of rtaTxs) {
@@ -51,11 +49,12 @@ export function aggregateNetActivityByMonth(
  * @param mode - Indicates whether transactions are being added or deleted.
  * @returns A filtered list of updated months with adjusted activity values.
  */
-
-export function calculateRtaMonthsActivity(
-  rtaMonths: Month[],
+export function calculateRtaMonthsActivity<
+  M extends Pick<DomainMonth, "id" | "month" | "activity">,
+>(
+  rtaMonths: M[],
   groupedRtaTxsByMonth: Record<string, Decimal>,
-  mode: OperationMode,
+  mode: OperationMode
 ) {
   return rtaMonths
     .map((rtaM) => {
@@ -72,8 +71,17 @@ export function calculateRtaMonthsActivity(
       };
       return updatedMonth;
     })
-    .filter((m): m is Month => m !== null && m.id !== undefined);
+    .filter((m): m is M => m !== null);
 }
+type AssignedNegAvailableByMonth = Record<
+  string,
+  { assigned: Decimal; negativeAvailable: Decimal }
+>;
+
+type QueueItem = { key: string; assigned: Decimal };
+
+type MonthSlice = Pick<DomainMonth, "month" | "activity">;
+type WithAvailable<M> = M & { available: Decimal };
 
 /**
  * Calculates the available RTA (Ready to Assign) available for each month,
@@ -107,21 +115,10 @@ export function calculateRtaMonthsActivity(
  * const result = calculateRtaAvailablePerMonth(rtaMonths, assigned, new Decimal(10));
  * // result will be an array of months with available balances calculated
  */
-
-type AssignedNegAvailableByMonth = Record<
-  string,
-  { assigned: Decimal; negativeAvailable: Decimal }
->;
-
-type QueueItem = { key: string; assigned: Decimal };
-
-type MonthSlice = Pick<Month, "month" | "activity">;
-type WithAvailable<M> = M & { available: Decimal };
-
 export const calculateRtaAvailablePerMonth = <M extends MonthSlice>(
   rtaMonths: M[],
   assignedNegAvailableByMonth: AssignedNegAvailableByMonth,
-  leftOverBal: Decimal = ZERO,
+  leftOverBal: Decimal = ZERO
 ): WithAvailable<M>[] => {
   const rtaMonthsClone = rtaMonths.map((m) => ({
     ...m,
@@ -137,7 +134,7 @@ export const calculateRtaAvailablePerMonth = <M extends MonthSlice>(
         assigned: new Decimal(v.assigned),
         negativeAvailable: new Decimal(v.negativeAvailable),
       },
-    ]),
+    ])
   );
 
   const queue: QueueItem[] = Object.entries(assignedNegativeAvailableClone)
@@ -146,7 +143,7 @@ export const calculateRtaAvailablePerMonth = <M extends MonthSlice>(
 
   let assignedInFuture = Object.values(assignedNegativeAvailableClone).reduce(
     (sum, { assigned }) => sum.add(assigned),
-    new Decimal(0),
+    new Decimal(0)
   );
 
   return rtaMonthsClone.map((m) => {

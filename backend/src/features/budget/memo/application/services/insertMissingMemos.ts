@@ -3,6 +3,7 @@ import { MemoInvariantError } from "../../memo.errors";
 import { roundToStartOfMonth } from "../../../../../shared/utils/roundToStartOfMonth";
 import { getMonthRange } from "../../../category/utils/getMonthRange";
 import { memoRepository } from "../../../../../shared/repository/memoRepositoryImpl";
+import { type UserId } from "../../../../user/auth/auth.types";
 
 /**
  * Ensures month memos exist when a transaction falls before the user's
@@ -22,7 +23,7 @@ import { memoRepository } from "../../../../../shared/repository/memoRepositoryI
 
 export const insertMissingMemos = async (
   tx: Prisma.TransactionClient,
-  userId: string,
+  userId: UserId,
   date: Date
 ): Promise<void> => {
   const earliestMonth = await memoRepository.getEarliestMemoMonth(tx, userId);

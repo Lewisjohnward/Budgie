@@ -1,14 +1,11 @@
 import { prisma } from "../../../../../shared/prisma/client";
-import {
-  CategoryGroupWithCategoriesAndMonths,
-  MonthMemo,
-} from "../../category.types";
+import { db } from "../../category.types";
 
 export const selectCategories = async (
   userId: string
 ): Promise<{
-  categoryGroups: CategoryGroupWithCategoriesAndMonths[];
-  memos: MonthMemo[];
+  categoryGroups: db.CategoryGroupWithCategoriesAndMonths[];
+  memos: db.MonthMemo[];
 }> => {
   // const groups = await getCategoryGroupsByUserId(userId);
   // const groupIds = groups.map((g) => g.id);

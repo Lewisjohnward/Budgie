@@ -1,3 +1,11 @@
+import { Prisma, PrismaClient } from "@prisma/client";
+import { categoryRepository } from "../../../../../../shared/repository/categoryRepositoryImpl";
+import { ZERO } from "../../../../../../shared/constants/zero";
+import { getMonthRange } from "../../../utils/getMonthRange";
+import { type UserId } from "../../../../../user/auth/auth.types";
+
+const MAX_MONTHS = 12;
+
 /**
  * Inserts missing months into the budget for all categories, ensuring continuity
  * of monthly records from the provided transaction date back to the earliest existing month.
@@ -11,26 +19,14 @@
  * @param userId - The user identifier for whom months are managed.
  * @param transactionDate - The date of the new transaction triggering this check.
  */
-
-import { Prisma, PrismaClient } from "@prisma/client";
-import { categoryRepository } from "../../../../../../shared/repository/categoryRepositoryImpl";
-import { ZERO } from "../../../../../../shared/constants/zero";
-import { getMonthRange } from "../../../utils/getMonthRange";
-import { roundToStartOfMonth } from "../../../../../../shared/utils/roundToStartOfMonth";
-
-const MAX_MONTHS = 12;
 export const insertMissingMonths = async (
   prisma: PrismaClient | Prisma.TransactionClient,
-  userId: string,
+  userId: UserId,
   transactionDate: Date
 ) => {
-  const existingMonths = await categoryRepository.getPastMonths(prisma, userId);
-
-  const earliestMonth = roundToStartOfMonth(
-    existingMonths.reduce(
-      (min, { month }) => (month < min ? month : min),
-      new Date()
-    )
+  const earliestMonth = await categoryRepository.getEarliestPastMonth(
+    prisma,
+    userId
   );
 
   const startDate =
@@ -43,16 +39,18 @@ export const insertMissingMonths = async (
     endInclusive: false,
   });
 
-  // TODO:(lewis 2026-01-30 18:23) for user
-  const categories = await categoryRepository.getAllCategoryIds(prisma, userId);
+  const categoryIds = await categoryRepository.getAllCategoryIds(
+    prisma,
+    userId
+  );
 
   const recentMonths = missingMonths.slice(-MAX_MONTHS);
   const monthEntries: Prisma.MonthCreateManyInput[] = [];
 
-  for (const category of categories) {
+  for (const id of categoryIds) {
     for (const month of recentMonths) {
       monthEntries.push({
-        categoryId: category.id,
+        categoryId: id,
         month,
         activity: ZERO,
         assigned: ZERO,

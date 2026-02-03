@@ -1,45 +1,54 @@
-import { CategoryGroup, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import {
-  CreateCategoryGroupData,
-  EditCategoryGroupData,
+  type CreateCategoryGroupData,
+  type EditCategoryGroupData,
 } from "./categorygroup.schema";
+import { type CategoryGroupId, db } from "./categoryGroup.types";
+import { type UserId } from "../../user/auth/auth.types";
 
 export interface CategoryGroupRepository {
   getCategoryGroup(
     tx: Prisma.TransactionClient,
-    userId: string,
-    categoryGroupId: string,
-  ): Promise<CategoryGroup | null>;
+    userId: UserId,
+    categoryGroupId: CategoryGroupId
+  ): Promise<db.CategoryGroup | null>;
 
-  getCategoryGroupId(
+  existsCategoryGroup(
     tx: Prisma.TransactionClient,
-    userId: string,
-    categoryGroupId: string,
-  ): Promise<string | null>;
+    userId: UserId,
+    categoryGroupId: CategoryGroupId
+  ): Promise<boolean>;
 
-  getProtectedCategoryGroupIds(
+  /**
+   * Returns true if the given category group is protected for the user.
+   */
+  isProtectedCategoryGroup(
     tx: Prisma.TransactionClient,
-    userId: string,
-  ): Promise<string[]>;
+    userId: UserId,
+    categoryGroupId: CategoryGroupId
+  ): Promise<boolean>;
 
-  getCategoryGroupIdByName(
+  /**
+   * Returns true if a category group with the given name exists for the user.
+   */
+  existsCategoryGroupByName(
     tx: Prisma.TransactionClient,
-    userId: string,
-    name: string,
-  ): Promise<string | null>;
+    userId: UserId,
+    name: string
+  ): Promise<boolean>;
 
   createCategoryGroup(
     tx: Prisma.TransactionClient,
-    categoryGroup: CreateCategoryGroupData,
+    categoryGroup: CreateCategoryGroupData
   ): Promise<void>;
 
   updateCategoryGroup(
     tx: Prisma.TransactionClient,
-    categoryGroup: EditCategoryGroupData,
+    categoryGroup: EditCategoryGroupData
   ): Promise<void>;
 
   deleteCategoryGroup(
     tx: Prisma.TransactionClient,
-    categoryGroupId: string,
+    categoryGroupId: CategoryGroupId
   ): Promise<void>;
 }

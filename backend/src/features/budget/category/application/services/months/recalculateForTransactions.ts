@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { categoryRepository } from "../../../../../../shared/repository/categoryRepositoryImpl";
 import { OperationMode } from "../../../../../../shared/enums/operation-mode";
 import {
@@ -7,27 +7,35 @@ import {
 } from "../../../domain/month.domain";
 import { groupTransactionsByCategoryId } from "../../../domain/transaction.domain";
 import { roundTransactionsToStartOfMonth } from "../../../utils/roundTransactionsToStartOfMonth";
-import { NormalTransactionEntity } from "../../../../transaction/transaction.types";
+import { type DomainNormalTransaction } from "../../../../transaction/transaction.types";
+import { categoryService } from "../../../category.service";
 
 /**
- * Updates category month records based on multiple transactions.
+ * Recalculates and updates category month records based on a set of transactions.
  *
- * - Rounds transactions' dates to the start of their respective months.
- * - Retrieves all category months from the earliest transaction date.
- * - Groups months and transactions by category ID.
- * - Calculates updated month values based on the transactions and operation mode (Add/Delete).
- * - Updates the database with all modified month records
+ * This function performs the following workflow:
+ * 1. Rounds transaction dates to the start of their respective months.
+ * 2. Determines the unique category IDs affected by the transactions.
+ * 3. Fetches all category months from the earliest transaction date onward.
+ * 4. Groups both months and transactions by category ID.
+ * 5. Calculates updated month values according to the operation mode (`Add` or `Delete`).
+ * 6. Persists all updated month records in the database in a single batch.
  *
- * @param prisma - Prisma client or transaction client for database operations.
- * @param transactions - List of transactions affecting category months.
- * @param mode - Operation mode specifying whether transactions are added or deleted.
+ * Use this function to maintain consistency between transaction activity
+ * and category month records, ensuring balances, assignments, or other
+ * monthly aggregates remain accurate.
+ *
+ * @param prisma - Prisma client or transaction client used for database operations.
+ * @param transactions - List of normal transactions that affect category months.
+ * @param mode - Operation mode indicating whether the transactions are being added or removed.
+ *
+ * @returns A promise that resolves once all affected category months have been updated.
  */
-
 export const recalculateCategoryMonthsForTransactions = async (
-  prisma: PrismaClient | Prisma.TransactionClient,
-  transactions: NormalTransactionEntity[],
+  prisma: Prisma.TransactionClient,
+  transactions: DomainNormalTransaction[],
   mode: OperationMode
-) => {
+): Promise<void> => {
   if (transactions.length === 0) return;
   // get the unique category Ids
 
@@ -44,7 +52,7 @@ export const recalculateCategoryMonthsForTransactions = async (
 
   // get all category months from date
   const categoryMonths =
-    await categoryRepository.getMonthsForCategoriesStartingFrom(
+    await categoryService.months.getMonthsForCategoriesStartingFrom(
       prisma,
       transactionCategoryIds,
       earliestMonthToUpdate

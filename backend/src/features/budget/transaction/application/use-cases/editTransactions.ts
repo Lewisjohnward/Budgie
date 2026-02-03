@@ -1,43 +1,60 @@
 import { prisma } from "../../../../../shared/prisma/client";
-import { EditBulkTransactionsPayload } from "../../transaction.schema";
+import { asUserId, UserId } from "../../../../user/auth/auth.types";
+import { type AccountId, asAccountId } from "../../../account/account.types";
+import { asCategoryId } from "../../../category/category.types";
+import { type EditBulkTransactionsPayload } from "../../transaction.schema";
 import { transactionService } from "../../transaction.service";
-
-// TODO:(lewis 2026-01-22 13:36) update jsdoc
+import { asTransactionId, type TransactionId } from "../../transaction.types";
 
 /**
- * Updates multiple transactions in bulk with the same field values.
- * Currently supports updating categoryId, accountId and memo for multiple transactions at once.
- * At least one update field must be provided.
- *
- * @param payload - The bulk edit transactions payload
- * @param payload.userId - The ID of the user performing the operation
- * @param payload.transactionIds - Array of transaction IDs to update
- * @param payload.updates - Object containing the fields to update
- * @param payload.updates.categoryId - Optional category ID to set for all transactions (or null to clear)
- * @param payload.updates.accountId - Optional account ID to set for all transactions
- * @throws {NoTransactionsFoundError} - If one or more transactions don't exist or user doesn't own them (404)
- *
- * @example
- * // Categorize multiple transactions
- * await editTransactions({
- *   userId: 'user-123',
- *   transactionIds: ['tx-1', 'tx-2', 'tx-3'],
- *   updates: { categoryId: 'cat-456' }
- * });
- *
- * // Move transactions to different account
- * await editTransactions({
- *   userId: 'user-123',
- *   transactionIds: ['tx-1', 'tx-2'],
- *   updates: { accountId: 'acc-789' }
- * });
+ * Represents the internal command for editing transactions after the initial payload has been processed.
+ * It uses strongly-typed IDs (`TransactionId`, `AccountId`) instead of raw strings
+ * to ensure type safety within the use case.
  */
+export type EditTransactionsCommand = Omit<
+  EditBulkTransactionsPayload,
+  "userId" | "updates" | "transactionIds"
+> & {
+  userId: UserId;
+  transactionIds: TransactionId[];
+  updates: Omit<EditBulkTransactionsPayload["updates"], "accountId"> & {
+    accountId?: AccountId;
+  };
+};
 
+/**
+ * Transforms the raw `EditBulkTransactionsPayload` into a `EditTransactionsCommand`,
+ * converting plain string IDs into strongly-typed branded types.
+ *
+ * @param p - The raw payload from the request.
+ * @returns The transformed command object with typed IDs.
+ */
+export const toEditAccountCommand = (
+  p: EditBulkTransactionsPayload
+): EditTransactionsCommand => ({
+  ...p,
+  userId: asUserId(p.userId),
+  transactionIds: p.transactionIds.map((id) => asTransactionId(id)),
+  updates: {
+    ...p.updates,
+    accountId: p.updates.accountId
+      ? asAccountId(p.updates.accountId)
+      : undefined,
+  },
+});
+
+/**
+ * Applies bulk updates to a set of transactions for a given user.
+ * This function orchestrates the update logic based on the provided fields,
+ * handling memos, category changes, and account moves within a single database transaction.
+ *
+ * @param userId The ID of the user performing the update.
+ * @param payload The payload containing transaction IDs and the updates to apply.
+ */
 export const editTransactions = async (
-  userId: string,
   payload: EditBulkTransactionsPayload
 ) => {
-  const { transactionIds, updates } = payload;
+  const { userId, transactionIds, updates } = toEditAccountCommand(payload);
 
   await prisma.$transaction(async (tx) => {
     const { normalTransactions, allTransferTransactions } =
@@ -67,7 +84,7 @@ export const editTransactions = async (
       await transactionService.bulk.applyCategoryChange(
         tx,
         userId,
-        updates.categoryId,
+        asCategoryId(updates.categoryId),
         normalTransactions
       );
       return;
@@ -85,8 +102,6 @@ export const editTransactions = async (
         normalTransactions,
         allTransferTransactions
       );
-
-      return;
     }
   });
 };

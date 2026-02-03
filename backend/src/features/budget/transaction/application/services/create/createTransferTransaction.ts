@@ -1,64 +1,86 @@
+import { Prisma } from "@prisma/client";
+import {
+  type TransferDestinationCreateData,
+  type TransferSourceCreateData,
+} from "../../../transaction.schema";
+import {
+  type DomainTransaction,
+  type DomainTransferSourceTransaction,
+} from "../../../transaction.types";
+import { transactionRepository } from "../../../../../../shared/repository/transactionRepositoryImpl";
+import { transactionMapper } from "../../../transaction.mapper";
+import { TransferDestinationMissingPairIdError } from "../../../transaction.errors";
+
 /**
  * Creates the **source side** of a transfer transaction.
  *
- * This represents the transaction on the account money is moving **from**.
- * The corresponding destination transaction will be created separately and
- * linked via `transferTransactionId`.
+ * The source transaction represents the money moving **out** of `accountId`
+ * toward the destination account (`transferAccountId`).
  *
- * Invariants:
- * - `categoryId` must be `null`
- * - `transferTransactionId` must be `undefined` (will be generated)
+ * Domain invariants enforced:
+ * - `categoryId` is always `null` (transfers do not belong to categories).
+ * - `transferTransactionId` is `null`/`undefined` at creation, since the paired
+ *   destination transaction does not yet exist.
  *
- * Runs inside an existing Prisma transaction.
+ * This function executes inside a Prisma transaction to ensure atomicity.
  *
- * @param tx - Prisma transaction client used for atomic writes
- * @param sourceTransactionData - Validated transfer source transaction data
- * @returns The created transfer transaction persisted in the database
+ * @param tx - Prisma transaction client used for atomic database writes.
+ * @param sourceTransactionData - Validated input data for creating the source transfer.
+ *
+ * @returns A promise that resolves to the newly created `DomainTransferSourceTransaction`,
+ *          mapped to the domain model.
  */
-
-import { Prisma } from "@prisma/client";
-import {
-  TransferDestinationCreateData,
-  TransferSourceCreateData,
-} from "../../../transaction.schema";
-import { TransferTransactionEntity } from "../../../transaction.types";
-import { transactionRepository } from "../../../../../../shared/repository/transactionRepositoryImpl";
-
 export async function createTransferSourceTransaction(
   tx: Prisma.TransactionClient,
   sourceTransactionData: TransferSourceCreateData
-): Promise<TransferTransactionEntity> {
-  const newTransaction = await transactionRepository.createTransaction(
-    tx,
-    sourceTransactionData
-  );
-  return newTransaction as TransferTransactionEntity;
+): Promise<DomainTransferSourceTransaction> {
+  const createData = {
+    ...sourceTransactionData,
+    categoryId: null,
+    transferTransactionId: null,
+  };
+
+  const row = await transactionRepository.createTransaction(tx, createData);
+
+  return transactionMapper.toDomainTransferSourceTransaction(row);
 }
 
 /**
  * Creates the **destination side** of a transfer transaction.
  *
- * This represents the transaction on the account money is moving **to**.
- * It must reference the source transaction via `transferTransactionId`.
+ * The destination transaction represents the money arriving at the target account
+ * (`accountId` of the destination). It must reference the source transaction
+ * via `transferTransactionId`.
  *
- * Invariants:
- * - `categoryId` must be `null`
- * - `transferTransactionId` must be provided and valid
+ * Domain invariants enforced:
+ * - `categoryId` must be `null` (transfers do not belong to categories).
+ * - `transferTransactionId` must be provided and valid.
  *
- * Runs inside an existing Prisma transaction.
+ * This function executes inside a Prisma transaction to ensure atomicity.
  *
- * @param tx - Prisma transaction client used for atomic writes
- * @param destinationTransactionData - Validated transfer destination transaction data
- * @returns The created transfer transaction persisted in the database
+ * @param tx - Prisma transaction client used for atomic database writes.
+ * @param destinationTransactionData - Validated input data for creating the destination transfer.
+ *
+ * @returns A promise that resolves to the newly created `DomainTransaction`,
+ *          mapped to the domain model.
+ *
+ * @throws {Error} If `transferTransactionId` is missing, indicating a violation
+ *                 of the transfer invariant.
  */
-
 export async function createTransferDestinationTransaction(
   tx: Prisma.TransactionClient,
   destinationTransactionData: TransferDestinationCreateData
-): Promise<TransferTransactionEntity> {
-  const newTransaction = await transactionRepository.createTransaction(
-    tx,
-    destinationTransactionData
-  );
-  return newTransaction as TransferTransactionEntity;
+): Promise<DomainTransaction> {
+  const createData = {
+    ...destinationTransactionData,
+    categoryId: null,
+  };
+
+  if (!createData.transferTransactionId) {
+    throw new TransferDestinationMissingPairIdError();
+  }
+
+  const row = await transactionRepository.createTransaction(tx, createData);
+
+  return transactionMapper.toDomainTransaction(row);
 }

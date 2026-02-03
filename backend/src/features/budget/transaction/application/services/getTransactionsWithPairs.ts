@@ -1,14 +1,19 @@
 import { Prisma } from "@prisma/client";
 import { transactionRepository } from "../../../../../shared/repository/transactionRepositoryImpl";
 import {
-  NormalTransactionEntity,
-  TransferTransactionEntity,
+  type DomainNormalTransaction,
+  type DomainTransferDestinationTransaction,
+  type DomainTransferSourceTransaction,
+  type DomainTransferTransaction,
+  type TransactionId,
 } from "../../transaction.types";
 import {
   MissingTransferPairIdError,
   TransactionsNotFoundError,
   TransferPairNotFoundError,
 } from "../../transaction.errors";
+import { transactionMapper } from "../../transaction.mapper";
+import { type UserId } from "../../../../user/auth/auth.types";
 
 /**
  * Retrieves a set of transactions by ID, validates ownership and transfer integrity,
@@ -76,41 +81,44 @@ import {
  */
 
 type TransactionsWithPairsResult = {
-  normalTransactions: NormalTransactionEntity[];
-  allTransferTransactions: TransferTransactionEntity[];
+  normalTransactions: DomainNormalTransaction[];
+  allTransferTransactions: DomainTransferTransaction[];
 };
 
 export const getTransactionsWithPairs = async (
   tx: Prisma.TransactionClient,
-  userId: string,
-  transactionIds: string[]
+  userId: UserId,
+  transactionIds: TransactionId[]
 ): Promise<TransactionsWithPairsResult> => {
-  const allTransactions =
-    await transactionRepository.getTransactionsByIdWithPairs(
-      tx,
-      transactionIds,
-      userId
-    );
-
-  // Filter to only the originally requested transactions for validation
-  const requestedTransactions = allTransactions.filter((tx) =>
-    transactionIds.includes(tx.id)
+  const allRows = await transactionRepository.getTransactionsByIdWithPairs(
+    tx,
+    transactionIds,
+    userId
   );
 
-  // If the transactionIds are not all owned by user
-  if (requestedTransactions.length !== transactionIds.length) {
+  const all = allRows.map(transactionMapper.toDomainAnyTransaction);
+
+  // validate requested ids exist
+  const requested = all.filter((t) => transactionIds.includes(t.id));
+
+  if (requested.length !== transactionIds.length) {
     throw new TransactionsNotFoundError();
   }
 
-  // Filter the transfer transactions
-  const requestedTransferTransactions = requestedTransactions.filter(
-    (tx): tx is TransferTransactionEntity =>
-      tx.transferAccountId !== null && tx.categoryId === null
+  // requested transfers = those with categoryId === null
+
+  const requestedTransfers = requested.filter(
+    (
+      t
+    ): t is
+      | DomainTransferSourceTransaction
+      | DomainTransferDestinationTransaction => t.type === "transfer"
   );
 
-  // Check that no transfer transaction has transferTransactionId === null
-  const missingPair = requestedTransferTransactions.find(
-    (t) => t.transferTransactionId === null
+  // destination transfers must have transferTransactionId
+  const missingPair = requestedTransfers.find(
+    (t): t is DomainTransferSourceTransaction =>
+      t.transferTransactionId === undefined
   );
 
   if (missingPair) {
@@ -120,11 +128,13 @@ export const getTransactionsWithPairs = async (
     });
   }
 
-  // Check that the transferTransactionId corresponds to a transaction in allIds
-  const allIds = new Set(allTransactions.map((t) => t.id));
+  const allIdSet = new Set(all.map((t) => t.id));
 
-  const missingPairRow = requestedTransferTransactions.find(
-    (t) => !allIds.has(t.transferTransactionId!)
+  // TODO:(lewis 2026-02-10 14:24) is this okay?
+  const missingPairRow = requestedTransfers.find(
+    (t): t is DomainTransferDestinationTransaction =>
+      t.transferTransactionId !== undefined &&
+      !allIdSet.has(t.transferTransactionId)
   );
 
   if (missingPairRow) {
@@ -135,24 +145,13 @@ export const getTransactionsWithPairs = async (
     });
   }
 
-  const normalTransactions = requestedTransactions.filter(
-    (tx): tx is NormalTransactionEntity =>
-      tx.transferAccountId === null && tx.categoryId !== null
+  const normalTransactions = requested.filter(
+    (t): t is DomainNormalTransaction => t.type === "normal"
   );
 
-  // Extract all transfer transactions (requested + their pairs)
-  // Pairs are transactions where transferTransactionId is in the requested IDs
-  const allTransferTransactions = allTransactions.filter(
-    (tx): tx is TransferTransactionEntity =>
-      tx.transferAccountId !== null &&
-      tx.categoryId === null &&
-      (transactionIds.includes(tx.id) ||
-        (tx.transferTransactionId !== null &&
-          transactionIds.includes(tx.transferTransactionId)))
-  ) as TransferTransactionEntity[];
+  const allTransferTransactions = all.filter(
+    (t): t is DomainTransferTransaction => t.type === "transfer"
+  );
 
-  return {
-    normalTransactions,
-    allTransferTransactions,
-  };
+  return { normalTransactions, allTransferTransactions };
 };

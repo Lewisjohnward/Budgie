@@ -3,9 +3,11 @@ import { v4 as uuidv4 } from "uuid";
 import app from "../../../app";
 import { getAccounts, getCategories } from "../../utils/getData";
 import { createTestAccount } from "../../utils/createTestAccount";
-import { addTransaction } from "../../utils/transaction";
+import {
+  addTransaction,
+  TestInsertTransactionInputWithoutUserId,
+} from "../../utils/transaction";
 import { login, registerUser } from "../../utils/auth";
-import { TransactionPayload } from "../../../features/budget/transaction/transaction.schema";
 import { LENGTH_ON_SIGNUP } from "../../utils/memo";
 import { prisma } from "../../../shared/prisma/client";
 
@@ -32,7 +34,7 @@ describe("Transaction Create", () => {
     it("Should return 400 when adding a transaction with a transferAccountId and a categoryId", async () => {
       const userAccount = await createTestAccount(cookie);
 
-      const transaction: TransactionPayload = {
+      const transaction: TestInsertTransactionInputWithoutUserId = {
         accountId: userAccount.id,
         categoryId: uuidv4(),
         transferAccountId: uuidv4(),
@@ -45,7 +47,7 @@ describe("Transaction Create", () => {
     it("Should return 400 when adding a transaction a memo over 100 characters", async () => {
       const userAccount = await createTestAccount(cookie);
 
-      const transaction: TransactionPayload = {
+      const transaction: TestInsertTransactionInputWithoutUserId = {
         accountId: userAccount.id,
         outflow: "10",
         date: new Date(2025, 6, 15, 1, 0, 0).toISOString(),
@@ -57,7 +59,7 @@ describe("Transaction Create", () => {
     it('Should return 400 when adding a transaction with "" as payeeName', async () => {
       const userAccount = await createTestAccount(cookie);
 
-      const transaction: TransactionPayload = {
+      const transaction: TestInsertTransactionInputWithoutUserId = {
         accountId: userAccount.id,
         payeeName: "",
         outflow: "10",
@@ -69,7 +71,7 @@ describe("Transaction Create", () => {
     it('Should return 400 when adding a transaction with " " as payeeName', async () => {
       const userAccount = await createTestAccount(cookie);
 
-      const transaction: TransactionPayload = {
+      const transaction: TestInsertTransactionInputWithoutUserId = {
         accountId: userAccount.id,
         payeeName: " ",
         outflow: "10",
@@ -88,7 +90,7 @@ describe("Transaction Create", () => {
         Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 12, 1)
       );
 
-      const payload: TransactionPayload = {
+      const payload: TestInsertTransactionInputWithoutUserId = {
         accountId: account.id,
         outflow: "10",
         date: tooOld.toISOString(),
@@ -108,7 +110,7 @@ describe("Transaction Create", () => {
       });
       const unownedAccount = await createTestAccount(cookie2);
 
-      const transactionPayload: TransactionPayload = {
+      const transactionPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: unownedAccount.id,
         outflow: "10",
       };
@@ -238,7 +240,7 @@ describe("Transaction Create", () => {
           const pastDate = past.toISOString();
           const pastKey = pastDate.slice(0, 7);
 
-          const transactionPayload: TransactionPayload = {
+          const transactionPayload: TestInsertTransactionInputWithoutUserId = {
             accountId: account.id,
             date: pastDate,
             outflow: "10",
@@ -296,7 +298,7 @@ describe("Transaction Create", () => {
           );
           const pastDate = past.toISOString();
 
-          const transferTransaction: TransactionPayload = {
+          const transferTransaction: TestInsertTransactionInputWithoutUserId = {
             accountId: account.id,
             outflow: "10",
             date: pastDate,
@@ -321,7 +323,7 @@ describe("Transaction Create", () => {
         const userAccount = await createTestAccount(cookie);
         const mockPayeeId = "550e8400-e29b-41d4-a716-446655440000";
 
-        const transaction: TransactionPayload = {
+        const transaction: TestInsertTransactionInputWithoutUserId = {
           accountId: userAccount.id,
           payeeId: mockPayeeId,
           transferAccountId: userAccount.id,
@@ -335,7 +337,7 @@ describe("Transaction Create", () => {
       it("Should return 400 when providing both payeeName and transferAccountId", async () => {
         const userAccount = await createTestAccount(cookie);
 
-        const transaction: TransactionPayload = {
+        const transaction: TestInsertTransactionInputWithoutUserId = {
           accountId: userAccount.id,
           payeeName: "test payee",
           transferAccountId: userAccount.id,
@@ -352,7 +354,7 @@ describe("Transaction Create", () => {
         const { categories } = await getCategories(cookie);
         const category = Object.values(categories)[0];
 
-        const transaction: TransactionPayload = {
+        const transaction: TestInsertTransactionInputWithoutUserId = {
           accountId: userAccount.id,
           categoryId: category.id,
           transferAccountId: userAccount.id,
@@ -366,7 +368,7 @@ describe("Transaction Create", () => {
       it("Should return 400 when trying to transfer to same account", async () => {
         const userAccount = await createTestAccount(cookie);
 
-        const transferTransaction: TransactionPayload = {
+        const transferTransaction: TestInsertTransactionInputWithoutUserId = {
           accountId: userAccount.id,
           outflow: "10",
           date: new Date(2025, 6, 15, 1, 0, 0).toISOString(),
@@ -384,7 +386,7 @@ describe("Transaction Create", () => {
           Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 12, 1)
         );
 
-        const payload: TransactionPayload = {
+        const payload: TestInsertTransactionInputWithoutUserId = {
           accountId: from.id,
           transferAccountId: to.id,
           outflow: "10",
@@ -409,7 +411,7 @@ describe("Transaction Create", () => {
         });
         const unownedAccount = await createTestAccount(cookie2);
 
-        const transactionPayload: TransactionPayload = {
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: unownedAccount.id,
           transferAccountId: userAccount.id,
           outflow: "10",
@@ -429,7 +431,7 @@ describe("Transaction Create", () => {
 
         const unownedAccount = await createTestAccount(cookie2);
 
-        const transaction: TransactionPayload = {
+        const transaction: TestInsertTransactionInputWithoutUserId = {
           accountId: userAccount.id,
           inflow: "10",
           date: new Date(2025, 6, 15, 1, 0, 0).toISOString(),
@@ -437,7 +439,7 @@ describe("Transaction Create", () => {
 
         await addTransaction(cookie, transaction, 200);
 
-        const transferTransaction: TransactionPayload = {
+        const transferTransaction: TestInsertTransactionInputWithoutUserId = {
           accountId: userAccount.id,
           outflow: "10",
           transferAccountId: unownedAccount.id,
@@ -453,7 +455,7 @@ describe("Transaction Create", () => {
         const account1 = await createTestAccount(cookie, 100);
         const account2 = await createTestAccount(cookie, 50);
 
-        const transferTransaction: TransactionPayload = {
+        const transferTransaction: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
           outflow: "10",
           transferAccountId: account2.id,
@@ -533,7 +535,7 @@ describe("Transaction Create", () => {
 
           expect(before[pastKey]).toBeUndefined();
 
-          const transferPayload: TransactionPayload = {
+          const transferPayload: TestInsertTransactionInputWithoutUserId = {
             accountId: fromAccount.id,
             transferAccountId: toAccount.id,
             date: pastDate,
@@ -563,7 +565,7 @@ describe("Transaction Create", () => {
           );
           const pastDate = past.toISOString();
 
-          const transferTransaction: TransactionPayload = {
+          const transferTransaction: TestInsertTransactionInputWithoutUserId = {
             accountId: account1.id,
             outflow: "10",
             transferAccountId: account2.id,

@@ -16,37 +16,37 @@ export const decimalFromString = (fieldName: string) =>
 
 export const singleNonZeroAmountRequired =
   <T extends { inflow?: Decimal; outflow?: Decimal }>() =>
-  (data: T) => {
-    const inflowProvided = data.inflow !== undefined;
-    const outflowProvided = data.outflow !== undefined;
+    (data: T) => {
+      const inflowProvided = data.inflow !== undefined;
+      const outflowProvided = data.outflow !== undefined;
 
-    // At least one provided
-    if (!inflowProvided && !outflowProvided) return false;
-    // At most one provided
-    if (inflowProvided && outflowProvided) return false;
+      // At least one provided
+      if (!inflowProvided && !outflowProvided) return false;
+      // At most one provided
+      if (inflowProvided && outflowProvided) return false;
 
-    // If provided, must be non-zero
-    if (inflowProvided && data.inflow!.isZero()) return false;
-    if (outflowProvided && data.outflow!.isZero()) return false;
+      // If provided, must be non-zero
+      if (inflowProvided && data.inflow!.isZero()) return false;
+      if (outflowProvided && data.outflow!.isZero()) return false;
 
-    return true;
-  };
+      return true;
+    };
 
 export const singleNonZeroAmountOptional =
   <T extends { inflow?: Decimal; outflow?: Decimal }>() =>
-  (data: T) => {
-    const inflowProvided = data.inflow !== undefined;
-    const outflowProvided = data.outflow !== undefined;
+    (data: T) => {
+      const inflowProvided = data.inflow !== undefined;
+      const outflowProvided = data.outflow !== undefined;
 
-    // At most one provided
-    if (inflowProvided && outflowProvided) return false;
+      // At most one provided
+      if (inflowProvided && outflowProvided) return false;
 
-    // If provided, must be non-zero
-    if (inflowProvided && data.inflow!.isZero()) return false;
-    if (outflowProvided && data.outflow!.isZero()) return false;
+      // If provided, must be non-zero
+      if (inflowProvided && data.inflow!.isZero()) return false;
+      if (outflowProvided && data.outflow!.isZero()) return false;
 
-    return true;
-  };
+      return true;
+    };
 // create: undefined | uuid
 export const categoryIdCreate = z.string().uuid();
 
@@ -70,7 +70,16 @@ export const dateFromIso = (fieldName: string) =>
         throw new Error(`Invalid ${fieldName} value: ${val}`);
       }
       return d;
-    });
+    })
+    .refine(
+      (d) => {
+        const now = new Date();
+        const twelveMonthsAgo = new Date();
+        twelveMonthsAgo.setFullYear(now.getFullYear() - 1);
+        return d >= twelveMonthsAgo && d <= now;
+      },
+      { message: `${fieldName} must be within the last 12 months` }
+    );
 
 export const dateNotInFuture = (data: { date?: Date }) =>
   !data.date || data.date <= new Date();

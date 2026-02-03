@@ -1,17 +1,36 @@
 import request from "supertest";
 import app from "../../app";
 import {
-  EditBulkTransactionsInput,
-  EditSingleTransactionInput,
-  TransactionPayload,
+  type EditBulkTransactionsInput,
+  type EditSingleTransactionInput,
+  type InsertTransactionInput,
 } from "../../features/budget/transaction/transaction.schema";
 import { getAccounts } from "./getData";
+import { type NormalisedTransaction } from "../../features/budget/account/account.types";
+
+/**
+ * Input type for creating transactions in tests,
+ * without the `userId` field.
+ */
+export type TestInsertTransactionInputWithoutUserId = Omit<
+  InsertTransactionInput,
+  "userId"
+>;
+
+/**
+ * Input type for creating transactions in tests,
+ * without the `userId` field.
+ */
+export type TestEditBulkTransactionsInputWithoutUserId = Omit<
+  EditBulkTransactionsInput,
+  "userId"
+>;
 
 export const addTransaction = async (
   cookie: string,
-  transaction: TransactionPayload,
+  transaction: TestInsertTransactionInputWithoutUserId,
   expectCode: number = 200
-) => {
+): Promise<NormalisedTransaction | void> => {
   // Create a unique memo to identify this transaction
   const uniqueId =
     Date.now().toString() + Math.random().toString(36).substring(2, 10);
@@ -114,7 +133,7 @@ export const editSingleTransaction = async (
 
 export const editBulkTransactions = async (
   cookie: string,
-  payload: EditBulkTransactionsInput
+  payload: TestEditBulkTransactionsInputWithoutUserId
 ) => {
   const res = await request(app)
     .patch(`/budget/transaction/bulk`)

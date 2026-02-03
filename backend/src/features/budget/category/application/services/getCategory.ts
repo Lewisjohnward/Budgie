@@ -1,34 +1,44 @@
 import { CategoryNotFoundError } from "../../category.errors";
 import { categoryRepository } from "../../../../../shared/repository/categoryRepositoryImpl";
 import { Prisma } from "@prisma/client";
-import { Category } from "../../category.types";
+import { type CategoryId, type DomainCategory } from "../../category.types";
+import { categoryMapper } from "../../category.mapper";
+import { type UserId } from "../../../../user/auth/auth.types";
 
 /**
- * Retrieves a category owned by the given user.
+ * Loads a category for a specific user and maps it to a domain entity.
  *
- * This function enforces isolation by scoping the lookup to `userId`.
- * If no category with the given `categoryId` exists for that user, a
- * `CategoryNotFoundError` is thrown.
+ * This function guarantees user-level isolation by querying the category
+ * within the scope of the provided `userId`. The underlying repository
+ * returns a persistence model, which is then converted into a
+ * `DomainCategory` via the mapper.
  *
- * @param tx - Prisma transaction client used to execute the query
- * @param userId - ID of the user who owns the category
- * @param categoryId - ID of the category to retrieve
+ * If no matching category is found, a `CategoryNotFoundError` is thrown.
  *
- * @throws {CategoryNotFoundError} If the category does not exist or does not belong to the user
+ * @param tx - Prisma transaction client used to execute the query within an active transaction
+ * @param userId - Identifier of the user who owns the category
+ * @param categoryId - Identifier of the category to retrieve
  *
- * @returns The requested category entity
+ * @returns A fully mapped `DomainCategory` instance
+ *
+ * @throws {CategoryNotFoundError} Thrown when the category does not exist
+ * or does not belong to the specified user
  */
 
 export const getCategory = async (
   tx: Prisma.TransactionClient,
-  userId: string,
-  categoryId: string
-): Promise<Category> => {
-  const category = await categoryRepository.getCategory(tx, userId, categoryId);
+  userId: UserId,
+  categoryId: CategoryId
+): Promise<DomainCategory> => {
+  const rawCategory = await categoryRepository.getCategory(
+    tx,
+    userId,
+    categoryId
+  );
 
-  if (!category) {
+  if (!rawCategory) {
     throw new CategoryNotFoundError();
   }
 
-  return category;
+  return categoryMapper.toDomainCategory(rawCategory);
 };

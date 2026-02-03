@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { payeeRepository } from "../../../../../shared/repository/payeeRepositoryImpl";
+import { type PayeeId } from "../../payee.types";
 
 /**
  * Deletes multiple payees in a single database operation.
@@ -7,10 +8,9 @@ import { payeeRepository } from "../../../../../shared/repository/payeeRepositor
  * @param tx - The Prisma transaction client
  * @param payeeIds - Array of payee IDs to delete
  */
-
 export const deletePayees = async (
   tx: Prisma.TransactionClient,
-  payeeIds: string[]
+  payeeIds: PayeeId[]
 ): Promise<void> => {
   await payeeRepository.deletePayees(tx, payeeIds);
 };

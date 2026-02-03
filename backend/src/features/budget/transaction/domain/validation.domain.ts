@@ -10,10 +10,10 @@
  */
 
 import { isAfterUtc as isFutureDate } from "../utils/isAfterUtc";
-import { TransactionData } from "../transaction.schema";
+import { AddTransactionPayload } from "../transaction.schema";
 import { FutureDateError } from "../transaction.errors";
 
-type TransactionDateOnly = Pick<TransactionData, "date">;
+type TransactionDateOnly = Pick<AddTransactionPayload, "date">;
 
 export function validateTransaction(transaction: TransactionDateOnly) {
   // check that transaction is not in the future

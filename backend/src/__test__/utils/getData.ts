@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from "../../app";
-import { NormalisedData } from "../../features/budget/category/category.types";
-import { NormalisedAccounts } from "../../features/budget/account/account.schema";
+import { type NormalisedData } from "../../features/budget/category/category.types";
+import { type NormalisedAccounts } from "../../features/budget/account/account.types";
 
 export const getCategories = async (cookie: string) => {
   const res = await request(app)

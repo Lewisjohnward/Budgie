@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
-import { getCategory } from "./getCategory";
-import { categoryRepository } from "../../../../../shared/repository/categoryRepositoryImpl";
+import { categoryService } from "../../category.service";
+import { type UserId } from "../../../../user/auth/auth.types";
+import { type CategoryId } from "../../category.types";
 
 /**
  * Resolves the category ID to use for a transaction
@@ -17,15 +18,18 @@ import { categoryRepository } from "../../../../../shared/repository/categoryRep
 
 export const resolveCategoryId = async (
   tx: Prisma.TransactionClient,
-  userId: string,
-  categoryId?: string
+  userId: UserId,
+  categoryId?: CategoryId
 ): Promise<string> => {
   if (categoryId) {
-    await getCategory(tx, userId, categoryId);
+    // await getCategory(tx, userId, categoryId);
     return categoryId;
   }
 
-  return await categoryRepository.getUncategorisedCategoryId(tx, userId);
+  return await categoryService.categories.getUncategorisedCategoryId(
+    tx,
+    userId
+  );
 };
 
 // TODO:(lewis 2025-12-19 10:05) resolveCategoryId

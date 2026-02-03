@@ -33,7 +33,7 @@ describe("Account", () => {
         (account) => account.name === testAccountData.name
       );
 
-      const transactions = testAccount[0].transactions;
+      const transactions = testAccount[0].transactionIds;
       const accountData = testAccount[0];
 
       expect(testAccount.length).toBe(1);

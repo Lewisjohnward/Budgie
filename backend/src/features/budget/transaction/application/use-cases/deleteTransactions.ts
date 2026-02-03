@@ -2,39 +2,60 @@ import { OperationMode } from "../../../../../shared/enums/operation-mode";
 import { transactionRepository } from "../../../../../shared/repository/transactionRepositoryImpl";
 import { accountService } from "../../../account/account.service";
 import { prisma } from "../../../../../shared/prisma/client";
-import { categoryRepository } from "../../../../../shared/repository/categoryRepositoryImpl";
 import { splitTransactionsByType } from "../../utils/splitTransactionsByType";
 import { categoryService } from "../../../category/category.service";
 import { transactionService } from "../../transaction.service";
-import { DeleteTransactionPayload } from "../../transaction.schema";
+import { type DeleteTransactionsPayload } from "../../transaction.schema";
+import { asTransactionId, type TransactionId } from "../../transaction.types";
+import { asUserId, UserId } from "../../../../user/auth/auth.types";
 
 /**
- * Deletes transactions and handles all related data updates in a single transaction.
- *
- * This function:
- * 1. Retrieves the transactions to be deleted
- * 2. Handles transfer transactions by finding their pairs
- * 3. For non-transfer transactions:
- *    - Updates category months (for non-RTA transactions)
- *    - Updates RTA (Ready To Assign) activity and available amounts
- * 4. Deletes all transactions (both regular and their transfer pairs)
- * 5. Updates account balances for all affected accounts
- *
- * @param {DeleteTransactionPayload} payload - The payload containing:
- *   - userId: string - ID of the user performing the deletion
- *   - transactionIds: string[] - Array of transaction IDs to be deleted
- *
- * @throws {NoTransactionsFoundError} If no transactions are found with the provided IDs
- *
- * @example
- * await deleteTransactions({
- *   userId: 'user-123',
- *   transactionIds: ['tx-1', 'tx-2']
- * });
+ * Command type for deleting transactions.
+ * All transaction IDs are branded as `TransactionId`.
  */
+export type DeleteTransactionsCommand = Omit<
+  DeleteTransactionsPayload,
+  "userId" | "transactionIds"
+> & {
+  userId: UserId;
+  transactionIds: TransactionId[];
+};
 
-export const deleteTransactions = async (payload: DeleteTransactionPayload) => {
-  const { userId, transactionIds } = payload;
+/**
+ * Converts a raw payload into a typed delete command with branded IDs.
+ */
+export const toDeleteTransactionsCommand = (
+  p: DeleteTransactionsPayload
+): DeleteTransactionsCommand => ({
+  ...p,
+  userId: asUserId(p.userId),
+  transactionIds: p.transactionIds.map(asTransactionId),
+});
+
+/**
+ * Deletes a set of transactions and updates all related derived state in a single atomic transaction.
+ *
+ * This function handles both normal (non-transfer) and transfer transactions, including:
+ * - Automatically including the paired transfer transaction for any selected transfers.
+ * - Updating category months for non-RTA transactions to remove their allocations.
+ * - Updating RTA (Ready-To-Assign) months activity and recalculating available amounts.
+ * - Adjusting account balances to remove the effects of deleted transactions.
+ *
+ * All operations are executed within a single Prisma transaction to ensure consistency.
+ * If any step fails, the entire deletion is rolled back.
+ *
+ * @param payload - The delete request payload.
+ * @param payload.userId - The ID of the user performing the deletion; used for ownership checks.
+ * @param payload.transactionIds - Array of transaction IDs to delete.
+ *
+ * @returns A promise that resolves once all transactions and related state have been deleted and updated.
+ *
+ * @throws {NoTransactionsFoundError} If no transactions exist for the provided IDs.
+ */
+export const deleteTransactions = async (
+  payload: DeleteTransactionsPayload
+): Promise<void> => {
+  const { userId, transactionIds } = toDeleteTransactionsCommand(payload);
   await prisma.$transaction(async (tx) => {
     const { normalTransactions, allTransferTransactions } =
       await transactionService.getTransactionsWithPairs(
@@ -44,7 +65,7 @@ export const deleteTransactions = async (payload: DeleteTransactionPayload) => {
       );
 
     if (normalTransactions.length > 0) {
-      const rtaCategoryId = await categoryRepository.getRtaCategoryId(
+      const rtaCategoryId = await categoryService.rta.getRtaCategoryId(
         tx,
         userId
       );

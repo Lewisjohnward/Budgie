@@ -1,20 +1,20 @@
 import { Prisma } from "@prisma/client";
 import { categoryGroupRepository } from "../../../../../shared/repository/categoryGroupRepositoryImpl";
 import { DuplicateCategoryGroupNameError } from "../../categoryGroup.errors";
+import { type UserId } from "../../../../user/auth/auth.types";
 
 export const checkCategoryGroupNameIsUnique = async (
   prisma: Prisma.TransactionClient,
-  userId: string,
-  name: string,
+  userId: UserId,
+  name: string
 ) => {
-  const existingCategory =
-    await categoryGroupRepository.getCategoryGroupIdByName(
-      prisma,
-      userId,
-      name,
-    );
+  const exists = await categoryGroupRepository.existsCategoryGroupByName(
+    prisma,
+    userId,
+    name
+  );
 
-  if (existingCategory) {
+  if (exists) {
     throw new DuplicateCategoryGroupNameError();
   }
 };

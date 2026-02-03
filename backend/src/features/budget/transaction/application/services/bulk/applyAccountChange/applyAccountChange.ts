@@ -1,7 +1,8 @@
 import { Prisma } from "@prisma/client";
 import {
-  NormalTransactionEntity,
-  TransferTransactionEntity,
+  type TransactionId,
+  type DomainTransferTransaction,
+  type DomainNormalTransaction,
 } from "../../../../transaction.types";
 import { accountService } from "../../../../../account/account.service";
 import { OperationMode } from "../../../../../../../shared/enums/operation-mode";
@@ -9,49 +10,64 @@ import { transactionService } from "../../../../transaction.service";
 import { transactionRepository } from "../../../../../../../shared/repository/transactionRepositoryImpl";
 import { filterInvalidBulkEditTransfers } from "./filterInvalidBulkEditTransfers";
 import { UpdatedTransferTransactionsMismatchError } from "../../../../transaction.errors";
+import { type AccountId } from "../../../../../account/account.types";
+import { UserId } from "../../../../../../user/auth/auth.types";
 
 /**
- * Bulk-updates the account for a set of transactions and keeps transfer pairing
- * and account balances consistent.
+ * Applies a bulk account change to a set of transactions while maintaining
+ * transfer consistency and updating account balances.
  *
- * What this does:
- * - Updates `accountId` for the selected transactions.
- * - For any updated transfer transaction, updates the paired transaction's
- *   `transferAccountId` so the transfer relationship remains valid.
- * - Recomputes balances by removing the pre-update effects of the affected
- *   transactions and then applying the post-update effects.
+ * This function performs the following steps atomically within the provided
+ * Prisma transaction client (`tx`):
  *
- * Bulk-edit transfer constraints:
- * - Transaction ids are pre-filtered via `filterInvalidBulkEditTransfers(...)`
- *   to exclude transfers that would create invalid or ambiguous states in the
- *   context of a bulk edit (e.g. both sides selected or moving onto the
- *   counterpart account).
+ * 1. Filters invalid transfer transactions using `filterInvalidBulkEditTransfers`:
+ *    - Excludes transfer transactions where both sides are selected.
+ *    - Excludes transfers whose target account would conflict with the new account.
+ *
+ * 2. Updates the `accountId` of the remaining selected transactions.
+ *
+ * 3. For any updated transfer transactions, updates the `transferAccountId`
+ *    of their counterpart transactions so the transfer relationship remains valid.
+ *
+ * 4. Fetches the updated transactions (normal and transfers) including paired
+ *    transactions to ensure correctness.
+ *
+ * 5. Validates that all selected transfer transactions were updated and no
+ *    transfer invariants were violated.
+ *
+ * 6. Recalculates account balances:
+ *    - Removes the effect of the pre-update transactions.
+ *    - Applies the effect of the post-update transactions.
+ *
+ * Bulk edit invariants:
+ * - Selected transfers must not include both sides in the same update.
+ * - Selected transfers must not move onto their counterpart account.
  *
  * Notes:
- * - All reads/writes occur within the provided Prisma transaction client (`tx`)
- *   and must be executed atomically by the caller.
- * - If no transactions remain after filtering, the function returns early.
+ * - All reads/writes are performed within the provided transaction (`tx`)
+ *   and should be executed atomically by the caller.
+ * - If no valid transactions remain after filtering, the function returns early.
  *
- * @param tx Prisma transaction client used to execute all operations atomically.
- * @param userId Owner of the transactions being modified.
- * @param accountId Destination account id to apply to the selected transactions.
- * @param transactionIds Transaction ids selected for the bulk account change.
- * @param normalTransactions Pre-update normal transactions (may include more than selected).
- * @param allTransferTransactions Pre-update transfer transactions (may include more than selected), used to locate selected transfers and their pairs.
+ * @param tx - Prisma transaction client used for all operations.
+ * @param userId - The owner of the transactions being modified.
+ * @param accountId - The target account ID to apply to the selected transactions.
+ * @param transactionIds - IDs of the transactions selected for the account change.
+ * @param normalTransactions - Pre-update normal transactions, used to calculate balance adjustments.
+ * @param allTransferTransactions - Pre-update transfer transactions, used to locate selected transfers and their counterparts.
  *
  * @throws {UpdatedTransferTransactionsMismatchError}
  * Thrown if the set of transfer transactions expected to be updated does not
- * match the set returned after the update (indicating an invariant violation).
+ * match the set returned after the update, indicating a violation of transfer invariants.
  */
 
 export const applyAccountChange = async (
   tx: Prisma.TransactionClient,
-  userId: string,
-  accountId: string,
-  transactionIds: string[],
-  normalTransactions: NormalTransactionEntity[],
-  allTransferTransactions: TransferTransactionEntity[]
-) => {
+  userId: UserId,
+  accountId: AccountId,
+  transactionIds: TransactionId[],
+  normalTransactions: DomainNormalTransaction[],
+  allTransferTransactions: DomainTransferTransaction[]
+): Promise<void> => {
   // transactions the user explicitly selected
   const selectedIds = new Set(transactionIds);
 
@@ -88,9 +104,8 @@ export const applyAccountChange = async (
   const preUpdateNormals = normalTransactions.filter((t) =>
     idsToUpdateSet.has(t.id)
   );
-
   // Transfer transactions before update
-  const preUpdateTransfers = selectedTransferTransactions.filter((t) =>
+  const preUpdateTransfers = allTransferTransactions.filter((t) =>
     idsToUpdateSet.has(t.id)
   );
 
