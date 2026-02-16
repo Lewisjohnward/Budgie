@@ -55,6 +55,7 @@ export async function insertNormalTransaction(
     categoryId,
     payeeId,
     payeeName,
+    origin,
     // remove type
     type: _type,
   } = command;
@@ -85,6 +86,7 @@ export async function insertNormalTransaction(
     outflow,
     payeeId: resolvedPayeeId,
     categoryId: finalCategoryId,
+    origin,
   });
 
   const mode = OperationMode.Add;
@@ -119,6 +121,8 @@ export async function insertNormalTransaction(
   await accountService.updateAccountBalances(tx, [newTransaction], mode);
 
   await categoryService.rta.calculateMonthsAvailable(tx, userId, rtaCategoryId);
+
+  await accountService.refreshDeletableStatus(tx, [accountId]);
 
   return newTransaction;
 }

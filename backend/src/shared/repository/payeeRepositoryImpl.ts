@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { PayeeRepository } from "../../features/budget/payee/payee.repository";
 import { type PayeeId, type db } from "../../features/budget/payee/payee.types";
 import { type UserId } from "../../features/user/auth/auth.types";
+import { SYSTEM_PAYEE_NAMES } from "../../features/budget/payee/payee.constants";
 
 export const payeeRepository: PayeeRepository = {
   getPayees: function(
@@ -57,15 +58,33 @@ export const payeeRepository: PayeeRepository = {
     });
   },
 
+  getSystemPayeeIdsByUserId: async function(
+    tx: Prisma.TransactionClient,
+    userId: UserId
+  ): Promise<string[]> {
+    const rows = await tx.payee.findMany({
+      where: {
+        userId,
+        name: { in: [...SYSTEM_PAYEE_NAMES] },
+      },
+      select: {
+        id: true,
+      },
+    });
+    return rows.map((r) => r.id);
+  },
+
   createPayee: async function(
     tx: Prisma.TransactionClient,
     userId: UserId,
-    name: string
+    name: string,
+    origin: "USER" | "SYSTEM"
   ): Promise<db.Payee> {
     return await tx.payee.create({
       data: {
         userId: userId,
         name: name,
+        origin,
       },
     });
   },
@@ -98,6 +117,7 @@ export const payeeRepository: PayeeRepository = {
       },
     });
   },
+
   updatePayees: async function(
     tx: Prisma.TransactionClient,
     payeeIds: PayeeId[],
@@ -116,6 +136,7 @@ export const payeeRepository: PayeeRepository = {
       },
     });
   },
+
   deletePayees: async function(
     tx: Prisma.TransactionClient,
     payeeIds: PayeeId[]
@@ -125,5 +146,63 @@ export const payeeRepository: PayeeRepository = {
         id: { in: payeeIds },
       },
     });
+  },
+
+  getStartingBalancePayeeId: async function(
+    tx: Prisma.TransactionClient,
+    userId: UserId
+  ): Promise<string | null> {
+    const record = await tx.payee.findUnique({
+      where: {
+        userId_name: {
+          name: "Starting Balance",
+          userId,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!record) return null;
+    return record.id;
+  },
+
+  getBalanceAdjustmentPayeeId: async function(
+    tx: Prisma.TransactionClient,
+    userId: UserId
+  ): Promise<string | null> {
+    const record = await tx.payee.findUnique({
+      where: {
+        userId_name: {
+          name: "Manual Balance Adjustment",
+          userId,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!record) return null;
+
+    return record.id;
+  },
+
+  // Note: Using `createPayee` in a loop returns the created payees.
+  // `createMany` does not return the created records
+  createPayees: async function(
+    tx: Prisma.TransactionClient,
+    userId: UserId,
+    payees: { name: string; origin: "USER" | "SYSTEM" }[]
+  ): Promise<db.Payee[]> {
+    const created: db.Payee[] = [];
+
+    for (const { name, origin } of payees) {
+      const payee = await this.createPayee(tx, userId, name, origin);
+      created.push(payee);
+    }
+
+    return created;
   },
 };

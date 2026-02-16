@@ -5,10 +5,10 @@ import {
   getCategories,
   getReadyToAssignMonths,
 } from "../utils/getData";
-import { createTestAccount } from "../utils/createTestAccount";
 import { login, registerUser } from "../utils/auth";
 import { type db } from "../../features/budget/account/account.types";
 import { prisma } from "../../shared/prisma/client";
+import { createAccountAndFetch } from "../utils/account";
 
 const compareRTAMonthsToExpected = async (
   expected: number[],
@@ -169,7 +169,7 @@ describe("RTA allocation", () => {
     await registerUser();
     cookie = await login();
     RTACategoryId = await getRTACategoryId(cookie);
-    testAccount = await createTestAccount(cookie);
+    testAccount = await createAccountAndFetch(cookie);
   });
 
   describe("adding transactions", () => {
@@ -631,7 +631,7 @@ describe("RTA allocation", () => {
 
         const oneMonthAgoUTC = new Date(Date.UTC(year, month - 1, 1));
         const threeMonthAgoUTC = new Date(Date.UTC(year, month - 3, 1));
-        const testAccount = await createTestAccount(cookie);
+        const testAccount = await createAccountAndFetch(cookie);
 
         const testCategory = Object.values(categories).find(
           (cat) => cat.name === "test category"
@@ -689,7 +689,7 @@ describe("RTA allocation", () => {
         if (!testCategory)
           throw new Error("Unable to find test category month");
 
-        const testAccount = await createTestAccount(cookie);
+        const testAccount = await createAccountAndFetch(cookie);
 
         await request(app)
           .post("/budget/transaction")
@@ -714,7 +714,7 @@ describe("RTA allocation", () => {
         if (!testCategory)
           throw new Error("Unable to find test category month");
 
-        const testAccount = await createTestAccount(cookie);
+        const testAccount = await createAccountAndFetch(cookie);
 
         await request(app)
           .post("/budget/transaction")
@@ -735,7 +735,7 @@ describe("RTA allocation", () => {
           name: "my test category",
         });
 
-        const testAccount = await createTestAccount(cookie);
+        const testAccount = await createAccountAndFetch(cookie);
         const now = new Date();
         const twoMonthsAgo = new Date(
           Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 2)
@@ -850,7 +850,7 @@ describe("RTA allocation", () => {
           name: "my test category",
         });
 
-        const testAccount = await createTestAccount(cookie);
+        const testAccount = await createAccountAndFetch(cookie);
         await request(app)
           .post("/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
@@ -886,7 +886,7 @@ describe("RTA allocation", () => {
       it("should handle rta inflow transaction", async () => {
         const { categories } = await getCategories(cookie);
 
-        const testAccount = await createTestAccount(cookie);
+        const testAccount = await createAccountAndFetch(cookie);
 
         const readyToAssignCategoryId = Object.values(categories).find(
           (cat) => cat.name === "Ready to Assign"
@@ -1038,7 +1038,7 @@ describe("RTA allocation", () => {
       });
 
       it("should handle adding outflow categorised transaction when rta > 0", async () => {
-        const testAccount = await createTestAccount(cookie);
+        const testAccount = await createAccountAndFetch(cookie);
 
         const { categories } = await getCategories(cookie);
 
@@ -1143,7 +1143,7 @@ describe("RTA allocation", () => {
 
         await compareRTAMonthsToExpected([0, 0], cookie);
 
-        const testAccount = await createTestAccount(cookie);
+        const testAccount = await createAccountAndFetch(cookie);
 
         await request(app)
           .post("/budget/transaction")
@@ -1463,7 +1463,7 @@ describe("RTA allocation", () => {
       const { categories } = await getCategories(cookie);
 
       const RTACategoryId = await getRTACategoryId(cookie);
-      const testAccount = await createTestAccount(cookie);
+      const testAccount = await createAccountAndFetch(cookie);
 
       const testCategory = Object.values(categories).find(
         (cat) => cat.name === "test category"
@@ -1552,7 +1552,7 @@ describe("RTA allocation", () => {
 
     it("Should correctly delete multiple RTA inflow transactions", async () => {
       const RTACategoryId = await getRTACategoryId(cookie);
-      const testAccount = await createTestAccount(cookie);
+      const testAccount = await createAccountAndFetch(cookie);
 
       await request(app)
         .post("/budget/transaction")
@@ -1591,7 +1591,7 @@ describe("RTA allocation", () => {
     });
 
     it("Should handle deleting a single categorised transaction - outflow ", async () => {
-      const testAccount = await createTestAccount(cookie);
+      const testAccount = await createAccountAndFetch(cookie);
       const testCategoryId = await createTestCategory(cookie);
 
       await request(app)
@@ -1626,7 +1626,7 @@ describe("RTA allocation", () => {
     });
 
     it("Should handle deleting a single categorised transaction - inflow ", async () => {
-      const testAccount = await createTestAccount(cookie);
+      const testAccount = await createAccountAndFetch(cookie);
       const testCategoryId = await createTestCategory(cookie);
 
       await request(app)
@@ -1659,7 +1659,7 @@ describe("RTA allocation", () => {
     });
 
     it("Should handle deleting multiple categorised transaction - inflow ", async () => {
-      const testAccount = await createTestAccount(cookie);
+      const testAccount = await createAccountAndFetch(cookie);
       const testCategoryId = await createTestCategory(cookie);
 
       await request(app)
@@ -1718,7 +1718,7 @@ describe("RTA allocation", () => {
 
     it("Should handle deleting an inflow and outflow of the same category", async () => {
       const RTACategoryId = await getRTACategoryId(cookie);
-      const testAccount = await createTestAccount(cookie);
+      const testAccount = await createAccountAndFetch(cookie);
 
       await request(app)
         .post("/budget/transaction")
@@ -1848,7 +1848,7 @@ describe("RTA allocation", () => {
         })
         .expect(200);
 
-      await createTestAccount(cookie);
+      await createAccountAndFetch(cookie);
       const { accounts } = await getAccounts(cookie);
       const testAccount = Object.values(accounts).find(
         (account) => account.name === "test account"
@@ -1877,7 +1877,7 @@ describe("RTA allocation", () => {
     });
 
     it.skip("should update ready to assign correctly when updating assign after inflow", async () => {
-      await createTestAccount(cookie);
+      await createAccountAndFetch(cookie);
 
       const { categories } = await getCategories(cookie);
 
@@ -1934,7 +1934,7 @@ describe("RTA allocation", () => {
     });
 
     it.skip("should correctly update ready to assign when setting assigned value in months to zero", async () => {
-      await createTestAccount(cookie);
+      await createAccountAndFetch(cookie);
 
       const { categories } = await getCategories(cookie);
 
@@ -2000,7 +2000,7 @@ describe("RTA allocation", () => {
     });
 
     it.skip("should correctly update ready to assign months in the future when the assigning to the past", async () => {
-      await createTestAccount(cookie);
+      await createAccountAndFetch(cookie);
 
       const { categories } = await getCategories(cookie);
 
@@ -2065,7 +2065,7 @@ describe("RTA allocation", () => {
     });
 
     it.skip("assigned, delete, add - should update RTA correctly when deleting a transaction assigned to RTA", async () => {
-      await createTestAccount(cookie);
+      await createAccountAndFetch(cookie);
 
       const { categories } = await getCategories(cookie);
 
@@ -2130,7 +2130,7 @@ describe("RTA allocation", () => {
     });
 
     it.skip("should correctly update RTA when unassigning", async () => {
-      await createTestAccount(cookie);
+      await createAccountAndFetch(cookie);
 
       const { categories } = await getCategories(cookie);
 
@@ -2211,7 +2211,7 @@ describe("RTA allocation", () => {
   });
 
   describe.skip("editing transactions", () => {
-    it.skip("Should correctly update rta months when editing from uncategorised to category", async () => {});
+    it.skip("Should correctly update rta months when editing from uncategorised to category", async () => { });
     it("first test", async () => {
       const { id: accountId } = testAccount;
 

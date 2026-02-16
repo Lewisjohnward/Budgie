@@ -82,16 +82,35 @@ export const editPayees = async (
     .expect(expectCode);
 };
 
-export const getPayeeByName = async (
-  cookie: string,
-  payeeName: string
-) => {
+export const getPayeeByName = async (cookie: string, payeeName: string) => {
   const { payees } = await getPayees(cookie);
   const payeesArray = Object.values(payees);
   const payee = payeesArray.find((p) => p.name === payeeName);
 
   if (!payee) {
     throw new Error(`Unable to find payee with name: ${payeeName}`);
+  }
+
+  return payee;
+};
+
+const BALANCE_ADJUSTMENT_PAYEE_NAME = "Manual Balance Adjustment";
+export const getBalanceAdjustmentPayee = async (cookie: string) => {
+  const payee = await getPayeeByName(cookie, BALANCE_ADJUSTMENT_PAYEE_NAME);
+
+  if (!payee) {
+    throw new Error(`Unable to find balance adjustment payee`);
+  }
+
+  return payee;
+};
+
+const STARTING_BALANCE_PAYEE_NAME = "Starting Balance";
+export const getStartingBalancePayee = async (cookie: string) => {
+  const payee = await getPayeeByName(cookie, STARTING_BALANCE_PAYEE_NAME);
+
+  if (!payee) {
+    throw new Error(`Unable to find balance adjustment payee`);
   }
 
   return payee;

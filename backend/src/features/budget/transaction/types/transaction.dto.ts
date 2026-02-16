@@ -33,6 +33,7 @@ export type InsertTransactionPayloadWithDate = Omit<
   "date"
 > & {
   date: Date;
+  origin: "SYSTEM" | "USER";
 };
 
 /**

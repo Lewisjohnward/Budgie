@@ -7,22 +7,36 @@ type TransactionWithIdAndMemo = {
 };
 
 /**
- * Creates shallow copies of the given transactions, marking them as duplicates.
+ * Creates shallow duplicates of a list of transactions for re-insertion.
  *
- * - Omits the original `id` to allow re-insertion as new records.
- * - Appends " (copy)" to the `memo` field to indicate duplication.
+ * Each transaction is copied with a new unique `id` and its `origin` set to `"USER"`.
+ * This ensures that duplicated transactions are treated as new records in the system.
  *
- * @param transactions - The list of transactions to duplicate.
- * @returns A new list of transaction objects without IDs and with modified memos.
+ * Notes:
+ * - Original `id`s are replaced to prevent conflicts in the database.
+ * - `memo` is preserved but can be modified outside this function if needed.
+ * - Only shallow copies are created; nested objects are shared by reference.
+ *
+ * @template T - A transaction type that must include `id` and optionally `memo`.
+ * @param {readonly T[]} transactions - The array of transactions to duplicate.
+ * @returns {T[]} An array of new transaction objects with new `id`s and `origin: "USER"`.
+ *
+ * @example
+ * const originalTxs = [
+ *   { id: "tx-1", memo: "Salary", inflow: 1000, outflow: 0, accountId: "acc-1" }
+ * ];
+ *
+ * const duplicatedTxs = createDuplicatedTxs(originalTxs);
+ * // duplicatedTxs[0].id !== originalTxs[0].id
+ * // duplicatedTxs[0].origin === "USER"
  */
-
 export function createDuplicatedTxs<T extends TransactionWithIdAndMemo>(
   transactions: readonly T[]
 ): T[] {
   return transactions.map((tx) => ({
     ...tx,
     id: asTransactionId(uuidv4()),
-    memo: tx.memo ? `${tx.memo} (copy)` : "(copy)",
+    origin: "USER",
   }));
 }
 

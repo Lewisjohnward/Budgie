@@ -144,3 +144,33 @@ export const editBulkTransactions = async (
     res,
   };
 };
+
+export const getTransactionsForAccountId = async (
+  cookie: string,
+  accountId: string
+) => {
+  const { transactions } = await getAccounts(cookie);
+  const transactionsArray = Object.values(transactions);
+
+  const transactionsForAccount = transactionsArray.filter(
+    (tx) => tx.accountId === accountId
+  );
+
+  return transactionsForAccount;
+};
+
+export const getClosedAccountTransaction = async (
+  cookie: string,
+  accountId: string
+) => {
+  const transactions = await getTransactionsForAccountId(cookie, accountId);
+  const closedAccountTransaction = transactions.find(
+    (tx) => tx.memo === "Closed Account"
+  );
+  return closedAccountTransaction;
+};
+
+export const getNewTransaction = (
+  before: NormalisedTransaction[],
+  after: NormalisedTransaction[]
+) => after.find((t) => !before.some((b) => b.id === t.id));

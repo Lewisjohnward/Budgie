@@ -18,6 +18,7 @@ export const toDomainTransaction = (row: db.Transaction): DomainTransaction => {
     id: asTransactionId(row.id),
     accountId: asAccountId(row.accountId),
     payeeId: row.payeeId ?? undefined,
+    origin: row.origin,
     date: row.date,
     memo: row.memo ?? "",
     inflow: row.inflow,

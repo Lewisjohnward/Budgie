@@ -32,13 +32,35 @@ export interface PayeeRepository {
     userId: UserId
   ): Promise<number>;
 
+  getSystemPayeeIdsByUserId(
+    tx: Prisma.TransactionClient,
+    userId: UserId
+  ): Promise<string[]>;
+
+  getStartingBalancePayeeId(
+    tx: Prisma.TransactionClient,
+    userId: UserId
+  ): Promise<string | null>;
+
+  getBalanceAdjustmentPayeeId(
+    tx: Prisma.TransactionClient,
+    userId: UserId
+  ): Promise<string | null>;
+
   // ──────────────── Payee Mutation ────────────────
 
   createPayee(
     tx: Prisma.TransactionClient,
     userId: UserId,
-    name: string
+    name: string,
+    origin: "USER" | "SYSTEM"
   ): Promise<db.Payee>;
+
+  createPayees(
+    tx: Prisma.TransactionClient,
+    userId: UserId,
+    payees: { name: string; origin: "USER" | "SYSTEM" }[]
+  ): Promise<db.Payee[]>;
 
   updatePayee(
     tx: Prisma.TransactionClient,

@@ -1,10 +1,9 @@
-import { ZERO } from "../../../../../shared/constants/zero";
-import { accountRepository } from "../../../../../shared/repository/accountRepositoryImpl";
 import { transactionService } from "../../../transaction/transaction.service";
 import { type AddAccountPayload } from "../../account.schema";
 import { prisma } from "../../../../../shared/prisma/client";
-import { accountMapper } from "../../account.mapper";
 import { asUserId, type UserId } from "../../../../user/auth/auth.types";
+import { accountService } from "../../account.service";
+import { DuplicateAccountNameError } from "../../account.errors";
 
 type CreateAccountCommand = Omit<AddAccountPayload, "userId"> & {
   userId: UserId;
@@ -18,46 +17,69 @@ const toCreateAccountCommand = (
 });
 
 /**
- * Creates a new user account, optionally initializing it with an opening balance.
+ * Creates a new user account with optional opening balance.
  *
- * This function performs all operations inside a single database transaction to ensure atomicity:
- * 1. Creates the account in the database with an initial balance of zero.
- * 2. Creates an associated AccountPayee to allow transfers to/from this account.
- * 3. If an opening balance greater than zero is provided, creates a corresponding opening balance transaction.
+ * This function ensures atomicity by performing all operations in a single database transaction:
+ * 1. Inserts the account into the database.
+ * 2. Creates an associated AccountPayee for transfers.
+ * 3. If a non-zero balance is provided, creates an opening balance transaction and updates account deletable status.
  *
- * @param payload - Data required to create the account
+ * The function will retry up to 5 times if a position conflict occurs, and throws a `DuplicateAccountNameError`
+ * if the account name already exists.
+ *
+ * @param payload - The data required to create the account
  * @param payload.userId - ID of the user who owns the account
  * @param payload.name - Display name of the account
  * @param payload.type - Type of account ("BANK" | "CREDIT_CARD")
  * @param payload.position - Position/order of the account for UI purposes
- * @param payload.balance - Optional opening balance for the account (must be >= 0)
+ * @param payload.balance - Optional opening balance (must be non 0)
  *
- * @returns A promise that resolves when the account (and optional opening balance transaction) is successfully created.
+ * @returns A promise that resolves once the account (and optional opening balance transaction) is successfully created.
  *
- * @throws {Error} Throws if any step of the transaction fails (account creation or opening balance transaction).
+ * @throws {DuplicateAccountNameError} If an account with the same name already exists.
+ * @throws {Error} If the transaction fails after retries.
  */
-
-// TODO:(lewis 2026-02-15 16:10) the payload will need UserId?
 export const createAccount = async (
   payload: AddAccountPayload
 ): Promise<void> => {
-  const { userId, balance: inflow } = toCreateAccountCommand(payload);
-  await prisma.$transaction(async (tx) => {
-    const row = await accountRepository.createAccount(tx, {
-      ...payload,
-      balance: ZERO,
-    });
+  const { userId, balance } = toCreateAccountCommand(payload);
 
-    const hasOpeningBalance = payload.balance.gt(0);
-    const createdAccount = accountMapper.toDomainAccount(row);
+  for (let i = 0; i < 5; i++) {
+    try {
+      await prisma.$transaction(async (tx) => {
+        const hasOpeningBalance = !balance.isZero();
 
-    if (hasOpeningBalance) {
-      await transactionService.createOpeningBalanceTransaction(
-        tx,
-        userId,
-        createdAccount.id,
-        inflow
-      );
+        const createdAccount = await accountService.createAccount(tx, payload);
+
+        if (hasOpeningBalance) {
+          await transactionService.createOpeningBalanceTransaction(
+            tx,
+            userId,
+            createdAccount.id,
+            balance
+          );
+
+          await accountService.refreshDeletableStatus(tx, [createdAccount.id]);
+        }
+      });
+
+      return;
+    } catch (err: any) {
+      if (err.code === "P2002") {
+        const fields = (err.meta?.target ?? []) as string[];
+
+        if (fields.includes("position")) {
+          continue;
+        }
+
+        if (fields.includes("name")) {
+          throw new DuplicateAccountNameError();
+        }
+      }
+
+      throw err;
     }
-  });
+  }
+
+  throw new Error("Failed to create account after retries");
 };

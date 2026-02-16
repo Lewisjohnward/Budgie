@@ -40,10 +40,10 @@ export interface TransactionRepository {
     categoryGroupId: CategoryGroupId
   ): Promise<db.Transaction[]>;
 
-  getTransactionsByAccountId(
+  getTransactionIdsByAccountId(
     tx: Prisma.TransactionClient,
     accountId: AccountId
-  ): Promise<db.Transaction[]>;
+  ): Promise<string[]>;
 
   createTransaction(
     tx: Prisma.TransactionClient,
@@ -97,4 +97,16 @@ export interface TransactionRepository {
     payeeId: PayeeId | PayeeId[],
     newPayeeId: PayeeId | null
   ): Promise<void>;
+
+  /**
+   * Checks whether a given account has any transactions created by the user.
+   *
+   * @param tx - The Prisma transaction client.
+   * @param accountId - The ID of the account to check.
+   * @returns `true` if the account has at least one user-created transaction, otherwise `false`.
+   */
+  existsUserTransactionForAccount(
+    tx: Prisma.TransactionClient,
+    accountId: AccountId
+  ): Promise<boolean>;
 }

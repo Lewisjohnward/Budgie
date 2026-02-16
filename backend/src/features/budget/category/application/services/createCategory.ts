@@ -23,6 +23,7 @@ import { CreateCategoryData } from "../../category.schema";
  * @returns A fully mapped `DomainCategory` representing the newly created category
  */
 
+// TODO:(lewis 2026-02-15 15:40) shouldn't this use CategoryGroupId?
 export const createCategory = async (
   tx: Prisma.TransactionClient,
   categoryData: CreateCategoryData

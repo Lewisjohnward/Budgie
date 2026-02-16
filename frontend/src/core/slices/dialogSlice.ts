@@ -1,3 +1,4 @@
+// used to toggle payee management modal
 import { createSlice } from "@reduxjs/toolkit/react";
 import { RootState } from "../store/store";
 import { Account } from "../types/NormalizedData";

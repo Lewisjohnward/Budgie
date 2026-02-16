@@ -1,11 +1,11 @@
 import { NextFunction, Request, Response } from "express";
-import { assignSchema } from "./assign.schema";
+import { assignmentsSchema, assignSchema } from "./assign.schema";
 import { assignUseCase } from "./assign.useCase";
 
 export const updateMonthForCategory = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const payload = assignSchema.parse({
@@ -14,6 +14,26 @@ export const updateMonthForCategory = async (
     });
 
     await assignUseCase.updateCategoryMonthAssignment(payload);
+
+    res.sendStatus(200);
+  } catch (error) {
+    next(error);
+  }
+  return;
+};
+
+export const updateCategoryAssignmentsForMonth = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const payload = assignmentsSchema.parse({
+      userId: req.user?._id!,
+      ...req.body,
+    });
+
+    assignUseCase.updateCategoryAssignmentsForMonth(payload);
 
     res.sendStatus(200);
   } catch (error) {

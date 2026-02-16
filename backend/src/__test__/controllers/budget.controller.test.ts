@@ -2,9 +2,9 @@ import request from "supertest";
 import app from "../../app";
 import { NormalisedCategoryData } from "../../features/budget/category/category.types";
 import { getAccounts, getCategories } from "../utils/getData";
-import { createTestAccount } from "../utils/createTestAccount";
 import { addAccount, addTransaction } from "../utils/transaction";
 import { login, registerUser } from "../utils/auth";
+import { createAccountAndFetch } from "../utils/account";
 
 describe("Budget", () => {
   it.todo("Should prevent users accessing/updating other users data");
@@ -227,7 +227,7 @@ describe("Budget", () => {
       );
     });
 
-    describe.skip("Deleting", () => { });
+    describe.skip("Deleting", () => {});
     it("When adding a transaction without logging in returns 401", async () => {
       const testTransaction = {
         outflow: 10,
@@ -241,7 +241,7 @@ describe("Budget", () => {
     });
 
     it.skip("should allow transactions added at 1am", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       jest.useFakeTimers();
       const fixedDate = new Date("2024-01-01T12:00:00Z");
@@ -265,12 +265,12 @@ describe("Budget", () => {
       "should throw error if category id provided doesn't exist/ not owned by user"
     );
 
-    it.skip("When adding a transaction with no account, returns 400", async () => { });
+    it.skip("When adding a transaction with no account, returns 400", async () => {});
 
     it.todo("Should return error when user doesn't own category");
 
     it("When adding a transaction with no category, transaction is assigned to Uncategorised", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       const addTransactionRes = await request(app)
         .post("/budget/transaction")
@@ -300,7 +300,7 @@ describe("Budget", () => {
 
     it.todo("Should correctly duplicate transactions");
     it("should fail when adding a transaction without inflow or outflow", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       const testTransaction = {
         accountId: account.id,
@@ -315,7 +315,7 @@ describe("Budget", () => {
     });
   });
 
-  describe("Ready to assign", () => { });
+  describe("Ready to assign", () => {});
 
   describe("Months", () => {
     describe("assigning", () => {

@@ -1,6 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
 import { getAccounts, getCategories } from "../../utils/getData";
-import { createTestAccount } from "../../utils/createTestAccount";
 import {
   addTransaction,
   editBulkTransactions,
@@ -13,6 +12,7 @@ import {
   getTestCategory,
   getUncategorisedCategory,
 } from "../../utils/category";
+import { createAccountAndFetch } from "../../utils/account";
 
 describe("Transaction Bulk Edit", () => {
   let cookie: string;
@@ -92,8 +92,8 @@ describe("Transaction Bulk Edit", () => {
         password: "testpasswordABC$",
       });
 
-      const account1 = await createTestAccount(cookie, 0);
-      const account2 = await createTestAccount(cookie2, 0);
+      const account1 = await createAccountAndFetch(cookie, 0);
+      const account2 = await createAccountAndFetch(cookie2, 0);
 
       const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
@@ -122,7 +122,7 @@ describe("Transaction Bulk Edit", () => {
   describe("CategoryId", () => {
     describe("Error Cases", () => {
       it("Should return 400 if categoryId is not a valid uuid", async () => {
-        const account1 = await createTestAccount(cookie, 0);
+        const account1 = await createAccountAndFetch(cookie, 0);
 
         const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
@@ -145,7 +145,7 @@ describe("Transaction Bulk Edit", () => {
         expect(res.status).toBe(400);
       });
       it("Should return 404 if categoryId is not owned by user", async () => {
-        const account1 = await createTestAccount(cookie, 0);
+        const account1 = await createAccountAndFetch(cookie, 0);
 
         const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
@@ -178,7 +178,7 @@ describe("Transaction Bulk Edit", () => {
         expect(res.status).toBe(404);
       });
       it("Should return 404 if categoryId is not found", async () => {
-        const account1 = await createTestAccount(cookie, 0);
+        const account1 = await createAccountAndFetch(cookie, 0);
 
         const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
@@ -201,7 +201,7 @@ describe("Transaction Bulk Edit", () => {
     });
     describe("Success", () => {
       it("Should update categoryId correctly", async () => {
-        const account1 = await createTestAccount(cookie, 0);
+        const account1 = await createAccountAndFetch(cookie, 0);
         const { categories } = await getCategories(cookie);
         const categoryArray = Object.values(categories);
         const category = categoryArray[0];
@@ -260,7 +260,7 @@ describe("Transaction Bulk Edit", () => {
     });
     describe("Side Effects", () => {
       it("Should update category months uncategorised -> categorised", async () => {
-        const account1 = await createTestAccount(cookie, 0);
+        const account1 = await createAccountAndFetch(cookie, 0);
         const testCategory = await getTestCategory(cookie);
 
         const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
@@ -324,7 +324,7 @@ describe("Transaction Bulk Edit", () => {
         expect(uncategorisedCategoryMonths[1].available).toBe(0);
       });
       it("Should update category months uncategorised -> rta", async () => {
-        const account1 = await createTestAccount(cookie, 0);
+        const account1 = await createAccountAndFetch(cookie, 0);
 
         const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
@@ -406,8 +406,8 @@ describe("Transaction Bulk Edit", () => {
     });
     describe("Transfers", () => {
       it("Should not set categoryId on transfer transactions", async () => {
-        const account1 = await createTestAccount(cookie, 0);
-        const account2 = await createTestAccount(cookie, 0);
+        const account1 = await createAccountAndFetch(cookie, 0);
+        const account2 = await createAccountAndFetch(cookie, 0);
         const testCategory = await getTestCategory(cookie);
 
         const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
@@ -444,7 +444,7 @@ describe("Transaction Bulk Edit", () => {
   describe("AccountId", () => {
     describe("Error Cases", () => {
       it("Should return 400 if accountId is not a uuid", async () => {
-        const account1 = await createTestAccount(cookie, 0);
+        const account1 = await createAccountAndFetch(cookie, 0);
 
         const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
@@ -467,7 +467,7 @@ describe("Transaction Bulk Edit", () => {
         expect(res.status).toBe(400);
       });
       it("Should return 404 if accountId is not found", async () => {
-        const account1 = await createTestAccount(cookie, 0);
+        const account1 = await createAccountAndFetch(cookie, 0);
 
         const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
@@ -488,7 +488,7 @@ describe("Transaction Bulk Edit", () => {
         expect(res.status).toBe(404);
       });
       it("Should return 404 if accountId is not owned by user", async () => {
-        const account1 = await createTestAccount(cookie, 0);
+        const account1 = await createAccountAndFetch(cookie, 0);
 
         const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
@@ -507,7 +507,7 @@ describe("Transaction Bulk Edit", () => {
           password: "testpasswordABC$",
         });
 
-        const account2 = await createTestAccount(cookie2, 0);
+        const account2 = await createAccountAndFetch(cookie2, 0);
 
         const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
           transactionIds: [txA!.id],
@@ -523,8 +523,8 @@ describe("Transaction Bulk Edit", () => {
     });
     describe("Success", () => {
       it("Should update accountId", async () => {
-        const account1 = await createTestAccount(cookie, 0);
-        const account2 = await createTestAccount(cookie, 0);
+        const account1 = await createAccountAndFetch(cookie, 0);
+        const account2 = await createAccountAndFetch(cookie, 0);
 
         const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
@@ -583,8 +583,8 @@ describe("Transaction Bulk Edit", () => {
     });
     describe("Side Effects", () => {
       it("Should update account balance", async () => {
-        const account1 = await createTestAccount(cookie, 0);
-        const account2 = await createTestAccount(cookie, 0);
+        const account1 = await createAccountAndFetch(cookie, 0);
+        const account2 = await createAccountAndFetch(cookie, 0);
 
         const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
@@ -634,9 +634,9 @@ describe("Transaction Bulk Edit", () => {
     });
     describe("Transfers", () => {
       it("Should handle transfer transactions", async () => {
-        const account1 = await createTestAccount(cookie, 0);
-        const account2 = await createTestAccount(cookie, 0);
-        const account3 = await createTestAccount(cookie, 0);
+        const account1 = await createAccountAndFetch(cookie, 0);
+        const account2 = await createAccountAndFetch(cookie, 0);
+        const account3 = await createAccountAndFetch(cookie, 0);
 
         const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
@@ -683,9 +683,9 @@ describe("Transaction Bulk Edit", () => {
         expect(accountsAfter[account3.id].balance).toBe(-20);
       });
       it("Shouldn't do anything if trying to change AccountId of both transactions of a transfer", async () => {
-        const account1 = await createTestAccount(cookie, 0);
-        const account2 = await createTestAccount(cookie, 0);
-        const account3 = await createTestAccount(cookie, 0);
+        const account1 = await createAccountAndFetch(cookie, 0);
+        const account2 = await createAccountAndFetch(cookie, 0);
+        const account3 = await createAccountAndFetch(cookie, 0);
 
         const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
@@ -730,9 +730,9 @@ describe("Transaction Bulk Edit", () => {
         expect(accountsAfter[account3.id].balance).toBe(0);
       });
       it("Shouldn't do anything if trying to change change AccountId of transfer to the same as transferAccountId", async () => {
-        const account1 = await createTestAccount(cookie, 0);
-        const account2 = await createTestAccount(cookie, 0);
-        const account3 = await createTestAccount(cookie, 0);
+        const account1 = await createAccountAndFetch(cookie, 0);
+        const account2 = await createAccountAndFetch(cookie, 0);
+        const account3 = await createAccountAndFetch(cookie, 0);
 
         const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
@@ -781,7 +781,7 @@ describe("Transaction Bulk Edit", () => {
 
   describe("Memo", () => {
     it("Should update memo of normal transactions", async () => {
-      const account1 = await createTestAccount(cookie, 0);
+      const account1 = await createAccountAndFetch(cookie, 0);
 
       const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
@@ -839,7 +839,7 @@ describe("Transaction Bulk Edit", () => {
       });
     });
     it('Should handle " "', async () => {
-      const account1 = await createTestAccount(cookie, 0);
+      const account1 = await createAccountAndFetch(cookie, 0);
 
       const transactionPayloadA: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
@@ -897,8 +897,8 @@ describe("Transaction Bulk Edit", () => {
       });
     });
     it("Should update memo of transfer transactions", async () => {
-      const account1 = await createTestAccount(cookie, 0);
-      const account2 = await createTestAccount(cookie, 0);
+      const account1 = await createAccountAndFetch(cookie, 0);
+      const account2 = await createAccountAndFetch(cookie, 0);
 
       const transactionPayloadC: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,

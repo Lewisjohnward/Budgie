@@ -2,7 +2,6 @@ import request from "supertest";
 import { v4 as uuidv4 } from "uuid";
 import app from "../../../app";
 import { getAccounts, getCategories } from "../../utils/getData";
-import { createTestAccount } from "../../utils/createTestAccount";
 import {
   addTransaction,
   TestInsertTransactionInputWithoutUserId,
@@ -10,6 +9,11 @@ import {
 import { login, registerUser } from "../../utils/auth";
 import { LENGTH_ON_SIGNUP } from "../../utils/memo";
 import { prisma } from "../../../shared/prisma/client";
+import {
+  createAccount,
+  createAccountAndFetch,
+  fetchAccountByName,
+} from "../../utils/account";
 
 describe("Transaction Create", () => {
   let cookie: string;
@@ -32,7 +36,7 @@ describe("Transaction Create", () => {
       expect(res.status).toBe(401);
     });
     it("Should return 400 when adding a transaction with a transferAccountId and a categoryId", async () => {
-      const userAccount = await createTestAccount(cookie);
+      const userAccount = await createAccountAndFetch(cookie);
 
       const transaction: TestInsertTransactionInputWithoutUserId = {
         accountId: userAccount.id,
@@ -45,7 +49,7 @@ describe("Transaction Create", () => {
       await addTransaction(cookie, transaction, 400);
     });
     it("Should return 400 when adding a transaction a memo over 100 characters", async () => {
-      const userAccount = await createTestAccount(cookie);
+      const userAccount = await createAccountAndFetch(cookie);
 
       const transaction: TestInsertTransactionInputWithoutUserId = {
         accountId: userAccount.id,
@@ -57,7 +61,7 @@ describe("Transaction Create", () => {
       await addTransaction(cookie, transaction, 400);
     });
     it('Should return 400 when adding a transaction with "" as payeeName', async () => {
-      const userAccount = await createTestAccount(cookie);
+      const userAccount = await createAccountAndFetch(cookie);
 
       const transaction: TestInsertTransactionInputWithoutUserId = {
         accountId: userAccount.id,
@@ -69,7 +73,7 @@ describe("Transaction Create", () => {
       await addTransaction(cookie, transaction, 400);
     });
     it('Should return 400 when adding a transaction with " " as payeeName', async () => {
-      const userAccount = await createTestAccount(cookie);
+      const userAccount = await createAccountAndFetch(cookie);
 
       const transaction: TestInsertTransactionInputWithoutUserId = {
         accountId: userAccount.id,
@@ -81,7 +85,7 @@ describe("Transaction Create", () => {
       await addTransaction(cookie, transaction, 400);
     });
     it("Should return 400 when creating a normal transaction older than the 12-month window", async () => {
-      const account = await createTestAccount(cookie, 0);
+      const account = await createAccountAndFetch(cookie, 0);
 
       const now = new Date();
       // Too old = first day of the month, 12 months ago (UTC)
@@ -108,7 +112,7 @@ describe("Transaction Create", () => {
         email: "testa@test.com",
         password: "testpasswordABC$",
       });
-      const unownedAccount = await createTestAccount(cookie2);
+      const unownedAccount = await createAccountAndFetch(cookie2);
 
       const transactionPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: unownedAccount.id,
@@ -120,7 +124,7 @@ describe("Transaction Create", () => {
   });
   describe("Bugs", () => {
     it.skip("Should allow transactions added at 1am", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       jest.useFakeTimers();
       const fixedDate = new Date("2024-01-01T12:00:00Z");
@@ -141,11 +145,10 @@ describe("Transaction Create", () => {
       jest.useRealTimers();
     });
   });
-
   describe("Non-Transfers", () => {
     describe("Success", () => {
       it("Should assign transaction to uncategorised when adding a transaction with no category", async () => {
-        const account = await createTestAccount(cookie);
+        const account = await createAccountAndFetch(cookie);
 
         await request(app)
           .post("/budget/transaction")
@@ -173,7 +176,7 @@ describe("Transaction Create", () => {
         expect(transaction.categoryId).toBe(uncategorisedCategory.id);
       });
       it("Should allow creating a transaction on the earliest allowed month boundary", async () => {
-        const account = await createTestAccount(cookie, 0);
+        const account = await createAccountAndFetch(cookie, 0);
 
         const now = new Date();
         const earliestAllowed = new Date(
@@ -205,9 +208,8 @@ describe("Transaction Create", () => {
           .send(testTransaction)
           .expect(400);
       });
-
       it("Should return 400 when adding a transaction without inflow or outflow", async () => {
-        const account = await createTestAccount(cookie);
+        const account = await createAccountAndFetch(cookie);
 
         const testTransaction = {
           accountId: account.id,
@@ -231,7 +233,7 @@ describe("Transaction Create", () => {
           const existingKey = monthKeysBefore[0];
           const existingId = memoByMonthBefore[existingKey].id;
 
-          const account = await createTestAccount(cookie);
+          const account = await createAccountAndFetch(cookie);
 
           const now = new Date();
           const past = new Date(
@@ -258,7 +260,7 @@ describe("Transaction Create", () => {
           expect(monthKeysAfter).toHaveLength(12);
         });
         it("Should return 500 invariant error if there is no existing memos", async () => {
-          const account = await createTestAccount(cookie);
+          const account = await createAccountAndFetch(cookie);
 
           // Break the invariant (delete memos)
           await prisma.monthMemo.deleteMany({});
@@ -283,7 +285,7 @@ describe("Transaction Create", () => {
       });
       describe("Category Months", () => {
         it("Should create category months when adding a transaction in the past", async () => {
-          const account = await createTestAccount(cookie);
+          const account = await createAccountAndFetch(cookie);
 
           const { months: monthsBefore } = await getCategories(cookie);
 
@@ -314,13 +316,38 @@ describe("Transaction Create", () => {
           expect(afterMonthSet.size).toBe(12);
         });
       });
+      describe("Account", () => {
+        it("Sets account deletable to false", async () => {
+          const testAccountData = await createAccount(cookie);
+
+          const accountBefore = await fetchAccountByName(
+            cookie,
+            testAccountData.name
+          );
+
+          expect(accountBefore.deletable).toBe(true);
+
+          const transferTransaction: TestInsertTransactionInputWithoutUserId = {
+            accountId: accountBefore.id,
+            outflow: "10",
+          };
+
+          await addTransaction(cookie, transferTransaction, 200);
+
+          const accountAfter = await fetchAccountByName(
+            cookie,
+            testAccountData.name
+          );
+
+          expect(accountAfter.deletable).toBe(false);
+        });
+      });
     });
   });
-
   describe("Transfers", () => {
     describe("Validation", () => {
       it("Should return 400 when providing both payeeId and transferAccountId", async () => {
-        const userAccount = await createTestAccount(cookie);
+        const userAccount = await createAccountAndFetch(cookie);
         const mockPayeeId = "550e8400-e29b-41d4-a716-446655440000";
 
         const transaction: TestInsertTransactionInputWithoutUserId = {
@@ -335,7 +362,7 @@ describe("Transaction Create", () => {
       });
 
       it("Should return 400 when providing both payeeName and transferAccountId", async () => {
-        const userAccount = await createTestAccount(cookie);
+        const userAccount = await createAccountAndFetch(cookie);
 
         const transaction: TestInsertTransactionInputWithoutUserId = {
           accountId: userAccount.id,
@@ -349,7 +376,7 @@ describe("Transaction Create", () => {
       });
 
       it("Should return 400 when providing both transferAccountId and categoryId", async () => {
-        const userAccount = await createTestAccount(cookie);
+        const userAccount = await createAccountAndFetch(cookie);
 
         const { categories } = await getCategories(cookie);
         const category = Object.values(categories)[0];
@@ -366,7 +393,7 @@ describe("Transaction Create", () => {
       });
 
       it("Should return 400 when trying to transfer to same account", async () => {
-        const userAccount = await createTestAccount(cookie);
+        const userAccount = await createAccountAndFetch(cookie);
 
         const transferTransaction: TestInsertTransactionInputWithoutUserId = {
           accountId: userAccount.id,
@@ -378,8 +405,8 @@ describe("Transaction Create", () => {
         await addTransaction(cookie, transferTransaction, 400);
       });
       it("Should return 400 when creating a transfer transaction older than the 12-month window", async () => {
-        const from = await createTestAccount(cookie, 0);
-        const to = await createTestAccount(cookie, 0);
+        const from = await createAccountAndFetch(cookie, 0);
+        const to = await createAccountAndFetch(cookie, 0);
 
         const now = new Date();
         const tooOld = new Date(
@@ -399,7 +426,7 @@ describe("Transaction Create", () => {
 
     describe("Authorization", () => {
       it("Should return 404 When adding a transfer from an account not owned by the user", async () => {
-        const userAccount = await createTestAccount(cookie);
+        const userAccount = await createAccountAndFetch(cookie);
         await registerUser({
           email: "testa@test.com",
           password: "testpasswordABC$",
@@ -409,7 +436,7 @@ describe("Transaction Create", () => {
           email: "testa@test.com",
           password: "testpasswordABC$",
         });
-        const unownedAccount = await createTestAccount(cookie2);
+        const unownedAccount = await createAccountAndFetch(cookie2);
 
         const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: unownedAccount.id,
@@ -427,9 +454,9 @@ describe("Transaction Create", () => {
         await registerUser(user);
         const cookie2 = await login(user);
 
-        const userAccount = await createTestAccount(cookie);
+        const userAccount = await createAccountAndFetch(cookie);
 
-        const unownedAccount = await createTestAccount(cookie2);
+        const unownedAccount = await createAccountAndFetch(cookie2);
 
         const transaction: TestInsertTransactionInputWithoutUserId = {
           accountId: userAccount.id,
@@ -452,8 +479,8 @@ describe("Transaction Create", () => {
 
     describe("Success", () => {
       it("Should successfully transfer between two accounts", async () => {
-        const account1 = await createTestAccount(cookie, 100);
-        const account2 = await createTestAccount(cookie, 50);
+        const account1 = await createAccountAndFetch(cookie, 100);
+        const account2 = await createAccountAndFetch(cookie, 50);
 
         const transferTransaction: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
@@ -523,8 +550,8 @@ describe("Transaction Create", () => {
           const existingId = before[existingKey].id;
 
           // Need two accounts for a transfer
-          const fromAccount = await createTestAccount(cookie);
-          const toAccount = await createTestAccount(cookie);
+          const fromAccount = await createAccountAndFetch(cookie);
+          const toAccount = await createAccountAndFetch(cookie);
 
           const now = new Date();
           const past = new Date(
@@ -556,8 +583,8 @@ describe("Transaction Create", () => {
       });
       describe("Category Months", () => {
         it("Should create months when adding a transfer transaction in the past", async () => {
-          const account1 = await createTestAccount(cookie);
-          const account2 = await createTestAccount(cookie);
+          const account1 = await createAccountAndFetch(cookie);
+          const account2 = await createAccountAndFetch(cookie);
 
           const now = new Date();
           const past = new Date(
@@ -618,6 +645,40 @@ describe("Transaction Create", () => {
           expect(destinationTransaction!.transferTransactionId).toBe(
             sourceTransaction!.id
           );
+        });
+      });
+      describe("Account", () => {
+        it("Sets account deletable to false", async () => {
+          const account1 = await createAccount(cookie, { name: "acc1" });
+          const account2 = await createAccount(cookie, { name: "acc2" });
+
+          const account1Before = await fetchAccountByName(
+            cookie,
+            account1.name
+          );
+
+          const account2Before = await fetchAccountByName(
+            cookie,
+            account2.name
+          );
+
+          expect(account1Before.deletable).toBe(true);
+          expect(account2Before.deletable).toBe(true);
+
+          const transferTransaction: TestInsertTransactionInputWithoutUserId = {
+            accountId: account1Before.id,
+            outflow: "10",
+            transferAccountId: account2Before.id,
+          };
+
+          await addTransaction(cookie, transferTransaction, 200);
+
+          const account1After = await fetchAccountByName(cookie, account1.name);
+
+          const account2After = await fetchAccountByName(cookie, account2.name);
+
+          expect(account1After.deletable).toBe(false);
+          expect(account2After.deletable).toBe(false);
         });
       });
     });

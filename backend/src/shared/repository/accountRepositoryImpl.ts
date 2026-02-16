@@ -1,24 +1,24 @@
 import { Prisma } from "@prisma/client";
 import { AccountRepository } from "../../features/budget/account/account.repository";
 import { Decimal } from "@prisma/client/runtime/library";
-import { type AddAccountPayload } from "../../features/budget/account/account.schema";
 import {
+  CreateAccountPayloadWithPosition,
   type AccountId,
   type db,
 } from "../../features/budget/account/account.types";
 import { type UserId } from "../../features/user/auth/auth.types";
 
 export const accountRepository: AccountRepository = {
-  createAccount: async function(
+  createAccount: async function (
     tx: Prisma.TransactionClient,
-    payload: AddAccountPayload
+    payload: CreateAccountPayloadWithPosition
   ): Promise<db.Account> {
     return await tx.account.create({
       data: payload,
     });
   },
 
-  getAccount: async function(
+  getAccount: async function (
     tx: Prisma.TransactionClient,
     accountId: AccountId,
     userId: UserId
@@ -35,7 +35,7 @@ export const accountRepository: AccountRepository = {
     return row;
   },
 
-  // TODO:(lewis 2026-02-05 20:08) this can be improved, surely can do update many
+  // TODO:(lewis 2026-02-05 20:08) this can be improved, surely can do update many // //
   updateAccountBalances: async function (
     tx: Prisma.TransactionClient,
     accountBalanceChanges: {
@@ -52,7 +52,7 @@ export const accountRepository: AccountRepository = {
     }
   },
 
-  deleteAccount: async function(
+  deleteAccount: async function (
     tx: Prisma.TransactionClient,
     accountId: AccountId
   ): Promise<void> {
@@ -63,7 +63,7 @@ export const accountRepository: AccountRepository = {
     });
   },
 
-  closeAccount: async function(
+  closeAccount: async function (
     tx: Prisma.TransactionClient,
     accountId: AccountId
   ): Promise<void> {
@@ -77,7 +77,7 @@ export const accountRepository: AccountRepository = {
     });
   },
 
-  updateAccount: async function(
+  updateAccountName: async function (
     tx: Prisma.TransactionClient,
     accountId: AccountId,
     name: string
@@ -90,5 +90,86 @@ export const accountRepository: AccountRepository = {
         name: name,
       },
     });
+  },
+
+  existsAccountWithName: async function (
+    tx: Prisma.TransactionClient,
+    userId: UserId,
+    name: string
+  ): Promise<boolean> {
+    const row = await tx.account.findFirst({
+      where: {
+        userId,
+        name: {
+          equals: name,
+        },
+      },
+      select: { id: true },
+    });
+    return !!row;
+  },
+
+  updateDeletableStatus: async function (
+    tx: Prisma.TransactionClient,
+    accountId: AccountId,
+    deletable: boolean
+  ): Promise<void> {
+    await tx.account.update({
+      where: {
+        id: accountId,
+      },
+      data: {
+        deletable,
+      },
+    });
+  },
+
+  setAccountOpen: async function (
+    tx: Prisma.TransactionClient,
+    accountId: AccountId,
+    open: boolean
+  ): Promise<void> {
+    await tx.account.update({
+      where: { id: accountId },
+      data: { open },
+    });
+  },
+
+  /**
+   * Updates the `deletable` status for the given accounts.
+   *
+   * An account is deletable if it has no user-created transactions.
+   * This function enforces that rule using bulk SQL updates.
+   *
+   * @param tx - Prisma transaction client
+   * @param accountIds - Account IDs to refresh
+   */
+  refreshDeletableStatusForAccounts: async function (
+    tx: Prisma.TransactionClient,
+    accountIds: AccountId[]
+  ): Promise<void> {
+    await tx.$executeRaw`
+      UPDATE "Account" a
+      SET "deletable" = false
+      WHERE a.id = ANY(${accountIds})
+        AND EXISTS (
+          SELECT 1
+          FROM "Transaction" t
+          WHERE t."accountId" = a.id
+          AND t."origin" = 'USER'
+        )
+    `;
+
+    await tx.$executeRaw`
+  UPDATE "Account" a
+  SET "deletable" = true
+  WHERE a.id = ANY(${accountIds})
+    AND NOT EXISTS (
+      SELECT 1
+      FROM "Transaction" t
+      WHERE t."accountId" = a.id
+        AND t."origin" = 'USER'
+    )
+`;
   },
 };
