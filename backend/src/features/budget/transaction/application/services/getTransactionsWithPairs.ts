@@ -15,6 +15,8 @@ import {
 import { transactionMapper } from "../../transaction.mapper";
 import { type UserId } from "../../../../user/auth/auth.types";
 
+// TODO:(lewis 2026-02-10 14:23) this file needs a good look at, maybe a jsdoc rewrite too
+
 /**
  * Retrieves a set of transactions by ID, validates ownership and transfer integrity,
  * and returns normal transactions alongside all related transfer transactions
@@ -96,6 +98,7 @@ export const getTransactionsWithPairs = async (
     userId
   );
 
+  // TODO:(lewis 2026-02-10 14:19) not at all keen on this
   const all = allRows.map(transactionMapper.toDomainAnyTransaction);
 
   // validate requested ids exist
@@ -107,6 +110,7 @@ export const getTransactionsWithPairs = async (
 
   // requested transfers = those with categoryId === null
 
+  // TODO:(lewis 2026-02-10 14:21) not keen on this, is it needed
   const requestedTransfers = requested.filter(
     (
       t
@@ -145,10 +149,12 @@ export const getTransactionsWithPairs = async (
     });
   }
 
+  // TODO:(lewis 2026-02-10 14:24) is this okay?
   const normalTransactions = requested.filter(
     (t): t is DomainNormalTransaction => t.type === "normal"
   );
 
+  // TODO:(lewis 2026-02-10 14:24) is this okay?
   const allTransferTransactions = all.filter(
     (t): t is DomainTransferTransaction => t.type === "transfer"
   );

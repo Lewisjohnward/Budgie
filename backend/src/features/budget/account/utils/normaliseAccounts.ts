@@ -1,6 +1,6 @@
 import { convertDecimalToNumber } from "../../../../shared/utils/convertDecimalToNumber";
 import { db } from "../../category/category.types";
-import { NormalisedAccounts } from "../account.schema";
+import { type NormalisedAccounts } from "../account.types";
 
 export function normaliseAccounts(data: { accounts: db.Account[] }) {
   const normalisedData: NormalisedAccounts = {
@@ -17,11 +17,10 @@ export function normaliseAccounts(data: { accounts: db.Account[] }) {
       name: account.name,
       open: account.open,
       position: account.position,
+      deletable: account.deletable,
       type: account.type,
       balance: convertDecimalToNumber(account.balance),
-      createdAt: account.createdAt,
-      updatedAt: account.updatedAt,
-      transactions: [],
+      transactionIds: [],
     };
 
     account.transactions.forEach((transaction) => {
@@ -39,10 +38,9 @@ export function normaliseAccounts(data: { accounts: db.Account[] }) {
         transferTransactionId: transaction.transferTransactionId,
         memo: transaction.memo,
         cleared: transaction.cleared,
-        createdAt: transaction.createdAt,
-        updatedAt: transaction.updatedAt,
       };
-      normalisedData.accounts[account.id].transactions.push(transactionId);
+      //@ts-ignore-error: needs branding
+      normalisedData.accounts[account.id].transactionIds.push(transactionId);
 
       if (
         transaction.category &&

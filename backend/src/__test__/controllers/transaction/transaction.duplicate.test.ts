@@ -1,8 +1,12 @@
 import { getAccounts } from "../../utils/getData";
-import { createTestAccount } from "../../utils/createTestAccount";
 import { addTransaction, duplicateTransactions } from "../../utils/transaction";
 import { login, registerUser } from "../../utils/auth";
 import { type InsertTransactionInput } from "../../../features/budget/transaction/transaction.schema";
+import {
+  createAccount,
+  createAccountAndFetch,
+  fetchAccountByName,
+} from "../../utils/account";
 
 describe("Transaction Duplicate", () => {
   let cookie: string;
@@ -34,7 +38,7 @@ describe("Transaction Duplicate", () => {
         password: "testpasswordABC$",
       });
 
-      const account1 = await createTestAccount(cookie, 0);
+      const account1 = await createAccountAndFetch(cookie, 0);
 
       const transactionPayload: InsertTransactionInput = {
         accountId: account1.id,
@@ -48,10 +52,13 @@ describe("Transaction Duplicate", () => {
   });
 
   describe("Success", () => {
+    it.skip("Should correctly duplicate normal transactions (THERE IS ONLY TESTING MIXED AND TRANSFER)", async () => {
+      expect.hasAssertions();
+    });
     it("Should correctly duplicate multiple transfer transactions", async () => {
-      const account1 = await createTestAccount(cookie, 0);
-      const account2 = await createTestAccount(cookie, 0);
-      const account3 = await createTestAccount(cookie, 0);
+      const account1 = await createAccountAndFetch(cookie, 0);
+      const account2 = await createAccountAndFetch(cookie, 0);
+      const account3 = await createAccountAndFetch(cookie, 0);
 
       const transactionPayload1: InsertTransactionInput = {
         accountId: account1.id,
@@ -120,8 +127,8 @@ describe("Transaction Duplicate", () => {
       expect(accounts[account3.id].balance).toBe(-20);
     });
     it("Should handle duplicating both sides of a transfer", async () => {
-      const account1 = await createTestAccount(cookie, 0);
-      const account2 = await createTestAccount(cookie, 0);
+      const account1 = await createAccountAndFetch(cookie, 0);
+      const account2 = await createAccountAndFetch(cookie, 0);
 
       const transactionPayload: InsertTransactionInput = {
         accountId: account1.id,
@@ -157,8 +164,8 @@ describe("Transaction Duplicate", () => {
     });
 
     it("Should correctly duplicate both transfer and normal transactions", async () => {
-      const account1 = await createTestAccount(cookie, 0);
-      const account2 = await createTestAccount(cookie, 0);
+      const account1 = await createAccountAndFetch(cookie, 0);
+      const account2 = await createAccountAndFetch(cookie, 0);
 
       const transactionPayload1: InsertTransactionInput = {
         accountId: account1.id,
@@ -210,11 +217,86 @@ describe("Transaction Duplicate", () => {
       expect(accounts[account2.id].balance).toBe(20);
     });
   });
+  describe("Side Effects", () => {
+    describe("Account", () => {
+      it("Should set account deletable to false when duplicating starting balance(system transaction)", async () => {
+        const { name } = await createAccount(cookie, {
+          name: "acc1",
+          balance: "10.25",
+        });
+
+        const { transactions: transactionsBefore } = await getAccounts(cookie);
+        const transactionsArray = Object.values(transactionsBefore);
+
+        const accountInitTransaction = transactionsArray.find(
+          (tx) => tx.inflow === 10.25
+        );
+
+        const accountBefore = await fetchAccountByName(cookie, name);
+        expect(accountBefore.deletable).toBe(true);
+
+        await duplicateTransactions(cookie, [accountInitTransaction?.id!]);
+
+        const { transactions: transactionsAfter } = await getAccounts(cookie);
+        const transactionsAfterArray = Object.values(transactionsAfter);
+
+        expect(transactionsAfterArray).toHaveLength(2);
+
+        const accountAfter = await fetchAccountByName(cookie, name);
+        expect(accountAfter.deletable).toBe(false);
+      });
+
+      it("Should correctly duplicate system transactions (origin = user, no payee)", async () => {
+        const { name } = await createAccount(cookie, {
+          name: "acc1",
+          balance: "10.25",
+        });
+
+        const { transactions: transactionsBefore } = await getAccounts(cookie);
+        const transactionsArray = Object.values(transactionsBefore);
+
+        const accountInitTransaction = transactionsArray.find(
+          (tx) => tx.inflow === 10.25
+        );
+
+        expect(accountInitTransaction).toBeDefined();
+
+        const accountBefore = await fetchAccountByName(cookie, name);
+        expect(accountBefore.deletable).toBe(true);
+
+        await duplicateTransactions(cookie, [accountInitTransaction!.id]);
+
+        const { transactions: transactionsAfter } = await getAccounts(cookie);
+        const transactionsAfterArray = Object.values(transactionsAfter);
+
+        expect(transactionsAfterArray).toHaveLength(2);
+
+        const duplicatedTx = transactionsAfterArray.find(
+          (tx) => tx.id !== accountInitTransaction!.id
+        );
+
+        expect(duplicatedTx).toBeDefined();
+
+        expect(duplicatedTx!.inflow).toBe(accountInitTransaction!.inflow);
+        expect(duplicatedTx!.outflow).toBe(accountInitTransaction!.outflow);
+
+        expect(duplicatedTx!.memo).toBe(accountInitTransaction!.memo);
+        expect(duplicatedTx!.categoryId).toBe(
+          accountInitTransaction!.categoryId
+        );
+
+        expect(duplicatedTx!.payeeId).toBeNull();
+
+        const accountAfter = await fetchAccountByName(cookie, name);
+        expect(accountAfter.deletable).toBe(false);
+      });
+    });
+  });
 
   describe("Transfers", () => {
     it("Should correctly duplicate transfer transactions", async () => {
-      const account1 = await createTestAccount(cookie, 0);
-      const account2 = await createTestAccount(cookie, 0);
+      const account1 = await createAccountAndFetch(cookie, 0);
+      const account2 = await createAccountAndFetch(cookie, 0);
 
       const transactionPayload: InsertTransactionInput = {
         accountId: account1.id,

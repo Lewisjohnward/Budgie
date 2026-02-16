@@ -121,4 +121,9 @@ export async function insertTransferTransaction(
 
   // insert the missing memos
   await memoService.insertMissingMemos(tx, userId, sourceTransaction.date);
+
+  await accountService.refreshDeletableStatus(tx, [
+    accountId,
+    destinationAccount.id,
+  ]);
 }

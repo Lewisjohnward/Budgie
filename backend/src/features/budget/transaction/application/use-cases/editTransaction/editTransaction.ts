@@ -92,10 +92,12 @@ export const toEditTransactionCommand = (
  * 3. **Apply intent** – Persists the edit intent, creating/updating/removing paired transfers as needed,
  *    producing an "after" snapshot.
  * 4. **Side effects**:
- *    - Reverts account balance changes from the "before" snapshot.
- *    - Applies account balance changes from the "after" snapshot.
- *    - Ensures required category month rows exist.
- *    - Recalculates category month activity for normal (non-transfer) transactions.
+ *    - Reverses account balance impact of the previous state
+ *    - Applies account balance impact of the updated state
+ *    - Ensures required category months and memos exist for the new date
+ *    - Updates category month allocations for non-transfer transactions
+ *      (remove old impact, apply new impact)
+ *    - Refreshes deletable status for all affected accounts
  *
  * Notes:
  * - Transfer transactions are excluded from category month recalculation.
@@ -191,5 +193,16 @@ export const editTransaction = async (
         OperationMode.Add
       );
     }
+
+    await accountService.refreshDeletableStatus(tx, [
+      ...new Set(
+        [
+          beforeTxSnapshot.mainTx.accountId,
+          beforeTxSnapshot.pairedTx?.accountId,
+          afterTxSnapshot.mainTx.accountId,
+          afterTxSnapshot.pairedTx?.accountId,
+        ].filter((id): id is AccountId => id != null)
+      ),
+    ]);
   });
 };

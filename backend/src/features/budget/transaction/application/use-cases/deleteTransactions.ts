@@ -1,13 +1,8 @@
-import { OperationMode } from "../../../../../shared/enums/operation-mode";
-import { transactionRepository } from "../../../../../shared/repository/transactionRepositoryImpl";
-import { accountService } from "../../../account/account.service";
 import { prisma } from "../../../../../shared/prisma/client";
-import { splitTransactionsByType } from "../../utils/splitTransactionsByType";
-import { categoryService } from "../../../category/category.service";
 import { transactionService } from "../../transaction.service";
 import { type DeleteTransactionsPayload } from "../../transaction.schema";
 import { asTransactionId, type TransactionId } from "../../transaction.types";
-import { asUserId, UserId } from "../../../../user/auth/auth.types";
+import { asUserId, type UserId } from "../../../../user/auth/auth.types";
 
 /**
  * Command type for deleting transactions.
@@ -33,90 +28,38 @@ export const toDeleteTransactionsCommand = (
 });
 
 /**
- * Deletes a set of transactions and updates all related derived state in a single atomic transaction.
+ * Deletes a set of transactions for a given user within a single database transaction.
  *
- * This function handles both normal (non-transfer) and transfer transactions, including:
- * - Automatically including the paired transfer transaction for any selected transfers.
- * - Updating category months for non-RTA transactions to remove their allocations.
- * - Updating RTA (Ready-To-Assign) months activity and recalculating available amounts.
- * - Adjusting account balances to remove the effects of deleted transactions.
+ * This function acts as an application-layer entry point:
+ * - Converts the raw payload into a typed command (brands IDs)
+ * - Delegates the deletion logic to `transactionService.deleteTransactionsById`
+ * - Ensures the entire operation is executed atomically via `prisma.$transaction`
  *
- * All operations are executed within a single Prisma transaction to ensure consistency.
- * If any step fails, the entire deletion is rolled back.
+ * The underlying service is responsible for:
+ * - Resolving and deleting both normal and transfer transactions (including pairs)
+ * - Updating category months and RTA (Ready To Assign) state
+ * - Adjusting account balances and other derived data
  *
- * @param payload - The delete request payload.
- * @param payload.userId - The ID of the user performing the deletion; used for ownership checks.
- * @param payload.transactionIds - Array of transaction IDs to delete.
+ * @param payload - Raw delete payload containing:
+ *   - userId: string
+ *   - transactionIds: string[]
  *
- * @returns A promise that resolves once all transactions and related state have been deleted and updated.
+ * @returns A promise that resolves once deletion and all related side effects are complete
  *
- * @throws {NoTransactionsFoundError} If no transactions exist for the provided IDs.
+ * @throws {NoTransactionsFoundError}
+ * Thrown if none of the provided transaction IDs can be resolved
+ *
+ * @example
+ * await deleteTransactions({
+ *   userId: "user-123",
+ *   transactionIds: ["tx-1", "tx-2"]
+ * });
  */
 export const deleteTransactions = async (
   payload: DeleteTransactionsPayload
 ): Promise<void> => {
   const { userId, transactionIds } = toDeleteTransactionsCommand(payload);
   await prisma.$transaction(async (tx) => {
-    const { normalTransactions, allTransferTransactions } =
-      await transactionService.getTransactionsWithPairs(
-        tx,
-        userId,
-        transactionIds
-      );
-
-    if (normalTransactions.length > 0) {
-      const rtaCategoryId = await categoryService.rta.getRtaCategoryId(
-        tx,
-        userId
-      );
-
-      const { rtaTransactions, nonRtaTransactions } = splitTransactionsByType(
-        normalTransactions,
-        rtaCategoryId
-      );
-
-      // update months for deleted transactions
-      if (nonRtaTransactions.length > 0) {
-        await categoryService.months.recalculateCategoryMonthsForTransactions(
-          tx,
-          nonRtaTransactions,
-          OperationMode.Delete
-        );
-      }
-
-      // update rta activity for deleted transactions
-      if (rtaTransactions.length > 0) {
-        await categoryService.rta.updateMonthsActivityForTransactions(
-          tx,
-          userId,
-          rtaCategoryId,
-          rtaTransactions,
-          OperationMode.Delete
-        );
-      }
-
-      await categoryService.rta.calculateMonthsAvailable(
-        tx,
-        userId,
-        rtaCategoryId
-      );
-    }
-
-    const allTransactionIds = [
-      ...normalTransactions,
-      ...allTransferTransactions,
-    ].map((tx) => tx.id);
-
-    await transactionRepository.deleteTransactions(
-      tx,
-      allTransactionIds,
-      userId
-    );
-
-    await accountService.updateAccountBalances(
-      tx,
-      [...normalTransactions, ...allTransferTransactions],
-      OperationMode.Delete
-    );
+    await transactionService.deleteTransactionsById(tx, userId, transactionIds);
   });
 };

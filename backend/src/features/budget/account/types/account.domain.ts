@@ -26,4 +26,5 @@ export type DomainAccount = Readonly<{
   open: boolean;
   type: AccountType;
   balance: Decimal;
+  deletable: boolean;
 }>;

@@ -25,6 +25,7 @@ import { categoryService } from "../../budget/category/category.service";
 import { prisma } from "../../../shared/prisma/client";
 import { memoService } from "../../budget/memo/memo.service";
 import { asUserId } from "./auth.types";
+import { payeeService } from "../../budget/payee/payee.service";
 
 export const register = async (
   req: Request,
@@ -61,6 +62,9 @@ export const register = async (
 
     await prisma.$transaction(async (tx) => {
       await memoService.initialiseMemos(tx, uId);
+
+      // TODO:(lewis 2026-02-23 12:22) this will need testing in the register tests
+      await payeeService.initialiseSystemPayees(tx, uId);
     });
 
     const accessToken = GenerateAccessToken({

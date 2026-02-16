@@ -1,11 +1,15 @@
 import { getAccounts } from "../../utils/getData";
-import { createTestAccount } from "../../utils/createTestAccount";
 import {
   addTransaction,
   deleteTransactions,
   TestInsertTransactionInputWithoutUserId,
 } from "../../utils/transaction";
 import { login, registerUser } from "../../utils/auth";
+import {
+  createAccount,
+  createAccountAndFetch,
+  fetchAccountByName,
+} from "../../utils/account";
 
 describe("Transaction Delete", () => {
   let cookie: string;
@@ -39,7 +43,7 @@ describe("Transaction Delete", () => {
         password: "testpasswordABC$",
       });
 
-      const account1 = await createTestAccount(cookie, 0);
+      const account1 = await createAccountAndFetch(cookie, 0);
 
       const transactionPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
@@ -54,8 +58,8 @@ describe("Transaction Delete", () => {
 
   describe("Success", () => {
     it("Should correctly handle transfer transaction deletion", async () => {
-      const account1 = await createTestAccount(cookie, 0);
-      const account2 = await createTestAccount(cookie, 0);
+      const account1 = await createAccountAndFetch(cookie, 0);
+      const account2 = await createAccountAndFetch(cookie, 0);
 
       const transactionPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
@@ -76,7 +80,7 @@ describe("Transaction Delete", () => {
       expect(accounts[account2.id].balance).toBe(0);
     });
     it("Should correctly handle normal transactions", async () => {
-      const account1 = await createTestAccount(cookie, 0);
+      const account1 = await createAccountAndFetch(cookie, 0);
 
       const transactionPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
@@ -96,8 +100,8 @@ describe("Transaction Delete", () => {
       expect(account.balance).toBe(0);
     });
     it("Should correctly handle both normal transactions and transfer transactions ", async () => {
-      const account1 = await createTestAccount(cookie, 0);
-      const account2 = await createTestAccount(cookie, 0);
+      const account1 = await createAccountAndFetch(cookie, 0);
+      const account2 = await createAccountAndFetch(cookie, 0);
 
       const transferTxPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
@@ -125,8 +129,8 @@ describe("Transaction Delete", () => {
       expect(acc2.balance).toBe(0);
     });
     it("Should handle deletion of both sides of transfer transactons", async () => {
-      const account1 = await createTestAccount(cookie, 0);
-      const account2 = await createTestAccount(cookie, 0);
+      const account1 = await createAccountAndFetch(cookie, 0);
+      const account2 = await createAccountAndFetch(cookie, 0);
 
       const transferTxPayload: TestInsertTransactionInputWithoutUserId = {
         accountId: account1.id,
@@ -151,6 +155,54 @@ describe("Transaction Delete", () => {
       expect(Object.values(finalState.transactions).length).toBe(0);
       expect(finalState.accounts[account1.id].balance).toBe(0);
       expect(finalState.accounts[account2.id].balance).toBe(0);
+    });
+  });
+  describe("Side Effects", () => {
+    describe("Account", () => {
+      it("Should change account to deletable when deleting the last user transaction", async () => {
+        const { name } = await createAccount(cookie, { name: "acc1" });
+
+        const { id } = await fetchAccountByName(cookie, name);
+
+        const transactionPayload: TestInsertTransactionInputWithoutUserId = {
+          accountId: id,
+          outflow: "10",
+        };
+
+        const transaction = await addTransaction(
+          cookie,
+          transactionPayload,
+          200
+        );
+
+        expect(transaction).toBeDefined();
+
+        const accountBefore = await fetchAccountByName(cookie, name);
+        expect(accountBefore.deletable).toBe(false);
+
+        await deleteTransactions(cookie, [transaction!.id]);
+
+        const accountAfter = await fetchAccountByName(cookie, name);
+
+        expect(accountAfter.deletable).toBe(true);
+      });
+      it("Should change account to deletable when deleting all transactions", async () => {
+        const { name } = await createAccount(cookie, { name: "acc1" });
+
+        const { transactions } = await getAccounts(cookie);
+        const transactionIdsArray = Object.values(transactions).map(
+          (tx) => tx.id
+        );
+
+        const accountBefore = await fetchAccountByName(cookie, name);
+        expect(accountBefore.deletable).toBe(true);
+
+        await deleteTransactions(cookie, transactionIdsArray);
+
+        const accountAfter = await fetchAccountByName(cookie, name);
+
+        expect(accountAfter.deletable).toBe(true);
+      });
     });
   });
 });

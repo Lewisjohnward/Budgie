@@ -315,12 +315,12 @@ export const useTransactionFormRow = (accountId: string) => {
       addTransaction({
         id: addTransactionState.transactionId,
         accountId: formValues.accountId,
-        categoryId: formValues.categoryId || "",
+        categoryId: formValues.categoryId || undefined,
         payeeId: formValues.payeeId ? formValues.payeeId : undefined,
-        memo: formValues.memo || null,
+        memo: formValues.memo,
         date: formValues.date.toISOString(),
-        inflow: formValues.inflow || "0",
-        outflow: formValues.outflow || "0",
+        inflow: formValues.inflow || undefined,
+        outflow: formValues.outflow || undefined,
         cleared: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -330,6 +330,7 @@ export const useTransactionFormRow = (accountId: string) => {
     closeAddTransactionForm();
   };
 
+  // handle and add another transaction
   const handleSaveAndAddAnotherTransaction = () => {
     transactionForm.handleSubmit((data: TransactionFormData) => {
       addTransaction({
@@ -391,7 +392,7 @@ export const useTransactionFormRow = (accountId: string) => {
       categoryName: transaction.unassigned
         ? ""
         : `${transaction.categoryGroup.name}: ${transaction.category.name}` ||
-          "",
+        "",
       categoryId: transaction.categoryId || "",
       memo: transaction.memo || "",
       outflow:

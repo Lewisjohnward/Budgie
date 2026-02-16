@@ -1,4 +1,5 @@
 import { HttpError } from "../../../shared/errors";
+// TODO:(lewis 2026-02-17 00:04) these types need sorting
 
 export class UnableToFindProtectedCategoriesInDBError extends HttpError {
   constructor() {

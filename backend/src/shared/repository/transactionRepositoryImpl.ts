@@ -14,7 +14,7 @@ import { type CategoryGroupId } from "../../features/budget/categorygroup/catego
 import { type UserId } from "../../features/user/auth/auth.types";
 
 export const transactionRepository: TransactionRepository = {
-  createTransaction: function(
+  createTransaction: function (
     tx: Prisma.TransactionClient,
     transaction: Prisma.TransactionUncheckedCreateInput
   ): Promise<db.Transaction> {
@@ -24,7 +24,7 @@ export const transactionRepository: TransactionRepository = {
     return row;
   },
 
-  createTransactions: async function(
+  createTransactions: async function (
     tx: Prisma.TransactionClient,
     transactions: TransactionInsertData[]
   ): Promise<void> {
@@ -35,7 +35,7 @@ export const transactionRepository: TransactionRepository = {
     });
   },
 
-  deleteTransactions: async function(
+  deleteTransactions: async function (
     tx: Prisma.TransactionClient,
     transactionIds: TransactionId[],
     userId: UserId
@@ -52,7 +52,7 @@ export const transactionRepository: TransactionRepository = {
     });
   },
 
-  updateTransaction: async function(
+  updateTransaction: async function (
     tx: Prisma.TransactionClient,
     transactionId: TransactionId,
     data: Prisma.TransactionUncheckedUpdateInput
@@ -63,7 +63,7 @@ export const transactionRepository: TransactionRepository = {
     });
   },
 
-  bulkUpdateMemo: async function(
+  bulkUpdateMemo: async function (
     tx: Prisma.TransactionClient,
     transactionIds: TransactionId[],
     memo: UserId
@@ -75,7 +75,7 @@ export const transactionRepository: TransactionRepository = {
     return;
   },
 
-  bulkUpdateCategoryId: async function(
+  bulkUpdateCategoryId: async function (
     tx: Prisma.TransactionClient,
     transactionIds: TransactionId[],
     categoryId: CategoryId
@@ -87,7 +87,7 @@ export const transactionRepository: TransactionRepository = {
     return;
   },
 
-  bulkUpdateAccountId: async function(
+  bulkUpdateAccountId: async function (
     tx: Prisma.TransactionClient,
     transactionIds: TransactionId[],
     accountId: AccountId
@@ -99,7 +99,7 @@ export const transactionRepository: TransactionRepository = {
     return;
   },
 
-  bulkUpdateTransferAccountId: async function(
+  bulkUpdateTransferAccountId: async function (
     tx: Prisma.TransactionClient,
     transactionIds: TransactionId[],
     transferAccountId: AccountId
@@ -110,7 +110,7 @@ export const transactionRepository: TransactionRepository = {
     });
   },
 
-  getTransactionsByIdWithPairs: async function(
+  getTransactionsByIdWithPairs: async function (
     tx: Prisma.TransactionClient,
     transactionIds: TransactionId[],
     userId: UserId
@@ -143,7 +143,7 @@ export const transactionRepository: TransactionRepository = {
     });
   },
 
-  getTransactionById: async function(
+  getTransactionById: async function (
     tx: Prisma.TransactionClient,
     userId: UserId,
     transactionId: TransactionId
@@ -155,7 +155,7 @@ export const transactionRepository: TransactionRepository = {
       },
     });
   },
-  getNormalTransactionsByIds: async function(
+  getNormalTransactionsByIds: async function (
     tx: Prisma.TransactionClient,
     userId: UserId,
     ids: TransactionId[]
@@ -173,7 +173,7 @@ export const transactionRepository: TransactionRepository = {
     // TODO:(lewis 2026-02-13 09:45) mapper needs to be removed
     return rows.map((r) => transactionMapper.toDomainNormalTransaction(r));
   },
-  getTransactionsByCategoryId: async function(
+  getTransactionsByCategoryId: async function (
     tx: Prisma.TransactionClient,
     categoryId: CategoryId
   ): Promise<db.Transaction[]> {
@@ -184,18 +184,21 @@ export const transactionRepository: TransactionRepository = {
     });
   },
 
-  getTransactionsByAccountId: async function(
+  getTransactionIdsByAccountId: async function (
     tx: Prisma.TransactionClient,
     accountId: AccountId
-  ): Promise<db.Transaction[]> {
-    return await tx.transaction.findMany({
+  ): Promise<string[]> {
+    const rows = await tx.transaction.findMany({
       where: {
         accountId,
       },
+      select: { id: true },
     });
+
+    return rows.map(({ id }) => id);
   },
 
-  getTransactionsByCategoryGroupId: async function(
+  getTransactionsByCategoryGroupId: async function (
     tx: Prisma.TransactionClient,
     categoryGroupId: CategoryGroupId
   ): Promise<db.Transaction[]> {
@@ -210,7 +213,7 @@ export const transactionRepository: TransactionRepository = {
     return transactions;
   },
 
-  updateTransactionsPayee: async function(
+  updateTransactionsPayee: async function (
     tx: Prisma.TransactionClient,
     userId: UserId,
     payeeId: PayeeId | PayeeId[],
@@ -231,5 +234,20 @@ export const transactionRepository: TransactionRepository = {
         payeeId: newPayeeId,
       },
     });
+  },
+
+  existsUserTransactionForAccount: async function (
+    tx: Prisma.TransactionClient,
+    accountId: AccountId
+  ): Promise<boolean> {
+    const exists = await tx.transaction.findFirst({
+      where: {
+        accountId,
+        origin: "USER",
+      },
+      select: { id: true },
+    });
+
+    return !!exists;
   },
 };

@@ -20,7 +20,12 @@ export type NormalisedAccounts = {
  * `transactions` stores only transaction IDs.
  * `balance` is converted to number for convenience in calculations/UI.
  */
-export type NormalisedAccount = Omit<Account, "transactions" | "balance"> & {
+
+// TODO:(lewis 2026-02-19 01:22) using Account type here is not good, its a db type
+export type NormalisedAccount = Omit<
+  Account,
+  "transactions" | "balance" | "createdAt" | "updatedAt"
+> & {
   transactionIds: TransactionId[];
   balance: number;
 };
@@ -29,9 +34,10 @@ export type NormalisedAccount = Omit<Account, "transactions" | "balance"> & {
  * Normalized transaction.
  * inflow/outflow converted to number for easier computation.
  */
+// TODO:(lewis 2026-02-19 01:22) using transaction type here is not good, its a db type
 export type NormalisedTransaction = Omit<
   db.Transaction,
-  "inflow" | "outflow"
+  "inflow" | "outflow" | "origin" | "createdAt" | "updatedAt"
 > & {
   inflow: number;
   outflow: number;

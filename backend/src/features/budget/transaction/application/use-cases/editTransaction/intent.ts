@@ -159,6 +159,17 @@ export async function buildEditIntent(
   // categoryId
   if (willBeTransfer) {
     updateData.category = { disconnect: true };
+
+    const systemPayeeIdsSet = new Set(
+      await payeeService.getSystemPayeeIds(tx, userId)
+    );
+
+    const isSystemPayee =
+      snapshot.mainTx.payeeId && systemPayeeIdsSet.has(snapshot.mainTx.payeeId);
+    // User is changing a system payee transaction into a user payee transfer transaction
+    if (isSystemPayee) {
+      updateData.origin = "USER";
+    }
   } else if (payload.categoryId !== undefined || transferToNormal) {
     if (payload.categoryId === null) {
       const uncategorisedCategoryId =
@@ -182,17 +193,30 @@ export async function buildEditIntent(
   }
 
   // payeeId or payeeName
-  if (payload.payeeId !== undefined || payload.payeeName !== undefined) {
-    if (payload.payeeId === null || willBeTransfer) {
+  const { payeeId, payeeName } = payload;
+  if (payeeId !== undefined || payeeName !== undefined) {
+    const systemPayeeIdsSet = new Set(
+      await payeeService.getSystemPayeeIds(tx, userId)
+    );
+
+    const isSystemPayee =
+      snapshot.mainTx.payeeId && systemPayeeIdsSet.has(snapshot.mainTx.payeeId);
+    // User is changing a system payee transaction into a user payee transaction
+    if (isSystemPayee) {
+      updateData.origin = "USER";
+    }
+
+    if (payeeId === null || willBeTransfer) {
       updateData.payee = { disconnect: true };
     } else {
-      const payeeId = await payeeService.resolvePayeeId(
+      const resolvedPayeeId = await payeeService.resolvePayeeId(
         tx,
         userId,
-        payload.payeeId,
-        payload.payeeName
+        payeeId,
+        payeeName
       );
-      updateData.payee = { connect: { id: payeeId } };
+
+      updateData.payee = { connect: { id: resolvedPayeeId } };
     }
   }
 

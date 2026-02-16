@@ -1,0 +1,1262 @@
+.
+├── budgie_backup_2025-11-09_11-37-45.dump
+├── budgie_backup_2025-11-09_12-01-42.dump
+├── budgie_backup_2025-11-09_12-07-20.dump
+├── budgie_backup_2025-11-09_12-53-59.dump
+├── budgie_backup_2025-11-12_16-30-30.dump
+├── budgie_backup_2025-11-12_16-33-41.dump
+├── budgie_backup_2025-11-13_10-42-58.dump
+├── budgie_backup_2025-11-14_11-10-43.dump
+├── budgie_backup_2025-11-15_14-31-49.dump
+├── budgie_backup_2025-11-16_10-53-01.dump
+├── budgie_backup_2025-11-16_12-14-22.dump
+├── budgie_backup_2025-11-17_17-50-20.dump
+├── budgie_backup_2025-11-20_13-49-17.dump
+├── budgie_backup_2025-11-23_01-29-45.dump
+├── budgie_backup_2025-11-24_01-27-39.dump
+├── budgie_backup_2025-12-03_09-44-08.dump
+├── budgie_backup_2025-12-05_11-52-51.dump
+├── budgie_backup_2025-12-19_12-41-51.dump
+├── budgie_backup_2025-12-19_13-39-44.dump
+├── budgie_backup_2025-12-19_13-40-52.dump
+├── budgie_backup_2025-12-19_14-00-21.dump
+├── budgie_backup_2025-12-24_12-49-42.dump
+├── budgie_backup_2026-01-06_02-24-46.dump
+├── budgie_backup_2026-01-07_02-17-06.dump
+├── budgie_backup_2026-01-22_14-25-44.dump
+├── budgie_backup_2026-01-25_08-50-47.dump
+├── category-todo.md
+├── docs
+├── jest.config.integration.ts
+├── jest.config.unit.ts
+├── jest.setup.unit.ts
+├── makefile
+├── package.json
+├── package-lock.json
+├── src
+│   ├── app.test.ts
+│   ├── app.ts
+│   ├── config.test.ts
+│   ├── features
+│   │   ├── budget
+│   │   │   ├── account
+│   │   │   │   ├── account.controller.test.ts
+│   │   │   │   ├── account.controller.ts
+│   │   │   │   ├── account.errors.ts
+│   │   │   │   ├── account.mapper.ts
+│   │   │   │   ├── account.repository.ts
+│   │   │   │   ├── account.routes.ts
+│   │   │   │   ├── account.schema.ts
+│   │   │   │   ├── account.service.ts
+│   │   │   │   ├── account.types.ts
+│   │   │   │   ├── account.useCase.ts
+│   │   │   │   ├── application
+│   │   │   │   │   ├── services
+│   │   │   │   │   │   ├── getAccount.ts
+│   │   │   │   │   │   └── updateAccountBalances.ts
+│   │   │   │   │   └── use-cases
+│   │   │   │   │       ├── createAccount.ts
+│   │   │   │   │       ├── deleteAccount.ts
+│   │   │   │   │       ├── selectAccounts.ts
+│   │   │   │   │       └── updateAccount.ts
+│   │   │   │   ├── domain
+│   │   │   │   │   └── account.domain.ts
+│   │   │   │   ├── mappers
+│   │   │   │   │   └── toDomainAccount.ts
+│   │   │   │   ├── types
+│   │   │   │   │   ├── account.domain.ts
+│   │   │   │   │   ├── account.normalised.ts
+│   │   │   │   │   └── account.prisma.ts
+│   │   │   │   └── utils
+│   │   │   │       └── normaliseAccounts.ts
+│   │   │   ├── assign
+│   │   │   │   ├── application
+│   │   │   │   │   └── use-cases
+│   │   │   │   │       └── updateCategoryMonthAssignment.ts
+│   │   │   │   ├── assign.controller.ts
+│   │   │   │   ├── assign.errors.ts
+│   │   │   │   ├── assign.routes.ts
+│   │   │   │   ├── assign.schema.ts
+│   │   │   │   └── assign.useCase.ts
+│   │   │   ├── budget.routes.ts
+│   │   │   ├── category
+│   │   │   │   ├── application
+│   │   │   │   │   ├── services
+│   │   │   │   │   │   ├── checkCategoryNameIsUniqueInGroup.ts
+│   │   │   │   │   │   ├── getCategory.ts
+│   │   │   │   │   │   ├── getNextCategoryPosition.ts
+│   │   │   │   │   │   ├── initialiseCategories.ts
+│   │   │   │   │   │   ├── isCategoryProtected.ts
+│   │   │   │   │   │   ├── months
+│   │   │   │   │   │   │   ├── createMonthsForCategory.ts
+│   │   │   │   │   │   │   ├── ensureMonthsContinuity.test.ts
+│   │   │   │   │   │   │   ├── ensureMonthsContinuity.ts
+│   │   │   │   │   │   │   ├── insertMissingMonths.ts
+│   │   │   │   │   │   │   └── recalculateForTransactions.ts
+│   │   │   │   │   │   ├── resolveCategoryId.ts
+│   │   │   │   │   │   └── rta
+│   │   │   │   │   │       ├── calculateMonthsAvailable.ts
+│   │   │   │   │   │       └── updateMonthsActivityForTransactions.ts
+│   │   │   │   │   └── use-cases
+│   │   │   │   │       ├── createCategory.ts
+│   │   │   │   │       ├── deleteCategory.ts
+│   │   │   │   │       ├── editCategory.ts
+│   │   │   │   │       └── selectCategories.ts
+│   │   │   │   ├── category.constants.ts
+│   │   │   │   ├── category.controller.test.ts
+│   │   │   │   ├── category.controller.ts
+│   │   │   │   ├── category.errors.ts
+│   │   │   │   ├── category.mapper.ts
+│   │   │   │   ├── category.repository.ts
+│   │   │   │   ├── category.routes.ts
+│   │   │   │   ├── category.schema.ts
+│   │   │   │   ├── category.service.ts
+│   │   │   │   ├── category.types.ts
+│   │   │   │   ├── category.useCase.ts
+│   │   │   │   ├── domain
+│   │   │   │   │   ├── month.domain.test.ts
+│   │   │   │   │   ├── month.domain.ts
+│   │   │   │   │   ├── rta.domain.test.ts
+│   │   │   │   │   ├── rta.domain.ts
+│   │   │   │   │   └── transaction.domain.ts
+│   │   │   │   ├── mappers
+│   │   │   │   │   ├── toDomainCategoryGroup.ts
+│   │   │   │   │   └── toDomainCategory.ts
+│   │   │   │   ├── types
+│   │   │   │   │   ├── category.domain.ts
+│   │   │   │   │   ├── category.normalised.ts
+│   │   │   │   │   └── category.prisma.ts
+│   │   │   │   └── utils
+│   │   │   │       ├── getMonthRange.test.ts
+│   │   │   │       ├── getMonthRange.ts
+│   │   │   │       ├── getMonth.test.ts
+│   │   │   │       ├── getMonth.ts
+│   │   │   │       ├── groupBy.ts
+│   │   │   │       ├── normaliseCategories.ts
+│   │   │   │       └── roundTransactionsToStartOfMonth.ts
+│   │   │   ├── categorygroup
+│   │   │   │   ├── application
+│   │   │   │   │   ├── service
+│   │   │   │   │   │   ├── checkCategoryGroupNameIsUnique.ts
+│   │   │   │   │   │   ├── ensureUserOwnsCategoryGroup.ts
+│   │   │   │   │   │   ├── getNextCategoryGroupPosition.ts
+│   │   │   │   │   │   └── isProtectedCategoryGroup.ts
+│   │   │   │   │   └── use-cases
+│   │   │   │   │       ├── createCategoryGroup.ts
+│   │   │   │   │       ├── deleteCategoryGroup.ts
+│   │   │   │   │       └── editCategoryGroup.ts
+│   │   │   │   ├── categoryGroup.constants.ts
+│   │   │   │   ├── categorygroup.controller.ts
+│   │   │   │   ├── categoryGroup.errors.ts
+│   │   │   │   ├── categoryGroup.repository.ts
+│   │   │   │   ├── categorygroup.routes.ts
+│   │   │   │   ├── categorygroup.schema.ts
+│   │   │   │   ├── categoryGroup.service.ts
+│   │   │   │   └── categorygroup.useCase.ts
+│   │   │   ├── memo
+│   │   │   │   ├── application
+│   │   │   │   │   ├── services
+│   │   │   │   │   │   ├── getMemo.ts
+│   │   │   │   │   │   ├── initialiseMemos.ts
+│   │   │   │   │   │   └── insertMissingMemos.ts
+│   │   │   │   │   └── use-cases
+│   │   │   │   │       └── editMemo.ts
+│   │   │   │   ├── memo.controller.ts
+│   │   │   │   ├── memo.errors.ts
+│   │   │   │   ├── memo.repository.ts
+│   │   │   │   ├── memo.routes.ts
+│   │   │   │   ├── memo.schema.ts
+│   │   │   │   ├── memo.service.ts
+│   │   │   │   ├── memo.types.ts
+│   │   │   │   └── memo.useCase.ts
+│   │   │   ├── payee
+│   │   │   │   ├── application
+│   │   │   │   │   ├── services
+│   │   │   │   │   │   ├── checkPayeeNameIsUnique.ts
+│   │   │   │   │   │   ├── checkUserOwnsPayees.ts
+│   │   │   │   │   │   ├── createPayee.ts
+│   │   │   │   │   │   ├── deletePayees.ts
+│   │   │   │   │   │   ├── resolvePayeeId.ts
+│   │   │   │   │   │   └── updatePayees.ts
+│   │   │   │   │   └── use-cases
+│   │   │   │   │       ├── combinePayees.ts
+│   │   │   │   │       ├── deletePayeesInBulk.ts
+│   │   │   │   │       ├── deletePayee.ts
+│   │   │   │   │       ├── editPayeesInBulk.ts
+│   │   │   │   │       ├── editPayee.ts
+│   │   │   │   │       ├── getPayees.ts
+│   │   │   │   │       └── index.ts
+│   │   │   │   ├── payee.controller.ts
+│   │   │   │   ├── payee.errors.ts
+│   │   │   │   ├── payee.repository.ts
+│   │   │   │   ├── payee.routes.ts
+│   │   │   │   ├── payee.schema.ts
+│   │   │   │   ├── payee.service.ts
+│   │   │   │   ├── payee.types.ts
+│   │   │   │   ├── payee.useCase.ts
+│   │   │   │   └── utils
+│   │   │   │       └── normalisePayees.ts
+│   │   │   └── transaction
+│   │   │       ├── application
+│   │   │       │   ├── services
+│   │   │       │   │   ├── bulk
+│   │   │       │   │   │   ├── applyAccountChange
+│   │   │       │   │   │   │   ├── applyAccountChange.ts
+│   │   │       │   │   │   │   ├── filterInvalidBulkEditTransfers.test.ts
+│   │   │       │   │   │   │   └── filterInvalidBulkEditTransfers.ts
+│   │   │       │   │   │   ├── applyCategoryChange.ts
+│   │   │       │   │   │   └── applyMemoChange.ts
+│   │   │       │   │   ├── create
+│   │   │       │   │   │   ├── createNormalTransaction.ts
+│   │   │       │   │   │   └── createTransferTransaction.ts
+│   │   │       │   │   ├── createBalanceAdjustmentTransaction.ts
+│   │   │       │   │   ├── createOpeningBalanceTransaction.ts
+│   │   │       │   │   ├── getTransactionsWithPairs.ts
+│   │   │       │   │   ├── insertNormalTransaction.ts
+│   │   │       │   │   ├── insertTransferTransaction.ts
+│   │   │       │   │   └── updatePayeeForTransactions.ts
+│   │   │       │   └── use-cases
+│   │   │       │       ├── deleteTransactions.ts
+│   │   │       │       ├── duplicateTransactions.ts
+│   │   │       │       ├── editTransaction
+│   │   │       │       │   ├── apply.ts
+│   │   │       │       │   ├── editTransaction.ts
+│   │   │       │       │   ├── getTransactionSnapshotWithPair.ts
+│   │   │       │       │   ├── intent.ts
+│   │   │       │       │   └── reclaculateMonthsFor.ts
+│   │   │       │       ├── editTransactions.ts
+│   │   │       │       └── insertTransaction.ts
+│   │   │       ├── domain
+│   │   │       │   ├── validateTransaction.test.ts
+│   │   │       │   └── validation.domain.ts
+│   │   │       ├── schemas
+│   │   │       │   ├── commands.schema.ts
+│   │   │       │   ├── create.schema.ts
+│   │   │       │   ├── edit.schema.ts
+│   │   │       │   └── primitives.ts
+│   │   │       ├── transaction.controller.test.ts
+│   │   │       ├── transaction.controller.ts
+│   │   │       ├── transaction.errors.ts
+│   │   │       ├── transaction.mapper.ts
+│   │   │       ├── transaction.repository.ts
+│   │   │       ├── transaction.routes.ts
+│   │   │       ├── transaction.schema.ts
+│   │   │       ├── transaction.service.ts
+│   │   │       ├── transaction.types.ts
+│   │   │       ├── transaction.useCase.ts
+│   │   │       ├── types
+│   │   │       │   ├── transaction.domain.ts
+│   │   │       │   ├── transaction.dto.ts
+│   │   │       │   └── transaction.prisma.ts
+│   │   │       └── utils
+│   │   │           ├── adjustMonthsForMultipleTransactions.test.ts
+│   │   │           ├── assertTransactionDateWithinLast12Months.ts
+│   │   │           ├── createDuplicateTxs.ts
+│   │   │           ├── duplicateTransferTransactions.ts
+│   │   │           ├── isAfterUtc.ts
+│   │   │           └── splitTransactionsByType.ts
+│   │   └── user
+│   │       ├── auth
+│   │       │   ├── auth.controller.test.ts
+│   │       │   ├── auth.controller.ts
+│   │       │   ├── auth.errors.ts
+│   │       │   ├── auth.routes.ts
+│   │       │   ├── auth.schema.ts
+│   │       │   ├── auth.service.ts
+│   │       │   ├── use-cases
+│   │       │   │   ├── createUser.ts
+│   │       │   │   ├── getUser.ts
+│   │       │   │   ├── updateRefreshToken.ts
+│   │       │   │   └── userExists.ts
+│   │       │   └── utils
+│   │       │       ├── cookies.ts
+│   │       │       ├── password.ts
+│   │       │       ├── PasswordUtility.test.ts
+│   │       │       └── tokens.ts
+│   │       ├── password
+│   │       │   ├── password.controller.ts
+│   │       │   ├── password.errors.ts
+│   │       │   ├── password.routes.ts
+│   │       │   ├── password.service.ts
+│   │       │   ├── use-cases
+│   │       │   │   └── resetLink.ts
+│   │       │   └── utils
+│   │       │       └── resetToken.ts
+│   │       └── user.routes.ts
+│   ├── index.ts
+│   ├── __mocks__
+│   │   └── prismaClient.ts
+│   ├── prisma
+│   │   └── migrations
+│   │       ├── 20241221181555_init
+│   │       │   └── migration.sql
+│   │       ├── 20241221181720_init
+│   │       │   └── migration.sql
+│   │       ├── 20241221182252_init
+│   │       │   └── migration.sql
+│   │       ├── 20241221182617_init
+│   │       │   └── migration.sql
+│   │       ├── 20241221184818_init
+│   │       │   └── migration.sql
+│   │       ├── 20241221184845_init
+│   │       │   └── migration.sql
+│   │       ├── 20241222130416_init
+│   │       │   └── migration.sql
+│   │       ├── 20241222141004_init
+│   │       │   └── migration.sql
+│   │       ├── 20241222141052_init
+│   │       │   └── migration.sql
+│   │       ├── 20241222141155_init
+│   │       │   └── migration.sql
+│   │       ├── 20241222142131_init
+│   │       │   └── migration.sql
+│   │       └── migration_lock.toml
+│   ├── scripts
+│   │   ├── backfill-account-payees.ts
+│   │   └── ensureNextMonth.ts
+│   ├── shared
+│   │   ├── constants
+│   │   │   └── zero.ts
+│   │   ├── enums
+│   │   │   └── operation-mode.ts
+│   │   ├── errors
+│   │   │   ├── auth.errors.ts
+│   │   │   ├── budget.errors.ts
+│   │   │   ├── HttpError.ts
+│   │   │   └── index.ts
+│   │   ├── middleWare
+│   │   │   ├── CommonAuth.test.ts
+│   │   │   ├── CommonAuth.ts
+│   │   │   └── errorHandler.ts
+│   │   ├── prisma
+│   │   │   ├── client.ts
+│   │   │   ├── migrations
+│   │   │   │   ├── 20250712115418_add_open_to_transaction
+│   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20250712115941_add_position_to_category
+│   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20250712120240_add_open_to_tx
+│   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20250712120408_init
+│   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20250716111541_init
+│   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20250722101754_init
+│   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20250722102019_init
+│   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20251211145935_add_payee_support
+│   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20251214141655_payee_foreignkeys_timestamps_user_ondelete
+│   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20251224125026_add_account_payee
+│   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20251228215905_add_transfer_account_id
+│   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20251231134441_add_transfer_transaction_relation
+│   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260104090250_make_transaction_categoryid_optional_for_transfers
+│   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260107022039_remove_account_payee
+│   │   │   │   │   └── migration.sql
+│   │   │   │   ├── 20260127163244_add_memo_month
+│   │   │   │   │   └── migration.sql
+│   │   │   │   └── migration_lock.toml
+│   │   │   ├── schema.prisma
+│   │   │   └── seed.ts
+│   │   ├── repository
+│   │   │   ├── accountRepositoryImpl.ts
+│   │   │   ├── categoryGroupRepositoryImpl.ts
+│   │   │   ├── categoryRepositoryImpl.ts
+│   │   │   ├── memoRepositoryImpl.ts
+│   │   │   ├── payeeRepositoryImpl.ts
+│   │   │   └── transactionRepositoryImpl.ts
+│   │   ├── services
+│   │   │   └── email.service.ts
+│   │   ├── templates
+│   │   │   └── reset-password.email.ts
+│   │   ├── types
+│   │   │   ├── brand.ts
+│   │   │   └── user.ts
+│   │   └── utils
+│   │       ├── auth
+│   │       │   └── decodeToken.ts
+│   │       ├── convertDecimalToNumber.ts
+│   │       ├── getMonthKey.ts
+│   │       ├── groupMonthlyAssignedNegativeAvailable.test.ts
+│   │       ├── groupMonthlyAssignedNegativeAvailable.ts
+│   │       ├── roundToStartOfMonth.test.ts
+│   │       └── roundToStartOfMonth.ts
+│   └── __test__
+│       ├── controllers
+│       │   ├── account.controller.test.ts
+│       │   ├── auth.controller.test.ts
+│       │   ├── budget.controller.test.ts
+│       │   ├── categories.controller.test.ts
+│       │   ├── memo.controller.test.ts
+│       │   ├── password.controller.test.ts
+│       │   ├── payee.controller.test.ts
+│       │   ├── RTA.test.ts
+│       │   └── transaction
+│       │       ├── transaction.create.test.ts
+│       │       ├── transaction.delete.test.ts
+│       │       ├── transaction.duplicate.test.ts
+│       │       ├── transaction.edit.bulk.test.ts
+│       │       └── transaction.edit.single.test.ts
+│       ├── setup
+│       │   ├── setupTests.ts
+│       │   ├── setup.ts
+│       │   └── teardown.ts
+│       └── utils
+│           ├── auth.ts
+│           ├── category.ts
+│           ├── clearDatabase.ts
+│           ├── createTestAccount.ts
+│           ├── getData.ts
+│           ├── memo.ts
+│           ├── payee.ts
+│           └── transaction.ts
+├── todo.md
+└── tsconfig.json
+
+105 directories, 314 files
+
+
+
+===== ./account.errors.ts =====
+import { HttpError } from "../../../shared/errors";
+
+export class AccountNotFoundError extends HttpError {
+  constructor() {
+    super("Unable to find account", 404);
+  }
+}
+===== ./account.routes.ts =====
+import express from "express";
+import {
+  addAccount,
+  deleteAccount,
+  editAccount,
+  getAccounts,
+} from "./account.controller";
+
+const router = express.Router();
+
+router.get("/", getAccounts);
+router.post("/", addAccount);
+router.patch("/", editAccount);
+router.delete("/", deleteAccount);
+
+export default router;
+===== ./domain/account.domain.ts =====
+import { ZERO } from "../../../../shared/constants/zero";
+import { OperationMode } from "../../../../shared/enums/operation-mode";
+import {
+  type BalanceChangeMap,
+  type BalanceAffectingTransaction,
+} from "../application/services/updateAccountBalances";
+
+/**
+ * Adjusts account balance when adding / deleting transactions.
+ */
+
+export const calculateBalanceChangePerAccount = (
+  transactions: BalanceAffectingTransaction[],
+  mode: OperationMode
+): BalanceChangeMap => {
+  return transactions.reduce((acc: BalanceChangeMap, transaction) => {
+    const accountId = transaction.accountId;
+    const baseChange = transaction.outflow.sub(transaction.inflow);
+    const change = mode === OperationMode.Add ? baseChange.neg() : baseChange;
+
+    acc[accountId] = (acc[accountId] ?? ZERO).add(change);
+    return acc;
+  }, {});
+};
+===== ./types/account.domain.ts =====
+import { Decimal } from "@prisma/client/runtime/library";
+import { Brand } from "../../../../shared/types/brand";
+
+/**
+ * Strongly-typed Account ID.
+ * Used to prevent mixing with other string IDs in the domain.
+ */
+export type AccountId = Brand<string, "AccountId">;
+export const asAccountId = (id: string) => id as AccountId;
+
+/**
+ * Supported account types in the system.
+ */
+export type AccountType = "BANK" | "CREDIT_CARD";
+
+/**
+ * Represents a user-owned account in the domain.
+ * All fields are readonly to enforce immutability.
+ */
+export type DomainAccount = Readonly<{
+  id: AccountId;
+  name: string;
+  position: number;
+  userId: string;
+  open: boolean;
+  type: AccountType;
+  balance: Decimal;
+}>;
+===== ./types/account.normalised.ts =====
+import {
+  type db,
+  type TransactionId,
+} from "../../transaction/transaction.types";
+import { type Account } from "./account.prisma";
+
+/**
+ * Normalized structures used for fast lookups and UI state.
+ * Transactions, accounts, and categories are stored in maps keyed by ID.
+ */
+export type NormalisedAccounts = {
+  accounts: Record<string, NormalisedAccount>;
+  transactions: Record<string, NormalisedTransaction>;
+  categories: Record<string, NormalisedCategory>;
+  categoryGroups: Record<string, NormalisedCategoryGroup>;
+};
+
+/**
+ * Normalized account.
+ * `transactions` stores only transaction IDs.
+ * `balance` is converted to number for convenience in calculations/UI.
+ */
+export type NormalisedAccount = Omit<Account, "transactions" | "balance"> & {
+  transactionIds: TransactionId[];
+  balance: number;
+};
+
+/**
+ * Normalized transaction.
+ * inflow/outflow converted to number for easier computation.
+ */
+export type NormalisedTransaction = Omit<
+  db.Transaction,
+  "inflow" | "outflow"
+> & {
+  inflow: number;
+  outflow: number;
+};
+
+/**
+ * Normalized category.
+ * Stores minimal info for fast lookup.
+ */
+export type NormalisedCategory = {
+  id: string;
+  userId: string;
+  name: string;
+  categoryGroupId: string | null;
+};
+
+/**
+ * Normalized category group.
+ */
+export type NormalisedCategoryGroup = {
+  id: string;
+  userId: string;
+  name: string;
+  position: number;
+};
+===== ./types/account.prisma.ts =====
+import type {
+  Account as PrismaAccount,
+  Transaction as PrismaTransaction,
+  Category as PrismaCategory,
+  CategoryGroup as PrismaCategoryGroup,
+} from "@prisma/client";
+
+export type Account = PrismaAccount;
+
+/**
+ * Prisma payload representing an account along with its transactions
+ * and the transactions' categories (including categoryGroup)
+ */
+export type AccountWithTransactions = PrismaAccount & {
+  transactions: (PrismaTransaction & {
+    category: PrismaCategory & {
+      categoryGroup: PrismaCategoryGroup | null;
+    };
+  })[];
+};
+===== ./account.mapper.ts =====
+import { toDomainAccount } from "./mappers/toDomainAccount";
+
+export const accountMapper = {
+  toDomainAccount: toDomainAccount,
+};
+===== ./account.service.ts =====
+import { getAccount } from "./application/services/getAccount";
+import { updateAccountBalances } from "./application/services/updateAccountBalances";
+
+export const accountService = {
+  getAccount,
+  updateAccountBalances,
+};
+===== ./account.useCase.ts =====
+import { createAccount } from "./application/use-cases/createAccount";
+import { deleteAccount } from "./application/use-cases/deleteAccount";
+import { selectAccounts } from "./application/use-cases/selectAccounts";
+import { editAccount } from "./application/use-cases/updateAccount";
+
+export const accountUseCase = {
+  getAccounts: selectAccounts,
+  deleteAccount: deleteAccount,
+  createAccount: createAccount,
+  editAccount: editAccount,
+};
+===== ./account.types.ts =====
+export * from "./types/account.domain";
+export * from "./types/account.normalised";
+export * as db from "./types/account.prisma";
+===== ./account.controller.test.ts =====
+import request from "supertest";
+import app from "../../../app";
+import { initialiseAccount, selectAccounts } from "../../../utility";
+
+jest.mock("../../utility", () => {
+  const actualModule = jest.requireActual("../../utility");
+  return {
+    ...actualModule,
+    ValidateSignature: jest.fn((req) => {
+      req.user = {
+        _id: mockId,
+        email: "test@test.com",
+      };
+      return true;
+    }),
+    initialiseAccount: jest.fn(),
+    selectAccounts: jest.fn(),
+  };
+});
+
+const mockId = "dbfbbeb4-89d9-4b08-b627-1be5b4748107";
+
+describe("Add account", () => {
+  it("should return 400 for missing required fields", async () => {
+    const response = await request(app)
+      .post("/budget/account")
+      .send({})
+      .set("Authorization", "Bearer mock-token");
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Malformed data");
+  });
+
+  it("should return 400 for missing type or balance", async () => {
+    const response = await request(app)
+      .post("/budget/account")
+      .send({
+        name: "Personal Account",
+      })
+      .set("Authorization", "Bearer mock-token");
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Malformed data");
+  });
+
+  it("should return 400 for invalid type", async () => {
+    const response = await request(app)
+      .post("/budget/account")
+      .send({
+        name: "Invalid Type Account",
+        type: "INVALID_TYPE",
+        balance: 1000.0,
+      })
+      .set("Authorization", "Bearer mock-token");
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Malformed data");
+  });
+
+  it("should validate input and create an account even with zero balance", async () => {
+    const mockData = {
+      name: "Personal Bank Account",
+      type: "BANK",
+      balance: 0,
+    };
+
+    console.log("MOCK DATA", mockData);
+
+    const response = await request(app)
+      .post("/budget/account")
+      .send(mockData)
+      .set("Authorization", "Bearer mock-token");
+
+    expect(response.status).toBe(200);
+    expect(initialiseAccount as jest.Mock).toHaveBeenCalledTimes(1);
+    expect(initialiseAccount as jest.Mock).toHaveBeenCalledWith({
+      userId: mockId,
+      ...mockData,
+    });
+    expect(response.body).toEqual({ message: "Account added" });
+  });
+
+  it("should validate input and create an account", async () => {
+    const mockData = {
+      name: "Personal Bank Account",
+      type: "BANK",
+      balance: 1000.0,
+    };
+
+    const response = await request(app)
+      .post("/budget/account")
+      .send(mockData)
+      .set("Authorization", "Bearer mock-token");
+
+    expect(response.status).toBe(200);
+    expect(initialiseAccount as jest.Mock).toHaveBeenCalledTimes(1);
+    expect(initialiseAccount as jest.Mock).toHaveBeenCalledWith({
+      userId: mockId,
+      ...mockData,
+    });
+    expect(response.body).toEqual({ message: "Account added" });
+  });
+});
+
+describe("getAccounts", () => {
+  it("Should return 500 if there is an error", async () => {
+    (selectAccounts as jest.Mock).mockRejectedValue(
+      new Error("Database error"),
+    );
+    const response = await request(app).get("/budget/accounts");
+    expect(response.status).toBe(500);
+  });
+
+  it("Should return 200 if there is no error", async () => {
+    const selectAccountsMock = selectAccounts as jest.Mock;
+    selectAccountsMock.mockResolvedValue([]);
+
+    const response = await request(app).get("/budget/accounts");
+
+    expect(response.status).toBe(200);
+  });
+});
+===== ./mappers/toDomainAccount.ts =====
+import { asAccountId, type DomainAccount, type db } from "../account.types";
+
+export const toDomainAccount = (row: db.Account): DomainAccount => {
+  const account: DomainAccount = {
+    id: asAccountId(row.id),
+    name: row.name,
+    position: row.position,
+    userId: row.userId,
+    open: row.open,
+    type: row.type,
+    balance: row.balance,
+  };
+
+  return account;
+};
+===== ./account.controller.ts =====
+import { Request, Response, NextFunction } from "express";
+import {
+  addAccountSchema,
+  deleteAccountSchema,
+  editAccountSchema,
+} from "./account.schema";
+import { normaliseAccounts } from "./utils/normaliseAccounts";
+import { accountUseCase } from "./account.useCase";
+
+export const getAccounts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  // TODO: what about pagination if there's loads of transactions?
+
+  try {
+    const accountsWithTransactions = await accountUseCase.getAccounts(
+      req.user?._id!
+    );
+
+    const data = normaliseAccounts({ accounts: accountsWithTransactions });
+
+    res.status(200).json({ ...data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const payload = addAccountSchema.parse({
+      userId: req.user?._id,
+      ...req.body,
+    });
+
+    await accountUseCase.createAccount(payload);
+
+    res.status(200).json({ message: "Account added" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const editAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    //TODO: NEED TO CHECK THAT USER IS EITHER UPDATING NAME OR ADJUSTING BALANCE, OTHERWISE WASTE OF TIME
+
+    const payload = editAccountSchema.parse({
+      userId: req.user?._id,
+      ...req.body,
+    });
+
+    await accountUseCase.editAccount(payload);
+    res.sendStatus(200);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const payload = deleteAccountSchema.parse({
+      userId: req.user?._id,
+      ...req.body,
+    });
+
+    await accountUseCase.deleteAccount(payload);
+    res.sendStatus(200);
+  } catch (error) {
+    next(error);
+  }
+};
+===== ./utils/normaliseAccounts.ts =====
+import { convertDecimalToNumber } from "../../../../shared/utils/convertDecimalToNumber";
+import { db } from "../../category/category.types";
+import { NormalisedAccounts } from "../account.types";
+
+export function normaliseAccounts(data: { accounts: db.Account[] }) {
+  const normalisedData: NormalisedAccounts = {
+    accounts: {},
+    transactions: {},
+    categories: {},
+    categoryGroups: {},
+  };
+
+  data.accounts.forEach((account) => {
+    normalisedData.accounts[account.id] = {
+      id: account.id,
+      userId: account.userId,
+      name: account.name,
+      open: account.open,
+      position: account.position,
+      type: account.type,
+      balance: convertDecimalToNumber(account.balance),
+      createdAt: account.createdAt,
+      updatedAt: account.updatedAt,
+      transactionIds: [],
+    };
+
+    account.transactions.forEach((transaction) => {
+      const transactionId = transaction.id;
+
+      normalisedData.transactions[transaction.id] = {
+        id: transaction.id,
+        accountId: transaction.accountId,
+        categoryId: transaction.categoryId,
+        payeeId: transaction.payeeId,
+        date: transaction.date,
+        inflow: convertDecimalToNumber(transaction.inflow),
+        outflow: convertDecimalToNumber(transaction.outflow),
+        transferAccountId: transaction.transferAccountId,
+        transferTransactionId: transaction.transferTransactionId,
+        memo: transaction.memo,
+        cleared: transaction.cleared,
+        createdAt: transaction.createdAt,
+        updatedAt: transaction.updatedAt,
+      };
+      //@ts-ignore-error: needs branding
+      normalisedData.accounts[account.id].transactionIds.push(transactionId);
+
+      if (
+        transaction.category &&
+        transaction.categoryId != null &&
+        !normalisedData.categories[transaction.categoryId]
+      ) {
+        normalisedData.categories[transaction.categoryId] = {
+          id: transaction.categoryId,
+          userId: transaction.category.userId,
+          name: transaction.category.name,
+          categoryGroupId: null,
+        };
+
+        if (transaction.category?.categoryGroupId) {
+          const id = transaction.category.categoryGroupId;
+          normalisedData.categories[transaction.categoryId].categoryGroupId =
+            id;
+
+          normalisedData.categoryGroups[id] = {
+            ...transaction.category.categoryGroup,
+          };
+        }
+      }
+    });
+  });
+
+  return normalisedData;
+}
+===== ./account.repository.ts =====
+import { Prisma } from "@prisma/client";
+import { Decimal } from "@prisma/client/runtime/library";
+import { type AddAccountPayload } from "./account.schema";
+import { type AccountId, type db } from "./account.types";
+
+export interface AccountRepository {
+  getAccount(
+    tx: Prisma.TransactionClient,
+    accountId: AccountId,
+    userId: string
+  ): Promise<db.Account | null>;
+
+  createAccount(
+    tx: Prisma.TransactionClient,
+    payload: AddAccountPayload
+  ): Promise<db.Account>;
+
+  deleteAccount(
+    tx: Prisma.TransactionClient,
+    accountId: AccountId
+  ): Promise<void>;
+
+  closeAccount(
+    tx: Prisma.TransactionClient,
+    accountId: AccountId
+  ): Promise<void>;
+
+  updateAccount(
+    tx: Prisma.TransactionClient,
+    accountId: AccountId,
+    name: string
+  ): Promise<void>;
+
+  updateAccountBalances(
+    tx: Prisma.TransactionClient,
+    accountBalanceChanges: { [accountId: string]: Decimal }
+  ): Promise<void>;
+}
+===== ./application/services/getAccount.ts =====
+import { Prisma } from "@prisma/client";
+import { accountRepository } from "../../../../../shared/repository/accountRepositoryImpl";
+import { AccountNotFoundError } from "../../account.errors";
+import { type DomainAccount, type AccountId } from "../../account.types";
+import { accountMapper } from "../../account.mapper";
+
+/**
+ * Retrieves a single account owned by a specific user and maps it to a domain object.
+ *
+ * This function ensures that:
+ * - The requested account exists.
+ * - The account is owned by the given `userId`.
+ *
+ * It is intended for use in transactional workflows where subsequent operations
+ * assume a valid `DomainAccount`.
+ *
+ * @param tx - Prisma transaction client for executing the query.
+ * @param accountId - The ID of the account to retrieve.
+ * @param userId - The ID of the user who must own the account.
+ *
+ * @returns The account mapped as a `DomainAccount`.
+ *
+ * @throws {AccountNotFoundError} If no account exists with the given `accountId`
+ *                                 for the specified `userId`.
+ */
+
+export const getAccount = async (
+  tx: Prisma.TransactionClient,
+  accountId: AccountId,
+
+  userId: string
+): Promise<DomainAccount> => {
+  const row = await accountRepository.getAccount(tx, accountId, userId);
+
+  if (!row) {
+    throw new AccountNotFoundError();
+  }
+
+  return accountMapper.toDomainAccount(row);
+};
+===== ./application/services/updateAccountBalances.ts =====
+import { Prisma } from "@prisma/client";
+import { calculateBalanceChangePerAccount } from "../../domain/account.domain";
+import { accountRepository } from "../../../../../shared/repository/accountRepositoryImpl";
+import { OperationMode } from "../../../../../shared/enums/operation-mode";
+import { type Decimal } from "@prisma/client/runtime/library";
+import { type AccountId } from "../../account.types";
+
+/**
+ * Represents a transaction that affects an account balance.
+ * Used by services that calculate net balance changes.
+ */
+export type BalanceAffectingTransaction = {
+  accountId: AccountId;
+  inflow: Decimal;
+  outflow: Decimal;
+};
+
+/**
+ * A mapping of account IDs to their net balance change.
+ * Used internally by the balance update service.
+ */
+export type BalanceChangeMap = Record<AccountId, Decimal>;
+
+/**
+ * Updates account balances based on a list of transactions and an operation mode.
+ *
+ * Steps:
+ * 1. Calculates the net balance change per account using `calculateBalanceChangePerAccount`.
+ * 2. Calls the repository to apply these changes atomically using the provided Prisma transaction client.
+ *
+ * @param tx - Prisma transaction client for atomic updates.
+ * @param transactions - List of transactions that impact account balances.
+ * @param mode - Indicates whether transactions are being added or removed.
+ */
+export const updateAccountBalances = async (
+  tx: Prisma.TransactionClient,
+  transactions: BalanceAffectingTransaction[],
+  mode: OperationMode
+): Promise<void> => {
+  const accountBalanceChanges: BalanceChangeMap =
+    calculateBalanceChangePerAccount(transactions, mode);
+
+  await accountRepository.updateAccountBalances(tx, accountBalanceChanges);
+};
+===== ./application/use-cases/selectAccounts.ts =====
+import { prisma } from "../../../../../shared/prisma/client";
+// TODO: I THINK THIS NEEDS TO BE MADE INTO ACCOUNT, TRANSACTION, CATEGORY, CATEGORY GROUP, MONTHS, SO THAT WHEN UPDATING FROM FE, THE FE ONLY HAS TO FETCH WHAT HAS CHANGED, INSTEAD OF FETCHING EVERYTHING
+
+export const selectAccounts = async (userId: string) => {
+  const accountsWithTransactions = await prisma.account.findMany({
+    where: {
+      userId,
+    },
+    orderBy: {
+      position: "asc",
+    },
+    include: {
+      transactions: {
+        orderBy: {
+          date: "asc",
+        },
+        include: {
+          category: {
+            include: {
+              categoryGroup: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return accountsWithTransactions;
+};
+===== ./application/use-cases/deleteAccount.ts =====
+import { prisma } from "../../../../../shared/prisma/client";
+import { type DeleteAccountPayload } from "../../account.schema";
+import { accountRepository } from "../../../../../shared/repository/accountRepositoryImpl";
+import { transactionRepository } from "../../../../../shared/repository/transactionRepositoryImpl";
+import { accountService } from "../../../account/account.service";
+import { transactionService } from "../../../transaction/transaction.service";
+import { type AccountId, asAccountId } from "../../account.types";
+
+export type DeleteAccountCommand = Omit<DeleteAccountPayload, "accountId"> & {
+  accountId: AccountId;
+};
+
+export const toDeleteAccountCommand = (
+  p: DeleteAccountPayload
+): DeleteAccountCommand => ({
+  ...p,
+  accountId: asAccountId(p.accountId),
+});
+
+// TODO: HOW TO OPEN ACCOUNT BACK UP
+export const deleteAccount = async (
+  payload: DeleteAccountPayload
+): Promise<void> => {
+  const { accountId, userId } = toDeleteAccountCommand(payload);
+
+  await prisma.$transaction(async (tx) => {
+    const account = await accountService.getAccount(tx, accountId, userId);
+
+    const transactions = await transactionRepository.getTransactionsByAccountId(
+      tx,
+      accountId
+    );
+
+    const accountHasNonZeroBalance = account.balance.gt(0);
+    const accountHasTransactions = transactions.length > 0;
+
+    if (!accountHasTransactions) {
+      await accountRepository.deleteAccount(tx, accountId);
+      return;
+    }
+
+    if (accountHasNonZeroBalance) {
+      await transactionService.createBalanceAdjustmentTransaction(
+        tx,
+        userId,
+        account.id,
+        account.balance
+      );
+    }
+
+    await accountRepository.closeAccount(tx, accountId);
+  });
+};
+===== ./application/use-cases/updateAccount.ts =====
+import { accountRepository } from "../../../../../shared/repository/accountRepositoryImpl";
+import { transactionService } from "../../../transaction/transaction.service";
+import { type EditAccountPayload } from "../../account.schema";
+import { accountService } from "../../../account/account.service";
+import { prisma } from "../../../../../shared/prisma/client";
+import { type AccountId, asAccountId } from "../../account.types";
+
+export type EditAccountCommand = Omit<EditAccountPayload, "id"> & {
+  accountId: AccountId;
+};
+
+export const toEditAccountCommand = (
+  p: EditAccountPayload
+): EditAccountCommand => ({
+  ...p,
+  accountId: asAccountId(p.accountId),
+});
+
+export const editAccount = async (
+  payload: EditAccountPayload
+): Promise<void> => {
+  const { accountId, userId, name, balanceAdjustment } =
+    toEditAccountCommand(payload);
+
+  await prisma.$transaction(async (tx) => {
+    const account = await accountService.getAccount(tx, accountId, userId);
+
+    if (name) {
+      await accountRepository.updateAccount(tx, account.id, name);
+    }
+
+    if (balanceAdjustment !== undefined) {
+      const balanceChange = balanceAdjustment.sub(account.balance);
+
+      if (!balanceChange.isZero()) {
+        await transactionService.createBalanceAdjustmentTransaction(
+          tx,
+          userId,
+          account.id,
+          balanceChange
+        );
+      }
+    }
+  });
+};
+===== ./application/use-cases/createAccount.ts =====
+import { ZERO } from "../../../../../shared/constants/zero";
+import { accountRepository } from "../../../../../shared/repository/accountRepositoryImpl";
+import { transactionService } from "../../../transaction/transaction.service";
+import { AddAccountPayload } from "../../account.schema";
+import { prisma } from "../../../../../shared/prisma/client";
+import { accountMapper } from "../../account.mapper";
+
+/**
+ * Creates a new user account, optionally initializing it with an opening balance.
+ *
+ * This function performs all operations inside a single database transaction to ensure atomicity:
+ * 1. Creates the account in the database with an initial balance of zero.
+ * 2. Creates an associated AccountPayee to allow transfers to/from this account.
+ * 3. If an opening balance greater than zero is provided, creates a corresponding opening balance transaction.
+ *
+ * @param payload - Data required to create the account
+ * @param payload.userId - ID of the user who owns the account
+ * @param payload.name - Display name of the account
+ * @param payload.type - Type of account ("BANK" | "CREDIT_CARD")
+ * @param payload.position - Position/order of the account for UI purposes
+ * @param payload.balance - Optional opening balance for the account (must be >= 0)
+ *
+ * @returns A promise that resolves when the account (and optional opening balance transaction) is successfully created.
+ *
+ * @throws {Error} Throws if any step of the transaction fails (account creation or opening balance transaction).
+ */
+
+export const createAccount = async (
+  payload: AddAccountPayload
+): Promise<void> => {
+  const { userId, balance: inflow } = payload;
+  await prisma.$transaction(async (tx) => {
+    const row = await accountRepository.createAccount(tx, {
+      ...payload,
+      balance: ZERO,
+    });
+
+    const hasOpeningBalance = payload.balance.gt(0);
+    const createdAccount = accountMapper.toDomainAccount(row);
+
+    if (hasOpeningBalance) {
+      await transactionService.createOpeningBalanceTransaction(
+        tx,
+        userId,
+        createdAccount.id,
+        inflow
+      );
+    }
+  });
+};
+===== ./account.schema.ts =====
+import { z } from "zod";
+import { Decimal } from "@prisma/client/runtime/library";
+
+export const deleteAccountSchema = z.object({
+  userId: z.string().uuid(),
+  accountId: z.string().uuid({ message: "Invalid UUID format" }),
+});
+
+export const editAccountSchema = z.object({
+  userId: z.string().uuid(),
+  accountId: z.string().uuid({ message: "Invalid UUID format" }),
+
+  name: z
+    .string()
+    .nonempty({ message: "Account name cannot be empty" })
+    .optional(),
+  balanceAdjustment: z
+    .preprocess((val) => {
+      if (val === undefined || val === null || val === "") return undefined;
+      return new Decimal(val as any);
+    }, z.instanceof(Decimal))
+    .optional(),
+});
+
+export const AccountTypeEnum = z.enum(["BANK", "CREDIT_CARD"]);
+
+export const addAccountSchema = z.object({
+  userId: z.string().uuid(),
+  name: z.string().min(1, { message: "Account name is required" }),
+  type: AccountTypeEnum,
+  balance: z.preprocess(
+    (val) => new Decimal(val as any),
+    z.instanceof(Decimal)
+  ),
+});
+
+export type AddAccountPayload = z.output<typeof addAccountSchema>;
+export type DeleteAccountPayload = z.output<typeof deleteAccountSchema>;
+export type EditAccountPayload = z.output<typeof editAccountSchema>;
+

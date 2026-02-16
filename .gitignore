@@ -28,3 +28,10 @@ coverage/
 
 *storybook.log
 storybook-static
+ 
+budgie_backup*
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/

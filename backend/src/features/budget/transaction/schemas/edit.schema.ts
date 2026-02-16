@@ -85,10 +85,12 @@ export const editSingleTransactionSchema = z
     { message: "Cannot set categoryId when setting transferAccountId" }
   );
 
+// TODO:(lewis 2026-02-08 08:36) this is only used by tests
 export type EditSingleTransactionInput = z.input<
   typeof editSingleTransactionSchema
 >;
 
+// TODO:(lewis 2026-02-08 08:36) this is by editSingleTransaction controller parse
 export type EditSingleTransactionPayload = z.output<
   typeof editSingleTransactionSchema
 >;

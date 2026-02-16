@@ -23,6 +23,7 @@ type BaseInsertTransactionCommand = Omit<
   categoryId?: CategoryId;
   payeeId?: PayeeId;
   date: Date;
+  origin: "USER" | "SYSTEM";
 };
 
 /**
@@ -69,6 +70,7 @@ export const toInsertTransactionCommand = (
     inflow: p.inflow,
     outflow: p.outflow,
     payeeName: p.payeeName,
+    origin: "USER" as const,
   };
 
   if (p.transferAccountId) {

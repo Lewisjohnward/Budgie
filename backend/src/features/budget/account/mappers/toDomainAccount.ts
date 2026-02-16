@@ -10,6 +10,8 @@ export const toDomainAccount = (row: db.Account): DomainAccount => {
     open: row.open,
     type: row.type,
     balance: row.balance,
+    // TODO:(lewis 2026-02-19 05:01) this needs changing form bool | null to bool
+    deletable: row.deletable!,
   };
 
   return account;

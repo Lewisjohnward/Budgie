@@ -12,9 +12,9 @@ import {
 } from "../utils/payee";
 import { getAccounts, getCategories } from "../utils/getData";
 import { login } from "../utils/auth";
-import { createTestAccount } from "../utils/createTestAccount";
 import request from "supertest";
 import app from "../../app";
+import { createAccountAndFetch } from "../utils/account";
 
 const PAYEE_NAME = "testPayee";
 
@@ -28,7 +28,7 @@ describe("Payee", () => {
 
   describe("Create", () => {
     it("Should create payee when adding transaction with payeeName", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       const transaction = {
         accountId: account.id,
@@ -45,7 +45,7 @@ describe("Payee", () => {
     });
 
     it("Should create payee with default settings when adding transaction with new payeeName", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       const transaction = {
         accountId: account.id,
@@ -72,7 +72,7 @@ describe("Payee", () => {
     });
 
     it("Should trim whitespace from payeeName when creating a payee", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       const transaction = {
         accountId: account.id,
@@ -89,7 +89,7 @@ describe("Payee", () => {
     });
 
     it("Should return 409 if user sends payeeName that already exists", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       const transaction = {
         accountId: account.id,
@@ -103,7 +103,7 @@ describe("Payee", () => {
     });
 
     it("Should return 400 if user sends payeeName and payeeId", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       const transaction = {
         accountId: account.id,
@@ -115,7 +115,7 @@ describe("Payee", () => {
       await addTransaction(cookie, transaction, 400);
     });
     it("Should return 400 if user sends payeeName as empty string", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       const transaction = {
         accountId: account.id,
@@ -126,7 +126,7 @@ describe("Payee", () => {
       await addTransaction(cookie, transaction, 400);
     });
     it("Should return 400 if payeeName exceeds maximum length", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       const longPayeeName = "A".repeat(51);
 
@@ -140,7 +140,7 @@ describe("Payee", () => {
     });
 
     it("Should create payee with minimum name length of 1 character", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       const transaction = {
         accountId: account.id,
@@ -159,7 +159,7 @@ describe("Payee", () => {
     });
 
     it("Should handle concurrent duplicate payee creates (race condition)", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       const transaction = {
         accountId: account.id,
@@ -203,7 +203,7 @@ describe("Payee", () => {
 
   describe("Linkage", () => {
     it("Should create payee with id that links to transaction", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       const transaction = {
         accountId: account.id,
@@ -224,7 +224,7 @@ describe("Payee", () => {
     });
 
     it("Should link transaction to existing payee when payeeId is provided", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       const transaction1 = {
         accountId: account.id,
@@ -252,7 +252,7 @@ describe("Payee", () => {
     });
 
     it("Should return 404 if user doesn't own payeeId - adding tx", async () => {
-      await createTestAccount(cookie);
+      await createAccountAndFetch(cookie);
 
       const { accounts } = await getAccounts(cookie);
       const accountsArray = Object.values(accounts);
@@ -275,7 +275,7 @@ describe("Payee", () => {
       const { payees } = await getPayees(cookie);
       const payeesArray = Object.values(payees);
       const testPayee = payeesArray[0];
-      await createTestAccount(cookie2);
+      await createAccountAndFetch(cookie2);
 
       const { accounts: accounts2 } = await getAccounts(cookie2);
       const accountsArray2 = Object.values(accounts2);
@@ -291,7 +291,7 @@ describe("Payee", () => {
 
   describe("Read", () => {
     it("Should return all payees for user and not include other users' payees", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       const transaction1 = {
         accountId: account.id,
@@ -319,7 +319,7 @@ describe("Payee", () => {
       };
       await registerUser(user2);
       const cookie2 = await login(user2);
-      await createTestAccount(cookie2);
+      await createAccountAndFetch(cookie2);
 
       const { accounts: accounts2 } = await getAccounts(cookie2);
       const accountsArray2 = Object.values(accounts2);
@@ -357,7 +357,7 @@ describe("Payee", () => {
 
   describe("Delete", () => {
     it("Should delete payee and update transactions with null when no new payeeId provided", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
       await addTransaction(cookie, {
         accountId: account.id,
         payeeName: PAYEE_NAME,
@@ -411,7 +411,7 @@ describe("Payee", () => {
     });
 
     it("Should delete payee and update transactions with replacement payee when payeeId provided", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       await addTransaction(cookie, {
         accountId: account.id,
@@ -470,7 +470,7 @@ describe("Payee", () => {
     });
 
     it("Should return 404 if user doesn't own original payeeId", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
       await addTransaction(cookie, {
         accountId: account.id,
         payeeName: PAYEE_NAME,
@@ -498,7 +498,7 @@ describe("Payee", () => {
     });
 
     it("Should return 404 if user doesn't own replacement payeeId", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
       await addTransaction(cookie, {
         accountId: account.id,
         payeeName: PAYEE_NAME,
@@ -516,7 +516,7 @@ describe("Payee", () => {
       };
       await registerUser(user2);
       const cookie2 = await login(user2);
-      await createTestAccount(cookie2);
+      await createAccountAndFetch(cookie2);
       const { accounts } = await getAccounts(cookie2);
       const account2 = Object.values(accounts)[0];
 
@@ -545,7 +545,7 @@ describe("Payee", () => {
 
   describe("Edit", () => {
     it("Should successfully update payee name", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
       await addTransaction(cookie, {
         accountId: account.id,
         payeeName: PAYEE_NAME,
@@ -575,7 +575,7 @@ describe("Payee", () => {
     });
 
     it("Should update multiple fields at once", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
       await addTransaction(cookie, {
         accountId: account.id,
         payeeName: PAYEE_NAME,
@@ -610,7 +610,7 @@ describe("Payee", () => {
     });
 
     it("Should trim whitespace from payee name", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
       await addTransaction(cookie, {
         accountId: account.id,
         payeeName: PAYEE_NAME,
@@ -634,7 +634,7 @@ describe("Payee", () => {
     });
 
     it("Should return 400 if payee name is empty or whitespace only", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
       await addTransaction(cookie, {
         accountId: account.id,
         payeeName: PAYEE_NAME,
@@ -661,7 +661,7 @@ describe("Payee", () => {
     });
 
     it("Should return 400 if payee name exceeds maximum length", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
       await addTransaction(cookie, {
         accountId: account.id,
         payeeName: PAYEE_NAME,
@@ -692,7 +692,7 @@ describe("Payee", () => {
     it("Should return 409 if renaming to existing payee name", async () => {
       expect.hasAssertions();
 
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       await addTransaction(cookie, {
         accountId: account.id,
@@ -737,7 +737,7 @@ describe("Payee", () => {
       };
       await registerUser(user2);
       const cookie2 = await login(user2);
-      await createTestAccount(cookie2);
+      await createAccountAndFetch(cookie2);
 
       const { accounts: accounts2 } = await getAccounts(cookie2);
       const accountsArray2 = Object.values(accounts2);
@@ -770,7 +770,7 @@ describe("Payee", () => {
     });
 
     it("Should return 404 if user doesn't own categoryId", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       await addTransaction(cookie, {
         accountId: account.id,
@@ -787,7 +787,7 @@ describe("Payee", () => {
       };
       await registerUser(user2);
       const cookie2 = await login(user2);
-      await createTestAccount(cookie2);
+      await createAccountAndFetch(cookie2);
 
       const { categories: categories2 } = await getCategories(cookie2);
       const user2Category = Object.values(categories2).find(
@@ -811,7 +811,7 @@ describe("Payee", () => {
     });
 
     it("Should handle concurrent payee renames to same name (race condition)", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
 
       // Create two different payees
       await addTransaction(cookie, {
@@ -857,7 +857,7 @@ describe("Payee", () => {
     });
 
     it("Should return 400 if no update fields are provided", async () => {
-      const account = await createTestAccount(cookie);
+      const account = await createAccountAndFetch(cookie);
       await addTransaction(cookie, {
         accountId: account.id,
         payeeName: PAYEE_NAME,
@@ -886,7 +886,7 @@ describe("Payee", () => {
   describe("Bulk Operations", () => {
     describe("Edit Payees In Bulk", () => {
       it("Should update includeInPayeeList for multiple payees", async () => {
-        const account = await createTestAccount(cookie);
+        const account = await createAccountAndFetch(cookie);
 
         await addTransaction(cookie, {
           accountId: account.id,
@@ -929,7 +929,7 @@ describe("Payee", () => {
       });
 
       it("Should return 404 if user doesn't own one of the payees", async () => {
-        const account = await createTestAccount(cookie);
+        const account = await createAccountAndFetch(cookie);
 
         await addTransaction(cookie, {
           accountId: account.id,
@@ -956,7 +956,7 @@ describe("Payee", () => {
       });
 
       it("Should return 400 if no update fields provided", async () => {
-        const account = await createTestAccount(cookie);
+        const account = await createAccountAndFetch(cookie);
 
         await addTransaction(cookie, {
           accountId: account.id,
@@ -980,7 +980,7 @@ describe("Payee", () => {
 
     describe("Combine Payees", () => {
       it("Should combine multiple payees into target payee", async () => {
-        const account = await createTestAccount(cookie);
+        const account = await createAccountAndFetch(cookie);
 
         await addTransaction(cookie, {
           accountId: account.id,
@@ -1040,7 +1040,7 @@ describe("Payee", () => {
       });
 
       it("Should return 400 if target payee is in payeeIds list", async () => {
-        const account = await createTestAccount(cookie);
+        const account = await createAccountAndFetch(cookie);
 
         await addTransaction(cookie, {
           accountId: account.id,
@@ -1067,7 +1067,7 @@ describe("Payee", () => {
       });
 
       it("Should return 404 if user doesn't own one of the payees", async () => {
-        const account = await createTestAccount(cookie);
+        const account = await createAccountAndFetch(cookie);
 
         await addTransaction(cookie, {
           accountId: account.id,
@@ -1091,7 +1091,7 @@ describe("Payee", () => {
         };
         await registerUser(user2);
         const cookie2 = await login(user2);
-        await createTestAccount(cookie2);
+        await createAccountAndFetch(cookie2);
 
         const { accounts: accounts2 } = await getAccounts(cookie2);
         const account2 = Object.values(accounts2)[0];
@@ -1114,7 +1114,7 @@ describe("Payee", () => {
       });
 
       it("Should require at least 2 payees to combine", async () => {
-        const account = await createTestAccount(cookie);
+        const account = await createAccountAndFetch(cookie);
 
         await addTransaction(cookie, {
           accountId: account.id,
@@ -1138,7 +1138,7 @@ describe("Payee", () => {
 
     describe("Delete Payees In Bulk", () => {
       it("Should delete multiple payees and set transactions to null", async () => {
-        const account = await createTestAccount(cookie);
+        const account = await createAccountAndFetch(cookie);
 
         await addTransaction(cookie, {
           accountId: account.id,
@@ -1183,7 +1183,7 @@ describe("Payee", () => {
       });
 
       it("Should delete multiple payees and reassign to replacement payee", async () => {
-        const account = await createTestAccount(cookie);
+        const account = await createAccountAndFetch(cookie);
 
         await addTransaction(cookie, {
           accountId: account.id,
@@ -1227,7 +1227,7 @@ describe("Payee", () => {
       });
 
       it("Should return 400 if replacement payee is in delete list", async () => {
-        const account = await createTestAccount(cookie);
+        const account = await createAccountAndFetch(cookie);
 
         await addTransaction(cookie, {
           accountId: account.id,
@@ -1255,7 +1255,7 @@ describe("Payee", () => {
       });
 
       it("Should return 404 if user doesn't own one of the payees to delete", async () => {
-        const account = await createTestAccount(cookie);
+        const account = await createAccountAndFetch(cookie);
 
         await addTransaction(cookie, {
           accountId: account.id,
@@ -1281,7 +1281,7 @@ describe("Payee", () => {
       });
 
       it("Should return 404 if user doesn't own replacement payee", async () => {
-        const account = await createTestAccount(cookie);
+        const account = await createAccountAndFetch(cookie);
 
         await addTransaction(cookie, {
           accountId: account.id,
@@ -1298,7 +1298,7 @@ describe("Payee", () => {
         };
         await registerUser(user2);
         const cookie2 = await login(user2);
-        await createTestAccount(cookie2);
+        await createAccountAndFetch(cookie2);
 
         const { accounts: accounts2 } = await getAccounts(cookie2);
         const account2 = Object.values(accounts2)[0];

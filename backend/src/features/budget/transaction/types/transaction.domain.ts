@@ -2,6 +2,7 @@ import { type Decimal } from "@prisma/client/runtime/library";
 import { Brand } from "../../../../shared/types/brand";
 import { type AccountId } from "../../account/account.types";
 import { type CategoryId } from "../../category/category.types";
+import { PayeeId } from "../../payee/payee.types";
 
 /**
  * A strongly-typed identifier for a transaction, using a branded type for type safety.
@@ -25,7 +26,7 @@ export type DomainNormalTransaction = {
   id: TransactionId;
   accountId: AccountId;
   categoryId: CategoryId;
-  payeeId?: string;
+  payeeId?: PayeeId;
   date: Date;
   memo: string;
   inflow: Decimal;
@@ -41,7 +42,7 @@ export type DomainTransferTransaction = {
   type: "transfer";
   id: TransactionId;
   accountId: AccountId;
-  payeeId?: string;
+  payeeId?: PayeeId;
   date: Date;
   memo: string;
   inflow: Decimal;

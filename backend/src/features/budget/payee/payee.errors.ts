@@ -32,3 +32,20 @@ export class TargetPayeeIsInCombineList extends HttpError {
     );
   }
 }
+
+export class PayeeInvariantError extends Error {
+  constructor(
+    message: string,
+    readonly meta?: Record<string, unknown>
+  ) {
+    super(message);
+    this.name = "PayeeInvariantError";
+  }
+}
+
+export class MissingSystemPayeesError extends PayeeInvariantError {
+  constructor(meta?: Record<string, unknown>) {
+    super("Invariant violated: Missing system payees", meta);
+    this.name = "MissingSystemPayeesError";
+  }
+}
