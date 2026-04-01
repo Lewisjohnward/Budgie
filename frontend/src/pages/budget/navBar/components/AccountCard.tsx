@@ -17,10 +17,10 @@ export function useHasUnallocatedTransactions(account: Account) {
   const { data } = useGetAccountsQuery();
 
   return useMemo(() => {
-    return account.transactions.some(
-      (transactionId) => !data?.transactions?.[transactionId]?.categoryId,
+    return account.transactionIds.some(
+      (transactionId) => !data?.transactions?.[transactionId]?.categoryId
     );
-  }, [account.transactions, data?.transactions]);
+  }, [account.transactionIds, data?.transactions]);
 }
 
 export function AccountCard({
@@ -48,7 +48,7 @@ export function AccountCard({
       className={({ isActive }) =>
         clsx(
           (isActive || mouseOver) && "bg-white/10",
-          "group flex justify-between items-center gap-4 pl-4 pr-2 py-2 text-sm rounded",
+          "group flex justify-between items-center gap-4 pl-4 pr-2 py-2 text-sm rounded"
         )
       }
       onContextMenu={handleEditAccount}
