@@ -10,6 +10,7 @@ import { useSelectCategory } from "../components/transactionFormRow/selectCatego
 import { useSelectPayee } from "../components/transactionFormRow/selectPayee/useSelectPayee";
 import { CategoryT } from "@/core/types/NormalizedData";
 import { useSelectDate } from "../components/transactionFormRow/selectDate/useSelectDate";
+import { normaliseDate } from "../utils/normaliseDate";
 
 const TransactionFormSchema = z.object({
   accountId: z.string().uuid(),
@@ -302,7 +303,7 @@ export const useTransactionFormRow = (accountId: string) => {
           categoryId: formValues.categoryId || "",
           payeeId: formValues.payeeId ? formValues.payeeId : undefined,
           memo: formValues.memo || null,
-          date: formValues.date.toISOString(),
+          date: normaliseDate(formValues.date).toISOString(),
           inflow: formValues.inflow || "0",
           outflow: formValues.outflow || "0",
           cleared: false,
@@ -318,7 +319,7 @@ export const useTransactionFormRow = (accountId: string) => {
         categoryId: formValues.categoryId || undefined,
         payeeId: formValues.payeeId ? formValues.payeeId : undefined,
         memo: formValues.memo,
-        date: formValues.date.toISOString(),
+        date: normaliseDate(formValues.date).toISOString(),
         inflow: formValues.inflow || undefined,
         outflow: formValues.outflow || undefined,
         cleared: false,
@@ -392,7 +393,7 @@ export const useTransactionFormRow = (accountId: string) => {
       categoryName: transaction.unassigned
         ? ""
         : `${transaction.categoryGroup.name}: ${transaction.category.name}` ||
-        "",
+          "",
       categoryId: transaction.categoryId || "",
       memo: transaction.memo || "",
       outflow:
