@@ -33,23 +33,35 @@ export const toEditPayeesInBulkCommand = (
 
 /**
  * Updates multiple payees in bulk with the same field values.
- * Currently only supports updating the includeInPayeeList field.
- * At least one update field must be provided.
  *
- * @param payload - The edit payees in bulk payload
- * @param payload.userId - The ID of the user performing the operation
- * @param payload.payeeIds - Array of payee IDs to update
- * @param payload.updates - Object containing the fields to update
- * @param payload.updates.includeInPayeeList - Optional flag to show/hide payees in payee list
- * @throws {PayeeNotFoundError} - If user doesn't own one or more of the payees (404)
+ * This function enforces the following rules:
+ * 1. All payees must belong to the specified user.
+ * 2. System payees cannot be modified.
+ *
+ * Currently, the only supported field for bulk update is `includeInPayeeList`.
+ * All operations are performed inside a single database transaction to ensure atomicity.
+ *
+ * @param payload - The payload containing bulk edit details.
+ * @param payload.userId - ID of the user performing the operation.
+ * @param payload.payeeIds - Array of payee IDs to update.
+ * @param payload.updates.includeInPayeeList - Optional flag to show or hide payees in the payee list.
+ *
+ * @returns A promise that resolves once all payees have been updated.
+ *
+ * @throws {PayeeNotFoundError} - If one or more payees do not belong to the user.
+ * @throws {CannotModifySystemPayeeError} - If attempting to edit system payees.
  */
-
-export const editPayeesInBulk = async (payload: EditPayeesInBulkPayload) => {
+export const editPayeesInBulk = async (
+  payload: EditPayeesInBulkPayload
+): Promise<void> => {
   const { userId, payeeIds, updates } = toEditPayeesInBulkCommand(payload);
 
   await prisma.$transaction(async (tx) => {
     // Verify user owns all payees
     await payeeService.checkUserOwnsPayees(tx, payeeIds, userId);
+
+    // Prevent editing system payees
+    await payeeService.assertNotSystemPayees(tx, userId, payeeIds);
 
     // Update all payees
     await payeeService.updatePayees(tx, payeeIds, updates);

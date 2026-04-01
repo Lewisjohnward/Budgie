@@ -33,6 +33,12 @@ export class TargetPayeeIsInCombineList extends HttpError {
   }
 }
 
+export class CannotModifySystemPayeeError extends HttpError {
+  constructor() {
+    super("System payees cannot be modified", 400);
+  }
+}
+
 export class PayeeInvariantError extends Error {
   constructor(
     message: string,
