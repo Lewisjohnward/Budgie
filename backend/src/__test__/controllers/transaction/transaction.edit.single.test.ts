@@ -709,6 +709,7 @@ describe("Transaction Single Edit", () => {
     });
     describe("Side Effects", () => {
       it("If a new payee is provided, create entry", async () => {
+        // Create account and add a transaction without a payee
         const account1 = await createAccountAndFetch(cookie, 0);
 
         const transactionPayload: TestInsertTransactionInputWithoutUserId = {
@@ -718,10 +719,14 @@ describe("Transaction Single Edit", () => {
 
         const newTransaction = await addTransaction(cookie, transactionPayload);
 
-        // Verify no payees exist initially
+        // Verify no user-created payees exist initially (system payees excluded)
         const { payees: payeesBefore } = await getPayees(cookie);
-        expect(Object.values(payeesBefore).length).toBe(0);
+        const userPayeesBefore = Object.values(payeesBefore).filter(
+          (p) => p.origin !== "SYSTEM"
+        );
+        expect(userPayeesBefore.length).toBe(0);
 
+        // Edit transaction to assign a new payee
         const NEW_PAYEE_NAME = "New Test Payee";
         const editTransactionPayload: EditSingleTransactionInput = {
           payeeName: NEW_PAYEE_NAME,
@@ -733,14 +738,12 @@ describe("Transaction Single Edit", () => {
           editTransactionPayload
         );
 
-        // Verify payee was created
-        const { payees: payeesAfter } = await getPayees(cookie);
-        const payeesArray = Object.values(payeesAfter);
-        expect(payeesArray.length).toBe(1);
-
+        // Verify the new payee was created
         const createdPayee = await getPayeeByName(cookie, NEW_PAYEE_NAME);
+        expect(createdPayee).toBeDefined();
         expect(createdPayee.name).toBe(NEW_PAYEE_NAME);
 
+        // Verify transaction is now linked to the new payee
         expect(updatedTransaction).toBeDefined();
         expect(updatedTransaction!.payeeId).toBe(createdPayee.id);
       });
@@ -2159,7 +2162,7 @@ describe("Transaction Single Edit", () => {
           });
         });
         describe("Category Months", () => {
-          it.skip("Should backfill category months when editing a transfer transaction into the past", async () => { });
+          it.skip("Should backfill category months when editing a transfer transaction into the past", async () => {});
         });
       });
     });

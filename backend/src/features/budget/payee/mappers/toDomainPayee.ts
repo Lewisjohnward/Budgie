@@ -20,5 +20,6 @@ export const toDomainPayee = (row: db.Payee): DomainPayee => {
         : asCategoryId(row.defaultCategoryId),
     id: asPayeeId(row.id),
     userId: asUserId(row.userId),
+    origin: row.origin,
   };
 };
