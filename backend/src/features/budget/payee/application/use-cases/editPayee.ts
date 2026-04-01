@@ -57,6 +57,8 @@ const toEditPayeeCommand = (p: EditPayeePayload): EditPayeeCommand => ({
  *
  * The function enforces the following invariants:
  * - The payee must belong to the specified user.
+ * - The payee must not be a system payee. Attempts to edit system payees
+ *   will throw a `CannotModifySystemPayeeError`.
  * - The new payee name (if provided) must be unique for the user.
  * - The new default category (if provided) must exist and be owned by the user.
  *
@@ -74,12 +76,12 @@ const toEditPayeeCommand = (p: EditPayeePayload): EditPayeeCommand => ({
  *
  * @returns A promise that resolves once the payee has been successfully updated.
  *
+ * @throws {CannotModifySystemPayeeError} - If the payee is a system payee.
  * @throws Will throw an error if:
- * - The payee does not belong to the user.
- * - The new payee name is not unique.
- * - The new default category does not exist or is not owned by the user.
+ *   - The payee does not belong to the user.
+ *   - The new payee name is not unique.
+ *   - The new default category does not exist or is not owned by the user.
  */
-
 export const editPayee = async (payload: EditPayeePayload): Promise<void> => {
   const {
     userId,
@@ -92,6 +94,8 @@ export const editPayee = async (payload: EditPayeePayload): Promise<void> => {
 
   await prisma.$transaction(async (tx) => {
     await payeeService.checkUserOwnsPayees(tx, payeeId, userId);
+
+    await payeeService.assertNotSystemPayees(tx, userId, payeeId);
 
     if (newName) {
       await payeeService.checkPayeeNameIsUnique(tx, userId, newName, payeeId);

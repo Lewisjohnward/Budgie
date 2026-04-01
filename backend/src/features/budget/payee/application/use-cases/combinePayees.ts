@@ -37,37 +37,50 @@ export const toCombinePayeesCommand = (
 
 /**
  * Combines multiple payees into a single existing target payee.
- * All transactions associated with the payees being combined will be reassigned to the target payee,
- * and the combined payees will be deleted. The target payee remains unchanged.
  *
- * @param payload - The combine payees payload
- * @param payload.userId - The ID of the user performing the operation
- * @param payload.payeeIds - Array of payee IDs to combine (must not include targetPayeeId)
- * @param payload.targetPayeeId - The ID of an existing payee to merge into (this payee will remain)
- * @throws {TargetPayeeIsInCombineList} - If targetPayeeId is included in payeeIds (400)
- * @throws {PayeeNotFoundError} - If user doesn't own one or more of the payees (404)
+ * Rules and behavior:
+ * 1. The target payee must not be included in the list of payees to combine.
+ * 2. All payees must belong to the specified user.
+ * 3. System payees cannot be modified or deleted.
+ * 4. Transactions linked to the combined payees are reassigned to the target payee.
+ * 5. The combined payees are deleted; the target payee remains unchanged.
+ *
+ * All operations are performed within a single database transaction for atomicity.
+ *
+ * @param payload - The payload containing combine payees details.
+ * @param payload.userId - ID of the user performing the operation.
+ * @param payload.payeeIds - Array of payee IDs to combine (excluding the target).
+ * @param payload.targetPayeeId - The ID of an existing payee to merge into (this payee remains).
+ *
+ * @returns A promise that resolves once the payees have been successfully combined.
+ *
+ * @throws {TargetPayeeIsInCombineList} - If the targetPayeeId is included in payeeIds (400).
+ * @throws {PayeeNotFoundError} - If one or more payees do not belong to the user (404).
+ * @throws {CannotModifySystemPayeeError} - If attempting to modify or delete a system payee (400).
  */
-
-export const combinePayees = async (payload: CombinePayeesPayload) => {
+export const combinePayees = async (
+  payload: CombinePayeesPayload
+): Promise<void> => {
   const { userId, payeeIds, targetPayeeId } = toCombinePayeesCommand(payload);
 
   await prisma.$transaction(async (tx) => {
-    // Fail early: verify target is not in the list of payees to combine
     if (payeeIds.includes(targetPayeeId)) {
       throw new TargetPayeeIsInCombineList();
     }
 
-    // Verify user owns all payees (including target)
     await payeeService.checkUserOwnsPayees(
       tx,
       [...payeeIds, targetPayeeId],
       userId
     );
 
-    // Get payees to delete (all except target)
+    await payeeService.assertNotSystemPayees(tx, userId, [
+      ...payeeIds,
+      targetPayeeId,
+    ]);
+
     const payeesToDelete = payeeIds.filter((id) => id !== targetPayeeId);
 
-    // Update all transactions at once to point to target payee
     await transactionService.updatePayeeForTransactions(
       tx,
       userId,
@@ -75,7 +88,6 @@ export const combinePayees = async (payload: CombinePayeesPayload) => {
       targetPayeeId
     );
 
-    // Delete all merged payees
     await payeeService.deletePayees(tx, payeesToDelete);
   });
 };

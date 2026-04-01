@@ -39,20 +39,27 @@ export const toDeletePayeesInBulkCommand = (
 
 /**
  * Deletes multiple payees in bulk and updates all associated transactions.
- * If a replacement payee is provided, all transactions will be reassigned to it.
- * Otherwise, transactions will have their payeeId set to null.
  *
- * @param payload - The delete payees in bulk payload
- * @param payload.userId - The ID of the user performing the operation
+ * - If a `replacementPayeeId` is provided, all transactions linked to the deleted payees
+ *   will be reassigned to the replacement payee.
+ * - If no replacement is provided, transactions will have their `payeeId` set to `null`.
+ * - System payees cannot be deleted or used as a replacement; attempting to do so
+ *   will throw `CannotModifySystemPayeeError`.
+ *
+ * @param payload - The payload containing bulk deletion details
+ * @param payload.userId - ID of the user performing the operation
  * @param payload.payeeIds - Array of payee IDs to delete
- * @param payload.replacementPayeeId - Optional ID of an existing payee to reassign transactions to (must not be in payeeIds)
- * @throws {ReplacementPayeeIsInDeleteList} - If replacementPayeeId is included in payeeIds (400)
- * @throws {PayeeNotFoundError} - If user doesn't own one or more of the payees (404)
+ * @param payload.replacementPayeeId - Optional ID of an existing payee to reassign transactions to
+ *
+ * @throws {ReplacementPayeeIsInDeleteList} If `replacementPayeeId` is included in `payeeIds` (400)
+ * @throws {PayeeNotFoundError} If user doesn't own one or more of the payees (404)
+ * @throws {CannotModifySystemPayeeError} If any of the payees or the replacement is a system payee (400)
+ *
+ * @returns A promise that resolves once all payees and transactions have been updated
  */
-
 export const deletePayeesInBulk = async (
   payload: DeletePayeesInBulkPayload
-) => {
+): Promise<void> => {
   const { userId, payeeIds, replacementPayeeId } =
     toDeletePayeesInBulkCommand(payload);
 
@@ -68,6 +75,12 @@ export const deletePayeesInBulk = async (
       : payeeIds;
 
     await payeeService.checkUserOwnsPayees(tx, payeesToCheck, userId);
+
+    // Prevent modifying system payees
+    await payeeService.assertNotSystemPayees(tx, userId, [
+      ...payeeIds,
+      ...(replacementPayeeId ? [replacementPayeeId] : []),
+    ]);
 
     // Update all transactions at once
     await transactionService.updatePayeeForTransactions(

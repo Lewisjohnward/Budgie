@@ -36,18 +36,29 @@ export const toDeletePayeeCommand = (
 });
 
 /**
- * Deletes a payee and updates all associated transactions.
- * If a replacement payee is provided, all transactions will be reassigned to it.
- * Otherwise, transactions will have their payeeId set to null.
+ * Deletes a payee and reassigns or clears associated transactions.
  *
- * @param payload - The delete payee payload
- * @param payload.userId - The ID of the user performing the operation
- * @param payload.payeeId - The ID of the payee to delete
- * @param payload.replacementPayeeId - Optional ID of an existing payee to reassign transactions to
- * @throws {PayeeNotFoundError} - If user doesn't own the payee or replacement payee (404)
+ * This function enforces the following rules:
+ * 1. The payee must belong to the specified user.
+ * 2. The replacement payee (if provided) must belong to the user.
+ * 3. System payees cannot be deleted.
+ *
+ * All operations are performed inside a single database transaction to
+ * ensure atomicity.
+ *
+ * @param payload - The raw payload for deleting a payee. Internally converted to a branded `DeletePayeeCommand`.
+ * @param payload.userId - The ID of the user performing the deletion.
+ * @param payload.payeeId - The ID of the payee to delete.
+ * @param payload.replacementPayeeId - Optional ID of an existing payee to reassign transactions to.
+ *
+ * @returns A promise that resolves once the payee has been deleted and transactions updated.
+ *
+ * @throws {PayeeNotFoundError} - If the payee or replacement payee does not belong to the user.
+ * @throws {CannotModifySystemPayeeError} - If attempting to delete a system payee.
  */
-
-export const deletePayee = async (payload: DeletePayeePayload) => {
+export const deletePayee = async (
+  payload: DeletePayeePayload
+): Promise<void> => {
   const { userId, payeeId, replacementPayeeId } = toDeletePayeeCommand(payload);
 
   await prisma.$transaction(async (tx) => {
@@ -57,6 +68,9 @@ export const deletePayee = async (payload: DeletePayeePayload) => {
       : payeeId;
 
     await payeeService.checkUserOwnsPayees(tx, payeesToCheck, userId);
+
+    // Prevent deleting system payees
+    await payeeService.assertNotSystemPayees(tx, userId, payeeId);
 
     await transactionService.updatePayeeForTransactions(
       tx,

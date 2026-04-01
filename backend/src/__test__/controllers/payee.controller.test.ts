@@ -15,6 +15,7 @@ import { login } from "../utils/auth";
 import request from "supertest";
 import app from "../../app";
 import { createAccountAndFetch } from "../utils/account";
+import { SYSTEM_PAYEE_NAMES } from "../../features/budget/payee/payee.constants";
 
 const PAYEE_NAME = "testPayee";
 
@@ -570,38 +571,98 @@ describe("Payee", () => {
       const { payees: user2PayeesAfter } = await getPayees(cookie2);
       expect(user2PayeesAfter[user2Payee.id]).toBeDefined();
     });
-  });
+    it("Should return 400 if deleting system payees", async () => {
+      // Fetch the system payee
+      const SYSTEM_PAYEE_NAME = SYSTEM_PAYEE_NAMES[0];
+      const { payees } = await getPayees(cookie);
+      const systemPayee = Object.values(payees).find(
+        (p) => p.name === SYSTEM_PAYEE_NAME
+      );
 
-  it("Should return 400 if no update fields are provided", async () => {
-    // Setup: create account and add a transaction with a payee
-    const account = await createAccountAndFetch(cookie);
-    await addTransaction(cookie, {
-      accountId: account.id,
-      payeeName: PAYEE_NAME,
-      outflow: "10",
+      expect(systemPayee).toBeDefined();
+      expect(systemPayee!.origin).toBe("SYSTEM");
+
+      // Attempt to delete the system payee - backend should reject
+      await request(app)
+        .delete("/budget/payees")
+        .set("Authorization", `Bearer ${cookie}`)
+        .send({ payeeId: systemPayee!.id })
+        .expect(400);
+
+      // Verify the payee still exists
+      const { payees: payeesAfter } = await getPayees(cookie);
+      const existingPayee = payeesAfter[systemPayee!.id];
+
+      expect(existingPayee).toBeDefined();
+      expect(existingPayee!.name).toBe(SYSTEM_PAYEE_NAME);
+      expect(existingPayee!.origin).toBe("SYSTEM");
     });
-
-    // Fetch the payee created from the transaction
-    const { payees } = await getPayees(cookie);
-    const payee = Object.values(payees).find((p) => p.name === PAYEE_NAME);
-    expect(payee).toBeDefined();
-
-    // Attempt to edit the payee without providing any update fields, expect 400
-    await editPayee(
-      cookie,
-      {
-        payeeId: payee!.id,
-      },
-      400
-    );
-
-    // Fetch payees again and verify that nothing has changed
-    const { payees: unchangedPayees } = await getPayees(cookie);
-    const unchangedPayee = unchangedPayees[payee!.id];
-
-    expect(unchangedPayee).toBeDefined();
-    expect(unchangedPayee!.name).toBe(PAYEE_NAME);
   });
+
+  describe("Edit", () => {
+    describe("Error Cases", () => {
+      it("Should return 400 if no update fields are provided", async () => {
+        // Setup: create account and add a transaction with a payee
+        const account = await createAccountAndFetch(cookie);
+        await addTransaction(cookie, {
+          accountId: account.id,
+          payeeName: PAYEE_NAME,
+          outflow: "10",
+        });
+
+        // Fetch the payee created from the transaction
+        const { payees } = await getPayees(cookie);
+        const payee = Object.values(payees).find((p) => p.name === PAYEE_NAME);
+        expect(payee).toBeDefined();
+
+        // Attempt to edit the payee without providing any update fields, expect 400
+        await editPayee(
+          cookie,
+          {
+            payeeId: payee!.id,
+          },
+          400
+        );
+
+        // Fetch payees again and verify that nothing has changed
+        const { payees: unchangedPayees } = await getPayees(cookie);
+        const unchangedPayee = unchangedPayees[payee!.id];
+
+        expect(unchangedPayee).toBeDefined();
+        expect(unchangedPayee!.name).toBe(PAYEE_NAME);
+      });
+      it("Should return 400 if editing a system payee", async () => {
+        // Fetch a system payee
+        const SYSTEM_PAYEE_NAME = SYSTEM_PAYEE_NAMES[0];
+        const { payees } = await getPayees(cookie);
+        const systemPayee = Object.values(payees).find(
+          (p) => p.name === SYSTEM_PAYEE_NAME
+        );
+
+        expect(systemPayee).toBeDefined();
+        expect(systemPayee!.origin).toBe("SYSTEM");
+
+        // Attempt to edit the system payee - backend should reject
+        await editPayee(
+          cookie,
+          {
+            payeeId: systemPayee!.id,
+            newName: "Attempted Rename",
+          },
+          400
+        );
+
+        // Verify that the system payee has not been modified
+        const { payees: payeesAfter } = await getPayees(cookie);
+        const unchangedPayee = payeesAfter[systemPayee!.id];
+
+        expect(unchangedPayee).toBeDefined();
+        expect(unchangedPayee!.name).toBe(SYSTEM_PAYEE_NAME);
+        expect(unchangedPayee!.origin).toBe("SYSTEM");
+      });
+    });
+  });
+
   describe("Bulk Operations", () => {
     describe("Edit Payees In Bulk", () => {
       it("Should update includeInPayeeList for multiple payees", async () => {
@@ -625,10 +686,13 @@ describe("Payee", () => {
 
         const { payees } = await getPayees(cookie);
         const payeesArray = Object.values(payees);
-        const payeeIds = payeesArray.map((p) => p.id);
+
+        // Only include user-created payees, skip system ones
+        const userPayees = payeesArray.filter((p) => p.origin !== "SYSTEM");
+        const payeeIds = userPayees.map((p) => p.id);
 
         // All should start as included
-        payeesArray.forEach((p) => {
+        userPayees.forEach((p) => {
           expect(p.includeInPayeeList).toBe(true);
         });
 
@@ -641,8 +705,12 @@ describe("Payee", () => {
 
         const { payees: updatedPayees } = await getPayees(cookie);
         const updatedPayeesArray = Object.values(updatedPayees);
+        // Only include user-created payees, skip system ones
+        const updatedUserPayeesArray = updatedPayeesArray.filter(
+          (p) => p.origin !== "SYSTEM"
+        );
 
-        updatedPayeesArray.forEach((p) => {
+        updatedUserPayeesArray.forEach((p) => {
           expect(p.includeInPayeeList).toBe(false);
         });
       });
@@ -694,6 +762,35 @@ describe("Payee", () => {
             updates: {},
           })
           .expect(400);
+      });
+      it("Should return 400 if bulk editing of system payees", async () => {
+        // Fetch a system payee
+        const SYSTEM_PAYEE_NAME = SYSTEM_PAYEE_NAMES[0];
+        const { payees } = await getPayees(cookie);
+        const systemPayee = Object.values(payees).find(
+          (p) => p.name === SYSTEM_PAYEE_NAME
+        );
+
+        expect(systemPayee).toBeDefined();
+        expect(systemPayee!.origin).toBe("SYSTEM");
+
+        // Attempt to bulk edit the system payee - backend should reject
+        await request(app)
+          .patch("/budget/payees/bulk")
+          .set("Authorization", `Bearer ${cookie}`)
+          .send({
+            payeeIds: [systemPayee!.id],
+            updates: { includeInPayeeList: false },
+          })
+          .expect(400);
+
+        // Verify that the system payee has not been modified
+        const { payees: payeesAfter } = await getPayees(cookie);
+        const unchangedPayee = payeesAfter[systemPayee!.id];
+
+        expect(unchangedPayee).toBeDefined();
+        expect(unchangedPayee!.name).toBe(SYSTEM_PAYEE_NAME);
+        expect(unchangedPayee!.origin).toBe("SYSTEM");
       });
     });
 
@@ -785,6 +882,76 @@ describe("Payee", () => {
         await combinePayees(cookie, payload, 400);
       });
 
+      it("Should return 400 if target payee is a system payee", async () => {
+        const account = await createAccountAndFetch(cookie);
+
+        await addTransaction(cookie, {
+          accountId: account.id,
+          payeeName: "Payee 1",
+          outflow: "10",
+        });
+        await addTransaction(cookie, {
+          accountId: account.id,
+          payeeName: "Payee 2",
+          outflow: "20",
+        });
+
+        const SYSTEM_PAYEE_NAME = SYSTEM_PAYEE_NAMES[0];
+
+        const { payees } = await getPayees(cookie);
+
+        const systemPayee = Object.values(payees).find(
+          (p) => p.name === SYSTEM_PAYEE_NAME
+        );
+        expect(systemPayee).toBeDefined();
+        expect(systemPayee!.origin).toBe("SYSTEM");
+
+        const payeesArray = Object.values(payees);
+        const payee1 = payeesArray.find((p) => p.name === "Payee 1")!;
+        const payee2 = payeesArray.find((p) => p.name === "Payee 2")!;
+
+        const payload: CombinePayeesPayloadWithoutUserId = {
+          payeeIds: [payee1.id, payee2.id],
+          targetPayeeId: systemPayee!.id,
+        };
+
+        await combinePayees(cookie, payload, 400);
+      });
+      it("Should return 400 if combining a system payee", async () => {
+        const account = await createAccountAndFetch(cookie);
+
+        await addTransaction(cookie, {
+          accountId: account.id,
+          payeeName: "Payee 1",
+          outflow: "10",
+        });
+        await addTransaction(cookie, {
+          accountId: account.id,
+          payeeName: "Payee 2",
+          outflow: "20",
+        });
+
+        const SYSTEM_PAYEE_NAME = SYSTEM_PAYEE_NAMES[0];
+
+        const { payees } = await getPayees(cookie);
+
+        const systemPayee = Object.values(payees).find(
+          (p) => p.name === SYSTEM_PAYEE_NAME
+        );
+        expect(systemPayee).toBeDefined();
+        expect(systemPayee!.origin).toBe("SYSTEM");
+
+        const payeesArray = Object.values(payees);
+        const payee1 = payeesArray.find((p) => p.name === "Payee 1")!;
+        const payee2 = payeesArray.find((p) => p.name === "Payee 2")!;
+
+        const payload: CombinePayeesPayloadWithoutUserId = {
+          payeeIds: [payee1.id, systemPayee!.id],
+          targetPayeeId: payee2.id,
+        };
+
+        await combinePayees(cookie, payload, 400);
+      });
       it("Should return 404 if user doesn't own one of the payees", async () => {
         const account = await createAccountAndFetch(cookie);
 
@@ -972,7 +1139,74 @@ describe("Payee", () => {
 
         await deletePayees(cookie, payload, 400);
       });
+      it("Should return 400 if deleting a system payee", async () => {
+        const account = await createAccountAndFetch(cookie);
 
+        await addTransaction(cookie, {
+          accountId: account.id,
+          payeeName: "Payee 1",
+          outflow: "10",
+        });
+        await addTransaction(cookie, {
+          accountId: account.id,
+          payeeName: "Payee 2",
+          outflow: "20",
+        });
+
+        const SYSTEM_PAYEE_NAME = SYSTEM_PAYEE_NAMES[0];
+
+        const { payees } = await getPayees(cookie);
+
+        const systemPayee = Object.values(payees).find(
+          (p) => p.name === SYSTEM_PAYEE_NAME
+        );
+        expect(systemPayee).toBeDefined();
+        expect(systemPayee!.origin).toBe("SYSTEM");
+
+        const payeesArray = Object.values(payees);
+        const payee1 = payeesArray.find((p) => p.name === "Payee 1")!;
+
+        const payload: DeletePayeesPayloadWithoutUserId = {
+          payeeIds: [systemPayee!.id],
+          replacementPayeeId: payee1.id,
+        };
+
+        await deletePayees(cookie, payload, 400);
+      });
+      it("Should return 400 if a system payee is the replacement", async () => {
+        const account = await createAccountAndFetch(cookie);
+
+        await addTransaction(cookie, {
+          accountId: account.id,
+          payeeName: "Payee 1",
+          outflow: "10",
+        });
+        await addTransaction(cookie, {
+          accountId: account.id,
+          payeeName: "Payee 2",
+          outflow: "20",
+        });
+
+        const SYSTEM_PAYEE_NAME = SYSTEM_PAYEE_NAMES[0];
+
+        const { payees } = await getPayees(cookie);
+
+        const systemPayee = Object.values(payees).find(
+          (p) => p.name === SYSTEM_PAYEE_NAME
+        );
+        expect(systemPayee).toBeDefined();
+        expect(systemPayee!.origin).toBe("SYSTEM");
+
+        const payeesArray = Object.values(payees);
+        const payee1 = payeesArray.find((p) => p.name === "Payee 1")!;
+
+        const payload: DeletePayeesPayloadWithoutUserId = {
+          payeeIds: [payee1.id],
+          replacementPayeeId: systemPayee!.id,
+        };
+
+        await deletePayees(cookie, payload, 400);
+      });
       it("Should return 404 if user doesn't own one of the payees to delete", async () => {
         const account = await createAccountAndFetch(cookie);
 

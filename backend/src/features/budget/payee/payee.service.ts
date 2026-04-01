@@ -8,6 +8,7 @@ import { getSystemPayeeIds } from "./application/services/getSystemPayeeIds";
 import { initialiseSystemPayees } from "./application/services/initialiseSystemPayees";
 import { getBalanceAdjustmentPayeeId } from "./application/services/getBalanceAdjustmentPayeeId";
 import { getStartingBalancePayeeId } from "./application/services/getStartingBalancePayeeId";
+import { assertNotSystemPayees } from "./application/services/assertNotSystemPayees";
 
 export const payeeService = {
   checkUserOwnsPayees,
@@ -23,4 +24,5 @@ export const payeeService = {
   initialiseSystemPayees,
   getBalanceAdjustmentPayeeId,
   getStartingBalancePayeeId,
+  assertNotSystemPayees,
 };
