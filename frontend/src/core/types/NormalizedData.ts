@@ -6,7 +6,7 @@ export type Account = {
   balance: number;
   createdAt: Date;
   updatedAt: Date;
-  transactions: string[];
+  transactionIds: string[];
 };
 
 export type Transaction = {
