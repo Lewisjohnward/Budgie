@@ -110,6 +110,20 @@ describe("Account - Edit", () => {
   });
 
   describe("Adjust balance", () => {
+    describe("Error Cases", () => {
+      it("Should return 400 if providng string", async () => {
+        const account = await createAccount(cookie, { balance: 100 });
+        const accountBefore = await fetchAccountByName(cookie, account.name);
+
+        const editAccountPayload = { balance: "abc" };
+        const res = await editAccount(
+          cookie,
+          accountBefore.id,
+          editAccountPayload
+        );
+        expect(res.status).toBe(400);
+      });
+    });
     describe("Positive balance", () => {
       it("Should handle smaller positive balance", async () => {
         const account = await createAccount(cookie, { balance: 100 });
@@ -253,6 +267,53 @@ describe("Account - Edit", () => {
         // the new account balance after the adjustment transaction.
         expect(rtaMonthsAfter[0].available).toBe(-10);
       });
+    });
+  });
+  describe("Combined Update (name & balance)", () => {
+    it("Should update both name and balance in a single request", async () => {
+      const account = await createAccount(cookie, { balance: 100 });
+
+      const accountBefore = await fetchAccountByName(cookie, account.name);
+      const { id } = accountBefore;
+
+      const transactionsBefore = await getTransactionsForAccountId(cookie, id);
+      const rtaMonthsBefore = await getRtaMonths(cookie);
+      expect(rtaMonthsBefore[0].available).toBe(100);
+
+      const editAccountPayload = {
+        name: "updated name",
+        balance: "50",
+        hell: "test",
+      };
+
+      await editAccount(cookie, id, editAccountPayload);
+
+      const accountAfter = await fetchAccountByName(
+        cookie,
+        editAccountPayload.name
+      );
+      expect(accountAfter).toBeDefined();
+
+      const transactionsAfter = await getTransactionsForAccountId(cookie, id);
+      expect(transactionsAfter.length).toBe(transactionsBefore.length + 1);
+
+      const newTransaction = getNewTransaction(
+        transactionsBefore,
+        transactionsAfter
+      );
+
+      expect(newTransaction).toBeDefined();
+
+      // 100 → 50 = outflow 50
+      expect(newTransaction?.outflow).toBe(50);
+
+      // Correct payee
+      const balanceAdjustmentPayee = await getBalanceAdjustmentPayee(cookie);
+      expect(newTransaction?.payeeId).toBe(balanceAdjustmentPayee.id);
+
+      //  RTA updated
+      const rtaMonthsAfter = await getRtaMonths(cookie);
+      expect(rtaMonthsAfter[0].available).toBe(50);
     });
   });
 });

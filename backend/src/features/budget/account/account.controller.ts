@@ -68,12 +68,10 @@ export const editAccount = async (
   try {
     const accountId = req.params.id;
 
-    const updates = req.body;
-
     const payload = editAccountSchema.parse({
       userId: req.user?._id,
       accountId,
-      updates,
+      ...req.body,
     });
 
     await accountUseCase.editAccount(payload);

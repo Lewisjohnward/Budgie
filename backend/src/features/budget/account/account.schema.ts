@@ -11,35 +11,45 @@ export const toggleAccountCloseSchema = z.object({
   accountId: z.string().uuid({ message: "Invalid UUID format" }),
 });
 
-export const editAccountSchema = z.object({
-  userId: z.string().uuid(),
-  accountId: z.string().uuid({ message: "Invalid UUID format" }),
-  updates: z
-    .object({
-      name: z
-        .string()
-        .nonempty({ message: "Account name cannot be empty" })
-        .optional(),
-      balance: z
-        .preprocess((val) => {
-          if (val === undefined || val === null || val === "") return undefined;
-          return new Decimal(val as any);
-        }, z.instanceof(Decimal))
-        .optional(),
-    })
-    .refine(
-      (data) => {
-        const definedCount = Object.values(data).filter(
-          (value) => value !== undefined
-        ).length;
+export const editAccountSchema = z
+  .object({
+    userId: z.string().uuid(),
+    accountId: z.string().uuid({ message: "Invalid UUID format" }),
 
-        return definedCount === 1;
-      },
-      {
-        message: "Exactly one field must be provided for update",
-      }
-    ),
-});
+    name: z
+      .string()
+      .nonempty({ message: "Account name cannot be empty" })
+      .optional(),
+
+    balance: z
+      .preprocess(
+        (val) => {
+          if (val === undefined || val === null || val === "") return undefined;
+
+          try {
+            return new Decimal(val as any);
+          } catch {
+            return NaN; // force failure in refine
+          }
+        },
+        z.any().refine((val) => val instanceof Decimal && !val.isNaN(), {
+          message: "Balance must be a valid number",
+        })
+      )
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      const definedCount = [data.name, data.balance].filter(
+        (v) => v !== undefined
+      ).length;
+
+      return definedCount >= 1;
+    },
+    {
+      message: "Provide exactly one of: name or balance",
+    }
+  );
 
 export const AccountTypeEnum = z.enum(["BANK", "CREDIT_CARD"]);
 

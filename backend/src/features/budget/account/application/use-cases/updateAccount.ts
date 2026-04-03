@@ -35,11 +35,7 @@ export const toEditAccountCommand = (
 export const editAccount = async (
   payload: EditAccountPayload
 ): Promise<void> => {
-  const {
-    accountId,
-    userId,
-    updates: { name, balance },
-  } = toEditAccountCommand(payload);
+  const { accountId, userId, name, balance } = toEditAccountCommand(payload);
 
   await prisma.$transaction(async (tx) => {
     const account = await accountService.getAccount(tx, accountId, userId);
