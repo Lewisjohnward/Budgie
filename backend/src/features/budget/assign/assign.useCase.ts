@@ -4,6 +4,7 @@ import { asUserId, UserId } from "../../user/auth/auth.types";
 import { asMonthId, MonthId } from "../category/category.types";
 import { updateCategoryMonthAssignment } from "./application/use-cases/updateCategoryMonthAssignment";
 import { AssignmentsPayload } from "./assign.schema";
+import { getMonthsForCategories } from "./application/use-cases/getMonthsForCategories";
 
 type UpdateMonthCommand = Omit<
   AssignmentsPayload,
@@ -49,4 +50,5 @@ export const assignUseCase = {
       // Update months
     });
   },
+  getMonthsForCategories,
 };

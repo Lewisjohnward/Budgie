@@ -12,6 +12,12 @@ export interface CategoryRepository {
     categoryId: CategoryId
   ): Promise<db.Category | null>;
 
+  getUserCategoryIds(
+    tx: Prisma.TransactionClient,
+    userId: UserId,
+    categoryIds: CategoryId[]
+  ): Promise<string[]>;
+
   existsCategoryWithNameInGroup(
     tx: Prisma.TransactionClient,
     userId: UserId,
@@ -75,6 +81,11 @@ export interface CategoryRepository {
     tx: Prisma.TransactionClient,
     userId: UserId
   ): Promise<Date[]>;
+
+  getMonthsForCategories(
+    tx: Prisma.TransactionClient,
+    categoryIds: CategoryId[]
+  ): Promise<db.Month[]>;
 
   /**
    * Retrieves the earliest past month associated with any category

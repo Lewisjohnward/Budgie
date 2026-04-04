@@ -1,7 +1,12 @@
 import { Router } from "express";
-import { updateMonthForCategory } from "./assign.controller";
+import {
+  getMonthsForCategories,
+  updateMonthForCategory,
+} from "./assign.controller";
 
 const router = Router();
+
+router.get("/", getMonthsForCategories);
 
 router.patch("/", updateMonthForCategory);
 

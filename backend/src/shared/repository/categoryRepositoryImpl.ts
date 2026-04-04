@@ -16,6 +16,18 @@ export const categoryRepository: CategoryRepository = {
     return row;
   },
 
+  getUserCategoryIds: async (tx, userId, categoryIds) => {
+    const row = await tx.category.findMany({
+      where: {
+        id: { in: categoryIds },
+        userId,
+      },
+      select: { id: true },
+    });
+
+    return row.map((r) => r.id);
+  },
+
   existsCategoryWithNameInGroup: async (tx, userId, categoryGroupId, name) => {
     const row = await tx.category.findFirst({
       where: { userId, categoryGroupId, name },
@@ -101,6 +113,17 @@ export const categoryRepository: CategoryRepository = {
     });
 
     return rows.map((r) => r.month);
+  },
+
+  getMonthsForCategories: async (tx, categoryIds) => {
+    const months = await tx.month.findMany({
+      where: {
+        categoryId: {
+          in: categoryIds,
+        },
+      },
+    });
+    return months;
   },
 
   getEarliestPastMonth: async (tx, userId): Promise<Date> => {

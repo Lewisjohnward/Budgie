@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { assignmentsSchema, assignSchema } from "./assign.schema";
+import { assignSchema, getMonthsForCategoriesSchema } from "./assign.schema";
 import { assignUseCase } from "./assign.useCase";
 
 export const updateMonthForCategory = async (
@@ -22,20 +22,28 @@ export const updateMonthForCategory = async (
   return;
 };
 
-export const updateCategoryAssignmentsForMonth = async (
+/**
+ * Controller for fetching months by category IDs.
+ *
+ * Validates request input, ensures the user owns the categories,
+ * and returns the corresponding months as domain objects.
+ */
+export const getMonthsForCategories = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  const categoryIds = req.query.categoryIds;
+
   try {
-    const payload = assignmentsSchema.parse({
-      userId: req.user?._id!,
-      ...req.body,
+    const payload = getMonthsForCategoriesSchema.parse({
+      userId: req.user!._id,
+      categoryIds,
     });
 
-    assignUseCase.updateCategoryAssignmentsForMonth(payload);
+    const months = await assignUseCase.getMonthsForCategories(payload);
 
-    res.sendStatus(200);
+    res.status(200).json(months);
   } catch (error) {
     next(error);
   }

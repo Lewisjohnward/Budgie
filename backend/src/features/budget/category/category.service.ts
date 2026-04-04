@@ -17,6 +17,8 @@ import { updateMonthsActivityForTransactions } from "./application/services/rta/
 import { getRtaCategoryId } from "./application/services/rta/getRtaCategoryId";
 import { getUncategorisedCategoryId } from "./application/services/getUncategorisedCategoryId";
 import { createCategory } from "./application/services/createCategory";
+import { ensureUserOwnsCategories } from "./application/services/ensureUserOwnsCategories";
+import { getMonthsForCategories } from "./application/services/months/getMonthsForCategories";
 
 export const categoryService = {
   rta: {
@@ -34,6 +36,7 @@ export const categoryService = {
     insertMissingMonths,
     createMonthsForCategory,
     ensureMonthsContinuity,
+    getMonthsForCategories,
   },
   categories: {
     createCategory,
@@ -43,5 +46,6 @@ export const categoryService = {
     checkCategoryNameIsUniqueInGroup,
     getNextCategoryPosition,
     isCategoryProtected,
+    ensureUserOwnsCategories,
   },
 };
