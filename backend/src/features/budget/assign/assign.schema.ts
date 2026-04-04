@@ -1,6 +1,16 @@
 import { Decimal } from "@prisma/client/runtime/library";
 import { z } from "zod";
 
+export const getMonthsForCategoriesSchema = z.object({
+  userId: z.string().uuid(),
+  categoryIds: z
+    .union([z.string(), z.array(z.string())])
+    .transform((val) => (Array.isArray(val) ? val : [val])),
+});
+export type GetMonthsForCategoriesPayload = z.infer<
+  typeof getMonthsForCategoriesSchema
+>;
+
 export const assignSchema = z.object({
   userId: z.string().uuid(),
   assigned: z
