@@ -1,28 +1,31 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { type Prisma, type PrismaClient } from "@prisma/client";
 import { categoryRepository } from "../../../../../../shared/repository/categoryRepositoryImpl";
 import { groupMonthlyAssignedNegativeAvailable } from "../../../../../../shared/utils/groupMonthlyAssignedNegativeAvailable";
 import { calculateRtaAvailablePerMonth } from "../../../domain/rta.domain";
 import { categoryService } from "../../../category.service";
-import { CategoryId } from "../../../category.types";
+import { type CategoryId, type DomainMonth } from "../../../category.types";
 import { type UserId } from "../../../../../user/auth/auth.types";
 
 /**
- * Calculates and updates the available amounts for RTA (Ready-To-Assign) months for a given user and category.
+ * Recalculates and updates the available amounts for Ready-To-Assign (RTA) months for a user,
+ * and returns the updated RTA month records.
  *
- * - Fetches all category months and RTA months for the specified user and category.
- * - Groups category months to determine the total negative assigned amounts per month.
- * - Calculates updated available amounts for each RTA month based on the grouped data.
- * - Persists the updated RTA month records to the database via the budget repository.
+ * Steps:
+ * 1. Fetch all category months and RTA months for the user and specified RTA category.
+ * 2. Aggregate negative assigned amounts from category months per month.
+ * 3. Calculate updated available amounts for each RTA month.
+ * 4. Persist the updated RTA months to the database.
  *
  * @param prisma - Prisma client or transaction client for database operations.
- * @param userId - The user identifier for whom the RTA months are calculated.
+ * @param userId - The ID of the user whose RTA months are being recalculated.
  * @param rtaCategoryId - The category ID representing RTA months.
+ * @returns Promise resolving to an array of updated DomainMonth objects representing the recalculated RTA months.
  */
 export const calculateMonthsAvailable = async (
   prisma: PrismaClient | Prisma.TransactionClient,
   userId: UserId,
   rtaCategoryId: CategoryId
-) => {
+): Promise<DomainMonth[]> => {
   const allCategoryMonths =
     await categoryService.months.getAllMonthsForCategories(
       prisma,
@@ -47,4 +50,6 @@ export const calculateMonthsAvailable = async (
 
   // update rta months
   await categoryRepository.updateMonths(prisma, updatedMonths);
+
+  return updatedMonths;
 };
