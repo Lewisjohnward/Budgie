@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { UserId } from "../../../../user/auth/auth.types";
 import { TransactionId } from "../../transaction.types";
 import { transactionService } from "../../transaction.service";
-import { categoryService } from "../../../category/category.service";
+import { categoryService } from "../../../category/core/category.service";
 import { splitTransactionsByType } from "../../utils/splitTransactionsByType";
 import { OperationMode } from "../../../../../shared/enums/operation-mode";
 import { accountService } from "../../../account/account.service";

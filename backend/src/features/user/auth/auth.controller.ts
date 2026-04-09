@@ -21,7 +21,7 @@ import {
   GeneratePassword,
   ValidatePassword,
 } from "./utils/password";
-import { categoryService } from "../../budget/category/category.service";
+import { categoryService } from "../../budget/category/core/category.service";
 import { prisma } from "../../../shared/prisma/client";
 import { memoService } from "../../budget/memo/memo.service";
 import { asUserId } from "./auth.types";

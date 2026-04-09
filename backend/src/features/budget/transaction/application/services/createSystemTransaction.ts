@@ -2,7 +2,7 @@ import { Decimal } from "@prisma/client/runtime/library";
 import { UserId } from "../../../../user/auth/auth.types";
 import { AccountId } from "../../../account/account.types";
 import { Prisma } from "@prisma/client";
-import { categoryService } from "../../../category/category.service";
+import { categoryService } from "../../../category/core/category.service";
 import { createNormalTransaction } from "./create/createNormalTransaction";
 import { OperationMode } from "../../../../../shared/enums/operation-mode";
 import { accountService } from "../../../account/account.service";

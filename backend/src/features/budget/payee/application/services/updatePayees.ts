@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { payeeRepository } from "../../../../../shared/repository/payeeRepositoryImpl";
 import { PayeeAlreadyExistsError } from "../../payee.errors";
 import { type PayeeId } from "../../payee.types";
-import { type CategoryId } from "../../../category/category.types";
+import { type CategoryId } from "../../../category/core/category.types";
 
 /**
  * Updates one or more payees with the same field values.

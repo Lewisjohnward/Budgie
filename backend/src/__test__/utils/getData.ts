@@ -1,6 +1,6 @@
 import request from "supertest";
 import app from "../../app";
-import { type NormalisedData } from "../../features/budget/category/category.types";
+import { type NormalisedData } from "../../features/budget/category/core/category.types";
 import { type NormalisedAccounts } from "../../features/budget/account/account.types";
 
 export const getCategories = async (cookie: string) => {

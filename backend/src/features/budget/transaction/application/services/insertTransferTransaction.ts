@@ -8,7 +8,7 @@ import {
   createTransferDestinationTransaction,
   createTransferSourceTransaction,
 } from "./create/createTransferTransaction";
-import { categoryService } from "../../../category/category.service";
+import { categoryService } from "../../../category/core/category.service";
 import { memoService } from "../../../memo/memo.service";
 import { type AccountId } from "../../../account/account.types";
 import { type InsertTransactionCommand } from "../use-cases/insertTransaction";

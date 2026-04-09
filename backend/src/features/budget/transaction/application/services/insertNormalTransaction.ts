@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { payeeService } from "../../../payee/payee.service";
-import { categoryService } from "../../../category/category.service";
+import { categoryService } from "../../../category/core/category.service";
 import { OperationMode } from "../../../../../shared/enums/operation-mode";
 import { accountService } from "../../../account/account.service";
 import { createNormalTransaction } from "./create/createNormalTransaction";

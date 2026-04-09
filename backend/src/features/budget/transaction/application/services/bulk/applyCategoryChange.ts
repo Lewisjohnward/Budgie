@@ -1,11 +1,11 @@
 import { Prisma } from "@prisma/client";
 import { OperationMode } from "../../../../../../shared/enums/operation-mode";
-import { categoryService } from "../../../../category/category.service";
+import { categoryService } from "../../../../category/core/category.service";
 import { type DomainNormalTransaction } from "../../../transaction.types";
 import { transactionRepository } from "../../../../../../shared/repository/transactionRepositoryImpl";
 import { splitTransactionsByType } from "../../../utils/splitTransactionsByType";
 import { UpdatedNormalTransactionsNotFoundError } from "../../../transaction.errors";
-import { type CategoryId } from "../../../../category/category.types";
+import { type CategoryId } from "../../../../category/core/category.types";
 import { type UserId } from "../../../../../user/auth/auth.types";
 
 /**

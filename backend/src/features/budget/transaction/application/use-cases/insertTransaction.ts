@@ -1,6 +1,6 @@
 import { prisma } from "../../../../../shared/prisma/client";
 import { accountService } from "../../../account/account.service";
-import { asCategoryId, CategoryId } from "../../../category/category.types";
+import { asCategoryId, CategoryId } from "../../../category/core/category.types";
 import { transactionService } from "../../transaction.service";
 import { type InsertTransactionPayload } from "../../transaction.schema";
 import { type AccountId, asAccountId } from "../../../account/account.types";

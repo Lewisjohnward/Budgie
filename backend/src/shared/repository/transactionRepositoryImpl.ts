@@ -6,7 +6,7 @@ import {
   type db,
   type TransactionInsertData,
 } from "../../features/budget/transaction/transaction.types";
-import { type CategoryId } from "../../features/budget/category/category.types";
+import { type CategoryId } from "../../features/budget/category/core/category.types";
 import { type AccountId } from "../../features/budget/account/account.types";
 import { transactionMapper } from "../../features/budget/transaction/transaction.mapper";
 import { type PayeeId } from "../../features/budget/payee/payee.types";

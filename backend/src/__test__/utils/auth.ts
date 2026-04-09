@@ -1,6 +1,6 @@
 import request from "supertest";
 import app from "../../app";
-import { NormalisedCategoryData } from "../../features/budget/category/category.types";
+import { NormalisedCategoryData } from "../../features/budget/category/core/category.types";
 import { prisma } from "../../shared/prisma/client";
 
 export const testUser = {

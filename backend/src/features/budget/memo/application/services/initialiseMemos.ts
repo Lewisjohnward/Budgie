@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { getMonth } from "../../../category/utils/getMonth";
+import { getMonth } from "../../../category/core/utils/getMonth";
 import { memoRepository } from "../../../../../shared/repository/memoRepositoryImpl";
 import { type UserId } from "../../../../user/auth/auth.types";
 

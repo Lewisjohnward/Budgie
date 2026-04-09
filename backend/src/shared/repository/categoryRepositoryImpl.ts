@@ -1,11 +1,11 @@
 import { Prisma } from "@prisma/client";
-import { PROTECTED_CATEGORY_NAMES } from "../../features/budget/category/category.constants";
-import { CategoryRepository } from "../../features/budget/category/category.repository";
+import { PROTECTED_CATEGORY_NAMES } from "../../features/budget/category/core/category.constants";
+import { CategoryRepository } from "../../features/budget/category/core/category.repository";
 import {
   type db,
   type MonthId,
-} from "../../features/budget/category/category.types";
-import { NoPastMonthsFoundError } from "../../features/budget/category/category.errors";
+} from "../../features/budget/category/core/category.types";
+import { NoPastMonthsFoundError } from "../../features/budget/category/core/category.errors";
 import { type UserId } from "../../features/user/auth/auth.types";
 
 export const categoryRepository: CategoryRepository = {

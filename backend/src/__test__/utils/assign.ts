@@ -1,9 +1,9 @@
 import app from "../../app";
 import request from "supertest";
-import { type CategoryMonthsMap } from "../../features/budget/assign/assign.types";
+import { type CategoryMonthsMap } from "../../features/budget/category/months/month.types";
 import { login, registerUser } from "./auth";
 import { getTestCategory } from "./category";
-import { type UpdatedMonthsByCategoryDto } from "../../features/budget/category/category.types";
+import { type UpdatedMonthsByCategoryDto } from "../../features/budget/category/core/category.types";
 
 /**
  * Creates a user and returns a monthId
@@ -29,7 +29,7 @@ export async function updateMonthAssignments(
   assignments: { monthId: string; assigned: string }[]
 ) {
   const res = await request(app)
-    .patch("/budget/assign")
+    .patch("/budget/category/months")
     .set("Authorization", `Bearer ${cookie}`)
     .send({ assignments });
 
@@ -44,7 +44,7 @@ export async function getMonthsForCategories(
   categoryIds: string[]
 ): Promise<CategoryMonthsMap> {
   const res = await request(app)
-    .get("/budget/assign")
+    .get("/budget/category/months")
     .set("Authorization", `Bearer ${cookie}`)
     .query({
       categoryIds,

@@ -10,8 +10,8 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import { errorHandler } from "./shared/middleWare/errorHandler";
 
-import budgetRoutes from "./features/budget/budget.routes";
-import userRoutes from "./features/user/user.routes";
+import budgetRoutes from "./features/budget/budget.router";
+import userRoutes from "./features/user/user.router";
 
 // export const StartServer = async () => {
 if (!process.env.PAYLOAD_SECRET) {

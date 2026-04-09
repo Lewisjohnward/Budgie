@@ -2,7 +2,7 @@ import { OperationMode } from "../../../../../shared/enums/operation-mode";
 import { prisma } from "../../../../../shared/prisma/client";
 import { transactionRepository } from "../../../../../shared/repository/transactionRepositoryImpl";
 import { accountService } from "../../../account/account.service";
-import { categoryService } from "../../../category/category.service";
+import { categoryService } from "../../../category/core/category.service";
 import { transactionService } from "../../transaction.service";
 import { createDuplicatedTxs } from "../../utils/createDuplicateTxs";
 import { duplicateTransferTransactions } from "../../utils/duplicateTransferTransactions";

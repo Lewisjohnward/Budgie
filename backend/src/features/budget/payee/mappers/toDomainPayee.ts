@@ -1,5 +1,5 @@
 import { asUserId } from "../../../user/auth/auth.types";
-import { asCategoryId } from "../../category/category.types";
+import { asCategoryId } from "../../category/core/category.types";
 import { asPayeeId, type db, type DomainPayee } from "../payee.types";
 
 /**

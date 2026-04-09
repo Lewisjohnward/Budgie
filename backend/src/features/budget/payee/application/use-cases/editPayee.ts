@@ -1,11 +1,11 @@
 import { prisma } from "../../../../../shared/prisma/client";
 import { payeeService } from "../../payee.service";
-import { categoryService } from "../../../category/category.service";
+import { categoryService } from "../../../category/core/category.service";
 import { type EditPayeePayload } from "../../payee.schema";
 import {
   asCategoryId,
   type CategoryId,
-} from "../../../category/category.types";
+} from "../../../category/core/category.types";
 import { asPayeeId, type PayeeId } from "../../payee.types";
 import { asUserId, type UserId } from "../../../../user/auth/auth.types";
 

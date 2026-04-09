@@ -5,7 +5,7 @@ import {
   type DomainNormalTransaction,
   type TransactionInsertData,
 } from "./transaction.types";
-import { type CategoryId } from "../category/category.types";
+import { type CategoryId } from "../category/core/category.types";
 import { type AccountId } from "../account/account.types";
 import { type PayeeId } from "../payee/payee.types";
 import { type CategoryGroupId } from "../categorygroup/categoryGroup.types";
