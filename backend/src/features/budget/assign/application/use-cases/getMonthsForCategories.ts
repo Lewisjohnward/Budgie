@@ -1,8 +1,14 @@
 import { prisma } from "../../../../../shared/prisma/client";
-import { asUserId, UserId } from "../../../../user/auth/auth.types";
+import { asUserId, type UserId } from "../../../../user/auth/auth.types";
+import { categoryMapper } from "../../../category/category.mapper";
 import { categoryService } from "../../../category/category.service";
-import { asCategoryId, CategoryId } from "../../../category/category.types";
-import { GetMonthsForCategoriesPayload } from "../../assign.schema";
+import {
+  asCategoryId,
+  type CategoryId,
+} from "../../../category/category.types";
+import { groupBy } from "../../../category/utils/groupBy";
+import { type GetMonthsForCategoriesPayload } from "../../assign.schema";
+import { type CategoryMonthsMap } from "../../assign.types";
 
 export type GetMonthsForCategoriesCommand = Omit<
   GetMonthsForCategoriesPayload,
@@ -12,7 +18,7 @@ export type GetMonthsForCategoriesCommand = Omit<
   categoryIds: CategoryId[];
 };
 
-const toUpdateMonthCommand = (
+const toGetMonthsForCategoriesCommand = (
   p: GetMonthsForCategoriesPayload
 ): GetMonthsForCategoriesCommand => ({
   ...p,
@@ -21,28 +27,44 @@ const toUpdateMonthCommand = (
 });
 
 /**
- * Retrieves all months for the specified categories.
+ * Retrieves all months for the specified categories and returns them grouped by category.
  *
- * Validates that the provided categories belong to the user, then fetches
- * and returns the corresponding months within a database transaction.
+ * This use case performs the following steps:
+ * 1. Normalizes and validates the input payload (`userId` and `categoryIds`).
+ * 2. Ensures the requesting user owns all the specified categories.
+ * 3. Fetches all months associated with the provided categories within a transaction.
+ * 4. Groups the months by `categoryId`.
+ * 5. Maps the grouped months into a DTO suitable for front-end consumption.
  *
- * @param payload - Raw request payload containing userId and categoryIds
- * @returns Promise resolving to an array of domain Month objects
+ * @param payload - The raw request payload containing:
+ *   - `userId`: ID of the requesting user
+ *   - `categoryIds`: Array of category IDs to fetch months for
+ * @returns A promise that resolves to a `CategoryMonthsMap`, where each key is a `CategoryId`
+ *          and each value is an array of month DTOs for that category.
  *
- * @throws {CategoryNotFoundError} If any category does not exist or is not owned by the user
+ * @throws {CategoryNotFoundError} If any of the provided categories do not exist
+ *                                  or are not owned by the user.
  */
 export const getMonthsForCategories = async (
   payload: GetMonthsForCategoriesPayload
-) => {
-  const { userId, categoryIds } = toUpdateMonthCommand(payload);
+): Promise<CategoryMonthsMap> => {
+  const { userId, categoryIds } = toGetMonthsForCategoriesCommand(payload);
 
-  return await prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx) => {
     await categoryService.categories.ensureUserOwnsCategories(
       tx,
       userId,
       categoryIds
     );
 
-    return await categoryService.months.getMonthsForCategories(tx, categoryIds);
+    const months = await categoryService.months.getMonthsForCategories(
+      tx,
+      categoryIds
+    );
+
+    // Group month by categoryId
+    const groupedMonthsByCategory = groupBy(months, (m) => m.categoryId);
+
+    return categoryMapper.mapMonthsByCategoryToDto(groupedMonthsByCategory);
   });
 };

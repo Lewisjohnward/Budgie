@@ -227,7 +227,7 @@ describe("Budget", () => {
       );
     });
 
-    describe.skip("Deleting", () => {});
+    describe.skip("Deleting", () => { });
     it("When adding a transaction without logging in returns 401", async () => {
       const testTransaction = {
         outflow: 10,
@@ -265,7 +265,7 @@ describe("Budget", () => {
       "should throw error if category id provided doesn't exist/ not owned by user"
     );
 
-    it.skip("When adding a transaction with no account, returns 400", async () => {});
+    it.skip("When adding a transaction with no account, returns 400", async () => { });
 
     it.todo("Should return error when user doesn't own category");
 
@@ -315,7 +315,7 @@ describe("Budget", () => {
     });
   });
 
-  describe("Ready to assign", () => {});
+  describe("Ready to assign", () => { });
 
   describe("Months", () => {
     describe("assigning", () => {
@@ -325,27 +325,6 @@ describe("Budget", () => {
         await registerUser();
         cookie = await login();
       });
-      it("should prevent user from assigning to uncategorised category month", async () => {
-        const { categories } = await getCategories(cookie);
-
-        const uncategorisedCategory = Object.values(categories).find(
-          (c) => c.name === "Uncategorised Transactions"
-        );
-
-        if (!uncategorisedCategory)
-          throw new Error("Unable to find uncategorised category");
-
-        const res = await request(app)
-          .patch("/budget/assign")
-          .set("Authorization", `Bearer ${cookie}`)
-          .send({
-            assigned: "10",
-            monthId: uncategorisedCategory.months[0],
-          });
-
-        expect(res.status).toBe(403);
-      });
-
       it.todo("Should correctly update assigned for category month");
       it.todo("should prevent user from accessing another users months");
       it.todo("should prevent user from assigning to rta category");

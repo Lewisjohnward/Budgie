@@ -1,21 +1,27 @@
-import { NextFunction, Request, Response } from "express";
-import { assignSchema, getMonthsForCategoriesSchema } from "./assign.schema";
+import { type NextFunction, type Request, type Response } from "express";
+import {
+  assignmentsSchema,
+  getMonthsForCategoriesSchema,
+} from "./assign.schema";
 import { assignUseCase } from "./assign.useCase";
 
+/**
+ * Updates month assignments for categories and returns the updated data.
+ */
 export const updateMonthForCategory = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const payload = assignSchema.parse({
+    const payload = assignmentsSchema.parse({
       userId: req.user?._id!,
       ...req.body,
     });
 
-    await assignUseCase.updateCategoryMonthAssignment(payload);
+    const updatedMonthsByCategory = await assignUseCase.updateMonths(payload);
 
-    res.sendStatus(200);
+    res.status(200).json(updatedMonthsByCategory);
   } catch (error) {
     next(error);
   }

@@ -1,4 +1,3 @@
-import { NormalisedMonth } from "../../features/budget/category/category.types";
 import { getCategories } from "./getData";
 
 export const getTestCategory = async (cookie: string) => {
@@ -9,6 +8,20 @@ export const getTestCategory = async (cookie: string) => {
 
   if (testCategory === null) {
     throw new Error("unable to find test category");
+  }
+
+  return testCategory;
+};
+
+export const getAnotherTestCategory = async (cookie: string) => {
+  const { categories } = await getCategories(cookie);
+
+  const testCategory =
+    Object.values(categories).find((c) => c.name === "another test category") ??
+    null;
+
+  if (testCategory === null) {
+    throw new Error("unable to find another test category");
   }
 
   return testCategory;
