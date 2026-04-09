@@ -238,18 +238,32 @@ export const categoryRepository: CategoryRepository = {
     await tx.month.deleteMany({ where: { categoryId } });
   },
 
-  updateMonths: async (tx, updatedCategoryMonths) => {
-    await Promise.all(
-      updatedCategoryMonths.map((m) =>
-        tx.month.update({
-          where: { id: m.id },
-          data: {
-            activity: m.activity,
-            available: m.available,
-            assigned: m.assigned,
-          },
-        })
-      )
-    );
+  // Efficiently update multiple months in a single SQL query.
+  // Use a CASE statement per column to avoid multiple round-trips to the DB.
+  // This is faster than updating each month individually when updating many rows.
+  updateMonths: async (tx, updatedMonths) => {
+    if (!updatedMonths.length) return;
+
+    const ids = updatedMonths.map((m) => `'${m.id}'`);
+    const activityCases: string[] = [];
+    const assignedCases: string[] = [];
+    const availableCases: string[] = [];
+
+    updatedMonths.forEach((m) => {
+      activityCases.push(`WHEN id='${m.id}' THEN ${m.activity.toString()}`);
+      assignedCases.push(`WHEN id='${m.id}' THEN ${m.assigned.toString()}`);
+      availableCases.push(`WHEN id='${m.id}' THEN ${m.available.toString()}`);
+    });
+
+    const sql = `
+    UPDATE "Month"
+    SET
+      activity = CASE ${activityCases.join(" ")} END,
+      assigned = CASE ${assignedCases.join(" ")} END,
+      available = CASE ${availableCases.join(" ")} END
+    WHERE id IN (${ids.join(", ")});
+  `;
+
+    await tx.$executeRawUnsafe(sql);
   },
 };
