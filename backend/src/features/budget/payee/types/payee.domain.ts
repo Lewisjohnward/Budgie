@@ -1,6 +1,6 @@
 import { Brand } from "../../../../shared/types/brand";
 import { type UserId } from "../../../user/auth/auth.types";
-import { type CategoryId } from "../../category/category.types";
+import { type CategoryId } from "../../category/core/category.types";
 import { PayeeOrigin } from "../payee.constants";
 
 /**

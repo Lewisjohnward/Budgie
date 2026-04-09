@@ -1,7 +1,7 @@
 import { type Decimal } from "@prisma/client/runtime/library";
 import { Brand } from "../../../../shared/types/brand";
 import { type AccountId } from "../../account/account.types";
-import { type CategoryId } from "../../category/category.types";
+import { type CategoryId } from "../../category/core/category.types";
 import { PayeeId } from "../../payee/payee.types";
 
 /**

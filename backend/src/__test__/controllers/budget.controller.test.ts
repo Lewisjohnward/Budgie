@@ -1,6 +1,6 @@
 import request from "supertest";
 import app from "../../app";
-import { NormalisedCategoryData } from "../../features/budget/category/category.types";
+import { NormalisedCategoryData } from "../../features/budget/category/core/category.types";
 import { getAccounts, getCategories } from "../utils/getData";
 import { addAccount, addTransaction } from "../utils/transaction";
 import { login, registerUser } from "../utils/auth";

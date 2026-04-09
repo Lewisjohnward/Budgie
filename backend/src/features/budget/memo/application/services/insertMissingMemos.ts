@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { MemoInvariantError } from "../../memo.errors";
 import { roundToStartOfMonth } from "../../../../../shared/utils/roundToStartOfMonth";
-import { getMonthRange } from "../../../category/utils/getMonthRange";
+import { getMonthRange } from "../../../category/core/utils/getMonthRange";
 import { memoRepository } from "../../../../../shared/repository/memoRepositoryImpl";
 import { type UserId } from "../../../../user/auth/auth.types";
 

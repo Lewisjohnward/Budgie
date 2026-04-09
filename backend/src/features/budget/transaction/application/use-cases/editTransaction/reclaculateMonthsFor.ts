@@ -1,5 +1,5 @@
 import { OperationMode } from "../../../../../../shared/enums/operation-mode";
-import { categoryService } from "../../../../category/category.service";
+import { categoryService } from "../../../../category/core/category.service";
 import { Prisma } from "@prisma/client";
 import { splitTransactionsByType } from "../../../utils/splitTransactionsByType";
 import { type DomainNormalTransaction } from "../../../transaction.types";

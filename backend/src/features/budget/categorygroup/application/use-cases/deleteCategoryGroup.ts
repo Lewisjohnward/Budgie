@@ -5,7 +5,7 @@ import { asUserId, type UserId } from "../../../../user/auth/auth.types";
 import {
   asCategoryId,
   type CategoryId,
-} from "../../../category/category.types";
+} from "../../../category/core/category.types";
 import { CategoryGroupNotFoundError } from "../../categoryGroup.errors";
 import { type DeleteCategoryGroupPayload } from "../../categorygroup.schema";
 import { categoryGroupService } from "../../categoryGroup.service";

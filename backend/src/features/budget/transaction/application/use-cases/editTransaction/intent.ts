@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { TransactionSnapshot } from "./getTransactionSnapshotWithPair";
 import { ZERO } from "../../../../../../shared/constants/zero";
-import { categoryService } from "../../../../category/category.service";
+import { categoryService } from "../../../../category/core/category.service";
 import { accountService } from "../../../../account/account.service";
 import { payeeService } from "../../../../payee/payee.service";
 import { type EditTransactionCommand } from "./editTransaction";

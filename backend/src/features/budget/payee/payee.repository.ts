@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { db, type PayeeId } from "./payee.types";
-import { type CategoryId } from "../category/category.types";
+import { type CategoryId } from "../category/core/category.types";
 import { type UserId } from "../../user/auth/auth.types";
 
 export interface PayeeRepository {

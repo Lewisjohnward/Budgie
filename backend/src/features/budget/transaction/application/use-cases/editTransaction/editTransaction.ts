@@ -1,7 +1,7 @@
 import { prisma } from "../../../../../../shared/prisma/client";
 import { OperationMode } from "../../../../../../shared/enums/operation-mode";
 import { accountService } from "../../../../account/account.service";
-import { categoryService } from "../../../../category/category.service";
+import { categoryService } from "../../../../category/core/category.service";
 import { getTransactionSnapshotWithPair } from ".././editTransaction/getTransactionSnapshotWithPair";
 import { buildEditIntent } from ".././editTransaction/intent";
 import { applyEditIntent } from ".././editTransaction/apply";
@@ -12,7 +12,7 @@ import { type EditSingleTransactionPayload } from "../../../transaction.schema";
 import {
   asCategoryId,
   type CategoryId,
-} from "../../../../category/category.types";
+} from "../../../../category/core/category.types";
 import { type AccountId, asAccountId } from "../../../../account/account.types";
 import { asTransactionId } from "../../../transaction.types";
 import { asPayeeId, type PayeeId } from "../../../../payee/payee.types";

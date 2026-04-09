@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
-import { ensureMonthsContinuity } from "../features/budget/category/application/services/months/ensureMonthsContinuity";
+import { ensureMonthsContinuity } from "../features/budget/category/core/application/services/months/ensureMonthsContinuity";
 import { startOfMonth, addMonths } from "date-fns";
 
 const prisma = new PrismaClient();

@@ -1,5 +1,5 @@
 import { convertDecimalToNumber } from "../../../../shared/utils/convertDecimalToNumber";
-import { db } from "../../category/category.types";
+import { db } from "../../category/core/category.types";
 import { type NormalisedAccounts } from "../account.types";
 
 export function normaliseAccounts(data: { accounts: db.Account[] }) {

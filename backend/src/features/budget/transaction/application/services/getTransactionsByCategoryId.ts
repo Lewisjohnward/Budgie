@@ -1,6 +1,6 @@
 import { type Prisma } from "@prisma/client";
 import { transactionRepository } from "../../../../../shared/repository/transactionRepositoryImpl";
-import { type CategoryId } from "../../../category/category.types";
+import { type CategoryId } from "../../../category/core/category.types";
 import { transactionMapper } from "../../transaction.mapper";
 import { type DomainNormalTransaction } from "../../transaction.types";
 

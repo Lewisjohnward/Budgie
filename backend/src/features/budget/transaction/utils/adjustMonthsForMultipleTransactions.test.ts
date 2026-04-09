@@ -1,7 +1,7 @@
 import { Month, Transaction } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 import { OperationMode } from "../../../../shared/enums/operation-mode";
-import { adjustMonthsForMultipleTransactions } from "../../category/domain/month.domain";
+import { adjustMonthsForMultipleTransactions } from "../../category/core/domain/month.domain";
 
 type TxStub = Pick<Transaction, "inflow" | "outflow" | "date">;
 type MonthStub = Pick<Month, "month" | "activity" | "available" | "assigned">;

@@ -1,6 +1,6 @@
 import { db } from "../transaction.types";
 import { asAccountId } from "../../account/account.types";
-import { asCategoryId } from "../../category/category.types";
+import { asCategoryId } from "../../category/core/category.types";
 import {
   asTransactionId,
   type DomainTransaction,
