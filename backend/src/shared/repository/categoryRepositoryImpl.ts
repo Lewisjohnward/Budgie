@@ -1,8 +1,12 @@
 import { Prisma } from "@prisma/client";
 import { PROTECTED_CATEGORY_NAMES } from "../../features/budget/category/category.constants";
 import { CategoryRepository } from "../../features/budget/category/category.repository";
-import { db } from "../../features/budget/category/category.types";
+import {
+  type db,
+  type MonthId,
+} from "../../features/budget/category/category.types";
 import { NoPastMonthsFoundError } from "../../features/budget/category/category.errors";
+import { type UserId } from "../../features/user/auth/auth.types";
 
 export const categoryRepository: CategoryRepository = {
   // ──────────────── Category Retrieval ────────────────
@@ -180,6 +184,21 @@ export const categoryRepository: CategoryRepository = {
         id: monthId,
         category: {
           userId,
+        },
+      },
+    });
+  },
+
+  getMonthsFromIds: async (
+    tx: Prisma.TransactionClient,
+    userId: UserId,
+    monthIds: MonthId[]
+  ): Promise<db.Month[]> => {
+    return await tx.month.findMany({
+      where: {
+        id: { in: monthIds },
+        category: {
+          userId: userId,
         },
       },
     });

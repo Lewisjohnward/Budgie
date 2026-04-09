@@ -128,6 +128,13 @@ export interface CategoryRepository {
     rtaCategoryId: CategoryId
   ): Promise<db.Month[]>;
 
+  /** Retrieves months by their IDs for a specific user */
+  getMonthsFromIds(
+    tx: Prisma.TransactionClient,
+    userId: UserId,
+    monthIds: MonthId[]
+  ): Promise<db.Month[]>;
+
   /**
    * Retrieves the most recent month entry for each category belonging to a user.
    *

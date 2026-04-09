@@ -24,7 +24,8 @@ export const registerUser = async (
 
   const cookie = res.body;
 
-  const res1 = await request(app)
+  // Create a test category group
+  await request(app)
     .post("/budget/categorygroup")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
@@ -45,12 +46,22 @@ export const registerUser = async (
 
   if (!testCategoryGroup) throw new Error("Unable to find test category group");
 
-  const res2 = await request(app)
+  // Create a test category for the user
+  await request(app)
     .post("/budget/category")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       categoryGroupId: testCategoryGroup.id,
       name: "test category",
+    });
+
+  // Create another test category for the user
+  await request(app)
+    .post("/budget/category")
+    .set("Authorization", `Bearer ${cookie}`)
+    .send({
+      categoryGroupId: testCategoryGroup.id,
+      name: "another test category",
     });
 
   const category = await prisma.category.findFirstOrThrow({

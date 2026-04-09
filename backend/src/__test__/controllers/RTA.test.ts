@@ -9,6 +9,7 @@ import { login, registerUser } from "../utils/auth";
 import { type db } from "../../features/budget/account/account.types";
 import { prisma } from "../../shared/prisma/client";
 import { createAccountAndFetch } from "../utils/account";
+import { updateMonthAssignments } from "../utils/assign";
 
 const compareRTAMonthsToExpected = async (
   expected: number[],
@@ -1101,45 +1102,44 @@ describe("RTA allocation", () => {
         if (!testCategory)
           throw new Error("Unable to find test category month");
 
-        await request(app)
-          .patch("/budget/assign")
-          .set("Authorization", `Bearer ${cookie}`)
-          .send({
-            assigned: "10",
+        await updateMonthAssignments(cookie, [
+          {
             monthId: testCategory.months[0],
-          })
-          .expect(200);
-
-        await request(app)
-          .patch("/budget/assign")
-          .set("Authorization", `Bearer ${cookie}`)
-          .send({
             assigned: "10",
+          },
+        ]);
+
+        await updateMonthAssignments(cookie, [
+          {
+            monthId: testCategory.months[0],
+            assigned: "10",
+          },
+        ]);
+
+        await updateMonthAssignments(cookie, [
+          {
             monthId: testCategory.months[1],
-          })
-          .expect(200);
+            assigned: "10",
+          },
+        ]);
 
         await compareRTAMonthsToExpected([-10, -20], cookie);
 
-        await request(app)
-          .patch("/budget/assign")
-          .set("Authorization", `Bearer ${cookie}`)
-          .send({
-            assigned: "0",
+        await updateMonthAssignments(cookie, [
+          {
             monthId: testCategory.months[1],
-          })
-          .expect(200);
+            assigned: "0",
+          },
+        ]);
 
         await compareRTAMonthsToExpected([-10, -10], cookie);
 
-        await request(app)
-          .patch("/budget/assign")
-          .set("Authorization", `Bearer ${cookie}`)
-          .send({
-            assigned: "0",
+        await updateMonthAssignments(cookie, [
+          {
             monthId: testCategory.months[0],
-          })
-          .expect(200);
+            assigned: "0",
+          },
+        ]);
 
         await compareRTAMonthsToExpected([0, 0], cookie);
 
@@ -2211,7 +2211,7 @@ describe("RTA allocation", () => {
   });
 
   describe.skip("editing transactions", () => {
-    it.skip("Should correctly update rta months when editing from uncategorised to category", async () => { });
+    it.skip("Should correctly update rta months when editing from uncategorised to category", async () => {});
     it("first test", async () => {
       const { id: accountId } = testAccount;
 
