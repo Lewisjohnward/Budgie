@@ -1,7 +1,22 @@
 export type MonthsToUpdate = {
   monthId: string;
-  assigned: number;
+  assigned: string;
 };
+
+export type UpdateMonthsPayload = {
+  assignments: MonthsToUpdate[];
+};
+
+export type MonthDto = {
+  id: string;
+  categoryId: string;
+  month: string;
+  activity: string;
+  assigned: string;
+  available: string;
+};
+
+export type UpdatedMonthsByCategoryDto = Record<string, MonthDto[]>;
 
 export enum FundingOption {
   UNDERFUNDED = "underfunded",

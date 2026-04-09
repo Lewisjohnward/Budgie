@@ -7,12 +7,7 @@ export const useUpdateMonths = () => {
   const updateMonths = async (monthsToUpdate: MonthsToUpdate[]) => {
     if (!monthsToUpdate || monthsToUpdate.length === 0) return;
 
-    for (const action of monthsToUpdate) {
-      await editMonth({
-        assigned: action.assigned.toString(),
-        monthId: action.monthId,
-      });
-    }
+    await editMonth({ assignments: monthsToUpdate });
   };
 
   return { updateMonths };
