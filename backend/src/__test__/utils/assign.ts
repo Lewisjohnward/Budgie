@@ -1,5 +1,6 @@
 import app from "../../app";
 import request from "supertest";
+import supertest from "supertest";
 import { type CategoryMonthsMap } from "../../features/budget/category/months/month.types";
 import { login, registerUser } from "./auth";
 import { getTestCategory } from "./category";
@@ -27,13 +28,13 @@ export async function getUnownedMonthId(): Promise<string> {
 export async function updateMonthAssignments(
   cookie: string,
   assignments: { monthId: string; assigned: string }[]
-) {
+): Promise<supertest.Response & { body: UpdatedMonthsByCategoryDto }> {
   const res = await request(app)
     .patch("/budget/category/months")
     .set("Authorization", `Bearer ${cookie}`)
     .send({ assignments });
 
-  return { ...res, body: res.body as UpdatedMonthsByCategoryDto };
+  return res as supertest.Response & { body: UpdatedMonthsByCategoryDto };
 }
 
 /**
