@@ -23,7 +23,7 @@ type MonthSlice = Pick<
 export const calculateCategoryMonths = <M extends MonthSlice>(
   categoryMonths: M[],
   changeInAssigned: Decimal
-) => {
+): M[] => {
   const clone = categoryMonths.map((m) => ({ ...m }));
 
   let carryOver: Decimal = ZERO;
