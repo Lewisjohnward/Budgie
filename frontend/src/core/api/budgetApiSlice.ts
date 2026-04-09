@@ -1,10 +1,15 @@
 import { CategoryContextType } from "@/pages/budget/allocation/Allocation";
 import { AddAccountPayload } from "../types/AccountSchema";
-import { Month } from "../types/MonthSchema";
+import { Month, MonthAssignments } from "../types/MonthSchema";
 import { NormalizedData } from "../types/NormalizedData";
 import { DuplicateTransactions } from "../types/TransactionSchema";
 import { apiSlice } from "./apiSlice";
 import { AllocationData } from "../types/Allocation";
+import {
+  MonthsToUpdate,
+  UpdatedMonthsByCategoryDto,
+  UpdateMonthsPayload,
+} from "@/pages/budget/allocation/components/assign/types/assignTypes";
 
 export const budgetApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -134,7 +139,10 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
       },
       invalidatesTags: ["Categories"],
     }),
-    editMonth: builder.mutation<void, Month>({
+    editMonth: builder.mutation<
+      UpdatedMonthsByCategoryDto,
+      UpdateMonthsPayload
+    >({
       query: (assigned) => {
         return {
           url: "budget/assign",

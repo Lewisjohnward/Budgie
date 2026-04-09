@@ -9,6 +9,7 @@ import { useEditMonthMutation } from "@/core/api/budgetApiSlice";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Month, MonthSchema } from "@/core/types/MonthSchema";
+import { MonthsToUpdate } from "../../assign/types/assignTypes";
 
 export const EditAssigned = forwardRef<
   HTMLInputElement,
@@ -53,11 +54,13 @@ export const EditAssigned = forwardRef<
     }
   };
 
-  const onSubmit = (updatedValue: Month) => {
+  const onSubmit = (updatedValue: MonthsToUpdate) => {
     setValue("assigned", valueWithCurrency);
 
+    // TODO:(lewis 2026-04-07 11:24) there is a bug, sometimes sending '' to backend here
     if (Number(updatedValue.assigned) === Number(assigned)) return;
-    editMonth(updatedValue);
+    editMonth({ assignments: [updatedValue] });
+
     reset();
   };
 
