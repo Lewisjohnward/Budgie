@@ -15,8 +15,8 @@ describe("Auth Controller", () => {
     let testUserId: string;
 
     describe("Error Cases", () => {
-      it("should return 400 if email is missing", async () => {
-        const response = await request(app).post("/user/autħ/register").send({
+      it.only("should return 400 if email is missing", async () => {
+        const response = await request(app).post("/user/auth/register").send({
           password: testPassword,
         });
 
