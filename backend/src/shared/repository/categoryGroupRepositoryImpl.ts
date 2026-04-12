@@ -10,6 +10,7 @@ import {
   type CategoryGroupId,
 } from "../../features/budget/categorygroup/categoryGroup.types";
 import { type UserId } from "../../features/user/auth/auth.types";
+import { prisma } from "../prisma/client";
 
 export const categoryGroupRepository: CategoryGroupRepository = {
   getCategoryGroup: async function(
@@ -29,6 +30,14 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     }
 
     return row;
+  },
+
+  getCategoryGroups: async function(
+    userId: UserId
+  ): Promise<db.CategoryGroup[]> {
+    return prisma.categoryGroup.findMany({
+      where: { userId },
+    });
   },
 
   existsCategoryGroup: async (tx, userId, categoryGroupId) => {
