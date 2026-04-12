@@ -14,11 +14,6 @@ import { SYSTEM_PAYEE_NAMES } from "../../payee.constants";
  * @param userId - The ID of the user for whom the system payees are being created.
  *
  * @returns A promise that resolves once all system payees have been inserted.
- *
- * @example
- * ```ts
- * await initialiseSystemPayees(tx, someUserId);
- * ```
  */
 export async function initialiseSystemPayees(
   tx: Prisma.TransactionClient,

@@ -1,92 +1,35 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { z } from "zod";
-import { registerUserSchema } from "./auth.schema";
+import { registerSchema } from "./auth.schema";
 import {
-  EmailAlreadyRegisteredError,
-  MissingCredentialsError,
-  InvalidCredentialsError,
   InvalidOrExpiredRefreshTokenError,
   RefreshTokenNoUserFoundError,
 } from "./auth.errors";
-import { userExists } from "./use-cases/userExists";
-import { authService } from "./auth.service";
 import {
   clearRefreshTokenCookie,
   setRefreshTokenCookie,
 } from "./utils/cookies";
-import { GenerateAccessToken, GenerateRefreshToken } from "./utils/tokens";
-import {
-  GenerateSalt,
-  GeneratePassword,
-  ValidatePassword,
-} from "./utils/password";
-import { categoryService } from "../../budget/category/core/category.service";
+import { generateAccessToken } from "./utils/tokens";
 import { prisma } from "../../../shared/prisma/client";
-import { memoService } from "../../budget/memo/memo.service";
-import { asUserId } from "./auth.types";
-import { payeeService } from "../../budget/payee/payee.service";
+import { authUseCase } from "./auth.useCase";
 
+/*
+ * Handles user registration: validates input, creates account, sets refresh token cookie, and returns access token
+ */
 export const register = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    next(new MissingCredentialsError());
-    return;
-  }
-
   try {
-    const payload = registerUserSchema.parse({ email, password });
-    const userAlreadyExists = await userExists(payload.email);
+    const payload = registerSchema.parse(req.body);
 
-    if (userAlreadyExists) {
-      next(new EmailAlreadyRegisteredError());
-      return;
-    }
-
-    const salt = await GenerateSalt();
-    const passwordHash = await GeneratePassword(password, salt);
-
-    const user = await authService.createUser({
-      email,
-      password: passwordHash,
-      salt,
-    });
-
-    const uId = asUserId(user.id);
-    await categoryService.categories.initialiseCategories(uId);
-
-    await prisma.$transaction(async (tx) => {
-      await memoService.initialiseMemos(tx, uId);
-
-      // TODO:(lewis 2026-02-23 12:22) this will need testing in the register tests
-      await payeeService.initialiseSystemPayees(tx, uId);
-    });
-
-    const accessToken = GenerateAccessToken({
-      _id: user.id,
-      email: user.email,
-    });
-
-    const refreshToken = GenerateRefreshToken({
-      _id: user.id,
-      email: user.email,
-    });
-
-    await authService.updateRefreshToken(email, refreshToken);
+    const { accessToken, refreshToken } = await authUseCase.register(payload);
 
     setRefreshTokenCookie(res, refreshToken);
 
     res.status(200).json(accessToken);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      next(new InvalidCredentialsError());
-      return;
-    }
     next(error);
   }
 };
@@ -96,46 +39,10 @@ export const login = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    next(new MissingCredentialsError());
-    return;
-  }
-
   try {
-    const user = await authService.getUser(email);
+    const payload = registerSchema.parse(req.body);
 
-    if (!user) {
-      next(new InvalidCredentialsError());
-      return;
-    }
-
-    const validPassword = await ValidatePassword(
-      password,
-      user.password,
-      user.salt
-    );
-
-    if (!validPassword) {
-      next(new InvalidCredentialsError());
-      return;
-    }
-
-    const uId = asUserId(user.id);
-    await categoryService.months.ensureMonthsContinuity(prisma, uId);
-
-    const accessToken = GenerateAccessToken({
-      _id: user.id,
-      email: user.email,
-    });
-
-    const refreshToken = GenerateRefreshToken({
-      _id: user.id,
-      email: user.email,
-    });
-
-    await authService.updateRefreshToken(email, refreshToken);
+    const { accessToken, refreshToken } = await authUseCase.login(payload);
 
     setRefreshTokenCookie(res, refreshToken);
     res.status(200).json(accessToken);
@@ -206,7 +113,7 @@ export const refresh = async (
 
     jwt.verify(refreshToken, process.env.PAYLOAD_SECRET!);
 
-    const token = GenerateAccessToken({
+    const token = generateAccessToken({
       _id: user.id,
       email: user.email,
     });

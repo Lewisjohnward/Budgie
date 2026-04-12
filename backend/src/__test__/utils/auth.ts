@@ -17,6 +17,23 @@ export const login = async (
   return cookie;
 };
 
+/** Registers a new user via the auth register endpoint. */
+export const register = async ({
+  email,
+  password,
+}: {
+  email?: string;
+  password?: string;
+}) => {
+  return await request(app).post("/user/auth/register").send({
+    email,
+    password,
+  });
+};
+
+/**
+ * Registers a test user and seeds initial budget data (category group + categories) for integration tests.
+ */
 export const registerUser = async (
   user: { email: string; password: string } = testUser
 ) => {

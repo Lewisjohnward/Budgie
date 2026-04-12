@@ -951,7 +951,7 @@ describe("Auth", () => {
         .send(testUserA);
 
       expect(resA.status).toBe(200);
-      expect(resB.status).toBe(400);
+      expect(resB.status).toBe(409);
     });
 
     it("Should allow multiple users to sign up without category name collision", async () => {

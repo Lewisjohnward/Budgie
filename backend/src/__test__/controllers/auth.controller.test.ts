@@ -4,7 +4,9 @@ import request from "supertest";
 import app from "../../app";
 import { getCategories } from "../utils/getData";
 import { LENGTH_ON_SIGNUP } from "../utils/memo";
-import { login } from "../utils/auth";
+import { login, register } from "../utils/auth";
+import { getPayees } from "../utils/payee";
+import { SYSTEM_PAYEE_NAMES } from "../../features/budget/payee/payee.constants";
 
 const prisma = new PrismaClient();
 
@@ -15,8 +17,8 @@ describe("Auth Controller", () => {
     let testUserId: string;
 
     describe("Error Cases", () => {
-      it.only("should return 400 if email is missing", async () => {
-        const response = await request(app).post("/user/auth/register").send({
+      it("should return 400 if email is missing", async () => {
+        const response = await register({
           password: testPassword,
         });
 
@@ -24,40 +26,40 @@ describe("Auth Controller", () => {
       });
 
       it("should return 400 if password is missing", async () => {
-        const response = await request(app).post("/user/auth/register").send({
+        const response = await register({
           email: testEmail,
         });
 
         expect(response.status).toBe(400);
       });
 
-      it("should return 401 if email is invalid", async () => {
-        const response = await request(app).post("/user/auth/register").send({
+      it("should return 400 if email is invalid", async () => {
+        const response = await register({
           email: "invalid-email",
           password: testPassword,
         });
 
-        expect(response.status).toBe(401);
+        expect(response.status).toBe(400);
       });
 
-      it("should return 400 if email is already registered", async () => {
-        await request(app).post("/user/auth/register").send({
+      it("should return 409 if email is already registered", async () => {
+        await register({
           email: testEmail,
           password: testPassword,
         });
 
-        const response = await request(app).post("/user/auth/register").send({
+        const response = await register({
           email: testEmail,
           password: "AnotherPassword123!",
         });
 
-        expect(response.status).toBe(400);
+        expect(response.status).toBe(409);
       });
     });
 
     describe("Success", () => {
       it("should register a new user successfully", async () => {
-        const response = await request(app).post("/user/auth/register").send({
+        const response = await register({
           email: testEmail,
           password: testPassword,
         });
@@ -79,62 +81,136 @@ describe("Auth Controller", () => {
       });
     });
 
-    describe("InitialiseUser", () => {
-      it("should create default categories for new users", async () => {
-        await request(app).post("/user/auth/register").send({
-          email: testEmail,
-          password: testPassword,
-        });
+    describe("Side Effects", () => {
+      describe("Categories", () => {
+        it("should create default categories for new users", async () => {
+          await register({
+            email: testEmail,
+            password: testPassword,
+          });
 
-        const user = await prisma.user.findUnique({
-          where: { email: testEmail },
-        });
-        if (!user) {
+          const user = await prisma.user.findUnique({
+            where: { email: testEmail },
+          });
+
           expect(user).toBeDefined();
-          throw new Error("User not created");
-        }
+          if (!user) throw new Error("User not created");
 
-        testUserId = user.id;
-        const categories = await prisma.category.findMany({
-          where: { userId: user.id },
+          // category groups
+          const groups = await prisma.categoryGroup.findMany({
+            where: { userId: user.id },
+          });
+
+          const groupNames = groups.map((g) => g.name).sort();
+
+          expect(groupNames).toEqual(
+            ["Bills", "Inflow", "Other", "Uncategorised"].sort()
+          );
+
+          // categories
+          const categories = await prisma.category.findMany({
+            where: { userId: user.id },
+          });
+
+          const categoryNames = categories.map((c) => c.name);
+
+          const expectedCategories = [
+            "Ready to Assign",
+            "Uncategorised Transactions",
+            "🏠 Rent/Mortgage",
+            "🔌 Utilities",
+            "❗️ Stuff I forgot to budget for",
+          ];
+
+          expect(categoryNames).toEqual(
+            expect.arrayContaining(expectedCategories)
+          );
+
+          // relationships
+          for (const category of categories) {
+            expect(category.userId).toBe(user.id);
+            expect(category.categoryGroupId).toBeDefined();
+            expect(category.position).toBeGreaterThanOrEqual(0);
+          }
+
+          // months
+          const months = await prisma.month.findMany({
+            where: {
+              category: {
+                userId: user.id,
+              },
+            },
+          });
+
+          // Each category gets 2 months (current + next)
+          expect(months.length).toBe(categories.length * 2);
         });
-        expect(categories.length).toBeGreaterThan(0);
       });
-      it("Should have a memo month entry for each month on signup", async () => {
-        await request(app).post("/user/auth/register").send({
-          email: testEmail,
-          password: testPassword,
+      describe("Memo Month", () => {
+        it("Should have a memo month entry for each month when registering", async () => {
+          await register({
+            email: testEmail,
+            password: testPassword,
+          });
+
+          const cookie = await login({
+            email: testEmail,
+            password: testPassword,
+          });
+
+          const { months, memoByMonth, monthKeys } =
+            await getCategories(cookie);
+
+          expect(monthKeys.length).toBeGreaterThan(0);
+
+          for (const key of monthKeys) {
+            const memo = memoByMonth[key];
+
+            expect(memo).toBeDefined();
+            expect(memo.id).toEqual(expect.any(String));
+            expect(memo.content).toEqual(expect.any(String));
+
+            expect(memo.month.slice(0, 7)).toBe(key);
+          }
+
+          expect(Object.keys(memoByMonth).sort()).toEqual(
+            [...monthKeys].sort()
+          );
+
+          const monthKeysFromMonths = [
+            ...new Set(
+              Object.values(months).map((m: any) => m.month.slice(0, 7))
+            ),
+          ].sort();
+
+          expect([...monthKeys].sort()).toEqual(monthKeysFromMonths);
+          expect(Object.keys(memoByMonth)).toHaveLength(LENGTH_ON_SIGNUP);
         });
+      });
+      describe("Payee", () => {
+        it("Should create system payees when registering", async () => {
+          await register({
+            email: testEmail,
+            password: testPassword,
+          });
 
-        const cookie = await login({
-          email: testEmail,
-          password: testPassword,
+          const cookie = await login({
+            email: testEmail,
+            password: testPassword,
+          });
+
+          const { payees } = await getPayees(cookie);
+          expect(payees).toBeDefined();
+
+          const payeeList = Object.values(payees);
+
+          // ensure all system payees exist
+          for (const name of SYSTEM_PAYEE_NAMES) {
+            const payee = payeeList.find((p) => p.name === name);
+            expect(payee).toBeDefined();
+            expect(payee!.origin).toBe("SYSTEM");
+          }
         });
-
-        const { months, memoByMonth, monthKeys } = await getCategories(cookie);
-
-        expect(monthKeys.length).toBeGreaterThan(0);
-
-        for (const key of monthKeys) {
-          const memo = memoByMonth[key];
-
-          expect(memo).toBeDefined();
-          expect(memo.id).toEqual(expect.any(String));
-          expect(memo.content).toEqual(expect.any(String));
-
-          expect(memo.month.slice(0, 7)).toBe(key);
-        }
-
-        expect(Object.keys(memoByMonth).sort()).toEqual([...monthKeys].sort());
-
-        const monthKeysFromMonths = [
-          ...new Set(
-            Object.values(months).map((m: any) => m.month.slice(0, 7))
-          ),
-        ].sort();
-
-        expect([...monthKeys].sort()).toEqual(monthKeysFromMonths);
-        expect(Object.keys(memoByMonth)).toHaveLength(LENGTH_ON_SIGNUP);
       });
     });
   });
@@ -145,11 +221,12 @@ describe("Auth Controller", () => {
     let testUserId: string;
 
     beforeEach(async () => {
-      await request(app).post("/user/auth/register").send({
+      await register({
         email: testEmail,
         password: testPassword,
       });
 
+      // TODO:(lewis 2026-04-12 09:42) what is this doing here?
       const user = await prisma.user.findUnique({
         where: { email: testEmail },
       });
@@ -215,7 +292,7 @@ describe("Auth Controller", () => {
         password: testPassword,
       });
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(400);
     });
   });
 
