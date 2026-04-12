@@ -64,6 +64,43 @@ DELETE /budget/payees/bulk
 
 PATCH /budget/memo/:id
 
+### Auth API
+
+**Register**
+
+- **Endpoint:** `POST /user/auth/register`
+- **Description:** Registers a new user account, initialises default data (categories, memos, and system payees), and returns authentication tokens.
+
+- **Behavior:**
+  - Validates that the email is not already registered.
+  - Hashes the password with a generated salt before storing.
+  - Creates the user and all required default domain data.
+  - Generates an access token and refresh token.
+  - Stores the refresh token for future authentication.
+
+- **Request body example:**
+
+```json
+{
+  "email": "user@example.com",
+  "password": "string"
+}
+```
+
+- **Response:**
+  - 200 OK — Returns authentication tokens
+
+```json
+{
+  "accessToken": "string",
+  "refreshToken": "string"
+}
+```
+
+- **Error Responses:**
+  - 400 Bad Request — Invalid email or password format
+  - 409 Conflict — Email is already registered
+
 ### Account API
 
 **Edit Account**
@@ -87,7 +124,9 @@ PATCH /budget/memo/:id
 ```
 
 - **Response:**
-  - 200 OK on success
+  - 200 OK — Returns authentication tokens
+
+- **Error Responses:**
   - 400 Bad Request if invalid fields are provided (e.g., non-numeric balance)
   - 404 Not Found if the account does not exist or does not belong to the user
   - 409 Conflict if renaming to a duplicate account name
@@ -102,18 +141,20 @@ PATCH /budget/memo/:id
 - **Auth Required:** The user must be logged in.
 - **Description:** Fetches all months for the provided category IDs.
 
-- **Query params:**
-  - `categoryIds` (string[]) — One or more category IDs  
-    Example:  
-    `/budget/category/months?categoryIds=id1&categoryIds=id2`
-
 - **Behavior:**
   - Returns all months belonging to the specified categories.
   - Validates that all provided category IDs exist and belong to the user.
   - If any category ID is invalid or not owned by the user, the request fails.
 
+- **Query params:**
+  - `categoryIds` (string[]) — One or more category IDs  
+    Example:  
+    `/budget/category/months?categoryIds=id1&categoryIds=id2`
+
 - **Response:**
   - 200 OK — Returns an array of months
+
+- **Error Responses:**
   - 400 Bad Request — If `categoryIds` is missing or invalid
   - 404 Not Found — If any category does not exist or is not owned by the user
 
@@ -123,7 +164,15 @@ PATCH /budget/memo/:id
 - **Auth Required:** The user must be logged in.
 - **Description:** Updates the assigned amounts for one or more months. Only months belonging to categories owned by the user can be updated. Protected categories (RTA and Uncategorised) cannot be modified.
 
-- **Request body:**
+- **Behavior:**
+  - Each month can only appear once in the request payload.
+  - All months in the request must share the same calendar month.
+  - Updates to protected categories (RTA, Uncategorised) are forbidden.
+  - The assigned change is propagated to all future months in the affected categories.
+  - RTA months are recalculated automatically after updates.
+  - Explicit errors are thrown if any rule is violated.
+
+- **Request body example:**
 
 ```json
 {
@@ -136,14 +185,6 @@ PATCH /budget/memo/:id
   ]
 }
 ```
-
-- **Behavior:**
-  - Each month can only appear once in the request payload.
-  - All months in the request must share the same calendar month.
-  - Updates to protected categories (RTA, Uncategorised) are forbidden.
-  - The assigned change is propagated to all future months in the affected categories.
-  - RTA months are recalculated automatically after updates.
-  - Explicit errors are thrown if any rule is violated.
 
 - **Response:**
   - 200 OK — Returns an object mapping category IDs to arrays of updated month DTOs:

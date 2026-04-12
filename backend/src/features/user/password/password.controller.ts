@@ -11,15 +11,15 @@ import {
 } from "./password.errors";
 import { z } from "zod";
 import { changePasswordSchema } from "../auth/auth.schema";
-import { GeneratePassword, GenerateSalt } from "../auth/utils/password";
-import { GenerateRefreshToken } from "../auth/utils/tokens";
+import { generatePassword, generateSalt } from "../auth/utils/password";
+import { generateRefreshToken } from "../auth/utils/tokens";
 import { setRefreshTokenCookie } from "../auth/utils/cookies";
 import { prisma } from "../../../shared/prisma/client";
 
 export const forgotPassword = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { email } = req.body;
@@ -49,7 +49,7 @@ export const forgotPassword = async (
     await sendPasswordResetEmail(
       user.email,
       resetLink,
-      user.email.split("@")[0],
+      user.email.split("@")[0]
     );
 
     res.status(200).json({
@@ -64,7 +64,7 @@ export const forgotPassword = async (
 export const resetPassword = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   res.status(200).json({ message: "reset password" });
 };
@@ -72,7 +72,7 @@ export const resetPassword = async (
 export const changePassword = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { currentPassword, newPassword } = req.body;
@@ -99,16 +99,16 @@ export const changePassword = async (
 
     const isPasswordValid = await bcrypt.compare(
       validatedPassword.currentPassword,
-      user.password,
+      user.password
     );
     if (!isPasswordValid) {
       throw new CurrentPasswordIncorrectError();
     }
 
-    const salt = await GenerateSalt();
-    const hashedPassword = await GeneratePassword(
+    const salt = await generateSalt();
+    const hashedPassword = await generatePassword(
       validatedPassword.newPassword,
-      salt,
+      salt
     );
 
     await prisma.user.update({
@@ -120,7 +120,7 @@ export const changePassword = async (
       },
     });
 
-    const refreshToken = GenerateRefreshToken({
+    const refreshToken = generateRefreshToken({
       _id: user.id,
       email: user.email,
     });

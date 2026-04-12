@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { type Prisma, type PrismaClient } from "@prisma/client";
 import { categoryRepository } from "../../../../../../../shared/repository/categoryRepositoryImpl";
 import { ZERO } from "../../../../../../../shared/constants/zero";
 import { getMonthRange } from "../../../utils/getMonthRange";
