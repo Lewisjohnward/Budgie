@@ -1,7 +1,6 @@
 import { prisma } from "../../../../../shared/prisma/client";
 import { categoryGroupRepository } from "../../../../../shared/repository/categoryGroupRepositoryImpl";
 import { asUserId, type UserId } from "../../../../user/auth/auth.types";
-import { CategoryGroupNotFoundError } from "../../categoryGroup.errors";
 import { type EditCategoryGroupPayload } from "../../categorygroup.schema";
 import { categoryGroupService } from "../../categoryGroup.service";
 import {
@@ -40,15 +39,7 @@ export const editCategoryGroup = async (
       categoryGroupId
     );
 
-    const categorygroup = await categoryGroupService.getCategoryGroup(
-      tx,
-      userId,
-      categoryGroupId
-    );
-
-    if (!categorygroup) {
-      throw new CategoryGroupNotFoundError();
-    }
+    await categoryGroupService.getCategoryGroup(tx, userId, categoryGroupId);
 
     if (name) {
       await categoryGroupService.checkCategoryGroupNameIsUnique(

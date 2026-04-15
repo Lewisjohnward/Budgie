@@ -39,9 +39,10 @@ PATCH /budget/category/months
 
 # Category Groups
 
-POST /budget/categorygroup
-PATCH /budget/categorygroup/:id
-DELETE /budget/categorygroup/:id
+GET /budget/categorygroups
+POST /budget/categorygroups
+PATCH /budget/categorygroups/:id
+DELETE /budget/categorygroups/:id
 
 # Transactions
 
@@ -133,6 +134,42 @@ PATCH /budget/memo/:id
 
 ### Category API
 
+### Category Groups API
+
+**Get Category Groups**
+
+- **Endpoint:** `GET /budget/categorygroups`
+- **Auth Required:** The user must be logged in.
+- **Description:** Fetches all category groups for the provided user id.
+
+- **Behavior:**
+  - Extracts the user identity from the authenticated session
+  - Retrieves all category groups belonging to that user
+  - Returns the data as a normalized lookup map
+
+- **Response:**
+  - 200 OK — Returns an object mapping category group IDs category groups:
+
+```json
+{
+  "cg_1": {
+    "id": "cg_1",
+    "name": "Housing",
+    "position": 1,
+    "categories": ["cat1", "cat2"]
+  },
+  "cg_2": {
+    "id": "cg_2",
+    "name": "Food",
+    "position": 2,
+    "categories": ["c3", "c4"]
+  }
+}
+```
+
+- **Error Responses:**
+  - N/A
+
 ### Months API
 
 **Get Months For Categories**
@@ -147,8 +184,8 @@ PATCH /budget/memo/:id
   - If any category ID is invalid or not owned by the user, the request fails.
 
 - **Query params:**
-  - `categoryIds` (string[]) — One or more category IDs  
-    Example:  
+  - `categoryIds` (string[]) — One or more category IDs
+    Example:
     `/budget/category/months?categoryIds=id1&categoryIds=id2`
 
 - **Response:**
@@ -188,6 +225,9 @@ PATCH /budget/memo/:id
 
 - **Response:**
   - 200 OK — Returns an object mapping category IDs to arrays of updated month DTOs:
+
+- **Error Responses:**
+  - N/A
 
 ```json
 {

@@ -68,7 +68,7 @@ const createCategory = async ({
   name: string;
 }) => {
   await request(app)
-    .post("/budget/categorygroup")
+    .post("/budget/categorygroups")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       name: "test categoryGroup",
@@ -102,7 +102,7 @@ const createCategory = async ({
 
 const createTestCategory = async (cookie: string) => {
   await request(app)
-    .post("/budget/categorygroup")
+    .post("/budget/categorygroups")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       name: "test category group a",

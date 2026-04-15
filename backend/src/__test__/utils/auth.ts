@@ -43,7 +43,7 @@ export const registerUser = async (
 
   // Create a test category group
   await request(app)
-    .post("/budget/categorygroup")
+    .post("/budget/categorygroups")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       name: "test category group",
