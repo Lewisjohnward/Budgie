@@ -14,7 +14,7 @@ const router = Router();
 router.use(Authenticate);
 router.use("/account", accountRoutes);
 router.use("/category", categoryRoutes);
-router.use("/categorygroup", categorygroupRoutes);
+router.use("/categorygroups", categorygroupRoutes);
 router.use("/transaction", transactionRoutes);
 router.use("/payees", payeeRoutes);
 router.use("/memo", memoRoutes);

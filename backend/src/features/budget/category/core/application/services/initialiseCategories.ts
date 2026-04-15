@@ -1,6 +1,7 @@
 import { type Prisma } from "@prisma/client";
 import { type UserId } from "../../../../../user/auth/auth.types";
 import { getMonth } from "../../utils/getMonth";
+import { DEFAULT_CATEGORY_GROUPS } from "../../../../categorygroup/categoryGroup.constants";
 
 // TODO: NEEDS TO BE CLEANED UP REPOSITORY
 export const initialiseCategories = async (
@@ -8,30 +9,8 @@ export const initialiseCategories = async (
   userId: UserId
 ) => {
   const { startOfCurrentMonth, nextMonth } = getMonth();
-  const categoryGroupData = [
-    {
-      name: "Inflow",
-      categories: ["Ready to Assign"],
-      position: 0,
-    },
-    {
-      name: "Uncategorised",
-      categories: ["Uncategorised Transactions"],
-      position: 0,
-    },
-    {
-      name: "Bills",
-      categories: ["🏠 Rent/Mortgage", "🔌 Utilities"],
-      position: 0,
-    },
-    {
-      name: "Other",
-      categories: ["❗️ Stuff I forgot to budget for"],
-      position: 1,
-    },
-  ];
 
-  for (const group of categoryGroupData) {
+  for (const group of DEFAULT_CATEGORY_GROUPS) {
     const createdGroup = await tx.categoryGroup.create({
       data: {
         userId,

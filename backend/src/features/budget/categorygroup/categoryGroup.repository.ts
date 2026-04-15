@@ -13,6 +13,13 @@ export interface CategoryGroupRepository {
     categoryGroupId: CategoryGroupId
   ): Promise<db.CategoryGroup | null>;
 
+  /**
+   * Retrieves all category groups for a specific user, including only their category IDs.
+   */
+  getCategoryGroupsWithCategoryIds(
+    userId: UserId
+  ): Promise<db.CategoryGroupWithCategoryIds[]>;
+
   existsCategoryGroup(
     tx: Prisma.TransactionClient,
     userId: UserId,

@@ -1,6 +1,6 @@
-import { Prisma } from "@prisma/client";
+import { type Prisma } from "@prisma/client";
 import { PROTECTED_CATEGORY_GROUP_NAMES } from "../../features/budget/categorygroup/categoryGroup.constants";
-import { CategoryGroupRepository } from "../../features/budget/categorygroup/categoryGroup.repository";
+import { type CategoryGroupRepository } from "../../features/budget/categorygroup/categoryGroup.repository";
 import {
   type CreateCategoryGroupData,
   type EditCategoryGroupData,
@@ -10,6 +10,7 @@ import {
   type CategoryGroupId,
 } from "../../features/budget/categorygroup/categoryGroup.types";
 import { type UserId } from "../../features/user/auth/auth.types";
+import { prisma } from "../prisma/client";
 
 export const categoryGroupRepository: CategoryGroupRepository = {
   getCategoryGroup: async function(
@@ -29,6 +30,19 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     }
 
     return row;
+  },
+
+  getCategoryGroupsWithCategoryIds: async function(
+    userId: UserId
+  ): Promise<db.CategoryGroupWithCategoryIds[]> {
+    return prisma.categoryGroup.findMany({
+      where: { userId },
+      include: {
+        categories: {
+          select: { id: true },
+        },
+      },
+    });
   },
 
   existsCategoryGroup: async (tx, userId, categoryGroupId) => {

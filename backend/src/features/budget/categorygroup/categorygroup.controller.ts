@@ -6,6 +6,23 @@ import {
   editCategoryGroupSchema,
 } from "./categorygroup.schema";
 
+/** Retrieves a user's category groups and returns them as a normalised record response */
+export const getCategoryGroups = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.user!._id;
+  try {
+    const normalisedCategoryGroups =
+      await categoryGroupUseCase.getCategoryGroups(userId);
+    res.status(200).json({ ...normalisedCategoryGroups });
+  } catch (error) {
+    next(error);
+  }
+  return;
+};
+
 export const addCategoryGroup = async (
   req: Request,
   res: Response,
