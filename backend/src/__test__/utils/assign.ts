@@ -1,10 +1,10 @@
 import app from "../../app";
 import request from "supertest";
 import supertest from "supertest";
-import { type CategoryMonthsMap } from "../../features/budget/category/months/month.types";
 import { login, registerUser } from "./auth";
 import { getTestCategory } from "./category";
-import { type UpdatedMonthsByCategoryDto } from "../../features/budget/category/core/category.types";
+import { UpdatedMonthsByCategoryDto } from "../../features/budget/core/category/core/category.types";
+import { CategoryMonthsMap } from "../../features/budget/core/category/months/month.types";
 
 /**
  * Creates a user and returns a monthId
@@ -27,7 +27,7 @@ export async function getUnownedMonthId(): Promise<string> {
  */
 export async function updateMonthAssignments(
   cookie: string,
-  assignments: { monthId: string; assigned: string }[]
+  assignments: { monthId: string; assigned: number }[]
 ): Promise<supertest.Response & { body: UpdatedMonthsByCategoryDto }> {
   const res = await request(app)
     .patch("/budget/category/months")

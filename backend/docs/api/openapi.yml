@@ -1,0 +1,305 @@
+openapi: 3.0.3
+info:
+  title: Budget Hydration API
+  version: 1.0.0
+
+paths:
+  /budget/snapshot:
+    get:
+      summary: Get full budget snapshot
+      description: >
+        Fetches a snapshot containing pre-indexed entities for frontend consumption for the authenticated user.
+      operationId: getBudgetSnapshot
+      tags:
+        - Hydration
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successfully retrieved snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BudgetSnapshot"
+
+        "401":
+          description: Unauthorized
+
+        "500":
+          description: Server error
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    BudgetSnapshot:
+      type: object
+      example:
+        categoryGroups:
+          user:
+            "cg_1":
+              id: "cg_1"
+              name: "Food"
+              position: 1
+          inflow:
+            id: "inflow"
+            name: "Inflow"
+            position: 0
+          uncategorised:
+            id: "uncategorised"
+            name: "Uncategorised"
+            position: 999
+
+        categories:
+          user:
+            "cat_1":
+              id: "cat_1"
+              name: "Groceries"
+              position: 1
+              categoryGroupId: "cg_1"
+          rta:
+            id: "rta"
+            name: "Ready to Assign"
+            position: 0
+            categoryGroupId: "cg_1"
+          uncategorised:
+            id: "uncategorised"
+            name: "Uncategorised"
+            position: 999
+            categoryGroupId: "cg_1"
+
+        months:
+          "month_1":
+            id: "month_1"
+            categoryId: "cat_1"
+            month: "2025-12"
+            activity: 100
+            assigned: 200
+            available: 100
+
+        accounts:
+          "acc_1":
+            id: "acc_1"
+            name: "Checking"
+            position: 1
+            open: true
+            type: "checking"
+            deletable: true
+            balance: 1000
+
+        transactions:
+          "tx_1":
+            id: "tx_1"
+            accountId: "acc_1"
+            categoryId: "cat_1"
+            payeeId: "pay_1"
+            date: "2025-12-13T00:00:00.000Z"
+            memo: "Tesco"
+            inflow: 0
+            outflow: 12.34
+
+        payees:
+          "pay_1":
+            id: "pay_1"
+            name: "Tesco"
+            origin: "USER"
+            defaultCategoryId: "cat_1"
+            includeInPayeeList: true
+            automaticallyCategorisePayee: true
+
+        memosByMonth:
+          "2025-12":
+            id: "memo_1"
+            month: "2025-12"
+            content: "Holiday budget"
+
+        monthKeys:
+          - "2025-12"
+      required:
+        - categoryGroups
+        - categories
+        - months
+        - accounts
+        - transactions
+        - payees
+        - memosByMonth
+        - monthKeys
+      properties:
+        categoryGroups:
+          type: object
+          required: [user, inflow, uncategorised]
+          properties:
+            user:
+              type: object
+              additionalProperties:
+                $ref: "#/components/schemas/CategoryGroup"
+            inflow:
+              $ref: "#/components/schemas/CategoryGroup"
+            uncategorised:
+              $ref: "#/components/schemas/CategoryGroup"
+
+        categories:
+          type: object
+          required: [user, rta, uncategorised]
+          properties:
+            user:
+              type: object
+              additionalProperties:
+                $ref: "#/components/schemas/Category"
+            rta:
+              $ref: "#/components/schemas/Category"
+            uncategorised:
+              $ref: "#/components/schemas/Category"
+
+        months:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/Month"
+
+        accounts:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/Account"
+
+        transactions:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/Transaction"
+
+        payees:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/Payee"
+
+        memosByMonth:
+          type: object
+          description: Map of monthKey → memo (1:1 invariant)
+          additionalProperties:
+            $ref: "#/components/schemas/Memo"
+
+        monthKeys:
+          type: array
+          items:
+            type: string
+
+    CategoryGroup:
+      type: object
+      required: [id, name, position]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        position:
+          type: number
+
+    Category:
+      type: object
+      required: [id, name, position, categoryGroupId]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        position:
+          type: number
+        categoryGroupId:
+          type: string
+
+    Month:
+      type: object
+      required: [id, categoryId, month, activity, assigned, available]
+      properties:
+        id:
+          type: string
+        categoryId:
+          type: string
+        month:
+          type: string
+        activity:
+          type: number
+        assigned:
+          type: number
+        available:
+          type: number
+
+    Account:
+      type: object
+      required: [id, name, position, open, type, deletable, balance]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        position:
+          type: number
+        open:
+          type: boolean
+        type:
+          enum: [BANK, CREDIT_CARD]
+        deletable:
+          type: boolean
+        balance:
+          type: number
+
+    Transaction:
+      type: object
+      required: [id, accountId, date, memo, inflow, outflow]
+      properties:
+        id:
+          type: string
+        accountId:
+          type: string
+        categoryId:
+          type: string
+          nullable: true
+        payeeId:
+          type: string
+          nullable: true
+        date:
+          type: string
+          format: date-time
+        memo:
+          type: string
+        inflow:
+          type: number
+        outflow:
+          type: number
+
+    Payee:
+      type: object
+      required:
+        - id
+        - name
+        - origin
+        - defaultCategoryId
+        - includeInPayeeList
+        - automaticallyCategorisePayee
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        origin:
+          enum: [SYSTEM, USER]
+        defaultCategoryId:
+          type: string
+          nullable: true
+        includeInPayeeList:
+          type: boolean
+        automaticallyCategorisePayee:
+          type: boolean
+
+    Memo:
+      type: object
+      required: [id, month, content]
+      properties:
+        id:
+          type: string
+        month:
+          type: string
+        content:
+          type: string

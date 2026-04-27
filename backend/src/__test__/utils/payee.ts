@@ -1,12 +1,12 @@
 import request from "supertest";
 import app from "../../app";
-import { NormalisedPayees } from "../../features/budget/payee/payee.types";
 import {
   CombinePayeesPayload,
   DeletePayeesInBulkPayload,
   EditPayeePayload,
   EditPayeesInBulkPayload,
-} from "../../features/budget/payee/payee.schema";
+} from "../../features/budget/core/payee/payee.schema";
+import { NormalisedPayees } from "../../features/budget/core/payee/payee.types";
 
 export const getPayees = async (cookie: string) => {
   const res = await request(app)

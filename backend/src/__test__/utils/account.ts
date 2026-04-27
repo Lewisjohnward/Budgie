@@ -1,8 +1,8 @@
 import request from "supertest";
 import app from "../../app";
-import { AddAccountInput } from "../../features/budget/account/account.schema";
 import { getAccounts } from "./getData";
 import { prisma } from "../../shared/prisma/client";
+import { AddAccountInput } from "../../features/budget/core/account/account.schema";
 
 /**
  * Input type for creating accounts in tests,

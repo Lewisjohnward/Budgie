@@ -1,6 +1,6 @@
 import request from "supertest";
 import app from "../../app";
-import { type CategoryGroupMap } from "../../features/budget/categorygroup/types/categoryGroup.dto";
+import { CategoryGroupMap } from "../../features/budget/core/categorygroup/types/categoryGroup.dto";
 
 /**
  * Sends a raw request to fetch category groups, returning the full HTTP response for testing status codes and edge cases

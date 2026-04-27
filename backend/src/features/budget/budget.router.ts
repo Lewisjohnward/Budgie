@@ -2,16 +2,18 @@ import { Router } from "express";
 
 import { Authenticate } from "../../shared/middleWare/CommonAuth";
 
-import accountRoutes from "./account/account.routes";
-import categoryRoutes from "./category/category.router";
-import categorygroupRoutes from "./categorygroup/categorygroup.routes";
-import payeeRoutes from "./payee/payee.routes";
-import transactionRoutes from "./transaction/transaction.routes";
-import memoRoutes from "./memo/memo.routes";
+import accountRoutes from "./core/account/account.routes";
+import categoryRoutes from "./core/category/category.router";
+import categorygroupRoutes from "./core/categorygroup/categorygroup.routes";
+import payeeRoutes from "./core/payee/payee.routes";
+import transactionRoutes from "./core/transaction/transaction.routes";
+import memoRoutes from "./core/memo/memo.routes";
+import hydrationRoutes from "./queries/hydration/hydration.routes";
 
 const router = Router();
 
 router.use(Authenticate);
+router.use("/snapshot", hydrationRoutes);
 router.use("/account", accountRoutes);
 router.use("/category", categoryRoutes);
 router.use("/categorygroups", categorygroupRoutes);

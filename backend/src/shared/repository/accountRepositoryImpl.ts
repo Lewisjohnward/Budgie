@@ -1,12 +1,13 @@
 import { Prisma } from "@prisma/client";
-import { AccountRepository } from "../../features/budget/account/account.repository";
+import { AccountRepository } from "../../features/budget/core/account/account.repository";
 import { Decimal } from "@prisma/client/runtime/library";
 import {
   CreateAccountPayloadWithPosition,
   type AccountId,
   type db,
-} from "../../features/budget/account/account.types";
+} from "../../features/budget/core/account/account.types";
 import { type UserId } from "../../features/user/auth/auth.types";
+import { prisma } from "../prisma/client";
 
 export const accountRepository: AccountRepository = {
   createAccount: async function (
@@ -33,6 +34,17 @@ export const accountRepository: AccountRepository = {
       return null;
     }
     return row;
+  },
+
+  getAccounts: async function (userId: UserId): Promise<db.Account[]> {
+    return await prisma.account.findMany({
+      where: {
+        userId,
+      },
+      orderBy: {
+        position: "asc",
+      },
+    });
   },
 
   // TODO:(lewis 2026-02-05 20:08) this can be improved, surely can do update many // //

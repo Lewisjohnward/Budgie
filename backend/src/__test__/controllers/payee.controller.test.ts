@@ -15,7 +15,7 @@ import { login } from "../utils/auth";
 import request from "supertest";
 import app from "../../app";
 import { createAccountAndFetch } from "../utils/account";
-import { SYSTEM_PAYEE_NAMES } from "../../features/budget/payee/payee.constants";
+import { SYSTEM_PAYEE_NAMES } from "../../features/budget/core/payee/payee.constants";
 
 const PAYEE_NAME = "testPayee";
 
@@ -363,8 +363,6 @@ describe("Payee", () => {
         expect(payee).toHaveProperty("defaultCategoryId");
         expect(payee).toHaveProperty("includeInPayeeList");
         expect(payee).toHaveProperty("automaticallyCategorisePayee");
-        expect(payee).toHaveProperty("createdAt");
-        expect(payee).toHaveProperty("updatedAt");
       });
     });
   });

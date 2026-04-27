@@ -3,10 +3,9 @@ import { getAccounts, getCategories } from "../../utils/getData";
 import {
   addTransaction,
   editSingleTransaction,
-  TestInsertTransactionInputWithoutUserId,
+  type TestInsertTransactionInputWithoutUserId,
 } from "../../utils/transaction";
 import { login, registerUser } from "../../utils/auth";
-import { type EditSingleTransactionInput } from "../../../features/budget/transaction/transaction.schema";
 import {
   getCategoryMonths,
   getRTACategory,
@@ -21,6 +20,7 @@ import {
   createAccountAndFetch,
   fetchAccountByName,
 } from "../../utils/account";
+import { type EditSingleTransactionInput } from "../../../features/budget/core/transaction/transaction.schema";
 
 describe("Transaction Single Edit", () => {
   let cookie: string;
@@ -2162,7 +2162,7 @@ describe("Transaction Single Edit", () => {
           });
         });
         describe("Category Months", () => {
-          it.skip("Should backfill category months when editing a transfer transaction into the past", async () => {});
+          it.skip("Should backfill category months when editing a transfer transaction into the past", async () => { });
         });
       });
     });

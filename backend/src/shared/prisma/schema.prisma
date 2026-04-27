@@ -177,7 +177,7 @@ model Payee {
   id                           String   @id @default(uuid())
   userId                       String
   name                         String
-  origin                       PayeeOrigin? @default(USER) 
+  origin                       PayeeOrigin @default(USER) 
   defaultCategoryId            String?
   includeInPayeeList           Boolean  @default(true)
   automaticallyCategorisePayee Boolean  @default(true)

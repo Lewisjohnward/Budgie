@@ -1,10 +1,10 @@
 import request from "supertest";
 import app from "../../app";
-import { NormalisedCategoryData } from "../../features/budget/category/core/category.types";
 import { getAccounts, getCategories } from "../utils/getData";
 import { addAccount, addTransaction } from "../utils/transaction";
 import { login, registerUser } from "../utils/auth";
 import { createAccountAndFetch } from "../utils/account";
+import { NormalisedCategoryData } from "../../features/budget/core/category/core/category.types";
 
 describe("Budget", () => {
   it.todo("Should prevent users accessing/updating other users data");

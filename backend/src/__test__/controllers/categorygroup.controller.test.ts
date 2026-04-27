@@ -33,8 +33,6 @@ describe("Category group", () => {
         expect(group).toHaveProperty("id");
         expect(group).toHaveProperty("name");
         expect(group).toHaveProperty("position");
-        expect(group).toHaveProperty("categoryIds");
-        expect(Array.isArray(group.categoryIds)).toBe(true);
       });
     });
   });

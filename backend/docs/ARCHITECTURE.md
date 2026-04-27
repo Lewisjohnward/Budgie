@@ -13,9 +13,9 @@ POST /user/password/forgot-password
 POST /user/password/reset-password
 PATCH /user/password/change-password (Auth Required)
 
-# Bootstrap
+# Snapshot
 
-GET /budget/bootstrap
+GET /budget/snapshot
 
 # Accounts
 
@@ -102,6 +102,149 @@ PATCH /budget/memo/:id
   - 400 Bad Request — Invalid email or password format
   - 409 Conflict — Email is already registered
 
+### Snapshot API
+
+**Snapshot**
+
+- **Endpoint:** `GET /budget/snapshot`
+- **Auth Required:** The user must be logged in.
+- **Description:** Returns a fully hydrated, pre-normalised snapshot of the user’s budget data.
+  This endpoint is designed for initial application load, allowing the frontend to bootstrap its entire state in a single request.
+  The response contains denormalised and indexed entities such as transactions, accounts, categories, months, memos, and derived structures (e.g. monthKeys) optimised for UI consumption.
+
+- **Behavior:**
+  - Authenticates the request using the provided JWT token.
+  - Fetches all relevant budget domain data for the authenticated user.
+  - Normalises and transforms raw domain entities into a hydration-ready shape:
+  - Decimal values are converted to numbers.
+  - Dates are serialised into ISO strings.
+  - Entities are indexed by ID for O(1) access in the frontend.
+  - Derives computed structures such as:
+  - monthKeys (sorted list of YYYY-MM strings derived from memo/transaction data)
+  - memosByMonth (1:1 mapping of month → memo)
+  - Ensures the returned payload is internally consistent (e.g. keys match indexed data).
+
+- **Response:**
+  - 200 OK — Returns a BudgetHydrationModel:
+    categoryGroups — grouped category metadata (user/inflow/uncategorised)
+    categories — all categories indexed by ID
+    months — budget month allocations indexed by ID
+    accounts — user accounts indexed by ID
+    transactions — normalised transactions indexed by ID
+    payees — payee metadata indexed by ID
+    memosByMonth — map of YYYY-MM → memo
+    monthKeys — sorted list of months present in the snapshot
+
+```json
+{
+  "categoryGroups": {
+    "user": {
+      "cg_1": {
+        "id": "cg_1",
+        "name": "Bills",
+        "position": 1
+      }
+    },
+    "inflow": {
+      "id": "inflow",
+      "name": "Inflow",
+      "position": 0
+    },
+    "uncategorised": {
+      "id": "uncategorised",
+      "name": "Uncategorised",
+      "position": 999
+    }
+  },
+
+  "categories": {
+    "user": {
+      "cat_1": {
+        "id": "cat_1",
+        "name": "Groceries",
+        "position": 1,
+        "categoryGroupId": "cg_1"
+      }
+    },
+    "rta": {
+      "id": "rta",
+      "name": "Ready to Assign",
+      "position": 0,
+      "categoryGroupId": "cg_1"
+    },
+    "uncategorised": {
+      "id": "uncategorised",
+      "name": "Uncategorised",
+      "position": 999,
+      "categoryGroupId": "cg_1"
+    }
+  },
+
+  "months": {
+    "m_1": {
+      "id": "m_1",
+      "categoryId": "cat_1",
+      "month": "2026-01",
+      "activity": 120.5,
+      "assigned": 200,
+      "available": 79.5
+    }
+  },
+
+  "accounts": {
+    "acc_1": {
+      "id": "acc_1",
+      "name": "Monzo",
+      "position": 1,
+      "open": true,
+      "type": "current",
+      "deletable": true,
+      "balance": 1500.25
+    }
+  },
+
+  "transactions": {
+    "tx_1": {
+      "id": "tx_1",
+      "accountId": "acc_1",
+      "categoryId": "cat_1",
+      "payeeId": "pay_1",
+      "date": "2025-12-13T00:00:00.000Z",
+      "memo": "Tesco",
+      "inflow": 0,
+      "outflow": 25.5
+    }
+  },
+
+  "payees": {
+    "pay_1": {
+      "id": "pay_1",
+      "name": "Tesco",
+      "origin": "USER",
+      "defaultCategoryId": "cat_1",
+      "includeInPayeeList": true,
+      "automaticallyCategorisePayee": false
+    }
+  },
+
+  "memosByMonth": {
+    "2026-01": {
+      "id": "memo_1",
+      "month": "2026-01",
+      "content": "January budget notes"
+    }
+  },
+
+  "monthKeys": ["2025-12", "2026-01"]
+}
+```
+
+All dates are returned as ISO 8601 strings (date-time format)
+
+- **Error Responses:**
+  - 401 Unauthorized - Returned when the request is missing a valid JWT token or the token is invalid/expired.
+  - 500 Internal Server Error - Returned when an unexpected error occurs during snapshot construction, such as: database failure mapping/normalisation errors inconsistent domain data
+
 ### Account API
 
 **Edit Account**
@@ -128,6 +271,7 @@ PATCH /budget/memo/:id
   - 200 OK — Returns authentication tokens
 
 - **Error Responses:**
+  - 401 Unauthorized - Returned when the request is missing a valid JWT token or the token is invalid/expired.
   - 400 Bad Request if invalid fields are provided (e.g., non-numeric balance)
   - 404 Not Found if the account does not exist or does not belong to the user
   - 409 Conflict if renaming to a duplicate account name
@@ -168,7 +312,7 @@ PATCH /budget/memo/:id
 ```
 
 - **Error Responses:**
-  - N/A
+  - 401 Unauthorized - Returned when the request is missing a valid JWT token or the token is invalid/expired.
 
 ### Months API
 
@@ -192,6 +336,7 @@ PATCH /budget/memo/:id
   - 200 OK — Returns an array of months
 
 - **Error Responses:**
+  - 401 Unauthorized - Returned when the request is missing a valid JWT token or the token is invalid/expired.
   - 400 Bad Request — If `categoryIds` is missing or invalid
   - 404 Not Found — If any category does not exist or is not owned by the user
 
@@ -227,7 +372,7 @@ PATCH /budget/memo/:id
   - 200 OK — Returns an object mapping category IDs to arrays of updated month DTOs:
 
 - **Error Responses:**
-  - N/A
+  - 401 Unauthorized - Returned when the request is missing a valid JWT token or the token is invalid/expired.
 
 ```json
 {
@@ -255,6 +400,7 @@ PATCH /budget/memo/:id
 ```
 
 - **Error Responses:**
+  - 401 Unauthorized - Returned when the request is missing a valid JWT token or the token is invalid/expired.
   - 400 Bad Request — Payload is malformed or contains duplicate month IDs.
   - 403 Forbidden — Attempting to assign to a protected category.
   - 400 Not Found — Any month does not exist or is not owned by the user.

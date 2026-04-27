@@ -1,12 +1,13 @@
 import { Prisma } from "@prisma/client";
-import { PROTECTED_CATEGORY_NAMES } from "../../features/budget/category/core/category.constants";
-import { CategoryRepository } from "../../features/budget/category/core/category.repository";
+import { PROTECTED_CATEGORY_NAMES } from "../../features/budget/core/category/core/category.constants";
+import { CategoryRepository } from "../../features/budget/core/category/core/category.repository";
 import {
   type db,
   type MonthId,
-} from "../../features/budget/category/core/category.types";
-import { NoPastMonthsFoundError } from "../../features/budget/category/core/category.errors";
+} from "../../features/budget/core/category/core/category.types";
+import { NoPastMonthsFoundError } from "../../features/budget/core/category/core/category.errors";
 import { type UserId } from "../../features/user/auth/auth.types";
+import { prisma } from "../prisma/client";
 
 export const categoryRepository: CategoryRepository = {
   // ──────────────── Category Retrieval ────────────────
@@ -16,6 +17,14 @@ export const categoryRepository: CategoryRepository = {
     });
 
     if (!row) return null;
+
+    return row;
+  },
+
+  getCategories: async (userId) => {
+    const row = await prisma.category.findMany({
+      where: { userId },
+    });
 
     return row;
   },
@@ -227,6 +236,21 @@ export const categoryRepository: CategoryRepository = {
     )) as db.Month[];
 
     return mostRecentMonths;
+  },
+
+  getMonths: async function(
+    userId: UserId,
+    range: { from?: Date; to?: Date }
+  ): Promise<db.Month[]> {
+    return prisma.month.findMany({
+      where: {
+        month: {
+          gte: range.from,
+          lte: range.to,
+        },
+        category: { userId },
+      },
+    });
   },
 
   // ──────────────── Month Mutation ────────────────

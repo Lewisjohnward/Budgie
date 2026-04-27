@@ -6,7 +6,7 @@ import { getCategories } from "../utils/getData";
 import { LENGTH_ON_SIGNUP } from "../utils/memo";
 import { login, register } from "../utils/auth";
 import { getPayees } from "../utils/payee";
-import { SYSTEM_PAYEE_NAMES } from "../../features/budget/payee/payee.constants";
+import { SYSTEM_PAYEE_NAMES } from "../../features/budget/core/payee/payee.constants";
 
 const prisma = new PrismaClient();
 
