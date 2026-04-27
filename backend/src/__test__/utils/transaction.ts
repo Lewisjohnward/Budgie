@@ -4,9 +4,9 @@ import {
   type EditBulkTransactionsInput,
   type EditSingleTransactionInput,
   type InsertTransactionInput,
-} from "../../features/budget/transaction/transaction.schema";
+} from "../../features/budget/core/transaction/transaction.schema";
 import { getAccounts } from "./getData";
-import { type NormalisedTransaction } from "../../features/budget/account/account.types";
+import { type NormalisedTransaction } from "../../features/budget/core/account/account.types";
 
 /**
  * Input type for creating transactions in tests,

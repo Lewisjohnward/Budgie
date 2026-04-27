@@ -1,7 +1,7 @@
 import { prisma } from "../../../../shared/prisma/client";
-import { categoryService } from "../../../budget/category/core/category.service";
-import { memoService } from "../../../budget/memo/memo.service";
-import { payeeService } from "../../../budget/payee/payee.service";
+import { categoryService } from "../../../budget/core/category/core/category.service";
+import { memoService } from "../../../budget/core/memo/memo.service";
+import { payeeService } from "../../../budget/core/payee/payee.service";
 import { type RegisterPayload } from "../auth.schema";
 import { authService } from "../auth.service";
 import { type AuthTokens } from "../auth.types";

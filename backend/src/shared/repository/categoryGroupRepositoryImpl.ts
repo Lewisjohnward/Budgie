@@ -1,14 +1,14 @@
 import { type Prisma } from "@prisma/client";
-import { PROTECTED_CATEGORY_GROUP_NAMES } from "../../features/budget/categorygroup/categoryGroup.constants";
-import { type CategoryGroupRepository } from "../../features/budget/categorygroup/categoryGroup.repository";
+import { PROTECTED_CATEGORY_GROUP_NAMES } from "../../features/budget/core/categorygroup/categoryGroup.constants";
+import { type CategoryGroupRepository } from "../../features/budget/core/categorygroup/categoryGroup.repository";
 import {
   type CreateCategoryGroupData,
   type EditCategoryGroupData,
-} from "../../features/budget/categorygroup/categorygroup.schema";
+} from "../../features/budget/core/categorygroup/categorygroup.schema";
 import {
   db,
   type CategoryGroupId,
-} from "../../features/budget/categorygroup/categoryGroup.types";
+} from "../../features/budget/core/categorygroup/categoryGroup.types";
 import { type UserId } from "../../features/user/auth/auth.types";
 import { prisma } from "../prisma/client";
 
@@ -32,17 +32,10 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     return row;
   },
 
-  getCategoryGroupsWithCategoryIds: async function(
+  getCategoryGroups: async function(
     userId: UserId
-  ): Promise<db.CategoryGroupWithCategoryIds[]> {
-    return prisma.categoryGroup.findMany({
-      where: { userId },
-      include: {
-        categories: {
-          select: { id: true },
-        },
-      },
-    });
+  ): Promise<db.CategoryGroup[]> {
+    return prisma.categoryGroup.findMany({ where: { userId } });
   },
 
   existsCategoryGroup: async (tx, userId, categoryGroupId) => {

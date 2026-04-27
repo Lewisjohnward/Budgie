@@ -1,12 +1,12 @@
 import { getAccounts } from "../../utils/getData";
 import { addTransaction, duplicateTransactions } from "../../utils/transaction";
 import { login, registerUser } from "../../utils/auth";
-import { type InsertTransactionInput } from "../../../features/budget/transaction/transaction.schema";
 import {
   createAccount,
   createAccountAndFetch,
   fetchAccountByName,
 } from "../../utils/account";
+import { type InsertTransactionInput } from "../../../features/budget/core/transaction/transaction.schema";
 
 describe("Transaction Duplicate", () => {
   let cookie: string;

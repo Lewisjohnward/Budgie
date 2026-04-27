@@ -1,5 +1,5 @@
 import { prisma } from "../../../../shared/prisma/client";
-import { categoryService } from "../../../budget/category/core/category.service";
+import { categoryService } from "../../../budget/core/category/core/category.service";
 import { InvalidCredentialsError } from "../auth.errors";
 import { type LoginPayload } from "../auth.schema";
 import { authService } from "../auth.service";

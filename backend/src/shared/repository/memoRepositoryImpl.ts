@@ -1,10 +1,11 @@
 import { Prisma } from "@prisma/client";
-import { MemoRepository } from "../../features/budget/memo/memo.repository";
-import { db, type MemoId } from "../../features/budget/memo/memo.types";
+import { MemoRepository } from "../../features/budget/core/memo/memo.repository";
+import { db, type MemoId } from "../../features/budget/core/memo/memo.types";
 import { type UserId } from "../../features/user/auth/auth.types";
+import { prisma } from "../prisma/client";
 
 export const memoRepository: MemoRepository = {
-  getMemo: async function(
+  getMemo: async function (
     tx: Prisma.TransactionClient,
     userId: UserId,
     memoId: MemoId
@@ -18,7 +19,14 @@ export const memoRepository: MemoRepository = {
 
     return memo;
   },
-  updateMemo: async function(
+  getMemos: async function (userId: UserId): Promise<db.Memo[]> {
+    return prisma.monthMemo.findMany({
+      where: {
+        userId: userId,
+      },
+    });
+  },
+  updateMemo: async function (
     tx: Prisma.TransactionClient,
     memoId: MemoId,
     content: string
@@ -33,7 +41,7 @@ export const memoRepository: MemoRepository = {
     });
   },
 
-  insertMemos: async function(tx, userId, months) {
+  insertMemos: async function (tx, userId, months) {
     await tx.monthMemo.createMany({
       data: months.map((m) => ({
         userId,

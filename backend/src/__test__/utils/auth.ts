@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from "../../app";
-import { NormalisedCategoryData } from "../../features/budget/category/core/category.types";
 import { prisma } from "../../shared/prisma/client";
+import { NormalisedCategoryData } from "../../features/budget/core/category/core/category.types";
 
 export const testUser = {
   email: "test@test.com",

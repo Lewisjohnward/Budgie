@@ -1,17 +1,18 @@
 import { Prisma } from "@prisma/client";
-import { TransactionRepository } from "../../features/budget/transaction/transaction.repository";
+import { TransactionRepository } from "../../features/budget/core/transaction/transaction.repository";
 import {
   type DomainNormalTransaction,
   type TransactionId,
   type db,
   type TransactionInsertData,
-} from "../../features/budget/transaction/transaction.types";
-import { type CategoryId } from "../../features/budget/category/core/category.types";
-import { type AccountId } from "../../features/budget/account/account.types";
-import { transactionMapper } from "../../features/budget/transaction/transaction.mapper";
-import { type PayeeId } from "../../features/budget/payee/payee.types";
-import { type CategoryGroupId } from "../../features/budget/categorygroup/categoryGroup.types";
+} from "../../features/budget/core/transaction/transaction.types";
+import { type CategoryId } from "../../features/budget/core/category/core/category.types";
+import { type AccountId } from "../../features/budget/core/account/account.types";
+import { transactionMapper } from "../../features/budget/core/transaction/transaction.mapper";
+import { type PayeeId } from "../../features/budget/core/payee/payee.types";
+import { type CategoryGroupId } from "../../features/budget/core/categorygroup/categoryGroup.types";
 import { type UserId } from "../../features/user/auth/auth.types";
+import { prisma } from "../prisma/client";
 
 export const transactionRepository: TransactionRepository = {
   createTransaction: function (
@@ -249,5 +250,25 @@ export const transactionRepository: TransactionRepository = {
     });
 
     return !!exists;
+  },
+  getTransactionsByAccountIds: async function (
+    accountIds: AccountId[],
+    range: { from?: Date; to?: Date }
+  ): Promise<db.Transaction[]> {
+    if (accountIds.length === 0) return [];
+    return prisma.transaction.findMany({
+      where: {
+        accountId: {
+          in: accountIds,
+        },
+        date: {
+          gte: range.from,
+          lte: range.to,
+        },
+      },
+      orderBy: {
+        date: "asc",
+      },
+    });
   },
 };

@@ -6,10 +6,10 @@ import {
   getReadyToAssignMonths,
 } from "../utils/getData";
 import { login, registerUser } from "../utils/auth";
-import { type db } from "../../features/budget/account/account.types";
 import { prisma } from "../../shared/prisma/client";
 import { createAccountAndFetch } from "../utils/account";
 import { updateMonthAssignments } from "../utils/assign";
+import { db } from "../../features/budget/core/account/account.types";
 
 const compareRTAMonthsToExpected = async (
   expected: number[],
@@ -1105,21 +1105,21 @@ describe("RTA allocation", () => {
         await updateMonthAssignments(cookie, [
           {
             monthId: testCategory.months[0],
-            assigned: "10",
+            assigned: 10,
           },
         ]);
 
         await updateMonthAssignments(cookie, [
           {
             monthId: testCategory.months[0],
-            assigned: "10",
+            assigned: 10,
           },
         ]);
 
         await updateMonthAssignments(cookie, [
           {
             monthId: testCategory.months[1],
-            assigned: "10",
+            assigned: 10,
           },
         ]);
 
@@ -1128,7 +1128,7 @@ describe("RTA allocation", () => {
         await updateMonthAssignments(cookie, [
           {
             monthId: testCategory.months[1],
-            assigned: "0",
+            assigned: 0,
           },
         ]);
 
@@ -1137,7 +1137,7 @@ describe("RTA allocation", () => {
         await updateMonthAssignments(cookie, [
           {
             monthId: testCategory.months[0],
-            assigned: "0",
+            assigned: 0,
           },
         ]);
 
@@ -2211,7 +2211,7 @@ describe("RTA allocation", () => {
   });
 
   describe.skip("editing transactions", () => {
-    it.skip("Should correctly update rta months when editing from uncategorised to category", async () => {});
+    it.skip("Should correctly update rta months when editing from uncategorised to category", async () => { });
     it("first test", async () => {
       const { id: accountId } = testAccount;
 

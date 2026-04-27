@@ -1,15 +1,16 @@
 import { Prisma } from "@prisma/client";
-import { PayeeRepository } from "../../features/budget/payee/payee.repository";
-import { type PayeeId, type db } from "../../features/budget/payee/payee.types";
+import { PayeeRepository } from "../../features/budget/core/payee/payee.repository";
+import {
+  type PayeeId,
+  type db,
+} from "../../features/budget/core/payee/payee.types";
 import { type UserId } from "../../features/user/auth/auth.types";
-import { SYSTEM_PAYEE_NAMES } from "../../features/budget/payee/payee.constants";
+import { SYSTEM_PAYEE_NAMES } from "../../features/budget/core/payee/payee.constants";
+import { prisma } from "../prisma/client";
 
 export const payeeRepository: PayeeRepository = {
-  getPayees: function(
-    tx: Prisma.TransactionClient,
-    userId: UserId
-  ): Promise<db.Payee[]> {
-    return tx.payee.findMany({
+  getPayees: function (userId: UserId): Promise<db.Payee[]> {
+    return prisma.payee.findMany({
       where: {
         userId,
       },
@@ -19,7 +20,7 @@ export const payeeRepository: PayeeRepository = {
     });
   },
 
-  getPayeeByIdAndUserId: function(
+  getPayeeByIdAndUserId: function (
     tx: Prisma.TransactionClient,
     payeeId: PayeeId,
     userId: UserId
@@ -31,7 +32,7 @@ export const payeeRepository: PayeeRepository = {
       },
     });
   },
-  getPayeeByNameAndUserId: function(
+  getPayeeByNameAndUserId: function (
     tx: Prisma.TransactionClient,
     userId: UserId,
     name: string,
@@ -45,7 +46,7 @@ export const payeeRepository: PayeeRepository = {
       },
     });
   },
-  countPayeesByIdsAndUserId: async function(
+  countPayeesByIdsAndUserId: async function (
     tx: Prisma.TransactionClient,
     payeeIds: PayeeId[],
     userId: UserId
@@ -58,7 +59,7 @@ export const payeeRepository: PayeeRepository = {
     });
   },
 
-  getSystemPayeeIdsByUserId: async function(
+  getSystemPayeeIdsByUserId: async function (
     tx: Prisma.TransactionClient,
     userId: UserId
   ): Promise<string[]> {
@@ -74,7 +75,7 @@ export const payeeRepository: PayeeRepository = {
     return rows.map((r) => r.id);
   },
 
-  createPayee: async function(
+  createPayee: async function (
     tx: Prisma.TransactionClient,
     userId: UserId,
     name: string,
@@ -89,7 +90,7 @@ export const payeeRepository: PayeeRepository = {
     });
   },
 
-  updatePayee: async function(
+  updatePayee: async function (
     tx: Prisma.TransactionClient,
     payeeId: PayeeId,
     data: {
@@ -118,7 +119,7 @@ export const payeeRepository: PayeeRepository = {
     });
   },
 
-  updatePayees: async function(
+  updatePayees: async function (
     tx: Prisma.TransactionClient,
     payeeIds: PayeeId[],
     data: {
@@ -137,7 +138,7 @@ export const payeeRepository: PayeeRepository = {
     });
   },
 
-  deletePayees: async function(
+  deletePayees: async function (
     tx: Prisma.TransactionClient,
     payeeIds: PayeeId[]
   ): Promise<void> {
@@ -148,7 +149,7 @@ export const payeeRepository: PayeeRepository = {
     });
   },
 
-  getStartingBalancePayeeId: async function(
+  getStartingBalancePayeeId: async function (
     tx: Prisma.TransactionClient,
     userId: UserId
   ): Promise<string | null> {
@@ -168,7 +169,7 @@ export const payeeRepository: PayeeRepository = {
     return record.id;
   },
 
-  getBalanceAdjustmentPayeeId: async function(
+  getBalanceAdjustmentPayeeId: async function (
     tx: Prisma.TransactionClient,
     userId: UserId
   ): Promise<string | null> {
@@ -191,7 +192,7 @@ export const payeeRepository: PayeeRepository = {
 
   // Note: Using `createPayee` in a loop returns the created payees.
   // `createMany` does not return the created records
-  createPayees: async function(
+  createPayees: async function (
     tx: Prisma.TransactionClient,
     userId: UserId,
     payees: { name: string; origin: "USER" | "SYSTEM" }[]
