@@ -1,5 +1,6 @@
 import { prisma } from "../../../../shared/prisma/client";
 import { categoryService } from "../../../budget/core/category/core/category.service";
+import { memoService } from "../../../budget/core/memo/memo.service";
 import { InvalidCredentialsError } from "../auth.errors";
 import { type LoginPayload } from "../auth.schema";
 import { authService } from "../auth.service";
@@ -31,6 +32,8 @@ export const login = async (payload: LoginPayload): Promise<AuthTokens> => {
   }
 
   await categoryService.months.ensureMonthsContinuity(prisma, user.id);
+
+  await memoService.ensureMemosContinuity(user.id);
 
   const accessToken = generateAccessToken({
     _id: user.id,

@@ -1,15 +1,15 @@
-import { CategoryGroup, Category, Month } from "@/core/types/Allocation";
 import {
   FundingState,
   FundingStatus,
   MonthsToUpdate,
 } from "../types/assignTypes";
+import { AllocationContext } from "../../../hooks/useAllocation/useCategoryViewModel";
 
 export const generateResetAvailableState = (
-  categoryGroups: Record<string, CategoryGroup>,
-  categories: Record<string, Category>,
-  currentMonths: Month[]
+  allocationContext: AllocationContext
 ): { monthsToUpdate: MonthsToUpdate[]; uiState: FundingState } => {
+  const { currentMonths, categories, categoryGroups } = allocationContext;
+
   const monthsToResetAvailable = currentMonths.filter((m) => m.available !== 0);
 
   const monthsToReset: MonthsToUpdate[] = [];

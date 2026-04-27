@@ -106,6 +106,7 @@ export function AccountTable({
         <TableBody>
           {transactionForm.state.open &&
             transactionForm.state.editingRowIndex === undefined && (
+              // Add transaction
               <TransactionFormRow transactionForm={transactionForm} />
             )}
           <TableCell>19/12/2025</TableCell>
@@ -123,6 +124,7 @@ export function AccountTable({
             table.table.getRowModel().rows.map((row, i) =>
               row.id === transactionForm.state.editingRowIndex &&
               transactionForm.state.open ? (
+                // Edit transaction
                 <TransactionFormRow
                   key={`edit-${row.id}`}
                   transactionForm={transactionForm}

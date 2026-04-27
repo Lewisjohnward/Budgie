@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { SelectedCategoriesState } from "../hooks/useSelectedCategories";
+import { SelectedCategoriesState } from "../hooks/useCategoryTotals";
 import { Category } from "@/core/types/NormalizedData";
 import { useState } from "react";
 import { AutoAssignState } from "../hooks/useAutoAssign";

@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
-import { CategoryDetails } from "./CategoryDetails";
+import { CategoryBreakdown } from "./CategoryBreakdown";
 import { Category } from "@/core/types/NormalizedData";
 
-const meta: Meta<typeof CategoryDetails> = {
-  component: CategoryDetails,
+const meta: Meta<typeof CategoryBreakdown> = {
+  component: CategoryBreakdown,
   parameters: {
     layout: "centered",
   },
@@ -64,7 +64,7 @@ const InteractiveTemplate = (args: any) => {
   const [isOpen, setIsOpen] = useState(args.open || true);
 
   return (
-    <CategoryDetails
+    <CategoryBreakdown
       {...args}
       open={isOpen}
       toggleOpen={() => setIsOpen(!isOpen)}

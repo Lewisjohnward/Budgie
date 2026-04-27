@@ -1,20 +1,20 @@
-import { CategoryGroup, Category, Month } from "@/core/types/Allocation";
+import { Month } from "@/core/types/Allocation";
 import {
   FundingState,
   FundingStatus,
   MonthsToUpdate,
 } from "../types/assignTypes";
 import { roundToCents } from "@/pages/budget/utils/currency";
+import { AllocationContext } from "../../../hooks/useAllocation/useCategoryViewModel";
 
 export const generateSpentLastMonthState = (
-  categoryGroups: Record<string, CategoryGroup>,
-  categories: Record<string, Category>,
-  currentMonths: Month[],
-  lastMonths: Month[]
+  allocationContext: AllocationContext
 ): { monthsToUpdate: MonthsToUpdate[]; uiState: FundingState } => {
+  const { currentMonths, categories, categoryGroups, previousMonths } =
+    allocationContext;
   const monthsToUpdate: MonthsToUpdate[] = [];
   const lastMonthsMap = new Map<string, Month>();
-  for (const month of lastMonths) {
+  for (const month of previousMonths) {
     lastMonthsMap.set(month.categoryId, month);
   }
 

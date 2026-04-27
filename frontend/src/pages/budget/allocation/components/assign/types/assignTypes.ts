@@ -1,22 +1,13 @@
+import { MonthId } from "../../../types/types";
+
 export type MonthsToUpdate = {
-  monthId: string;
-  assigned: string;
+  monthId: MonthId;
+  assigned: number;
 };
 
 export type UpdateMonthsPayload = {
   assignments: MonthsToUpdate[];
 };
-
-export type MonthDto = {
-  id: string;
-  categoryId: string;
-  month: string;
-  activity: string;
-  assigned: string;
-  available: string;
-};
-
-export type UpdatedMonthsByCategoryDto = Record<string, MonthDto[]>;
 
 export enum FundingOption {
   UNDERFUNDED = "underfunded",
@@ -69,12 +60,12 @@ type UnderfundedState = {
 
 export type NonUnderfundedFundingState = {
   status:
-    | FundingStatus.AssignedLastMonth
-    | FundingStatus.SpentLastMonth
-    | FundingStatus.AverageAssigned
-    | FundingStatus.AverageSpent
-    | FundingStatus.ResetAssigned
-    | FundingStatus.ResetAvailable;
+  | FundingStatus.AssignedLastMonth
+  | FundingStatus.SpentLastMonth
+  | FundingStatus.AverageAssigned
+  | FundingStatus.AverageSpent
+  | FundingStatus.ResetAssigned
+  | FundingStatus.ResetAvailable;
   noCategoriesToUpdate: boolean;
   categories: CategoryGroup[];
 };

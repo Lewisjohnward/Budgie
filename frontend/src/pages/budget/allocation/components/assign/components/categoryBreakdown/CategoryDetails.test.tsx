@@ -5,7 +5,7 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { AllocationData } from "@/core/types/Allocation";
 import { CategoryDetails } from "./CategoryDetails";
-import { SelectedCategoriesState } from "../../hooks/useSelectedCategories";
+import { SelectedCategoriesState } from "../../hooks/useCategoryTotals";
 
 type CategoryDetailsProps = SelectedCategoriesState;
 
@@ -183,7 +183,7 @@ describe.skip("CategoryDetails", () => {
       fireEvent.click(toggleButton);
 
       expect(
-        screen.queryByText("Left Over from Last Month"),
+        screen.queryByText("Left Over from Last Month")
       ).not.toBeInTheDocument();
       expect(screen.queryByText("Assigned in August")).not.toBeInTheDocument();
       expect(screen.queryByText("Activity")).not.toBeInTheDocument();
@@ -201,7 +201,7 @@ describe.skip("CategoryDetails", () => {
       renderCategoryDetails(mockAllocationDataMonthView);
 
       expect(
-        await screen.findByText(/September's Balance/i),
+        await screen.findByText(/September's Balance/i)
       ).toBeInTheDocument();
       const leftoverRow = screen
         .getByText("Left Over from Last Month")

@@ -1,20 +1,21 @@
-import { CategoryGroup, Category, Month } from "@/core/types/Allocation";
+import { Month } from "@/core/types/Allocation";
 import {
   FundingState,
   FundingStatus,
   MonthsToUpdate,
 } from "../types/assignTypes";
 import { roundToCents } from "@/pages/budget/utils/currency";
+import { AllocationDomain } from "../../../hooks/useAllocation/useAllocationDomain";
 
 export const generateAssignedLastMonthState = (
-  categoryGroups: Record<string, CategoryGroup>,
-  categories: Record<string, Category>,
-  currentMonths: Month[],
-  lastMonths: Month[]
+  allocationContext: AllocationDomain
 ): { monthsToUpdate: MonthsToUpdate[]; uiState: FundingState } => {
+  const { categoryGroups, categories, currentMonths, previousMonths } =
+    allocationContext;
+
   const monthsToUpdate: MonthsToUpdate[] = [];
   const lastMonthsMap = new Map<string, Month>();
-  for (const month of lastMonths) {
+  for (const month of previousMonths) {
     lastMonthsMap.set(month.categoryId, month);
   }
   const monthsToAlignByGroup = currentMonths.reduce(

@@ -1,13 +1,13 @@
 import { darkBlueBgHover } from "@/core/theme/colors";
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
-import { MonthSelectorType } from "../../../hooks/useMonthSelector";
 import { NavButton } from "./NavButton";
 import clsx from "clsx";
+import { MonthSelectorHook } from "../../../hooks/useMonthSelector";
 
 export function MonthSelector({
   monthSelector,
 }: {
-  monthSelector: MonthSelectorType;
+  monthSelector: MonthSelectorHook;
 }) {
   return (
     <>
@@ -20,7 +20,7 @@ export function MonthSelector({
           <ArrowLeftIcon />
         </NavButton>
         <p className="w-24 text-center text-xl font-semibold">
-          {monthSelector.current}
+          {monthSelector.currentMonthNameFormatLong}
         </p>
         <NavButton
           onClick={monthSelector.next}

@@ -10,8 +10,13 @@ import { cn } from "@/core/lib/utils";
 import { getModalState } from "./assignModalStateMachine";
 import { AutoAssignModalState } from "../../hooks/useAutoAssign";
 
-export function AssignModal({ modalState }: { modalState: AutoAssignModalState }) {
-  const { open, onConfirm, onClose, onNextMonth, fundingState } = modalState;
+export function AssignModal({
+  modalState,
+}: {
+  modalState: AutoAssignModalState;
+}) {
+  const { isOpen, confirm, close, goToNextMonth, fundingState } = modalState;
+
   if (!fundingState) {
     return null;
   }
@@ -24,16 +29,16 @@ export function AssignModal({ modalState }: { modalState: AutoAssignModalState }
 
   const handleAction = (action: "close" | "assign" | "nextMonth") => {
     if (action === "close") {
-      onClose();
+      close();
     } else if (action === "assign") {
-      onConfirm();
+      confirm();
     } else if (action === "nextMonth") {
-      onNextMonth();
+      goToNextMonth();
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={close}>
       <DialogContent className="p-1 gap-0" aria-describedby={undefined}>
         <DialogTitle className="border-b p-5 text-stone-900">
           Auto-Assign Preview: {currentState.title}

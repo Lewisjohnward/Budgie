@@ -8,20 +8,8 @@ export interface CategoryAverageStats {
 }
 
 export const calculateAverageSpent = (
-  months: MonthForAverageSpend[],
-  currentMonthIndex: number
+  previousYearMonths: MonthForAverageSpend[]
 ): CategoryAverageStats => {
-  const uniqueMonths = [...new Set(months.map((m) => m.month))];
-
-  const previousYearMonthDates = uniqueMonths.slice(
-    Math.max(0, currentMonthIndex - 12),
-    currentMonthIndex
-  );
-
-  const previousYearMonths = months.filter((m) =>
-    previousYearMonthDates.includes(m.month)
-  );
-
   // Calculate category statistics with first non-zero index tracking
   const categoryStats = previousYearMonths.reduce(
     (acc, month) => {

@@ -249,7 +249,7 @@ All dates are returned as ISO 8601 strings (date-time format)
 
 **Edit Account**
 
-- **Endpoint:** `PATCH /budget/account/:id`
+- **Endpoint:** `PATCH /budget/account/{id}`
 - **Auth Required:** The user must be logged in.
 - **Description:** Updates an existing account. Supports updating the **name**, the **balance**, or both in a single request.
 
@@ -371,9 +371,6 @@ All dates are returned as ISO 8601 strings (date-time format)
 - **Response:**
   - 200 OK — Returns an object mapping category IDs to arrays of updated month DTOs:
 
-- **Error Responses:**
-  - 401 Unauthorized - Returned when the request is missing a valid JWT token or the token is invalid/expired.
-
 ```json
 {
   "categoryId1": [
@@ -400,8 +397,45 @@ All dates are returned as ISO 8601 strings (date-time format)
 ```
 
 - **Error Responses:**
-  - 401 Unauthorized - Returned when the request is missing a valid JWT token or the token is invalid/expired.
+  - 401 Unauthorised - Returned when the request is missing a valid JWT token or the token is invalid/expired.
   - 400 Bad Request — Payload is malformed or contains duplicate month IDs.
   - 403 Forbidden — Attempting to assign to a protected category.
   - 400 Not Found — Any month does not exist or is not owned by the user.
   - 400 Months Not Same Date — Months in the payload have different calendar dates.
+
+# Memo API
+
+**Update Memo**
+
+- **Endpoint:** `PATCH /budget/memo/{id}`
+- **Auth Required:** The user must be logged in.
+- **Description:** Updates the memo. Only memos belonging to the user can be updated.
+
+- **Behavior:**
+  - A memo is uniquely associated with a single month.
+  - Updating a memo replaces its content.
+  - If the memo does not exist or is not owned by the user, an error is returned.
+
+- **Request body example:**
+
+```json
+{
+  "content": "Updated memo text"
+}
+```
+
+- **Response:**
+  - 200 OK — returns the updated memo:
+
+```json
+{
+  "id": "memo_123",
+  "month": "2026-04",
+  "content": "Updated memo text"
+}
+```
+
+- **Error Responses:**
+  - 401 Unauthorised - Returned when the request is missing a valid JWT token or the token is invalid/expired.
+  - 400 Bad Request — Payload is malformed.
+  - 404 Not Found — Memo does not exist or is not owned by the user.

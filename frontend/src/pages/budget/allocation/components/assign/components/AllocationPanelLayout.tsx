@@ -2,21 +2,21 @@ import { ReactNode } from "react";
 
 interface AssignLayoutProps {
   selectedCategories: ReactNode;
-  categoryDetails: ReactNode;
+  categoryBreakdown: ReactNode;
   autoAssign: ReactNode;
   notes: ReactNode;
 }
 
-export function AssignLayout({
+export function AllocationPanelLayout({
   selectedCategories,
-  categoryDetails,
+  categoryBreakdown,
   autoAssign,
   notes,
 }: AssignLayoutProps) {
   return (
     <div className={`space-y-2`}>
       {selectedCategories}
-      {categoryDetails}
+      {categoryBreakdown}
       {autoAssign}
       {notes}
     </div>

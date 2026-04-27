@@ -1,9 +1,8 @@
 import { prisma } from "../../../../../../shared/prisma/client";
-import { memoRepository } from "../../../../../../shared/repository/memoRepositoryImpl";
 import { asUserId, type UserId } from "../../../../../user/auth/auth.types";
 import { type EditMemoPayload } from "../../memo.schema";
 import { memoService } from "../../memo.service";
-import { asMemoId, type MemoId } from "../../memo.types";
+import { asMemoId, UpdatedMemo, type MemoId } from "../../memo.types";
 
 /**
  * Represents the internal command used to edit a memo.
@@ -54,12 +53,16 @@ const toEditMemoCommand = (p: EditMemoPayload): EditMemoCommand => ({
  * @throws {NoMemoFoundError}
  * Thrown if the memo does not exist or is not owned by the user.
  */
-export const editMemo = async (payload: EditMemoPayload) => {
+export const editMemo = async (
+  payload: EditMemoPayload
+): Promise<UpdatedMemo> => {
   const { userId, memoId, content } = toEditMemoCommand(payload);
 
-  await prisma.$transaction(async (tx) => {
+  return await prisma.$transaction(async (tx) => {
     await memoService.getMemo(tx, userId, memoId);
 
-    await memoRepository.updateMemo(tx, memoId, content);
+    const updatedMemo = await memoService.updateMemo(tx, memoId, content);
+
+    return updatedMemo;
   });
 };

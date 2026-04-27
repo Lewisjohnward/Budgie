@@ -1,4 +1,3 @@
-import { MonthTotals } from "../../hooks/useSelectedCategories";
 import { BalanceRow } from "..";
 
 interface MonthsTotalViewProps {

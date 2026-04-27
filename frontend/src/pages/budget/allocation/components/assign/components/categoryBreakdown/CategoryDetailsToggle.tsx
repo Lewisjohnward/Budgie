@@ -5,20 +5,22 @@ export interface CategoryDetailsToggleProps {
   toggleOpen: () => void;
   open: boolean;
   currentMonthName: string;
-  hasSelectedCategories: boolean;
   available: number;
+  view: "single" | "multiple";
 }
 
 export function CategoryDetailsToggle({
   toggleOpen,
   open,
   currentMonthName,
-  hasSelectedCategories,
   available,
+  view,
 }: CategoryDetailsToggleProps) {
-  const buttonLabel = hasSelectedCategories
-    ? "Available Balance"
-    : `${currentMonthName}'s Balance`;
+  const multipleView = view === "multiple";
+
+  const buttonLabel = multipleView
+    ? `${currentMonthName}'s Balance`
+    : "Available Balance";
 
   return (
     <button
@@ -33,7 +35,7 @@ export function CategoryDetailsToggle({
           className={`transition-transform duration-100 ${open ? "rotate-0" : "-rotate-90"}`}
         />
       </span>
-      {hasSelectedCategories && <Available value={available} />}
+      {!multipleView && <Available value={available} />}
     </button>
   );
 }

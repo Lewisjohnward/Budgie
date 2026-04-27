@@ -6,6 +6,7 @@ import {
 } from "@/core/api/budgetApiSlice";
 import { ManagePayees } from "@/core/components/ManagePayees/ManagePayees";
 import { EditAccount } from "@/core/components/EditAccount/EditAccount";
+import { useGetBudgetSnapshotQuery } from "@/core/api/budget/budgetSnapshotSlice";
 
 export default function BudgetPage() {
   const {
@@ -18,17 +19,24 @@ export default function BudgetPage() {
     isError: isErrorCategories,
     isUninitialized: isUninitializedCategories,
   } = useGetCategoriesQuery();
+  const {
+    isLoading: isLoadingAppSnapshot,
+    isError: isErrorAppSnapshot,
+    isUninitialized: isUnitializedAppSnapshot,
+  } = useGetBudgetSnapshotQuery();
 
   if (
     isLoadingAccounts ||
+    isLoadingAppSnapshot ||
     isLoadingCategories ||
     isUninitializedAccounts ||
+    isUnitializedAppSnapshot ||
     isUninitializedCategories
   ) {
     return <div className="h-screen bg-blue-400">...Getting data</div>;
   }
 
-  if (isErrorAccounts || isErrorCategories) {
+  if (isErrorAccounts || isErrorCategories || isErrorAppSnapshot) {
     return <div className="h-screen bg-red-400">Error getting data</div>;
   }
 

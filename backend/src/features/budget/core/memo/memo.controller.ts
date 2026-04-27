@@ -24,9 +24,9 @@ export const editMemo = async (
   try {
     const payload = editMemoSchema.parse({ ...req.body, userId, memoId });
 
-    await memoUseCase.editMemo(payload);
+    const updatedMemo = await memoUseCase.editMemo(payload);
 
-    res.sendStatus(200);
+    res.status(200).json(updatedMemo);
   } catch (error) {
     next(error);
   }

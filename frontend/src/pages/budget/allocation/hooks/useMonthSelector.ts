@@ -1,55 +1,59 @@
-import { useAppDispatch, useAppSelector } from "@/core/hooks/reduxHooks";
-import { month, selectMonthIndex } from "../slices/monthSlice";
+import { useAppDispatch } from "@/core/hooks/reduxHooks";
+import { selectMonthIndex, useMonthIndex } from "../slices/monthSlice";
 import { formatDate } from "../utils/dateUtils";
-import { useEffect } from "react";
+import { MonthKey } from "../types/types";
+import { getMonthName } from "../utils/getMonthName";
 
-export function useMonthSelector(months: string[]) {
+export type MonthSelectorHook = {
+  isCurrentMonth: boolean;
+  currentMonthNameFormatLong: string;
+  currentMonthNameFormatShort: string;
+  next: () => void;
+  prev: () => void;
+  selectCurrentMonth: () => void;
+  canGoNext: boolean;
+  canGoPrev: boolean;
+};
+
+export function useMonthSelector(monthKeys: MonthKey[]): MonthSelectorHook {
   const dispatch = useAppDispatch();
-  const { monthIndex } = useAppSelector(month);
-  const formattedMonths = months.map((month) => formatDate(month));
+  const monthIndex = useMonthIndex();
 
-  const now = new Date();
-
-  const currentMonth = `${now.getUTCFullYear()}-${String(
-    now.getUTCMonth() + 1
-  ).padStart(2, "0")}`;
-  const currentMonthIndex = months.indexOf(currentMonth);
+  const defaultMonthIndex = monthKeys.length - 1;
 
   const selectCurrentMonth = () => {
-    dispatch(selectMonthIndex(currentMonthIndex));
+    dispatch(selectMonthIndex(defaultMonthIndex));
   };
 
   const next = () =>
     dispatch(
       selectMonthIndex(
-        monthIndex + 1 < months.length ? monthIndex + 1 : monthIndex
+        monthIndex + 1 < monthKeys.length ? monthIndex + 1 : monthIndex
       )
     );
   const prev = () =>
     dispatch(
       selectMonthIndex(monthIndex - 1 >= 0 ? monthIndex - 1 : monthIndex)
     );
+  const currentMonthKey = monthKeys[monthIndex];
+  const currentMonthNameFormatLong = formatDate(currentMonthKey);
+  const currentMonthNameFormatShort = getMonthName(currentMonthKey);
 
-  useEffect(() => {
-    selectCurrentMonth();
-  }, []);
-
-  const current = formattedMonths[monthIndex] ?? "";
-
-  const canGoNext = monthIndex < months.length - 1;
+  const canGoNext = monthIndex < monthKeys.length - 1;
   const canGoPrev = monthIndex > 0;
-  const isCurrentMonth = currentMonthIndex === monthIndex;
+  const isCurrentMonth = defaultMonthIndex === monthIndex;
 
   return {
-    monthIndex,
-    isCurrentMonth,
-    current,
+    currentMonthNameFormatLong,
+    currentMonthNameFormatShort,
+    // Goto next month
     next,
+    // Goto prev month
     prev,
+    // Goto current month
     selectCurrentMonth,
+    isCurrentMonth,
     canGoNext,
     canGoPrev,
   };
 }
-
-export type MonthSelectorType = ReturnType<typeof useMonthSelector>;

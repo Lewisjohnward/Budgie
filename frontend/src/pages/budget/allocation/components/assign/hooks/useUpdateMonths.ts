@@ -7,7 +7,13 @@ export const useUpdateMonths = () => {
   const updateMonths = async (monthsToUpdate: MonthsToUpdate[]) => {
     if (!monthsToUpdate || monthsToUpdate.length === 0) return;
 
-    await editMonth({ assignments: monthsToUpdate });
+    console.log("monthsToUpdate:", monthsToUpdate);
+    await editMonth({
+      assignments: monthsToUpdate.map((m) => ({
+        ...m,
+        assigned: m.assigned,
+      })),
+    });
   };
 
   return { updateMonths };

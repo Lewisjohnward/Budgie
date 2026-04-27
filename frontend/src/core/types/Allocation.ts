@@ -1,3 +1,5 @@
+import { CategoryGroupBranded } from "./NormalizedData";
+
 export type AllocationData = {
   months: Record<string, Month>;
   categoryGroups: Record<string, CategoryGroup>;
@@ -16,7 +18,7 @@ export type Month = {
 export type CategoryGroup = {
   id: string;
   name: string;
-  categories: string[];
+  categoryIds: string[];
 };
 
 export type Category = {
@@ -34,7 +36,7 @@ export type MappedMonth = Month & {
   formattedDate: string;
 };
 
-export type MappedCategoryGroup = CategoryGroup & {
+export type MappedCategoryGroup = CategoryGroupBranded & {
   open: boolean;
   assigned: string;
   activity: string;

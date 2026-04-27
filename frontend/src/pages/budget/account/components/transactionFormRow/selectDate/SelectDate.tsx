@@ -8,6 +8,7 @@ import { ChevronDown } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { PopoverArrow } from "@radix-ui/react-popover";
 import { SelectDateModel } from "../../../hooks/useTransactionFormRow";
+import { useState } from "react";
 
 type SelectDateProps = {
   selectDate: SelectDateModel;
@@ -17,6 +18,7 @@ export function SelectDate({ selectDate }: SelectDateProps) {
   const { setValue, watch } = useFormContext();
 
   const date = watch("date");
+  console.log("date:", date);
 
   const handlePointerDownOutside = (e: Event) => {
     // Don't close if clicking the input
@@ -27,6 +29,8 @@ export function SelectDate({ selectDate }: SelectDateProps) {
     selectDate.popover.close();
   };
 
+  const [viewMonth, setViewMonth] = useState(date ?? new Date());
+
   return (
     <Popover open={selectDate.popover.isOpen}>
       <PopoverTrigger asChild>
@@ -36,7 +40,8 @@ export function SelectDate({ selectDate }: SelectDateProps) {
             placeholder="Payee"
             ref={selectDate.ref}
             onFocus={selectDate.popover.open}
-            value={selectDate.input}
+            value={viewMonth}
+            // value={selectDate.input}
             // onBlur={selectDate.onBlur}
             onChange={selectDate.onChange}
             onKeyDown={(e) => {
@@ -57,9 +62,13 @@ export function SelectDate({ selectDate }: SelectDateProps) {
         <Calendar
           mode="single"
           className="border-sky-950"
-          month={date}
-          selected={date}
-          onSelect={selectDate.select}
+          // month={viewMonth}
+          selected={viewMonth}
+          onSelect={(x) => {
+            // console.log("x:", x);
+            setViewMonth(x);
+            setValue("date", x);
+          }}
         />
       </PopoverContent>
     </Popover>
