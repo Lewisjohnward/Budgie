@@ -251,6 +251,14 @@ describe("Auth Controller", () => {
       expect(typeof response.body).toBe("string");
       expect(response.body.split(".").length).toBe(3);
     });
+    it.only("should return 200 and set refresh token cookie on successful login", async () => {
+      const response = await request(app).post("/user/auth/login").send({
+        email: testEmail,
+        password: testPassword,
+      });
+
+      expect(true).toBe(false);
+    });
 
     it("should return 400 if email is missing", async () => {
       const response = await request(app)

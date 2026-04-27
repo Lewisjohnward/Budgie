@@ -1,16 +1,9 @@
 import { useGetCategoriesQuery } from "@/core/api/budgetApiSlice";
-import { useAppSelector } from "@/core/hooks/reduxHooks";
 import { AllocationData } from "@/core/types/Allocation";
-import {
-  RTA_CATEGORY,
-  RTA_CATEGORY_GROUP,
-  UNCATEGORISED_CATEGORY,
-  UNCATEGORISED_CATEGORY_GROUP,
-} from "../../constants/categories";
-import { selectSelectedCategories } from "../../slices/selectedCategorySlice";
-import { month } from "../../slices/monthSlice";
-import { toMonthKey } from "../../utils/dateUtils";
+import { CategoryMonthMap, MonthKey } from "../../types/types";
+import { useGetBudgetSnapshotQuery } from "@/core/api/budget/budgetSnapshotSlice";
 
+// this is currently used in reflect it will need removing
 export const useCategoriesData = () => {
   const { data } = useGetCategoriesQuery();
   if (!data) {
@@ -23,73 +16,46 @@ export const useCategoriesData = () => {
   return data;
 };
 
-export const useCategories = () => {
-  const data = useCategoriesData();
-  const { monthIndex } = useAppSelector(month);
-  const { selected: selectedCategories } = useAppSelector(
-    selectSelectedCategories
-  );
-  const months = Object.values(data.months);
-  const categories = Object.values(data.categories);
-  const uniqueMonths = [...new Set(months.map((m) => m.month))];
-  const uniqueMonthsKeys = [...new Set(months.map((m) => toMonthKey(m.month)))];
-  const targetMonthDate = uniqueMonths[monthIndex];
-  const previousMonthDate = uniqueMonths[monthIndex - 1];
+export function resolveMonthMap(
+  monthsByDate: Record<MonthKey, CategoryMonthMap>,
+  monthKey: MonthKey
+): CategoryMonthMap {
+  const bucket = monthsByDate[monthKey];
 
-  const uncategorisedCategoryId = categories.find(
-    (c) => c.name === UNCATEGORISED_CATEGORY
-  )?.id;
-  const rtaCategoryId = categories.find((c) => c.name === RTA_CATEGORY)?.id;
+  if (!bucket) {
+    throw new Error(`Missing bucket for monthKey ${monthKey}`);
+  }
 
-  const selectedCategoryIds = new Set(selectedCategories.map((c) => c.id));
+  return bucket;
+}
 
-  const allUserMonthsWithoutProtected = months.filter(
-    (m) =>
-      m.categoryId !== uncategorisedCategoryId &&
-      m.categoryId !== rtaCategoryId &&
-      (selectedCategories.length === 0 || selectedCategoryIds.has(m.categoryId))
-  );
+/**
+ * Provides access to the bootstrapped application data.
+ *
+ * This hook wraps the RTK Query `useGetBootstrapQuery` hook and enforces
+ * the invariant that bootstrap data must be available before usage.
+ *
+ * It is expected that loading and error states are handled higher up
+ * in the component tree (e.g. a layout or route guard). If this hook
+ * is called before the data is ready, it will throw.
+ * NOTE:
+ * This hook assumes a parent component has already handled:
+ * - loading state
+ * - error state
+ *
+ * It should only be used in components that are guaranteed to render
+ * after bootstrap data has been successfully fetched.
+ *
+ * @returns An object containing the fully loaded and transformed bootstrap data
+ *
+ * @throws If the bootstrap data has not yet been loaded
+ */
+export function useBudgetSnapshot() {
+  const { data } = useGetBudgetSnapshotQuery();
 
-  const currentMonthData = allUserMonthsWithoutProtected.filter(
-    (m) => m.month === targetMonthDate
-  );
+  if (!data) {
+    throw new Error("Bootstrap not ready");
+  }
 
-  const previousMonthData = allUserMonthsWithoutProtected.filter(
-    (m) => m.month === previousMonthDate
-  );
-
-  const uncategorisedCategoryGroupId = Object.values(data.categoryGroups).find(
-    (g) => g.name === UNCATEGORISED_CATEGORY_GROUP
-  )?.id;
-
-  const rtaCategoryGroupId = Object.values(data.categoryGroups).find(
-    (g) => g.name === RTA_CATEGORY_GROUP
-  )?.id;
-
-  const rtaAvailable =
-    data.months[data.categories[rtaCategoryId!].months[monthIndex]]?.available;
-
-  const uncategorisedCategoryMonth =
-    data.months[data.categories[uncategorisedCategoryId!].months[monthIndex]];
-
-  return {
-    protectedCategoryGroups: {
-      uncategorisedCategoryGroupId: uncategorisedCategoryGroupId!,
-      rtaCategoryGroupId: rtaCategoryGroupId!,
-    },
-    months: data.months,
-    allMonths: allUserMonthsWithoutProtected,
-    currentMonths: currentMonthData,
-    previousMonths: previousMonthData,
-    categories: data.categories,
-    categoryGroups: data.categoryGroups,
-    rtaAvailable,
-    selectedCategories,
-    uniqueMonthsKeys,
-    uncategorisedCategoryMonth,
-    uncategorisedGroup: {
-      id: uncategorisedCategoryGroupId,
-      month: uncategorisedCategoryMonth,
-    },
-  };
-};
+  return { data };
+}

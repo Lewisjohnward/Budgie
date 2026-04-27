@@ -73,17 +73,34 @@ describe("Memo", () => {
     });
 
     describe("Success", () => {
-      it("Should return 200 when editing memo", async () => {
+      it("Should persist memo update", async () => {
         const { memoByMonth, monthKeys } = await getCategories(cookie);
 
         const someMonthKey = monthKeys[0];
         const memoId = memoByMonth[someMonthKey]?.id;
+
+        await updateMemo(cookie, memoId, "updated");
+
+        const { memoByMonth: updated } = await getCategories(cookie);
+
+        expect(updated[someMonthKey].content).toBe("updated");
+        expect(updated[someMonthKey].id).toBe(memoId);
+      });
+      it("Should return 200 and updated memo when editing memo", async () => {
+        const { memoByMonth, monthKeys } = await getCategories(cookie);
+
+        const someMonthKey = monthKeys[0];
+        const memoId = memoByMonth[someMonthKey]?.id;
+
         const res = await updateMemo(cookie, memoId, "updated");
+
         expect(res.status).toBe(200);
 
-        const { memoByMonth: updatedMemoByMonth } = await getCategories(cookie);
-        expect(updatedMemoByMonth[someMonthKey].content).toBe("updated");
-        expect(updatedMemoByMonth[someMonthKey].id).toBe(memoId);
+        const { body } = res;
+
+        expect(body.content).toBe("updated");
+        expect(body.id).toBe(memoId);
+        expect(body.month).toBe(someMonthKey);
       });
     });
   });

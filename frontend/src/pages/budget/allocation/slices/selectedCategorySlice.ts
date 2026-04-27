@@ -2,11 +2,12 @@
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit/react";
 import { RootState } from "@/core/store/store";
-import { Category } from "@/core/types/NormalizedData";
+import { CategoryBranded } from "@/core/types/NormalizedData";
+import { useAppSelector } from "@/core/hooks/reduxHooks";
 
 export type SelectedCategoryState = {
-  previousSelected: Category | null;
-  selected: Category[];
+  previousSelected: CategoryBranded | null;
+  selected: CategoryBranded[];
 };
 
 const initialState: SelectedCategoryState = {
@@ -18,14 +19,14 @@ const categorySlice = createSlice({
   name: "selectedCategories",
   initialState,
   reducers: {
-    addCategories: (state, action: PayloadAction<Category[]>) => {
+    addCategories: (state, action: PayloadAction<CategoryBranded[]>) => {
       state.selected.push(...action.payload);
       state.previousSelected = state.selected[state.selected.length - 1];
     },
-    removeCategories: (state, action: PayloadAction<Category[]>) => {
+    removeCategories: (state, action: PayloadAction<CategoryBranded[]>) => {
       const idsToRemove = action.payload.map((cat) => cat.id);
       state.selected = state.selected.filter(
-        (cat) => !idsToRemove.includes(cat.id),
+        (cat) => !idsToRemove.includes(cat.id)
       );
       if (action.payload.length > 1) {
         state.previousSelected = state.selected[state.selected.length - 1];
@@ -46,3 +47,11 @@ export default categorySlice.reducer;
 
 export const selectSelectedCategories = (state: RootState) =>
   state.selectedCategories;
+
+export const useSelectedCategories = () => {
+  return useAppSelector((state) => state.selectedCategories.selected);
+};
+
+export const usePreviousSelectedCategory = () => {
+  return useAppSelector((state) => state.selectedCategories.previousSelected);
+};

@@ -8,16 +8,14 @@ import {
   AddCategoryGroupButton,
   CategoryRow,
 } from "./components";
-import { CategoryState } from "../../hooks/useAllocation/useAllocation";
 
 export function Categories({
   currency,
-  categoryData,
+  view,
   expandCategoryGroups,
-  monthIndex,
-}: CategoryState) {
-  const { categoryGroups, uncategorisedGroup, categories, months } =
-    categoryData;
+  categorySelector,
+}: any) {
+  const { uncategorisedRow, categoriesByGroup } = view;
 
   return (
     <>
@@ -26,47 +24,58 @@ export function Categories({
       </AddCategoryGroupPopover>
       <CategoryGridRow>
         <CategoryTableHeader
-          showExpandButton={categoryGroups.length > 0}
+          showExpandButton={expandCategoryGroups.displayGlobalExpand}
           open={expandCategoryGroups.atLeastOneGroupOpen}
           onClick={expandCategoryGroups.expandAllCategoryGroups}
+          onSelectAllCategories={categorySelector.selectAll}
+          getAllSelectionState={categorySelector.getAllSelectionState}
         />
       </CategoryGridRow>
 
-      <CategoryGridRow>
-        <UncategorisedRow
-          currency={currency}
-          activity={uncategorisedGroup.month.activity}
-          available={uncategorisedGroup.month.available}
-        />
-      </CategoryGridRow>
+      {/* // TODO:(lewis 2026-05-11 18:36) make this more semantic */}
+      {uncategorisedRow.month.available !== 0 && (
+        <CategoryGridRow>
+          <UncategorisedRow
+            currency={currency}
+            month={uncategorisedRow.month}
+          />
+        </CategoryGridRow>
+      )}
 
-      {categoryGroups.map((categoryGroup) => (
-        <div key={categoryGroup.id}>
-          <CategoryGroupContextMenu categoryGroup={categoryGroup}>
-            <div className="group bg-gray-400/20">
-              <CategoryGridRow>
-                <CategoryGroupRow
-                  categoryGroup={categoryGroup}
-                  currency={currency}
-                  onExpandClick={() =>
-                    expandCategoryGroups.expandCategoryGroup(categoryGroup.id)
-                  }
+      {categoriesByGroup.map(({ group, rows, open }) => {
+        return (
+          <div key={group.id}>
+            <CategoryGroupContextMenu categoryGroup={group}>
+              <div className="group bg-gray-400/20">
+                <CategoryGridRow>
+                  <CategoryGroupRow
+                    open={open}
+                    categoryGroup={group}
+                    currency={currency}
+                    onExpandClick={() => {
+                      expandCategoryGroups.expandCategoryGroup(group.id);
+                    }}
+                    selectionState={categorySelector.getCategoryGroupSelectionState(
+                      group.id
+                    )}
+                    onGroupClick={categorySelector.onCategoryGroupClick}
+                  />
+                </CategoryGridRow>
+              </div>
+            </CategoryGroupContextMenu>
+
+            {open &&
+              rows.map((row) => (
+                <CategoryRow
+                  key={row.category.id}
+                  category={row.category}
+                  month={row.month}
+                  categorySelection={categorySelector}
                 />
-              </CategoryGridRow>
-            </div>
-          </CategoryGroupContextMenu>
-
-          {categoryGroup.open &&
-            categoryGroup.categories.map((cat) => {
-              const category = categories[cat];
-              const month = months[category.months[monthIndex]];
-
-              return (
-                <CategoryRow key={month.id} category={category} month={month} />
-              );
-            })}
-        </div>
-      ))}
+              ))}
+          </div>
+        );
+      })}
     </>
   );
 }

@@ -1,4 +1,3 @@
-import { CategoryGroup, Category, Month } from "@/core/types/Allocation";
 import {
   FundingState,
   FundingStatus,
@@ -6,24 +5,17 @@ import {
 } from "../types/assignTypes";
 import { calculateAverageSpent } from "./calculateAverageSpent";
 import { roundToCents } from "@/pages/budget/utils/currency";
+import { AllocationContext } from "../../../hooks/useAllocation/useCategoryViewModel";
 
 export const generateAverageSpentState = (
-  categoryGroups: Record<string, CategoryGroup>,
-  categories: Record<string, Category>,
-  monthIndex: number,
-  months: Month[]
+  allocationContext: AllocationContext
 ): { monthsToUpdate: MonthsToUpdate[]; uiState: FundingState } => {
-  const uniqueMonths = [...new Set(months.map((m) => m.month))];
-  const currentMonthDate = uniqueMonths[monthIndex];
-
-  // get current months
-  const currentMonths = months.filter((m) => m.month === currentMonthDate);
+  const { currentMonths, previousYearMonths, categories, categoryGroups } =
+    allocationContext;
 
   // Calculate average activity by category using shared utility
-  const { averageActivityByCategory } = calculateAverageSpent(
-    months,
-    monthIndex
-  );
+  const { averageActivityByCategory } =
+    calculateAverageSpent(previousYearMonths);
 
   const monthsToUpdate: MonthsToUpdate[] = [];
   const monthsToAlignByGroup = currentMonths.reduce(

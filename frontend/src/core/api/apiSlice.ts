@@ -54,7 +54,7 @@ const baseQueryWithReauth: BaseQueryFn<
     const refreshResult = await baseQuery(
       "user/auth/refresh",
       api,
-      extraOptions,
+      extraOptions
     );
     if (refreshResult.data) {
       const email = (api.getState() as RootState).auth.email;

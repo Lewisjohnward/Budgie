@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { db, type MemoId } from "./memo.types";
-import { type UserId } from "../../user/auth/auth.types";
+import { UserId } from "../../../user/auth/auth.types";
 
 export interface MemoRepository {
   /**

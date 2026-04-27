@@ -1,6 +1,6 @@
+import { toMonthKey } from "../../../utils/toMonthKey";
 import { HydrationInvariantError } from "../hydration.errors";
 import { type HydrationContext } from "./normaliseHydrationData";
-import { toMonthKey } from "./toMonthKey";
 
 /**
  * Maps raw memo data into the hydration state, grouped by month.

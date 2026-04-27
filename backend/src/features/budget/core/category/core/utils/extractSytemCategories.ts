@@ -15,9 +15,9 @@ export function extractSystemCategories(
   const user: DomainCategory[] = [];
 
   for (const category of categories) {
-    if (category.name === PROTECTED_CATEGORY_NAMES[0]) {
+    if (category.name === PROTECTED_CATEGORY_NAMES[1]) {
       system.RTA = category;
-    } else if (category.name === PROTECTED_CATEGORY_NAMES[1]) {
+    } else if (category.name === PROTECTED_CATEGORY_NAMES[0]) {
       system.UNCATEGORISED = category;
     } else {
       user.push(category);

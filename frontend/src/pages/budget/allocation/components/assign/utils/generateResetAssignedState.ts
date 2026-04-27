@@ -1,15 +1,15 @@
-import { CategoryGroup, Category, Month } from "@/core/types/Allocation";
 import {
   FundingState,
   FundingStatus,
   MonthsToUpdate,
 } from "../types/assignTypes";
+import { AllocationContext } from "../../../hooks/useAllocation/useCategoryViewModel";
 
 export const generateResetAssignedState = (
-  categoryGroups: Record<string, CategoryGroup>,
-  categories: Record<string, Category>,
-  currentMonths: Month[]
+  allocationContext: AllocationContext
 ): { monthsToUpdate: MonthsToUpdate[]; uiState: FundingState } => {
+  const { currentMonths, categories, categoryGroups } = allocationContext;
+
   const monthsToResetAssigned = currentMonths.filter((m) => m.assigned !== 0);
 
   const monthsToReset: MonthsToUpdate[] = [];
@@ -23,27 +23,33 @@ export const generateResetAssignedState = (
     }
   }
 
-  const monthsToResetByGroup = monthsToResetAssigned.reduce((acc, month) => {
-    const category = categories[month.categoryId];
-    if (!category) return acc;
+  const monthsToResetByGroup = monthsToResetAssigned.reduce(
+    (acc, month) => {
+      const category = categories[month.categoryId];
+      if (!category) return acc;
 
-    const group = categoryGroups[category.categoryGroupId];
-    if (!group) return acc;
+      const group = categoryGroups[category.categoryGroupId];
+      if (!group) return acc;
 
-    if (!acc[group.id]) {
-      acc[group.id] = {
-        name: group.name,
-        categories: [],
-      };
-    }
+      if (!acc[group.id]) {
+        acc[group.id] = {
+          name: group.name,
+          categories: [],
+        };
+      }
 
-    acc[group.id].categories.push({
-      name: category.name,
-      amount: -month.assigned,
-    });
+      acc[group.id].categories.push({
+        name: category.name,
+        amount: -month.assigned,
+      });
 
-    return acc;
-  }, {} as Record<string, { name: string; categories: { name: string; amount: number }[] }>);
+      return acc;
+    },
+    {} as Record<
+      string,
+      { name: string; categories: { name: string; amount: number }[] }
+    >
+  );
 
   return {
     monthsToUpdate: monthsToReset,

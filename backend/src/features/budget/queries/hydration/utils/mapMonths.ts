@@ -1,6 +1,6 @@
 import { convertDecimalToNumber } from "../../../../../shared/utils/convertDecimalToNumber";
+import { toMonthKey } from "../../../utils/toMonthKey";
 import { type HydrationContext } from "./normaliseHydrationData";
-import { toMonthKey } from "./toMonthKey";
 
 /**
  * Maps raw monthly budget data into the hydration state.

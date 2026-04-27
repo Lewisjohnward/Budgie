@@ -30,14 +30,18 @@ const BUTTON_GROUPS = [
 
 const buttonStyles = `py-1 px-2 w-full flex justify-between text-black ${bgGray} rounded whitespace-nowrap hover:bg-gray-300/80 transition-colors`;
 
-export function AutoAssign({ assign, ui }: AutoAssignState) {
+export function AutoAssign({ autoAssign }) {
+  const { ui } = autoAssign;
+
   return (
     <div className="flex-grow bg-white rounded-lg">
-      <AutoAssignToggle open={ui.open} toggleOpen={ui.toggleOpen} />
-      {ui.open && (
+      <AutoAssignToggle open={ui.value} toggleOpen={ui.toggle} />
+      {ui.value && (
         <div className="p-4 space-y-4">
           {BUTTON_GROUPS.map((group, index) => {
-            const showGroup = group.conditional ? assign.display : true;
+            const showGroup = group.conditional
+              ? autoAssign.displayUnderfunded
+              : true;
             if (!showGroup) return null;
 
             return (
@@ -45,11 +49,11 @@ export function AutoAssign({ assign, ui }: AutoAssignState) {
                 {group.buttons.map((action) => (
                   <Button
                     key={action}
-                    onClick={() => assign.handler(action)}
+                    onClick={() => autoAssign.handler(action)}
                     className={buttonStyles}
                   >
                     <span>{BUTTON_CONFIG[action]?.label || ""}</span>
-                    <span>{formatCurrency(assign.amount(action))}</span>
+                    <span>{formatCurrency(autoAssign.amount(action))}</span>
                   </Button>
                 ))}
               </div>

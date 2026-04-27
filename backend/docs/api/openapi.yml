@@ -27,40 +27,94 @@ paths:
 
         "500":
           description: Server error
+  /budget/memo/{id}:
+    patch:
+      summary: Edit memo
+      description: >
+        Edit memo for the authenticated user.
+      operationId: editMemo
+      tags:
+        - Hydration
+      security:
+        - bearerAuth: []
 
-components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-  schemas:
-    BudgetSnapshot:
-      type: object
-      example:
-        categoryGroups:
-          user:
-            "cg_1":
-              id: "cg_1"
-              name: "Food"
-              position: 1
-          inflow:
-            id: "inflow"
-            name: "Inflow"
-            position: 0
-          uncategorised:
-            id: "uncategorised"
-            name: "Uncategorised"
-            position: 999
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
 
-        categories:
-          user:
-            "cat_1":
-              id: "cat_1"
-              name: "Groceries"
-              position: 1
-              categoryGroupId: "cg_1"
-          rta:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content:
+                  type: string
+
+      responses:
+        "200":
+          description: Successfully updated memo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdatedMemo"
+            examples:
+              success:
+                value:
+                  id: "memo_123"
+                  month: "2025-12"
+                  content: "25/12 Jesus's bday"
+
+        "401":
+          description: Unauthorized
+
+        "400":
+          description: Bad request (invalid input or malformed payload)
+
+        "404":
+          description: Memo not found or owned by user
+
+        "500":
+          description: Server error
+
+  components:
+    securitySchemes:
+      bearerAuth:
+        type: http
+        scheme: bearer
+        bearerFormat: JWT
+    schemas:
+      BudgetSnapshot:
+        type: object
+        example:
+          categoryGroups:
+            user:
+              "cg_1":
+                id: "cg_1"
+                name: "Food"
+                position: 1
+            inflow:
+              id: "inflow"
+              name: "Inflow"
+              position: 0
+            uncategorised:
+              id: "uncategorised"
+              name: "Uncategorised"
+              position: 999
+
+          categories:
+            user:
+              "cat_1":
+                id: "cat_1"
+                name: "Groceries"
+                position: 1
+                categoryGroupId: "cg_1"
+            rta:
             id: "rta"
             name: "Ready to Assign"
             position: 0
@@ -176,7 +230,7 @@ components:
 
         memosByMonth:
           type: object
-          description: Map of monthKey → memo (1:1 invariant)
+          description: Map of MonthKey (YYYY-MM) → Memo (1:1 invariant)
           additionalProperties:
             $ref: "#/components/schemas/Memo"
 
@@ -301,5 +355,22 @@ components:
           type: string
         month:
           type: string
+          description: MonthKey in YYYY-MM format
+          example: "2025-12"
+        content:
+          type: string
+
+    UpdatedMemo:
+      type: object
+      required: [id, month, content]
+      properties:
+        id:
+          type: string
+
+        month:
+          type: string
+          description: MonthKey in YYYY-MM format
+          example: "2025-12"
+
         content:
           type: string

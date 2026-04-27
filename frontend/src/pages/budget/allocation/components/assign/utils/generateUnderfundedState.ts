@@ -1,4 +1,4 @@
-import { CategoryGroup, Category, Month } from "@/core/types/Allocation";
+import { AllocationDomain } from "../../../hooks/useAllocation/useAllocationDomain";
 import {
   FundingStatus,
   FundingLevel,
@@ -26,16 +26,19 @@ import { roundToCents } from "@/pages/budget/utils/currency";
  * - When ignoreRtaAvailable is false, respects RTA limit and may partially fund
  * - UI state breaks after first partially funded category for display purposes
  */
-
 export const generateUnderfundedState = (
-  categoryGroups: Record<string, CategoryGroup>,
-  categories: Record<string, Category>,
-  currentMonths: Month[],
-  rtaAvailable: number,
-  ignoreRtaAvailable: boolean = false
+  allocationContext: AllocationDomain
 ): { monthsToUpdate: MonthsToUpdate[]; uiState: FundingState } => {
-  debugger;
+  const {
+    categoryGroups,
+    categories,
+    currentMonths,
+    autoAccept,
+    rtaAvailable,
+  } = allocationContext;
+
   const unfundedMonths = currentMonths.filter((m) => m.available < 0);
+  const ignoreRtaAvailable = autoAccept;
 
   const monthsToFund: MonthsToUpdate[] = [];
   if (unfundedMonths.length && ignoreRtaAvailable) {

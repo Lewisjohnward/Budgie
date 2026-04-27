@@ -1,4 +1,4 @@
-import { CategoryGroup, Category, Month } from "@/core/types/Allocation";
+import { AllocationDomain } from "../../../hooks/useAllocation/useAllocationDomain";
 import {
   FundingState,
   FundingStatus,
@@ -8,21 +8,13 @@ import { calculateAverageAssigned } from "./calculateAverageAssigned";
 import { roundToCents } from "@/pages/budget/utils/currency";
 
 export const generateAverageAssignedState = (
-  categoryGroups: Record<string, CategoryGroup>,
-  categories: Record<string, Category>,
-  monthIndex: number,
-  months: Month[]
+  allocationContext: AllocationDomain
 ): { monthsToUpdate: MonthsToUpdate[]; uiState: FundingState } => {
-  const uniqueMonths = [...new Set(months.map((m) => m.month))];
-  const currentMonthDate = uniqueMonths[monthIndex];
+  const { categoryGroups, categories, currentMonths, previousYearMonths } =
+    allocationContext;
 
-  // get current months
-  const currentMonths = months.filter((m) => m.month === currentMonthDate);
-
-  const { averageAssignedByCategory } = calculateAverageAssigned(
-    months,
-    monthIndex
-  );
+  const { averageAssignedByCategory } =
+    calculateAverageAssigned(previousYearMonths);
 
   const monthsToUpdate: MonthsToUpdate[] = [];
   const monthsToAlignByGroup = currentMonths.reduce(

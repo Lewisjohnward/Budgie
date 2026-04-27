@@ -1,14 +1,15 @@
-import { Category } from "@/core/types/NormalizedData";
+import { CategoryBranded } from "@/core/types/NormalizedData";
 import clsx from "clsx";
 import { Pencil } from "lucide-react";
 
 export interface SelectedCategoriesProps {
-  categories: Category[];
+  categories: CategoryBranded[];
 }
 
 export function SelectedCategories({ categories }: SelectedCategoriesProps) {
   const numberOfCategories = categories.length;
   const isSingleCategory = numberOfCategories === 1;
+  return <div>temp</div>;
 
   return (
     <div

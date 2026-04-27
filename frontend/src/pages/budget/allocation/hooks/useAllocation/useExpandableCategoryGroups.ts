@@ -1,96 +1,114 @@
+import { useMemo, useState } from "react";
+import { CategoryGroupId } from "../../types/types";
 import {
-  CategoryGroup,
-  Category,
-  Month,
-  MappedCategoryGroup,
-} from "@/core/types/Allocation";
-import { useState } from "react";
+  CategoryGroupWithMetrics,
+  CategoryGroupViewWithMetrics,
+} from "../../utils/assembleCategoryGroupViews";
+import { CategoryViewRow } from "../../utils/buildCategoryViewModel";
 
-type UseExpandableCategoryGroupsParams = {
-  categoryGroups: Record<string, CategoryGroup>;
-  categories: Record<string, Category>;
-  months: Record<string, Month>;
-  monthIndex: number;
-  protectedGroupIds: {
-    rtaCategoryGroupId: string;
-    uncategorisedCategoryGroupId: string;
-  };
+export type ExpandableCategoryGroups = {
+  categoryGroups: MappedCategoryGroupViewWithMetrics[];
+  atLeastOneGroupOpen: boolean;
+  expandAllCategoryGroups: () => void;
+  expandCategoryGroup: (groupId: CategoryGroupId) => void;
+  displayGlobalExpand: boolean;
+};
+export type MappedCategoryGroupViewWithMetrics = {
+  group: CategoryGroupWithMetrics;
+  rows: CategoryViewRow[];
+  open: boolean;
 };
 
-export function useExpandableCategoryGroups({
-  categoryGroups,
-  categories,
-  months,
-  monthIndex,
-  protectedGroupIds,
-}: UseExpandableCategoryGroupsParams) {
-  // Initialize open state for all groups (all open by default)
-  const [openState, setOpenState] = useState<Record<string, boolean>>(() => {
-    const initial: Record<string, boolean> = {};
-    Object.keys(categoryGroups).forEach((id) => {
-      initial[id] = true;
-    });
-    return initial;
-  });
+/**
+ * React hook that derives expandable category groups with calculated financial
+ * aggregates for a given month index.
+ *
+ * This hook:
+ * - Maps raw category groups into UI-ready groups (`MappedCategoryGroup`)
+ * - Computes financial totals (assigned, activity, available) per group
+ * - Tracks open/closed UI state per category group
+ * - Provides utilities to expand/collapse groups individually or collectively
+ *
+ * The financial values are derived by:
+ * - Resolving each category's month entry via `category.months[monthIndex]`
+ * - Summing `assigned` and `activity` across all categories in a group
+ *
+ * @param {Object} params - Hook parameters
+ * @param {Record<string, CategoryGroup>} params.categoryGroups
+ * Raw category group dictionary keyed by group ID.
+ *
+ * @param {Record<string, Category>} params.categories
+ * Category dictionary keyed by category ID.
+ *
+ * @param {Record<string, Month>} params.months
+ * Month dictionary keyed by month ID, containing financial values.
+ *
+ * @param {number} params.monthIndex
+ * Index used to resolve the active month from each category's month mapping.
+ *
+ * @param {Object} params.protectedGroupIds
+ * IDs for system-protected groups (e.g. rta, uncategorised).
+ * Currently unused in this hook but reserved for filtering logic.
+ *
+ * @returns {ExpandableCategoryGroups} Derived UI state and actions:
+ * - `categoryGroups`: mapped groups with computed financial totals and open state
+ * - `atLeastOneGroupOpen`: whether any group is currently expanded
+ * - `expandAllCategoryGroups`: toggles all groups open/closed
+ * - `expandCategoryGroup`: toggles a single group by ID
+ */
+export function useExpandableCategoryGroups(
+  categoryGroups: CategoryGroupViewWithMetrics[]
+): ExpandableCategoryGroups {
+  const [openState, setOpenState] = useState<Record<CategoryGroupId, boolean>>(
+    () => {
+      const initial: Record<CategoryGroupId, boolean> = {};
 
-  // Calculate derived groups with financial data and open state
-  const derivedGroups: MappedCategoryGroup[] = Object.entries(categoryGroups)
-    .filter(
-      ([key]) =>
-        key !== protectedGroupIds.rtaCategoryGroupId &&
-        key !== protectedGroupIds.uncategorisedCategoryGroupId
-    )
-    .map(([id, group]) => {
-      const assigned = group.categories.reduce((sum, categoryId) => {
-        const category = categories[categoryId];
-        const m = months[category.months[monthIndex]];
-        return sum + m.assigned;
-      }, 0);
+      for (const group of categoryGroups) {
+        initial[group.group.id] = true;
+      }
 
-      const activity = group.categories.reduce((sum, categoryId) => {
-        const category = categories[categoryId];
-        const m = months[category.months[monthIndex]];
-        return sum + m.activity;
-      }, 0);
+      return initial;
+    }
+  );
 
-      const available = assigned + activity;
+  const derivedGroups: MappedCategoryGroupViewWithMetrics[] = useMemo(() => {
+    return categoryGroups.map((group) => ({
+      ...group,
+      open: openState[group.group.id] ?? true,
+    }));
+  }, [categoryGroups, openState]);
 
-      return {
-        ...group,
-        open: openState[id],
-        assigned: assigned.toFixed(2),
-        activity: activity.toFixed(2),
-        available: available.toFixed(2),
-      };
-    });
-
-  const atLeastOneOpen = derivedGroups.some((group) => group.open);
+  const atLeastOneOpen = useMemo(
+    () => derivedGroups.some((g) => g.open),
+    [derivedGroups]
+  );
 
   const expandAll = () => {
     setOpenState((prev) => {
-      const newState: Record<string, boolean> = {};
-      Object.keys(prev).forEach((id) => {
-        newState[id] = !atLeastOneOpen;
-      });
-      return newState;
+      const next: Record<CategoryGroupId, boolean> = {};
+
+      for (const id of Object.keys(prev)) {
+        next[id as CategoryGroupId] = !atLeastOneOpen;
+      }
+
+      return next;
     });
   };
 
-  const expandOne = (groupId: string) => {
+  const expandOne = (groupId: CategoryGroupId) => {
     setOpenState((prev) => ({
       ...prev,
       [groupId]: !prev[groupId],
     }));
   };
 
+  const displayGlobalExpand = categoryGroups.length > 0;
+
   return {
+    displayGlobalExpand,
     categoryGroups: derivedGroups,
     atLeastOneGroupOpen: atLeastOneOpen,
     expandAllCategoryGroups: expandAll,
     expandCategoryGroup: expandOne,
   };
 }
-
-export type ExpandableCategoryGroupsType = ReturnType<
-  typeof useExpandableCategoryGroups
->;

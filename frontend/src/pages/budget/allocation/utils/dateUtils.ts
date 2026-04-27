@@ -1,4 +1,6 @@
-export function formatDate(dateStr: string): string {
+import { MonthKey } from "../types/types";
+
+export function formatDate(dateStr: MonthKey): string {
   const date = new Date(dateStr + "-01");
   return new Intl.DateTimeFormat("en-US", {
     month: "short",

@@ -1,11 +1,9 @@
+import { NormalisedMonth } from "../../../core/category/core/category.types";
+import { toMonthKey } from "../../../utils/toMonthKey";
 import { HydrationInvariantError } from "../hydration.errors";
-import {
-  type BudgetHydrationModel,
-  type NormalisedMonth,
-} from "../hydration.types";
+import { type BudgetHydrationModel } from "../hydration.types";
 import { buildMonthKeysFromRange } from "./buildMonthKeysFromRange";
 import { type HydrationDateRange } from "./hydrationDateRange";
-import { toMonthKey } from "./toMonthKey";
 
 /**
  * Validates the integrity of a fully hydrated budget model.
