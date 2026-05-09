@@ -1,7 +1,7 @@
 export { Available } from "./Available";
 export { CategoryCell } from "./CategoryCell";
 export { CategoryGridRow } from "./CategoryGridRow";
-export { EditAssigned } from "./EditAssigned";
+export { AssignedAmountField } from "./EditAssignedAmountField";
 export { EmptyCell } from "./EmptyCell";
 export { ProgressBar } from "./ProgressBar";
 export { ExpandButton } from "./ExpandButton";
