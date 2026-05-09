@@ -436,4 +436,56 @@ describe("calculateCategoryMonths", () => {
     expect(updatedMonths[2].activity.toFixed(2)).toBe("0.00");
     expect(updatedMonths[2].available.toFixed(2)).toBe("0.00");
   });
+
+  it("propagates zero available balances to future months after full unassignment", () => {
+    const categoryMonths = [
+      {
+        month: new Date("2025-04-01"),
+        assigned: new Decimal(3.5),
+        activity: new Decimal(0),
+        available: new Decimal(3.5),
+      },
+      {
+        month: new Date("2025-05-01"),
+        assigned: new Decimal(0),
+        activity: new Decimal(0),
+        available: new Decimal(3.5),
+      },
+      {
+        month: new Date("2025-06-01"),
+        assigned: new Decimal(0),
+        activity: new Decimal(0),
+        available: new Decimal(3.5),
+      },
+      {
+        month: new Date("2025-07-01"),
+        assigned: new Decimal(0),
+        activity: new Decimal(0),
+        available: new Decimal(3.5),
+      },
+    ];
+
+    const changeInAssigned = new Decimal(-3.5);
+
+    const updatedMonths = calculateCategoryMonths(
+      categoryMonths,
+      changeInAssigned
+    );
+
+    expect(updatedMonths[0].assigned.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[0].activity.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[0].available.toFixed(2)).toBe("0.00");
+
+    expect(updatedMonths[1].assigned.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[1].activity.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[1].available.toFixed(2)).toBe("0.00");
+
+    expect(updatedMonths[2].assigned.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[2].activity.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[2].available.toFixed(2)).toBe("0.00");
+
+    expect(updatedMonths[3].assigned.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[3].activity.toFixed(2)).toBe("0.00");
+    expect(updatedMonths[3].available.toFixed(2)).toBe("0.00");
+  });
 });
