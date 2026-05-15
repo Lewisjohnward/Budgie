@@ -12,10 +12,21 @@ type UseAutoAssignModalParams = {
   continueToNextMonth: () => void;
 };
 
+// Output
+export type UseAutoAssignModalReturn = {
+  isOpen: boolean;
+  fundingState: FundingState | null;
+
+  open: (payload: AutoAssignPayload) => void;
+  close: () => void;
+  confirm: () => void;
+  goToNextMonth: () => void;
+};
+
 export const useAutoAssignModal = ({
   onConfirm,
   continueToNextMonth,
-}: UseAutoAssignModalParams) => {
+}: UseAutoAssignModalParams): UseAutoAssignModalReturn => {
   const [open, setOpen] = useState(false);
   const [fundingState, setFundingState] = useState<FundingState | null>(null);
   const [monthsToUpdate, setMonthsToUpdate] = useState<MonthsToUpdate[]>([]);

@@ -3,19 +3,27 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { NoteBranded } from "@/core/types/NormalizedData";
 import { useUpdateNoteMutation } from "@/core/api/budget/notes/noteSnapshotSlice";
+import { useToggle } from "./useToggle";
 
 // Input
-type UseNotesParams = {
+type UseNoteParams = {
   note: NoteBranded;
 };
 
 // Output
-export type UseNotes = {
-  text: string;
-  setText: (text: string) => void;
+export type UseNoteState = {
+  ui: {
+    value: boolean;
+    toggle: () => void;
+  };
+  note: {
+    text: string;
+    setText: (text: string) => void;
+  };
 };
 
-export const useNotes = ({ note }: UseNotesParams): UseNotes => {
+export const useNote = ({ note }: UseNoteParams): UseNoteState => {
+  const notesUi = useToggle();
   const { month, content, id } = note;
 
   const [updateNote] = useUpdateNoteMutation();
@@ -44,7 +52,10 @@ export const useNotes = ({ note }: UseNotesParams): UseNotes => {
   };
 
   return {
-    text,
-    setText: updateText,
+    ui: notesUi,
+    note: {
+      text,
+      setText: updateText,
+    },
   };
 };

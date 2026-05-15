@@ -1,29 +1,32 @@
-import { AutoAssign, CategoryBreakdown, Notes, SelectedCategories } from ".";
+import { AutoAssign, CategoryBreakdown, Note, SelectedCategories } from ".";
 import { AssignModal } from "./modals/AssignModal";
 import { AllocationPanelLayout } from "./AllocationPanelLayout";
+import { CategoryBreakdownState } from "../../../hooks/useAllocation/useCategoryBreakdown";
 
 interface AssignProps {
-  categoryBreakDown: any;
+  categoryBreakDown: CategoryBreakdownState;
   autoAssign: any;
-  notes: any;
+  note: any;
+  selectedCategories: any;
 }
 
 export function AllocationPanel({
   categoryBreakDown,
   autoAssign,
-  notes,
+  note,
+  selectedCategories,
 }: AssignProps) {
   return (
     <>
       <AllocationPanelLayout
         selectedCategories={
           categoryBreakDown.hasSelectedCategories && (
-            <SelectedCategories categories={categoryBreakDown} />
+            <SelectedCategories selectedCategories={selectedCategories} />
           )
         }
         categoryBreakdown={<CategoryBreakdown {...categoryBreakDown} />}
         autoAssign={<AutoAssign autoAssign={autoAssign} />}
-        notes={<Notes {...notes} />}
+        note={<Note {...note} />}
       />
       <AssignModal modalState={autoAssign.modal} />
     </>

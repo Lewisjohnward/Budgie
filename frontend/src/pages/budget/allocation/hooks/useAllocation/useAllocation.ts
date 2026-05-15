@@ -2,15 +2,8 @@ import { useEffect, useMemo } from "react";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
 import { useMonthSelector } from "../useMonthSelector";
 import { useExpandableCategoryGroups } from "./useExpandableCategoryGroups";
-import {
-  useAutoAssignModal,
-  useNotes,
-  useToggle,
-  useUpdateMonths,
-} from "../../components/assign/hooks";
-import { FundingOption } from "../../components/assign/types/assignTypes";
+import { useNote } from "../../components/assign/hooks";
 import { useAllocationEngine } from "./useAllocationEngine";
-import { useAutoAssignEngine } from "./useAutoAssignEngine";
 import { useCategorySelection as useCategorySelector } from "./useCategorySelection";
 import { useCategoryBreakdown } from "./useCategoryBreakdown";
 import {
@@ -26,6 +19,15 @@ import {
   CategoryBranded,
 } from "@/core/types/NormalizedData";
 import { useMonthInitialiser } from "./useMonthInitialiser";
+import { useAutoAssign } from "./useAutoAssign";
+
+export type RtaInformation = {
+  assignableLeftOverFromLastMonth: number;
+  assignableCurrentMonth: number;
+  totalAssignedCurrentMonth: number;
+  totalAssignedFuture: number;
+  available: number;
+};
 
 export function useAllocation() {
   const dispatch = useAppDispatch();
@@ -38,34 +40,56 @@ export function useAllocation() {
   /*
    * initialse months (set most recent month as current month)
    */
-  useMonthInitialiser(engine.time.monthKeys);
+  useMonthInitialiser({ monthKeys: engine.time.monthKeys });
 
   /*
    * month selector
    */
-  const monthSelector = useMonthSelector(engine.time.monthKeys);
+  const monthSelector = useMonthSelector({ monthKeys: engine.time.monthKeys });
 
   /*
    * view - category groups
    */
   const { userCategoryGroupViews, rtaRow, uncategorisedRow } =
-    useCategoryGroupViews({
+    buildCategoryGroupViews({
       categoryGroups: engine.entities.categoryGroups,
       categories: engine.entities.categories,
       currentCategoryMonthMap: engine.computed.currentCategoryMonthMap,
     });
 
-  const expandCategoryGroups = useExpandableCategoryGroups(
-    userCategoryGroupViews
-  );
+  const expandCategoryGroups = useExpandableCategoryGroups({
+    categoryGroups: userCategoryGroupViews,
+  });
 
   /*
    * notes
    */
-  const notesUi = useToggle();
-  const note = useNotes({
+  const note = useNote({
     note: engine.domain.currentMonthNote,
   });
+
+  /*
+   * Ready to assign
+   */
+
+  // Get RTA
+  const rtaId = engine.entities.categories.rta.id;
+  const currentRtaMonth = engine.computed.currentCategoryMonthMap[rtaId];
+  const previousRtaMonth = engine.computed?.previousCategoryMonthMap?.[rtaId];
+
+  const totalAssignedCurrentMonth = engine.domain.currentMonths.reduce(
+    (acc, current) => {
+      const val = (acc * 100 + current.assigned * 100) / 100;
+      return val;
+    },
+    0
+  );
+
+  const assignableLeftOverFromLastMonth = 0;
+  const assignableCurrentMonth = currentRtaMonth.activity;
+  console.log("currentRtaMonth:", currentRtaMonth);
+  const totalAssignedFuture = 0;
+  const available = currentRtaMonth.available;
 
   /*
    * detailed view
@@ -82,19 +106,7 @@ export function useAllocation() {
   /*
    * autoassign
    */
-  const autoAssignUi = useToggle(true);
-
-  const { updateMonths } = useUpdateMonths();
-
-  const handleNextMonth = () =>
-    monthSelector.canGoNext ? monthSelector.next() : monthSelector.prev();
-
-  const autoAssignModal = useAutoAssignModal({
-    onConfirm: updateMonths,
-    continueToNextMonth: handleNextMonth,
-  });
-
-  const autoAssign = useAutoAssignEngine({
+  const autoAssign = useAutoAssign({
     categories: engine.entities.categories.user,
     categoryGroups: engine.entities.categoryGroups.user,
     currentMonths: engine.domain.currentMonths,
@@ -103,16 +115,8 @@ export function useAllocation() {
     rtaAvailable: rtaRow.month.available,
     selectedCategoryIds: engine.selection.ids,
     autoAccept: !engine.selection.isEmpty,
-    modal: {
-      open: autoAssignModal.open,
-    },
-    updateMonths,
+    goToNextOrPreviousMonth: monthSelector.goToNextOrPreviousMonth,
   });
-
-  const underfundedAmount = autoAssign.assignAmount(FundingOption.UNDERFUNDED);
-
-  const displayUnderfunded =
-    engine.selection.count !== 1 || underfundedAmount > 0;
 
   /*
    * category selection
@@ -126,7 +130,7 @@ export function useAllocation() {
   });
 
   useEffect(() => {
-    // Pressing escape clears category inspection
+    // Pressing escape clears category selection
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         categorySelector.clear();
@@ -161,50 +165,36 @@ export function useAllocation() {
    */
   return {
     currency,
-    categoryState: {
-      currency,
-      view: {
-        // Data for displaying uncategorisedRow
-        uncategorisedRow: uncategorisedRow,
-        // Data for displaying the category groups -> categories
-        categoriesByGroup: expandCategoryGroups.categoryGroups,
-      },
+    categorySelector,
+    view: {
+      // Data for displaying uncategorisedRow
+      uncategorisedRow,
+      // Data for displaying the category groups -> categories
+      categoriesByGroup: expandCategoryGroups.categoryGroups,
+    },
+    expandCategoryGroups,
 
-      expandCategoryGroups,
+    rtaInformation: {
+      assignableLeftOverFromLastMonth,
+      assignableCurrentMonth,
+      totalAssignedCurrentMonth,
+      totalAssignedFuture,
+      available,
     },
 
-    headerState: {
-      currency,
-      monthSelector,
-      categoriesSelector,
-      assignableAmount: rtaRow.month.available,
-    },
+    monthSelector,
+    categoriesSelector,
 
-    // This is a more info
-    categoryBreakdown: categoryBreakdown,
-    // This is auto assigning
-    autoAssign: {
-      // used for toggling the pane open and close
-      ui: autoAssignUi,
-      // hide underfunded when selected cat is already funded
-      displayUnderfunded: displayUnderfunded,
-      // amount to display
-      amount: autoAssign.assignAmount,
-      // when clicked generate ui state etc
-      handler: autoAssign.runAction,
-      modal: autoAssignModal,
-    },
-    // This is a  notes
-    notes: {
-      note: note,
-      ui: notesUi,
-    },
+    selectedCategories: engine.selection.categories,
 
-    categorySelector: categorySelector,
+    categoryBreakdown,
+    autoAssign,
+    note,
   };
 }
 
-type UseCategoryGroupViewsArgs = {
+// Input
+type UseCategoryGroupViewsParams = {
   categoryGroups: {
     user: Record<CategoryGroupId, CategoryGroupBranded>;
     inflow: CategoryGroupBranded;
@@ -219,11 +209,13 @@ type UseCategoryGroupViewsArgs = {
   currentCategoryMonthMap: CategoryMonthMap;
 };
 
-export function useCategoryGroupViews({
+// Output
+
+export function buildCategoryGroupViews({
   categoryGroups,
   categories,
   currentCategoryMonthMap,
-}: UseCategoryGroupViewsArgs) {
+}: UseCategoryGroupViewsParams) {
   const currentUserCategoryMonthMap = useMemo(() => {
     return Object.fromEntries(
       Object.entries(currentCategoryMonthMap).filter(

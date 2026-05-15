@@ -4,21 +4,21 @@ interface AssignLayoutProps {
   selectedCategories: ReactNode;
   categoryBreakdown: ReactNode;
   autoAssign: ReactNode;
-  notes: ReactNode;
+  note: ReactNode;
 }
 
 export function AllocationPanelLayout({
   selectedCategories,
   categoryBreakdown,
   autoAssign,
-  notes,
+  note,
 }: AssignLayoutProps) {
   return (
     <div className={`space-y-2`}>
       {selectedCategories}
       {categoryBreakdown}
       {autoAssign}
-      {notes}
+      {note}
     </div>
   );
 }

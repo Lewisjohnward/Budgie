@@ -6,25 +6,43 @@ import { useAllocation } from "./hooks/useAllocation/useAllocation";
 
 export default function Allocation() {
   const {
-    categoryState,
-    headerState,
+    currency,
+    rtaInformation,
     categoryBreakdown,
     autoAssign,
-    notes,
+    note,
     categorySelector,
+    selectedCategories,
+    expandCategoryGroups,
+    view,
+    monthSelector,
+    categoriesSelector,
   } = useAllocation();
 
   return (
     <AllocationLayout
-      header={<Header {...headerState} />}
+      header={
+        <Header
+          currency={currency}
+          monthSelector={monthSelector}
+          categoriesSelector={categoriesSelector}
+          rtaInformation={rtaInformation}
+        />
+      }
       primary={
-        <Categories categorySelector={categorySelector} {...categoryState} />
+        <Categories
+          currency={currency}
+          view={view}
+          expandCategoryGroups={expandCategoryGroups}
+          categorySelector={categorySelector}
+        />
       }
       sidebar={
         <AllocationPanel
+          selectedCategories={selectedCategories}
           categoryBreakDown={categoryBreakdown}
           autoAssign={autoAssign}
-          notes={notes}
+          note={note}
         />
       }
     />

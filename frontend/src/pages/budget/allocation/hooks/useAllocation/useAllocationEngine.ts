@@ -31,7 +31,11 @@ export type AllocationEngine = {
   };
 
   domain: {
+    /*
+     *user months
+     */
     currentMonths: MonthBranded[];
+    /* user months */
     previousMonths: MonthBranded[];
     previousYearMonths: MonthBranded[];
     currentMonthNote: NoteBranded;
@@ -87,7 +91,10 @@ export function useAllocationEngine(): AllocationEngine {
 
   const effectiveCategoryIds =
     selectedCategoryIds.length === 0
-      ? [Object.values(data.categories.user).map((c) => c.id)]
+      ? [
+        ...Object.values(data.categories.user).map((c) => c.id),
+        data.categories.uncategorised.id,
+      ]
       : selectedCategoryIds;
 
   return {

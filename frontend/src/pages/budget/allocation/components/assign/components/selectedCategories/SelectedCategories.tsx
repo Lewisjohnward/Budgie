@@ -3,18 +3,19 @@ import clsx from "clsx";
 import { Pencil } from "lucide-react";
 
 export interface SelectedCategoriesProps {
-  categories: CategoryBranded[];
+  selectedCategories: CategoryBranded[];
 }
 
-export function SelectedCategories({ categories }: SelectedCategoriesProps) {
-  const numberOfCategories = categories.length;
+export function SelectedCategories({
+  selectedCategories,
+}: SelectedCategoriesProps) {
+  const numberOfCategories = selectedCategories.length;
   const isSingleCategory = numberOfCategories === 1;
-  return <div>temp</div>;
 
   return (
     <div
       className={clsx(
-        categories.length > 0 && "py-4",
+        selectedCategories.length > 0 && "py-4",
         "flex items-center rounded overflow-hidden"
       )}
     >
@@ -25,11 +26,13 @@ export function SelectedCategories({ categories }: SelectedCategoriesProps) {
           className={`text-xl font-bold ${isSingleCategory ? "truncate" : ""}`}
         >
           {isSingleCategory
-            ? categories[0].name
+            ? selectedCategories[0].name
             : `${numberOfCategories} Categories Selected`}
         </p>
         {!isSingleCategory && (
-          <p className="text-sm">{categories.map((c) => c.name).join(", ")}</p>
+          <p className="text-sm">
+            {selectedCategories.map((c) => c.name).join(", ")}
+          </p>
         )}
       </div>
       {isSingleCategory && (

@@ -8,13 +8,29 @@ import {
   AddCategoryGroupButton,
   CategoryRow,
 } from "./components";
+import { CategoryViewRow } from "../../utils/buildCategoryViewModel";
+import {
+  ExpandableCategoryGroupsState,
+  MappedCategoryGroupViewWithMetrics,
+} from "../../hooks/useAllocation/useExpandableCategoryGroups";
+import { CategorySelectionState } from "../../hooks/useAllocation/useCategorySelection";
+
+type CategoriesProps = {
+  currency: string;
+  view: {
+    uncategorisedRow: CategoryViewRow;
+    categoriesByGroup: MappedCategoryGroupViewWithMetrics[];
+  };
+  expandCategoryGroups: ExpandableCategoryGroupsState;
+  categorySelector: CategorySelectionState;
+};
 
 export function Categories({
   currency,
   view,
   expandCategoryGroups,
   categorySelector,
-}: any) {
+}: CategoriesProps) {
   const { uncategorisedRow, categoriesByGroup } = view;
 
   return (

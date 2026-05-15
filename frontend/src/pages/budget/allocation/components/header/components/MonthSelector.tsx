@@ -2,13 +2,13 @@ import { darkBlueBgHover } from "@/core/theme/colors";
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 import { NavButton } from "./NavButton";
 import clsx from "clsx";
-import { MonthSelectorHook } from "../../../hooks/useMonthSelector";
+import { MonthSelectorState } from "../../../hooks/useMonthSelector";
 
-export function MonthSelector({
-  monthSelector,
-}: {
-  monthSelector: MonthSelectorHook;
-}) {
+type MonthSelectorProps = {
+  monthSelector: MonthSelectorState;
+};
+
+export function MonthSelector({ monthSelector }: MonthSelectorProps) {
   return (
     <>
       <div className="flex items-center gap-1">

@@ -4,17 +4,28 @@ import {
   CategoryFilters,
   HeaderLayout,
 } from "./components";
-import { HeaderState } from "../../hooks/useAllocation/useAllocation";
+import { MonthSelectorState } from "../../hooks/useMonthSelector";
+import { RtaInformation } from "../../hooks/useAllocation/useAllocation";
+
+type HeaderProps = {
+  currency: string;
+  monthSelector: MonthSelectorState;
+  categoriesSelector: string[];
+  rtaInformation: RtaInformation;
+};
 
 export function Header({
+  currency,
   monthSelector,
-  assignableAmount,
   categoriesSelector,
-}: HeaderState) {
+  rtaInformation,
+}: HeaderProps) {
   return (
     <HeaderLayout
       monthSelector={<MonthSelector monthSelector={monthSelector} />}
-      readyToAssign={<ReadyToAssign amount={assignableAmount} />}
+      readyToAssign={
+        <ReadyToAssign currency={currency} rtaInformation={rtaInformation} />
+      }
       categoryFilters={<CategoryFilters categories={categoriesSelector} />}
     />
   );
