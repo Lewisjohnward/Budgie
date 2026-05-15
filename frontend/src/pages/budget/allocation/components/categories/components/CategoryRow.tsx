@@ -11,7 +11,7 @@ import {
   ProgressBar,
   AssignedAmountField,
 } from "./";
-import { CategorySelection } from "../../../hooks/useAllocation/useCategorySelection";
+import { CategorySelectionState } from "../../../hooks/useAllocation/useCategorySelection";
 
 export function CategoryRow({
   category,
@@ -20,7 +20,7 @@ export function CategoryRow({
 }: {
   category: CategoryBranded;
   month: MonthBranded;
-  categorySelection: CategorySelection;
+  categorySelection: CategorySelectionState;
 }) {
   const { activity, available, assigned } = month;
 

@@ -7,7 +7,12 @@ import {
 } from "../../slices/monthSlice";
 import { MonthKey } from "../../types/types";
 
-export function useMonthInitialiser(monthKeys: MonthKey[]) {
+// Input
+type UseMonthInitialiserParams = {
+  monthKeys: MonthKey[];
+};
+
+export function useMonthInitialiser({ monthKeys }: UseMonthInitialiserParams) {
   const dispatch = useAppDispatch();
   const hasInitialisedMonth = useHasInitialisedMonth();
 

@@ -6,13 +6,20 @@ import {
 } from "../../utils/assembleCategoryGroupViews";
 import { CategoryViewRow } from "../../utils/buildCategoryViewModel";
 
-export type ExpandableCategoryGroups = {
+// Input
+type UseExpandableCategoryGroupsParams = {
+  categoryGroups: CategoryGroupViewWithMetrics[];
+};
+
+// Output
+export type ExpandableCategoryGroupsState = {
   categoryGroups: MappedCategoryGroupViewWithMetrics[];
   atLeastOneGroupOpen: boolean;
   expandAllCategoryGroups: () => void;
   expandCategoryGroup: (groupId: CategoryGroupId) => void;
   displayGlobalExpand: boolean;
 };
+
 export type MappedCategoryGroupViewWithMetrics = {
   group: CategoryGroupWithMetrics;
   rows: CategoryViewRow[];
@@ -50,15 +57,15 @@ export type MappedCategoryGroupViewWithMetrics = {
  * IDs for system-protected groups (e.g. rta, uncategorised).
  * Currently unused in this hook but reserved for filtering logic.
  *
- * @returns {ExpandableCategoryGroups} Derived UI state and actions:
+ * @returns {ExpandableCategoryGroupsState} Derived UI state and actions:
  * - `categoryGroups`: mapped groups with computed financial totals and open state
  * - `atLeastOneGroupOpen`: whether any group is currently expanded
  * - `expandAllCategoryGroups`: toggles all groups open/closed
  * - `expandCategoryGroup`: toggles a single group by ID
  */
-export function useExpandableCategoryGroups(
-  categoryGroups: CategoryGroupViewWithMetrics[]
-): ExpandableCategoryGroups {
+export function useExpandableCategoryGroups({
+  categoryGroups,
+}: UseExpandableCategoryGroupsParams): ExpandableCategoryGroupsState {
   const [openState, setOpenState] = useState<Record<CategoryGroupId, boolean>>(
     () => {
       const initial: Record<CategoryGroupId, boolean> = {};

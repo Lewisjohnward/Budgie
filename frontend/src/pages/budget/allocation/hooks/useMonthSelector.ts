@@ -4,18 +4,27 @@ import { formatDate } from "../utils/dateUtils";
 import { MonthKey } from "../types/types";
 import { getMonthName } from "../utils/getMonthName";
 
-export type MonthSelectorHook = {
+// Input
+type MonthSelectorParams = {
+  monthKeys: MonthKey[];
+};
+
+// Output
+export type MonthSelectorState = {
   isCurrentMonth: boolean;
   currentMonthNameFormatLong: string;
   currentMonthNameFormatShort: string;
   next: () => void;
   prev: () => void;
   selectCurrentMonth: () => void;
+  goToNextOrPreviousMonth: () => void;
   canGoNext: boolean;
   canGoPrev: boolean;
 };
 
-export function useMonthSelector(monthKeys: MonthKey[]): MonthSelectorHook {
+export function useMonthSelector({
+  monthKeys,
+}: MonthSelectorParams): MonthSelectorState {
   const dispatch = useAppDispatch();
   const monthIndex = useMonthIndex();
 
@@ -35,6 +44,7 @@ export function useMonthSelector(monthKeys: MonthKey[]): MonthSelectorHook {
     dispatch(
       selectMonthIndex(monthIndex - 1 >= 0 ? monthIndex - 1 : monthIndex)
     );
+
   const currentMonthKey = monthKeys[monthIndex];
   const currentMonthNameFormatLong = formatDate(currentMonthKey);
   const currentMonthNameFormatShort = getMonthName(currentMonthKey);
@@ -42,6 +52,8 @@ export function useMonthSelector(monthKeys: MonthKey[]): MonthSelectorHook {
   const canGoNext = monthIndex < monthKeys.length - 1;
   const canGoPrev = monthIndex > 0;
   const isCurrentMonth = defaultMonthIndex === monthIndex;
+
+  const goToNextOrPreviousMonth = () => (canGoNext ? next() : prev());
 
   return {
     currentMonthNameFormatLong,
@@ -52,6 +64,8 @@ export function useMonthSelector(monthKeys: MonthKey[]): MonthSelectorHook {
     prev,
     // Goto current month
     selectCurrentMonth,
+    // Go to previous month if at last month
+    goToNextOrPreviousMonth,
     isCurrentMonth,
     canGoNext,
     canGoPrev,

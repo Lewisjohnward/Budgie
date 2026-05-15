@@ -3,9 +3,9 @@ import { bgGray, darkBlueBgHoverDark, darkBlueText } from "@/core/theme/colors";
 import useMouseOverTimeout from "@/core/hooks/useMouseOverTimeout";
 import clsx from "clsx";
 
-interface CategoryFiltersProps {
+type CategoryFiltersProps = {
   categories: string[];
-}
+};
 
 export function CategoryFilters({ categories }: CategoryFiltersProps) {
   const { mouseOver, handleMouseOver } = useMouseOverTimeout();

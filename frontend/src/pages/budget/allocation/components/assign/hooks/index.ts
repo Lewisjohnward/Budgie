@@ -1,4 +1,4 @@
 export { useAutoAssignModal } from "./useAutoAssignModal";
-export { useNotes } from "./useNotes";
+export { useNote } from "./useNote";
 export { useToggle } from "./useToggle";
 export { useUpdateMonths } from "./useUpdateMonths";

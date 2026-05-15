@@ -3,7 +3,7 @@ import { SelectedCategoriesState } from "../hooks/useCategoryTotals";
 import { Category } from "@/core/types/NormalizedData";
 import { useState } from "react";
 import { AutoAssignState } from "../hooks/useAutoAssign";
-import { NotesState } from "../hooks/useNotes";
+import { NotesState } from "../hooks/useNote";
 
 const meta: Meta<typeof AssignView> = {
   component: AssignView,

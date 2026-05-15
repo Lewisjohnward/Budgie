@@ -33,7 +33,7 @@ export function CategoryContextMenu({
   category,
   children,
 }: {
-  category: Category;
+  category: CategoryBranded;
   children: ReactNode;
 }) {
   const [contextOpen, setContextOpen] = useState(false);

@@ -16,7 +16,7 @@ export type UseCategorySelectionParams = {
 };
 
 // Output
-export type CategorySelection = {
+export type CategorySelectionState = {
   selectAll: () => void;
   getAllSelectionState: () => SelectionState;
   isSelected: (id: CategoryId) => boolean;
@@ -33,7 +33,7 @@ export type SelectionState = (typeof SELECTION_STATE)[number];
 
 export const useCategorySelection = ({
   orderedCategories,
-}: UseCategorySelectionParams): CategorySelection => {
+}: UseCategorySelectionParams): CategorySelectionState => {
   const dispatch = useAppDispatch();
 
   const selected = useSelectedCategories();
