@@ -31,10 +31,12 @@ const BUTTON_GROUPS = [
 const buttonStyles = `py-1 px-2 w-full flex justify-between text-black ${bgGray} rounded whitespace-nowrap hover:bg-gray-300/80 transition-colors`;
 
 export function AutoAssign({ autoAssign }) {
-  const { ui } = autoAssign;
+  const { ui, hideAutoAssign } = autoAssign;
+
+  if (hideAutoAssign) return null;
 
   return (
-    <div className="flex-grow bg-white rounded-lg">
+    <div className="disp flex-grow bg-white rounded-lg">
       <AutoAssignToggle open={ui.value} toggleOpen={ui.toggle} />
       {ui.value && (
         <div className="p-4 space-y-4">

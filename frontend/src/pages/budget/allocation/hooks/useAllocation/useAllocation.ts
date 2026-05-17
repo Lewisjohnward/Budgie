@@ -106,9 +106,11 @@ export function useAllocation() {
   /*
    * autoassign
    */
+  // TODO:(lewis 2026-05-17 08:38) need to remove uncategorised from here to prevent sending to the be
   const autoAssign = useAutoAssign({
     categories: engine.entities.categories.user,
     categoryGroups: engine.entities.categoryGroups.user,
+    isUncategorisedSelected: engine.selection.isUncategorisedSelected,
     currentMonths: engine.domain.currentMonths,
     previousMonths: engine.domain.previousMonths,
     previousYearMonths: engine.domain.previousYearMonths,
@@ -121,12 +123,15 @@ export function useAllocation() {
   /*
    * category selection
    */
+
+  // TODO:(lewis 2026-05-15 15:13) this should not be coming from views
   const orderedCategories = userCategoryGroupViews.flatMap(({ rows }) =>
     rows.map((row) => row.category)
   );
 
+  // TODO:(lewis 2026-05-15 15:13) this should not be coming from views
   const categorySelector = useCategorySelector({
-    orderedCategories: orderedCategories,
+    orderedCategories: [...orderedCategories, uncategorisedRow.category],
   });
 
   useEffect(() => {

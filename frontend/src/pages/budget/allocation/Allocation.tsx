@@ -25,6 +25,7 @@ export default function Allocation() {
         <Header
           currency={currency}
           monthSelector={monthSelector}
+          // TODO:(lewis 2026-05-15 15:01) this naming is incorrect string[]?
           categoriesSelector={categoriesSelector}
           rtaInformation={rtaInformation}
         />

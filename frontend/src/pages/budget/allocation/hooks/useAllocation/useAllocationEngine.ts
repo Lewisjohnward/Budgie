@@ -62,6 +62,8 @@ export type AllocationEngine = {
     count: number;
 
     isEmpty: boolean;
+
+    isUncategorisedSelected: boolean;
   };
 };
 
@@ -88,6 +90,11 @@ export function useAllocationEngine(): AllocationEngine {
    * selected categories
    */
   const selectedCategoryIds = selectedCategories.map((c) => c.id);
+  const selectedCategorySet = new Set(selectedCategoryIds);
+
+  const isUncategorisedSelected = selectedCategorySet.has(
+    data.categories.uncategorised.id
+  );
 
   const effectiveCategoryIds =
     selectedCategoryIds.length === 0
@@ -121,11 +128,15 @@ export function useAllocationEngine(): AllocationEngine {
     },
 
     selection: {
+      // all selected categories
       categories: selectedCategories,
+      // all selected category ids
       ids: selectedCategoryIds,
+      // if no selection return all categories, otherwise return selected categories
       effectiveIds: effectiveCategoryIds,
       count: selectedCategoryIds.length,
       isEmpty: selectedCategoryIds.length === 0,
+      isUncategorisedSelected,
     },
   };
 }
