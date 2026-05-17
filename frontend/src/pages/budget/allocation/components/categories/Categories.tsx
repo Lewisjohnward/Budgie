@@ -53,7 +53,9 @@ export function Categories({
         <CategoryGridRow>
           <UncategorisedRow
             currency={currency}
+            category={uncategorisedRow.category}
             month={uncategorisedRow.month}
+            categorySelector={categorySelector}
           />
         </CategoryGridRow>
       )}
@@ -86,6 +88,7 @@ export function Categories({
                   key={row.category.id}
                   category={row.category}
                   month={row.month}
+                  // TODO:(lewis 2026-05-15 15:05) this should be categorySelector
                   categorySelection={categorySelector}
                 />
               ))}

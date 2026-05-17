@@ -95,6 +95,7 @@ export function useAllocationIndexes(
   }, [previousUserCategoryMonthMap]);
 
   return {
+    // TODO:(lewis 2026-05-16 11:19) no one is using this
     monthsByDate,
     currentMonthKey,
     previousMonthKey,

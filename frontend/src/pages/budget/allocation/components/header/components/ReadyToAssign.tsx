@@ -29,12 +29,6 @@ export function ReadyToAssign({
     totalAssignedFuture,
     available,
   } = rtaInformation;
-  console.log("assignableCurrentMonth:", assignableCurrentMonth);
-  console.log(
-    "assignableLeftOverFromLastMonth:",
-    assignableLeftOverFromLastMonth
-  );
-  console.log("totalAssignedCurrentMonth:", totalAssignedCurrentMonth);
 
   const state = generateReadyToAssignStatus(available);
 

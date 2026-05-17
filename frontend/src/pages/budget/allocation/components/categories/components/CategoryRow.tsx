@@ -20,6 +20,7 @@ export function CategoryRow({
 }: {
   category: CategoryBranded;
   month: MonthBranded;
+  // TODO:(lewis 2026-05-15 15:06) i dont like neither the name or the type, i think it should be categorySelector
   categorySelection: CategorySelectionState;
 }) {
   const { activity, available, assigned } = month;

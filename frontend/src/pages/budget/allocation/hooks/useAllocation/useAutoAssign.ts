@@ -18,6 +18,8 @@ type UseAutoAssignParams = {
   categories: Record<string, CategoryBranded>;
   categoryGroups: Record<string, CategoryGroupBranded>;
 
+  isUncategorisedSelected: boolean;
+
   currentMonths: MonthBranded[];
   previousMonths: MonthBranded[];
   previousYearMonths: MonthBranded[];
@@ -34,6 +36,7 @@ type AutoAssignState = {
     value: boolean;
     toggle: () => void;
   };
+  hideAutoAssign: boolean;
   displayUnderfunded: boolean;
   amount: (action: FundingOption) => number;
   handler: (action: FundingOption) => void;
@@ -43,6 +46,8 @@ type AutoAssignState = {
 export function useAutoAssign({
   categories,
   categoryGroups,
+
+  isUncategorisedSelected,
 
   currentMonths,
   previousMonths,
@@ -83,15 +88,22 @@ export function useAutoAssign({
   const displayUnderfunded =
     selectedCategoryIds.length !== 1 || underfundedAmount > 0;
 
+  // hide auto assign panel when uncategorised is the only selected category
+  const hideAutoAssign =
+    selectedCategoryIds.length === 1 && isUncategorisedSelected;
+
   return {
     // used for toggling the pane open and close
     ui: autoAssignUi,
     // hide underfunded when selected cat is already funded
     displayUnderfunded: displayUnderfunded,
+    // hide entire auto assign panel when only uncategorised category is selected (when visible)
+    hideAutoAssign,
     // amount to display
     amount: autoAssign.assignAmount,
     // when clicked generate ui state etc
     handler: autoAssign.runAction,
+
     modal: autoAssignModal,
   };
 }

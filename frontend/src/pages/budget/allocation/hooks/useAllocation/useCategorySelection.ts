@@ -48,7 +48,7 @@ export const useCategorySelection = ({
 
   const clear = () => dispatch(clearCategories());
 
-  const toggle = (category: CategoryBranded) => {
+  const toggle = (category: CategoryBranded): void => {
     if (isSelected(category.id)) {
       dispatch(removeCategories([category]));
     } else {
@@ -56,7 +56,7 @@ export const useCategorySelection = ({
     }
   };
 
-  const onRowClick = (e: React.MouseEvent, category: CategoryBranded) => {
+  const onRowClick = (e: React.MouseEvent, category: CategoryBranded): void => {
     // CTRL = toggle
     if (e.ctrlKey) return toggle(category);
 
@@ -75,8 +75,6 @@ export const useCategorySelection = ({
       } else {
         dispatch(addCategories(range));
       }
-
-      return;
     }
 
     // normal click
@@ -117,7 +115,7 @@ export const useCategorySelection = ({
     }
   };
 
-  const selectAll = () => {
+  const selectAll = (): void => {
     const isAtleastOneSelected = orderedCategories.some((c) =>
       isSelected(c.id)
     );
@@ -127,7 +125,6 @@ export const useCategorySelection = ({
     } else {
       dispatch(addCategories(orderedCategories));
     }
-    return "hello";
   };
 
   const getAllSelectionState = (): SelectionState => {
