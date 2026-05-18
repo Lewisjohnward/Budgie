@@ -111,7 +111,7 @@ export const categoryRepository: CategoryRepository = {
     if (categoryGroupId !== undefined) {
       data.categoryGroup = { connect: { id: categoryGroupId } };
     }
-    await tx.category.update({ where: { id: categoryId }, data });
+    return tx.category.update({ where: { id: categoryId }, data });
   },
 
   deleteCategory: async (tx, categoryId) => {

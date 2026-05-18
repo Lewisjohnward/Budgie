@@ -5,6 +5,7 @@ import { MonthKey } from "@/pages/budget/allocation/types/types";
 
 type UpdateNoteInput = { month: MonthKey; id: string; content: string };
 
+// TODO:(lewis 2026-05-18 13:43) this should be called noteApiSlice
 export const noteSnapshotSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     updateNote: builder.mutation<NoteBranded, UpdateNoteInput>({

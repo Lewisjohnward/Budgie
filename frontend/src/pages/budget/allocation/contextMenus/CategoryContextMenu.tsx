@@ -1,7 +1,5 @@
-import {
-  useDeleteCategoryMutation,
-  useEditCategoryMutation,
-} from "@/core/api/budgetApiSlice";
+import { useEditCategoryMutation } from "@/core/api/budget/category/categoryApiSlice";
+import { useDeleteCategoryMutation } from "@/core/api/budgetApiSlice";
 import { Button } from "@/core/components/uiLibrary/button";
 import {
   Form,
@@ -21,10 +19,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ReactNode, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { asCategoryId } from "../types/types";
 
 const CategoryContextSchema = z.object({
   name: z.string().min(1, { message: "Category requires a name" }),
-  categoryId: z.string().uuid(),
+  id: z.string().uuid(),
 });
 
 export type CategoryContextType = z.infer<typeof CategoryContextSchema>;
@@ -33,7 +32,7 @@ export function CategoryContextMenu({
   category,
   children,
 }: {
-  category: CategoryBranded;
+  category: Category;
   children: ReactNode;
 }) {
   const [contextOpen, setContextOpen] = useState(false);
@@ -43,7 +42,7 @@ export function CategoryContextMenu({
   const form = useForm<CategoryContextType>({
     defaultValues: {
       name: category.name,
-      categoryId: category.id,
+      id: category.id,
     },
     resolver: zodResolver(CategoryContextSchema),
   });
@@ -57,18 +56,22 @@ export function CategoryContextMenu({
   useEffect(() => {
     reset({
       name: category.name,
-      categoryId: category.id,
+      id: category.id,
     });
   }, [category.name, category.id]);
 
   const onSubmit = (updatedCategory: CategoryContextType) => {
-    editCategory(updatedCategory);
+    editCategory({
+      categoryId: asCategoryId(updatedCategory.id),
+      name: updatedCategory.name,
+    });
     closeContextMenu();
     reset();
   };
 
   const handleDelete = (categoryId: string) => {
-    deleteCategory({ categoryId });
+    console.log("categoryId:", categoryId);
+    // deleteCategory({ categoryId });
   };
 
   const openContextMenu = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
