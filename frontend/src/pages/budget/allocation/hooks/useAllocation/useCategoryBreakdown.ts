@@ -6,33 +6,52 @@ import { CategoryId, CategoryMonthMap } from "../../types/types";
 type UseCategoryBreakdownParams = {
   currentMonthMap: CategoryMonthMap;
   previousMonthMap: CategoryMonthMap | null;
+
   selectedCategoryIds: CategoryId[];
+
+  isUncategorisedSelected: boolean;
+
   currentMonthName: string;
   hasSelectedCategories: boolean;
 };
 
 // Output
-export type CategoryBreakdownState = {
+export type CategoryBreakdownViewModel = {
   hasSelectedCategories: boolean;
   currentMonthName: string;
 
   view: CategoryBreakdownView;
 
-  totals: ReturnType<typeof computeTotals>;
+  totals: {
+    available: number;
+    assigned: number;
+    spending: number;
+    leftover: number;
+  };
 
   open: boolean;
   toggleOpen: () => void;
 };
 
-type CategoryBreakdownView = "single" | "multiple";
+export type CategoryBreakdownView =
+  | {
+    kind: "multiple";
+  }
+  | {
+    kind: "single";
+    isUncategorisedSelected: boolean;
+  };
 
-export function useCategoryBreakdown({
+export type ViewMode = CategoryBreakdownView["kind"];
+
+export function useCategoryBreakdownViewModel({
   currentMonthMap,
   previousMonthMap,
   selectedCategoryIds,
+  isUncategorisedSelected,
   currentMonthName,
   hasSelectedCategories,
-}: UseCategoryBreakdownParams): CategoryBreakdownState {
+}: UseCategoryBreakdownParams): CategoryBreakdownViewModel {
   const ui = useToggle(true);
 
   const totals = useMemo(() => {
@@ -59,7 +78,16 @@ export function useCategoryBreakdown({
     return { available, assigned, spending, leftover };
   }, [currentMonthMap, previousMonthMap, selectedCategoryIds]);
 
-  const view = selectedCategoryIds.length === 1 ? "single" : "multiple";
+  const view: CategoryBreakdownView =
+    selectedCategoryIds.length === 1
+      ? {
+        kind: "single",
+        isUncategorisedSelected,
+      }
+      : {
+        kind: "multiple",
+      };
+
   return {
     // I don't think this is used
     hasSelectedCategories,

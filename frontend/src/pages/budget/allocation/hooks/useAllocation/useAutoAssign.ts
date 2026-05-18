@@ -31,7 +31,7 @@ type UseAutoAssignParams = {
 };
 
 // Output
-type AutoAssignState = {
+export type AutoAssignViewModel = {
   ui: {
     value: boolean;
     toggle: () => void;
@@ -43,7 +43,7 @@ type AutoAssignState = {
   modal: UseAutoAssignModalReturn;
 };
 
-export function useAutoAssign({
+export function useAutoAssignViewModel({
   categories,
   categoryGroups,
 
@@ -58,7 +58,7 @@ export function useAutoAssign({
   autoAccept,
 
   goToNextOrPreviousMonth,
-}: UseAutoAssignParams): AutoAssignState {
+}: UseAutoAssignParams): AutoAssignViewModel {
   const autoAssignUi = useToggle(true);
 
   const { updateMonths } = useUpdateMonths();

@@ -2,10 +2,9 @@ import { useEffect, useMemo } from "react";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
 import { useMonthSelector } from "../useMonthSelector";
 import { useExpandableCategoryGroups } from "./useExpandableCategoryGroups";
-import { useNote } from "../../components/assign/hooks";
 import { useAllocationEngine } from "./useAllocationEngine";
 import { useCategorySelection as useCategorySelector } from "./useCategorySelection";
-import { useCategoryBreakdown } from "./useCategoryBreakdown";
+import { useCategoryBreakdownViewModel } from "./useCategoryBreakdown";
 import {
   CategoryGroupId,
   CategoryId,
@@ -19,7 +18,8 @@ import {
   CategoryBranded,
 } from "@/core/types/NormalizedData";
 import { useMonthInitialiser } from "./useMonthInitialiser";
-import { useAutoAssign } from "./useAutoAssign";
+import { useAutoAssignViewModel } from "./useAutoAssign";
+import { useNoteViewModel } from "../../components/assign/hooks/useNoteViewModel";
 
 export type RtaInformation = {
   assignableLeftOverFromLastMonth: number;
@@ -64,7 +64,7 @@ export function useAllocation() {
   /*
    * notes
    */
-  const note = useNote({
+  const noteViewModel = useNoteViewModel({
     note: engine.domain.currentMonthNote,
   });
 
@@ -95,9 +95,10 @@ export function useAllocation() {
    * detailed view
    */
   // TODO:(lewis 2026-05-13 14:40) why are we passing current month name and has selected categories?
-  const categoryBreakdown = useCategoryBreakdown({
+  const categoryBreakdownViewModel = useCategoryBreakdownViewModel({
     currentMonthMap: engine.computed.currentCategoryMonthMap,
     previousMonthMap: engine.computed.previousCategoryMonthMap,
+    isUncategorisedSelected: engine.selection.isUncategorisedSelected,
     selectedCategoryIds: engine.selection.effectiveIds,
     currentMonthName: monthSelector.currentMonthNameFormatShort,
     hasSelectedCategories: !engine.selection.isEmpty,
@@ -106,8 +107,7 @@ export function useAllocation() {
   /*
    * autoassign
    */
-  // TODO:(lewis 2026-05-17 08:38) need to remove uncategorised from here to prevent sending to the be
-  const autoAssign = useAutoAssign({
+  const autoAssignViewModel = useAutoAssignViewModel({
     categories: engine.entities.categories.user,
     categoryGroups: engine.entities.categoryGroups.user,
     isUncategorisedSelected: engine.selection.isUncategorisedSelected,
@@ -192,9 +192,9 @@ export function useAllocation() {
 
     selectedCategories: engine.selection.categories,
 
-    categoryBreakdown,
-    autoAssign,
-    note,
+    categoryBreakdownViewModel,
+    autoAssignViewModel,
+    noteViewModel,
   };
 }
 
