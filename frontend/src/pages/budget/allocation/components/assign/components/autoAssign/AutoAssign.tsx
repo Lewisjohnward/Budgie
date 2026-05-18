@@ -4,6 +4,7 @@ import { AutoAssignToggle } from "./AutoAssignToggle";
 import { Button } from "@/core/components/uiLibrary/button";
 import { FundingOption } from "../../types/assignTypes";
 import { AutoAssignViewModel } from "@/pages/budget/allocation/hooks/useAllocation/useAutoAssign";
+import { AssignModal } from "../modals/AssignModal";
 
 const BUTTON_CONFIG = {
   [FundingOption.UNDERFUNDED]: { label: "Underfunded" },
@@ -41,36 +42,40 @@ export function AutoAssign({
     displayUnderfunded,
     handler,
     amount,
+    modal,
   },
 }: AutoAssignProps) {
   if (hideAutoAssign) return null;
 
   return (
-    <div className="disp flex-grow bg-white rounded-lg">
-      <AutoAssignToggle open={ui.value} toggleOpen={ui.toggle} />
-      {ui.value && (
-        <div className="p-4 space-y-4">
-          {BUTTON_GROUPS.map((group, index) => {
-            const showGroup = group.conditional ? displayUnderfunded : true;
-            if (!showGroup) return null;
+    <>
+      <div className="disp flex-grow bg-white rounded-lg">
+        <AutoAssignToggle open={ui.value} toggleOpen={ui.toggle} />
+        {ui.value && (
+          <div className="p-4 space-y-4">
+            {BUTTON_GROUPS.map((group, index) => {
+              const showGroup = group.conditional ? displayUnderfunded : true;
+              if (!showGroup) return null;
 
-            return (
-              <div key={index} className="space-y-1">
-                {group.buttons.map((action) => (
-                  <Button
-                    key={action}
-                    onClick={() => handler(action)}
-                    className={buttonStyles}
-                  >
-                    <span>{BUTTON_CONFIG[action]?.label || ""}</span>
-                    <span>{formatCurrency(amount(action))}</span>
-                  </Button>
-                ))}
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
+              return (
+                <div key={index} className="space-y-1">
+                  {group.buttons.map((action) => (
+                    <Button
+                      key={action}
+                      onClick={() => handler(action)}
+                      className={buttonStyles}
+                    >
+                      <span>{BUTTON_CONFIG[action]?.label || ""}</span>
+                      <span>{formatCurrency(amount(action))}</span>
+                    </Button>
+                  ))}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+      <AssignModal modalState={modal} />
+    </>
   );
 }
