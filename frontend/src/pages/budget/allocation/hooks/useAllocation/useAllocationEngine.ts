@@ -14,6 +14,7 @@ import {
   CategoryMonthMap,
   MonthKey,
 } from "../../types/types";
+import { useMemo } from "react";
 
 // Output
 export type AllocationEngine = {
@@ -96,13 +97,17 @@ export function useAllocationEngine(): AllocationEngine {
     data.categories.uncategorised.id
   );
 
-  const effectiveCategoryIds =
-    selectedCategoryIds.length === 0
-      ? [
-          ...Object.values(data.categories.user).map((c) => c.id),
-          data.categories.uncategorised.id,
-        ]
-      : selectedCategoryIds;
+  const isEmpty = selectedCategoryIds.length === 0;
+
+  const allCategoryIds = useMemo(
+    () => [
+      ...Object.values(data.categories.user).map((c) => c.id),
+      data.categories.uncategorised.id,
+    ],
+    [data.categories]
+  );
+
+  const effectiveCategoryIds = isEmpty ? allCategoryIds : selectedCategoryIds;
 
   const uncategorisedId = data.categories.uncategorised.id;
 
@@ -134,6 +139,26 @@ export function useAllocationEngine(): AllocationEngine {
       monthKeys: data.monthKeys,
     },
 
+    // selection: {
+    //   raw: {
+    //     categories: CategoryBranded[];
+    //     ids: CategoryId[];
+    //   };
+    //
+    //   display: {
+    //     categories: CategoryBranded[];
+    //   };
+    //
+    //   effective: {
+    //     ids: CategoryId[];
+    //   };
+    //
+    //   meta: {
+    //     isEmpty: boolean;
+    //     isUncategorisedSelected: boolean;
+    //   };
+    // }
+
     selection: {
       categories: selectedCategoriesForDisplay,
       // all selected category ids
@@ -141,7 +166,7 @@ export function useAllocationEngine(): AllocationEngine {
       // if no selection return all categories, otherwise return selected categories
       effectiveIds: effectiveCategoryIds,
       count: selectedCategoryIds.length,
-      isEmpty: selectedCategoryIds.length === 0,
+      isEmpty: isEmpty,
       isUncategorisedSelected,
     },
   };
