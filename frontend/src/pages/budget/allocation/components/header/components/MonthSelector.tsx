@@ -2,42 +2,44 @@ import { darkBlueBgHover } from "@/core/theme/colors";
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 import { NavButton } from "./NavButton";
 import clsx from "clsx";
-import { MonthSelectorState } from "../../../hooks/useMonthSelector";
+import { MonthSelectorViewModel } from "../../../hooks/useMonthSelector";
 
 type MonthSelectorProps = {
-  monthSelector: MonthSelectorState;
+  monthSelectorViewModel: MonthSelectorViewModel;
 };
 
-export function MonthSelector({ monthSelector }: MonthSelectorProps) {
+export function MonthSelector({
+  monthSelectorViewModel: { current, navigation },
+}: MonthSelectorProps) {
   return (
     <>
       <div className="flex items-center gap-1">
         <NavButton
-          onClick={monthSelector.prev}
-          disabled={!monthSelector.canGoPrev}
+          onClick={navigation.prev}
+          disabled={!navigation.canGoPrev}
           aria-label="previous month"
         >
           <ArrowLeftIcon />
         </NavButton>
         <p className="w-24 text-center text-xl font-semibold">
-          {monthSelector.currentMonthNameFormatLong}
+          {current.labelShort}
         </p>
         <NavButton
-          onClick={monthSelector.next}
-          disabled={!monthSelector.canGoNext}
+          onClick={navigation.next}
+          disabled={!navigation.canGoNext}
           aria-label="next month"
         >
           <ArrowRightIcon />
         </NavButton>
       </div>
       <button
-        disabled={monthSelector.isCurrentMonth}
+        disabled={current.isCurrent}
         className={clsx("px-2 py-1 rounded", {
-          "opacity-0": monthSelector.isCurrentMonth,
+          "opacity-0": current.isCurrent,
           [`bg-sky-950/30 hover:${darkBlueBgHover} hover:text-white cursor-pointer`]:
-            !monthSelector.isCurrentMonth,
+            !current.isCurrent,
         })}
-        onClick={monthSelector.selectCurrentMonth}
+        onClick={navigation.selectCurrent}
       >
         Today
       </button>

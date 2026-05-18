@@ -3,8 +3,8 @@ import { AssignModal } from "./modals/AssignModal";
 import { AllocationPanelLayout } from "./AllocationPanelLayout";
 import { CategoryBreakdownViewModel } from "../../../hooks/useAllocation/useCategoryBreakdown";
 import { AutoAssignViewModel } from "../../../hooks/useAllocation/useAutoAssign";
-import { NoteViewModel } from "../hooks/useNote";
 import { CategoryBranded } from "@/core/types/NormalizedData";
+import { NoteViewModel } from "../hooks/useNoteViewModel";
 
 type AllocationPanelProps = {
   selectedCategories: CategoryBranded[];

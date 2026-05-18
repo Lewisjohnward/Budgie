@@ -15,7 +15,7 @@ export default function Allocation() {
     selectedCategories,
     expandCategoryGroups,
     view,
-    monthSelector,
+    monthSelectorViewModel,
     categoriesSelector,
   } = useAllocation();
 
@@ -24,8 +24,7 @@ export default function Allocation() {
       header={
         <Header
           currency={currency}
-          // TODO:(lewis 2026-05-18 11:54) rename to monthViewModel
-          monthSelector={monthSelector}
+          monthSelectorViewModel={monthSelectorViewModel}
           categoriesSelector={categoriesSelector}
           rtaInformation={rtaInformation}
         />

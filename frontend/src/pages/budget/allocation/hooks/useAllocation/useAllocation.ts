@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
-import { useMonthSelector } from "../useMonthSelector";
+import { useMonthSelectorViewModel } from "../useMonthSelector";
 import { useExpandableCategoryGroups } from "./useExpandableCategoryGroups";
 import { useAllocationEngine } from "./useAllocationEngine";
 import { useCategorySelection as useCategorySelector } from "./useCategorySelection";
@@ -45,7 +45,9 @@ export function useAllocation() {
   /*
    * month selector
    */
-  const monthSelector = useMonthSelector({ monthKeys: engine.time.monthKeys });
+  const monthSelectorViewModel = useMonthSelectorViewModel({
+    monthKeys: engine.time.monthKeys,
+  });
 
   /*
    * view - category groups
@@ -100,7 +102,7 @@ export function useAllocation() {
     previousMonthMap: engine.computed.previousCategoryMonthMap,
     isUncategorisedSelected: engine.selection.isUncategorisedSelected,
     selectedCategoryIds: engine.selection.effectiveIds,
-    currentMonthName: monthSelector.currentMonthNameFormatShort,
+    currentMonthName: monthSelectorViewModel.current.labelShort,
     hasSelectedCategories: !engine.selection.isEmpty,
   });
 
@@ -117,7 +119,8 @@ export function useAllocation() {
     rtaAvailable: rtaRow.month.available,
     selectedCategoryIds: engine.selection.ids,
     autoAccept: !engine.selection.isEmpty,
-    goToNextOrPreviousMonth: monthSelector.goToNextOrPreviousMonth,
+    goToNextOrPreviousMonth:
+      monthSelectorViewModel.navigation.goToNextOrPrevious,
   });
 
   /*
@@ -187,7 +190,7 @@ export function useAllocation() {
       available,
     },
 
-    monthSelector,
+    monthSelectorViewModel,
     categoriesSelector,
 
     selectedCategories: engine.selection.categories,
