@@ -4,7 +4,6 @@ import { DuplicateTransactions } from "../types/TransactionSchema";
 import { apiSlice } from "./apiSlice";
 import { AllocationData } from "../types/Allocation";
 import { UpdateMonthsPayload } from "@/pages/budget/allocation/components/assign/types/assignTypes";
-import { CategoryContextType } from "@/pages/budget/allocation/contextMenus/CategoryContextMenu";
 import { MonthId } from "@/pages/budget/allocation/types/types";
 import {
   UpdatedMonthsById,
@@ -87,16 +86,6 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
         };
       },
       invalidatesTags: ["Categories"],
-    }),
-    editCategory: builder.mutation<void, CategoryContextType>({
-      query: (editedCategory) => {
-        return {
-          url: "budget/category",
-          method: "PATCH",
-          body: editedCategory,
-        };
-      },
-      invalidatesTags: ["Categories", "Accounts"],
     }),
     deleteCategory: builder.mutation<void, { categoryId: string }>({
       query: (categoryId) => {
@@ -182,7 +171,6 @@ export const {
   useEditTransactionMutation,
   useGetCategoriesQuery,
   useAddCategoryMutation,
-  useEditCategoryMutation,
   useDeleteCategoryMutation,
   useAddCategoryGroupMutation,
   useDeleteCategoryGroupMutation,

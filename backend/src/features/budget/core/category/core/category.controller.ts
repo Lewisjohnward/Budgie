@@ -52,9 +52,9 @@ export const updateCategory = async (
       ...req.body,
     });
 
-    await categoryUseCase.editCategory(payload);
+    const updatedCategory = await categoryUseCase.editCategory(payload);
 
-    res.status(201).json({ message: "New category created" });
+    res.status(201).json(updatedCategory);
   } catch (error) {
     next(error);
   }

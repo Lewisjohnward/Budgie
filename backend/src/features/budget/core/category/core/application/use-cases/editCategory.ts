@@ -10,6 +10,8 @@ import {
   type CategoryGroupId,
 } from "../../../../categorygroup/categoryGroup.types";
 import { asUserId, type UserId } from "../../../../../../user/auth/auth.types";
+import { categoryMapper } from "../../category.mapper";
+import { CategoryDto } from "../../types/category.dto";
 
 //  TODO: IMPLEMENT CHANGE POSITION
 // TODO: IF NOTHING CHANGES DON'T INTERACT WITH DB
@@ -66,19 +68,18 @@ const toEditCategoryCommand = (
 
 export const editCategory = async (
   payload: EditCategoryPayload
-): Promise<void> => {
+): Promise<CategoryDto> => {
   const { categoryId, userId, categoryGroupId, name } =
     toEditCategoryCommand(payload);
 
-  if (!name && !categoryGroupId) return;
-
-  await prisma.$transaction(async (tx) => {
+  return await prisma.$transaction(async (tx) => {
     const categoryToUpdate = await categoryService.categories.getCategory(
       tx,
       userId,
       categoryId
     );
 
+    // TODO:(lewis 2026-05-18 14:15) this should be in the service above
     if (!categoryToUpdate) {
       throw new CategoryNotFoundError();
     }
@@ -111,11 +112,15 @@ export const editCategory = async (
       );
     }
 
-    await categoryRepository.updateCategory(
+    // TODO:(lewis 2026-05-18 14:00) needs to go in service
+    const updatedCategory = await categoryRepository.updateCategory(
       tx,
       categoryId,
       name,
       categoryGroupId
     );
+    const tempC = categoryMapper.toDomainCategory(updatedCategory);
+
+    return categoryMapper.toCategoryDto(tempC);
   });
 };

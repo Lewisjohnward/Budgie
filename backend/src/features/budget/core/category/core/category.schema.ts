@@ -28,25 +28,45 @@ export type CreateCategoryData = CreateCategoryPayload & { position: number };
 /**
  * Schema for editing an existing category.
  *
- * Supports partial updates:
- * - Change category name
- * - Move category to a different group
- * - (Potentially) update position indirectly via group changes
+ * Supports partial category updates:
+ * - Renaming a category
+ * - Moving a category to a different category group
  *
  * Requires:
- * - userId for ownership validation
- * - categoryId to identify the category being edited
+ * - `userId` to validate ownership and permissions
+ * - `categoryId` to identify the category being updated
+ *
+ * Validation rules:
+ * - At least one editable field must be provided
+ *   (`name` or `categoryGroupId`)
+ * - `name`, when provided:
+ *   - is trimmed
+ *   - cannot be empty
+ *   - must be 50 characters or fewer
+ * - `categoryGroupId`, when provided, must be a valid UUID
  */
-export const editCategorySchema = z.object({
-  userId: z.string().uuid(),
-  categoryId: z.string().uuid(),
-  categoryGroupId: z.string().uuid().optional(),
-  name: z
-    .string()
-    .min(1)
-    .max(50, { message: "Name must be less than 50 characters" })
-    .optional(),
-});
+export const editCategorySchema = z
+  .object({
+    userId: z.string().uuid(),
+    categoryId: z.string().uuid(),
+    categoryGroupId: z.string().uuid().optional(),
+    name: z
+      .string()
+      .trim()
+      .min(1, { message: "Name cannot be empty" })
+      .max(50, {
+        message: "Name must be less than 50 characters",
+      })
+      .optional(),
+  })
+  .refine(
+    ({ name, categoryGroupId }) =>
+      name !== undefined || categoryGroupId !== undefined,
+    {
+      message: "Either name or categoryGroupId must be provided",
+      path: ["name"],
+    }
+  );
 
 /**
  * Payload used when editing a category.

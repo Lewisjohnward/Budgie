@@ -64,7 +64,7 @@ export interface CategoryRepository {
     categoryId: CategoryId,
     name?: string,
     categoryGroupId?: CategoryGroupId
-  ): Promise<void>;
+  ): Promise<db.Category>;
 
   deleteCategory(
     tx: Prisma.TransactionClient,
