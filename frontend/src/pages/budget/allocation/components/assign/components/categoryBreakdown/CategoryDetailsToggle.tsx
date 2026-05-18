@@ -1,13 +1,14 @@
 import { ChevronDownIcon } from "lucide-react";
 import { Available } from "../../../categories/components";
+import { ViewMode } from "@/pages/budget/allocation/hooks/useAllocation/useCategoryBreakdown";
 
-export interface CategoryDetailsToggleProps {
+export type CategoryDetailsToggleProps = {
   toggleOpen: () => void;
   open: boolean;
   currentMonthName: string;
   available: number;
-  view: "single" | "multiple";
-}
+  view: ViewMode;
+};
 
 export function CategoryDetailsToggle({
   toggleOpen,

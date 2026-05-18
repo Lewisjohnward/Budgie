@@ -12,15 +12,21 @@ export const createHandlers = (
   mockData: AllocationData = baseMockAllocationData,
   accountData: NormalizedData = baseMockAccountData
 ) => [
+  // legacy
   http.get(`${API_URL}/budget/account`, () => {
     return HttpResponse.json(accountData);
   }),
   http.get(`${API_URL}/budget/category`, () => {
     return HttpResponse.json(mockData);
   }),
+
   http.patch(`${API_URL}/budget/assign`, async (req) => {
     patchMonthSpy(await req.request.json());
     return HttpResponse.json({ status: "ok" });
+  }),
+
+  http.patch(`${API_URL}/budget/snapshot`, async () => {
+    return HttpResponse.json(mockData);
   }),
 ];
 

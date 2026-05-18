@@ -6,20 +6,26 @@ import {
 } from "@/core/components/uiLibrary/tooltip";
 import { formatCurrency } from "../../../../../../../utils/formatCurrency";
 
-interface BalanceRowProps {
+type BalanceRowProps = {
   label: string;
   value: number;
   tooltipText?: string;
-}
+  showDashValues?: boolean;
+};
 
-export function BalanceRow({ label, value, tooltipText }: BalanceRowProps) {
+export function BalanceRow({
+  label,
+  value,
+  tooltipText,
+  showDashValues,
+}: BalanceRowProps) {
   return (
     <TooltipProvider delayDuration={400} skipDelayDuration={500}>
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center justify-between text-sm font-[500] cursor-auto">
             <p>{label}</p>
-            <p>{formatCurrency(value)}</p>
+            <p>{showDashValues ? "-" : formatCurrency(value)}</p>
           </div>
         </TooltipTrigger>
         {tooltipText && (

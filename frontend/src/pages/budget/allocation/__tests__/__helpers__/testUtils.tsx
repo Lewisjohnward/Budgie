@@ -4,7 +4,7 @@ import { act } from "react";
 import { createStore } from "@/core/store/store";
 import { selectMonthIndex } from "@/pages/budget/allocation/slices/monthSlice";
 import { addCategories } from "../../slices/selectedCategorySlice";
-import { Assign } from "../../components/assign/components/Assign";
+// import { Assign } from "../../components/assign/components/Assign";
 import { Category } from "@/core/types/NormalizedData";
 import { MemoryRouter } from "react-router-dom";
 import { Routes, Route } from "react-router";
@@ -25,15 +25,15 @@ export const renderAllocationPage = (store = createStore()) => {
   );
 };
 
-export const renderAssignComponent = (store = createStore()) => {
-  let result;
-  result = render(
-    <Provider store={store}>
-      <Assign />
-    </Provider>
-  );
-  return result!;
-};
+// export const renderAssignComponent = (store = createStore()) => {
+//   let result;
+//   result = render(
+//     <Provider store={store}>
+//       <Assign />
+//     </Provider>
+//   );
+//   return result!;
+// };
 
 export const createStoreWithMonthIndex = (monthIndex: number) => {
   const store = createStore();
@@ -52,13 +52,13 @@ export const selectMonth = (
   });
 };
 
-export const createStoreWithSelectedCategories = (categories: Category[]) => {
-  const store = createStore();
-  act(() => {
-    store.dispatch(addCategories(categories));
-  });
-  return store;
-};
+// export const createStoreWithSelectedCategories = (categories: Category[]) => {
+//   const store = createStore();
+//   act(() => {
+//     store.dispatch(addCategories(categories));
+//   });
+//   return store;
+// };
 
 export const clickButtonAndWaitForModal = async (
   buttonName: string | RegExp

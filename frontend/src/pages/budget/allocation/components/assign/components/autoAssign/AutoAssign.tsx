@@ -2,8 +2,8 @@ import { bgGray } from "@/core/theme/colors";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { AutoAssignToggle } from "./AutoAssignToggle";
 import { Button } from "@/core/components/uiLibrary/button";
-import { AutoAssignState } from "../../hooks/useAutoAssign";
 import { FundingOption } from "../../types/assignTypes";
+import { AutoAssignViewModel } from "@/pages/budget/allocation/hooks/useAllocation/useAutoAssign";
 
 const BUTTON_CONFIG = {
   [FundingOption.UNDERFUNDED]: { label: "Underfunded" },
@@ -30,9 +30,19 @@ const BUTTON_GROUPS = [
 
 const buttonStyles = `py-1 px-2 w-full flex justify-between text-black ${bgGray} rounded whitespace-nowrap hover:bg-gray-300/80 transition-colors`;
 
-export function AutoAssign({ autoAssign }) {
-  const { ui, hideAutoAssign } = autoAssign;
+type AutoAssignProps = {
+  autoAssignViewModel: AutoAssignViewModel;
+};
 
+export function AutoAssign({
+  autoAssignViewModel: {
+    ui,
+    hideAutoAssign,
+    displayUnderfunded,
+    handler,
+    amount,
+  },
+}: AutoAssignProps) {
   if (hideAutoAssign) return null;
 
   return (
@@ -41,9 +51,7 @@ export function AutoAssign({ autoAssign }) {
       {ui.value && (
         <div className="p-4 space-y-4">
           {BUTTON_GROUPS.map((group, index) => {
-            const showGroup = group.conditional
-              ? autoAssign.displayUnderfunded
-              : true;
+            const showGroup = group.conditional ? displayUnderfunded : true;
             if (!showGroup) return null;
 
             return (
@@ -51,11 +59,11 @@ export function AutoAssign({ autoAssign }) {
                 {group.buttons.map((action) => (
                   <Button
                     key={action}
-                    onClick={() => autoAssign.handler(action)}
+                    onClick={() => handler(action)}
                     className={buttonStyles}
                   >
                     <span>{BUTTON_CONFIG[action]?.label || ""}</span>
-                    <span>{formatCurrency(autoAssign.amount(action))}</span>
+                    <span>{formatCurrency(amount(action))}</span>
                   </Button>
                 ))}
               </div>

@@ -6,12 +6,12 @@ import { useUpdateNoteMutation } from "@/core/api/budget/notes/noteSnapshotSlice
 import { useToggle } from "./useToggle";
 
 // Input
-type UseNoteParams = {
+type NoteParams = {
   note: NoteBranded;
 };
 
 // Output
-export type UseNoteState = {
+export type NoteViewModel = {
   ui: {
     value: boolean;
     toggle: () => void;
@@ -22,7 +22,7 @@ export type UseNoteState = {
   };
 };
 
-export const useNote = ({ note }: UseNoteParams): UseNoteState => {
+export const useNoteViewModel = ({ note }: NoteParams): NoteViewModel => {
   const notesUi = useToggle();
   const { month, content, id } = note;
 

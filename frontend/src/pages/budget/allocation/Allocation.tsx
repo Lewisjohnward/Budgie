@@ -8,9 +8,9 @@ export default function Allocation() {
   const {
     currency,
     rtaInformation,
-    categoryBreakdown,
-    autoAssign,
-    note,
+    categoryBreakdownViewModel,
+    autoAssignViewModel,
+    noteViewModel,
     categorySelector,
     selectedCategories,
     expandCategoryGroups,
@@ -24,8 +24,8 @@ export default function Allocation() {
       header={
         <Header
           currency={currency}
+          // TODO:(lewis 2026-05-18 11:54) rename to monthViewModel
           monthSelector={monthSelector}
-          // TODO:(lewis 2026-05-15 15:01) this naming is incorrect string[]?
           categoriesSelector={categoriesSelector}
           rtaInformation={rtaInformation}
         />
@@ -41,9 +41,9 @@ export default function Allocation() {
       sidebar={
         <AllocationPanel
           selectedCategories={selectedCategories}
-          categoryBreakDown={categoryBreakdown}
-          autoAssign={autoAssign}
-          note={note}
+          categoryBreakDownViewModel={categoryBreakdownViewModel}
+          autoAssignViewModel={autoAssignViewModel}
+          noteViewModel={noteViewModel}
         />
       }
     />

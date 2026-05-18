@@ -1,34 +1,44 @@
 import { AutoAssign, CategoryBreakdown, Note, SelectedCategories } from ".";
 import { AssignModal } from "./modals/AssignModal";
 import { AllocationPanelLayout } from "./AllocationPanelLayout";
-import { CategoryBreakdownState } from "../../../hooks/useAllocation/useCategoryBreakdown";
+import { CategoryBreakdownViewModel } from "../../../hooks/useAllocation/useCategoryBreakdown";
+import { AutoAssignViewModel } from "../../../hooks/useAllocation/useAutoAssign";
+import { NoteViewModel } from "../hooks/useNote";
+import { CategoryBranded } from "@/core/types/NormalizedData";
 
-interface AssignProps {
-  categoryBreakDown: CategoryBreakdownState;
-  autoAssign: any;
-  note: any;
-  selectedCategories: any;
-}
+type AllocationPanelProps = {
+  selectedCategories: CategoryBranded[];
+  categoryBreakDownViewModel: CategoryBreakdownViewModel;
+  autoAssignViewModel: AutoAssignViewModel;
+  noteViewModel: NoteViewModel;
+};
 
 export function AllocationPanel({
-  categoryBreakDown,
-  autoAssign,
-  note,
   selectedCategories,
-}: AssignProps) {
+  categoryBreakDownViewModel,
+  autoAssignViewModel,
+  noteViewModel,
+}: AllocationPanelProps) {
+  const areCategoriesSelected =
+    categoryBreakDownViewModel.hasSelectedCategories;
+
   return (
     <>
       <AllocationPanelLayout
         selectedCategories={
-          categoryBreakDown.hasSelectedCategories && (
+          areCategoriesSelected && (
             <SelectedCategories selectedCategories={selectedCategories} />
           )
         }
-        categoryBreakdown={<CategoryBreakdown {...categoryBreakDown} />}
-        autoAssign={<AutoAssign autoAssign={autoAssign} />}
-        note={<Note {...note} />}
+        categoryBreakdown={
+          <CategoryBreakdown
+            categoryBreakdownViewModel={categoryBreakDownViewModel}
+          />
+        }
+        autoAssign={<AutoAssign autoAssignViewModel={autoAssignViewModel} />}
+        note={<Note noteViewModel={noteViewModel} />}
       />
-      <AssignModal modalState={autoAssign.modal} />
+      <AssignModal modalState={autoAssignViewModel.modal} />
     </>
   );
 }

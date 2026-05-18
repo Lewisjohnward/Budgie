@@ -1,9 +1,13 @@
 import { Textarea } from "@/core/components/uiLibrary/textarea";
 import { ChevronDownIcon } from "lucide-react";
-import { UseNoteState } from "../../hooks/useNote";
+import { NoteViewModel } from "../../hooks/useNote";
 import { useRef, useEffect } from "react";
 
-export function Note({ note, ui }: UseNoteState) {
+type NoteProps = {
+  noteViewModel: NoteViewModel;
+};
+
+export function Note({ noteViewModel: { note, ui } }: NoteProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
