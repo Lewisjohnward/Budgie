@@ -27,7 +27,10 @@ export function AllocationPanel({
       <AllocationPanelLayout
         selectedCategories={
           areCategoriesSelected && (
-            <SelectedCategories selectedCategories={selectedCategories} />
+            <SelectedCategories
+              selectedCategories={selectedCategories}
+              view={categoryBreakDownViewModel.view}
+            />
           )
         }
         categoryBreakdown={

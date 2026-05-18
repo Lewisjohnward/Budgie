@@ -96,7 +96,6 @@ export function useAllocation() {
   /*
    * detailed view
    */
-  // TODO:(lewis 2026-05-13 14:40) why are we passing current month name and has selected categories?
   const categoryBreakdownViewModel = useCategoryBreakdownViewModel({
     currentMonthMap: engine.computed.currentCategoryMonthMap,
     previousMonthMap: engine.computed.previousCategoryMonthMap,

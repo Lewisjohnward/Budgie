@@ -99,10 +99,17 @@ export function useAllocationEngine(): AllocationEngine {
   const effectiveCategoryIds =
     selectedCategoryIds.length === 0
       ? [
-        ...Object.values(data.categories.user).map((c) => c.id),
-        data.categories.uncategorised.id,
-      ]
+          ...Object.values(data.categories.user).map((c) => c.id),
+          data.categories.uncategorised.id,
+        ]
       : selectedCategoryIds;
+
+  const uncategorisedId = data.categories.uncategorised.id;
+
+  const selectedCategoriesForDisplay =
+    selectedCategories.length === 1
+      ? selectedCategories
+      : selectedCategories.filter((c) => c.id !== uncategorisedId);
 
   return {
     entities: {
@@ -128,8 +135,7 @@ export function useAllocationEngine(): AllocationEngine {
     },
 
     selection: {
-      // all selected categories
-      categories: selectedCategories,
+      categories: selectedCategoriesForDisplay,
       // all selected category ids
       ids: selectedCategoryIds,
       // if no selection return all categories, otherwise return selected categories

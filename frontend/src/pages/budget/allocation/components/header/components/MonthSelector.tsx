@@ -22,7 +22,7 @@ export function MonthSelector({
           <ArrowLeftIcon />
         </NavButton>
         <p className="w-24 text-center text-xl font-semibold">
-          {current.labelShort}
+          {current.labelLong}
         </p>
         <NavButton
           onClick={navigation.next}

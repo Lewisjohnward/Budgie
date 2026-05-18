@@ -71,7 +71,6 @@ export const useAutoAssignEngine = ({
       previousMonths: filteredMonths.previous,
       previousYearMonths: filteredMonths.previousYear,
     });
-    console.log("test", result.monthsToUpdate);
 
     if (autoAccept) {
       if (result.monthsToUpdate.length === 0) return;
