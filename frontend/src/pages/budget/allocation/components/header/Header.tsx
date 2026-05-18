@@ -4,25 +4,27 @@ import {
   CategoryFilters,
   HeaderLayout,
 } from "./components";
-import { MonthSelectorState } from "../../hooks/useMonthSelector";
+import { MonthSelectorViewModel } from "../../hooks/useMonthSelector";
 import { RtaInformation } from "../../hooks/useAllocation/useAllocation";
 
 type HeaderProps = {
   currency: string;
-  monthSelector: MonthSelectorState;
+  monthSelectorViewModel: MonthSelectorViewModel;
   categoriesSelector: string[];
   rtaInformation: RtaInformation;
 };
 
 export function Header({
   currency,
-  monthSelector,
+  monthSelectorViewModel,
   categoriesSelector,
   rtaInformation,
 }: HeaderProps) {
   return (
     <HeaderLayout
-      monthSelector={<MonthSelector monthSelector={monthSelector} />}
+      monthSelector={
+        <MonthSelector monthSelectorViewModel={monthSelectorViewModel} />
+      }
       readyToAssign={
         <ReadyToAssign currency={currency} rtaInformation={rtaInformation} />
       }
