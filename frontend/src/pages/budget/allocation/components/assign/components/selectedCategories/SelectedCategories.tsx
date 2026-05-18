@@ -1,41 +1,42 @@
 import { CategoryBranded } from "@/core/types/NormalizedData";
+import { CategoryBreakdownView } from "@/pages/budget/allocation/hooks/useAllocation/useCategoryBreakdown";
 import clsx from "clsx";
 import { Pencil } from "lucide-react";
 
-export interface SelectedCategoriesProps {
+export type SelectedCategoriesProps = {
   selectedCategories: CategoryBranded[];
-}
+  view: CategoryBreakdownView;
+};
 
 export function SelectedCategories({
   selectedCategories,
+  view,
 }: SelectedCategoriesProps) {
-  const numberOfCategories = selectedCategories.length;
-  const isSingleCategory = numberOfCategories === 1;
+  const numberOfCategoriesSelected = selectedCategories.length;
+  const isSingle = view.kind === "single";
+
+  const displayEditButton = isSingle && !view.isUncategorisedSelected;
 
   return (
     <div
       className={clsx(
-        selectedCategories.length > 0 && "py-4",
+        numberOfCategoriesSelected > 0 && "py-4",
         "flex items-center rounded overflow-hidden"
       )}
     >
-      <div
-        className={`w-96 2xl:w-[500px] ${isSingleCategory ? "truncate" : ""}`}
-      >
-        <p
-          className={`text-xl font-bold ${isSingleCategory ? "truncate" : ""}`}
-        >
-          {isSingleCategory
+      <div className={`w-96 2xl:w-[500px] ${isSingle ? "truncate" : ""}`}>
+        <p className={`text-xl font-bold ${isSingle ? "truncate" : ""}`}>
+          {isSingle
             ? selectedCategories[0].name
-            : `${numberOfCategories} Categories Selected`}
+            : `${numberOfCategoriesSelected} Categories Selected`}
         </p>
-        {!isSingleCategory && (
+        {!isSingle && (
           <p className="text-sm">
             {selectedCategories.map((c) => c.name).join(", ")}
           </p>
         )}
       </div>
-      {isSingleCategory && (
+      {displayEditButton && (
         <button>
           <Pencil className="w-4 h-4 stroke-gray-500" />
         </button>
