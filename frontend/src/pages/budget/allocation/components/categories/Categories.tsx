@@ -60,6 +60,8 @@ export function Categories({
     if (!updatedCategory) return;
     editCategory(updatedCategory).unwrap();
     setUpdatedCategory(null);
+
+    setActiveId(null);
   }
 
   const sensors = useSensors(
@@ -82,7 +84,7 @@ export function Categories({
   }, [activeId, draftView]);
 
   return (
-    <>
+    <div className="bg-stone-100">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -107,10 +109,12 @@ export function Categories({
         onDragEnd={() => handleDragEnd()}
         onDragCancel={() => setDraftView(view.categoriesByGroup)}
       >
-        <AddCategoryGroupPopover>
-          <AddCategoryGroupButton />
-        </AddCategoryGroupPopover>
-        <CategoryGridRow>
+        <div className="bg-white">
+          <AddCategoryGroupPopover>
+            <AddCategoryGroupButton />
+          </AddCategoryGroupPopover>
+        </div>
+        <CategoryGridRow className="bg-white">
           <CategoryTableHeader
             showExpandButton={expandCategoryGroups.displayGlobalExpand}
             open={expandCategoryGroups.atLeastOneGroupOpen}
@@ -145,8 +149,8 @@ export function Categories({
           return (
             <div key={group.id}>
               <CategoryGroupContextMenu categoryGroup={group}>
-                <div className="group bg-gray-400/20">
-                  <CategoryGridRow>
+                <div className="group">
+                  <CategoryGridRow className="bg-stone-200">
                     <CategoryGroupRow
                       open={open}
                       categoryGroup={group}
@@ -181,11 +185,16 @@ export function Categories({
                   })}
                 </SortableContext>
               )}
+              <CategoryGroupDropZone
+                groupId={group.id}
+                active={!!activeId}
+                enabled={rows.length === 0 || !open}
+              />
             </div>
           );
         })}
       </DndContext>
-    </>
+    </div>
   );
 }
 
@@ -259,4 +268,31 @@ function moveItem(
       position: finalIndex,
     },
   };
+}
+
+import { useDroppable } from "@dnd-kit/core";
+import { cn } from "@/core/lib/utils";
+
+type Props = {
+  groupId: string;
+  active: boolean;
+  enabled: boolean;
+};
+
+export function CategoryGroupDropZone({ groupId, active, enabled }: Props) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: groupId,
+  });
+  //active = something actively being dragged
+  // over = something is over the dropzone
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        active ? "h-0" : "h-0",
+        isOver && enabled && "h-10 bg-stone-100"
+      )}
+    />
+  );
 }

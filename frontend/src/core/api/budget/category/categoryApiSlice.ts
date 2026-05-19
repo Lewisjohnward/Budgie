@@ -61,7 +61,10 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
               );
 
               // Insert into new group
-              const toList = groups[toGroup];
+              // need ?? [] because list is undefined if it has not categories in a group
+              const toList = groups[toGroup] ?? [];
+              groups[toGroup] = toList;
+
               toList.splice(toPos, 0, removed);
 
               // Normalise all groups
