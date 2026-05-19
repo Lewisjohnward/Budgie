@@ -12,6 +12,8 @@ import {
   AssignedAmountField,
 } from "./";
 import { CategorySelectionState } from "../../../hooks/useAllocation/useCategorySelection";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 export function CategoryRow({
   category,
@@ -24,6 +26,17 @@ export function CategoryRow({
   categorySelection: CategorySelectionState;
 }) {
   const { activity, available, assigned } = month;
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: category.id,
+  });
 
   const inputRef = useRef<HTMLInputElement>(null);
   const currency = "£";
@@ -42,6 +55,14 @@ export function CategoryRow({
       <div
         onClick={handleRowClick}
         className={`${isRowSelected && "bg-gray-100"} cursor-pointer`}
+        ref={setNodeRef}
+        style={{
+          transform: CSS.Transform.toString(transform),
+          transition,
+          opacity: isDragging ? 0.5 : 1,
+        }}
+        {...attributes}
+        {...listeners}
       >
         <CategoryGridRow>
           <EmptyCell />

@@ -43,9 +43,10 @@ export function buildCategoryViewModel(
   const { categories, categoryGroups, currentCategoryMonthMap } = params;
 
   //  Build rows
-  const rows: CategoryViewRow[] = Object.values(categories.user).map(
-    (category) => buildCategoryViewRow(category, currentCategoryMonthMap)
-  );
+  const rows: CategoryViewRow[] = Object.values(categories.user)
+    .map((category) => buildCategoryViewRow(category, currentCategoryMonthMap))
+    // Sort based on position
+    .sort((a, b) => a.category.position - b.category.position);
 
   // Group rows
   const rowsByGroup: Record<CategoryGroupId, CategoryViewRow[]> = {};
@@ -62,10 +63,13 @@ export function buildCategoryViewModel(
 
   const userCategoryGroupViews: CategoryGroupView[] = Object.values(
     categoryGroups.user
-  ).map((group) => ({
-    group,
-    rows: rowsByGroup[group.id] ?? [],
-  }));
+  )
+    // Sort category group on position
+    .sort((a, b) => a.position - b.position)
+    .map((group) => ({
+      group,
+      rows: rowsByGroup[group.id] ?? [],
+    }));
 
   // Special row - uncategorised
   const uncategorisedRow = buildCategoryViewRow(

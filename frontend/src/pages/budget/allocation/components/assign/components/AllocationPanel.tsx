@@ -1,5 +1,4 @@
 import { AutoAssign, CategoryBreakdown, Note, SelectedCategories } from ".";
-import { AssignModal } from "./modals/AssignModal";
 import { AllocationPanelLayout } from "./AllocationPanelLayout";
 import { CategoryBreakdownViewModel } from "../../../hooks/useAllocation/useCategoryBreakdown";
 import { AutoAssignViewModel } from "../../../hooks/useAllocation/useAutoAssign";
@@ -41,7 +40,6 @@ export function AllocationPanel({
         autoAssign={<AutoAssign autoAssignViewModel={autoAssignViewModel} />}
         note={<Note noteViewModel={noteViewModel} />}
       />
-      <AssignModal modalState={autoAssignViewModel.modal} />
     </>
   );
 }

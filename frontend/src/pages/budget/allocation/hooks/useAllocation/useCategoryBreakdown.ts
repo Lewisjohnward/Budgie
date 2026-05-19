@@ -35,12 +35,12 @@ export type CategoryBreakdownViewModel = {
 
 export type CategoryBreakdownView =
   | {
-    kind: "multiple";
-  }
+      kind: "multiple";
+    }
   | {
-    kind: "single";
-    isUncategorisedSelected: boolean;
-  };
+      kind: "single";
+      isUncategorisedSelected: boolean;
+    };
 
 export type ViewMode = CategoryBreakdownView["kind"];
 
@@ -81,12 +81,12 @@ export function useCategoryBreakdownViewModel({
   const view: CategoryBreakdownView =
     selectedCategoryIds.length === 1
       ? {
-        kind: "single",
-        isUncategorisedSelected,
-      }
+          kind: "single",
+          isUncategorisedSelected,
+        }
       : {
-        kind: "multiple",
-      };
+          kind: "multiple",
+        };
 
   return {
     // I don't think this is used
