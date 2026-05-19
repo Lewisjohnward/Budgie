@@ -17,18 +17,21 @@ import { CategorySelectionState } from "../../hooks/useAllocation/useCategorySel
 import {
   closestCenter,
   DndContext,
+  DragOverEvent,
+  DragOverlay,
   PointerSensor,
+  UniqueIdentifier,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
 import {
   SortableContext,
-  useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
 import { useEditCategoryMutation } from "@/core/api/budget/category/categoryApiSlice";
-import { CategoryId, CategoryGroupId } from "../../types/types";
+import { asCategoryId, CategoryGroupId, CategoryId } from "../../types/types";
+import { useEffect, useMemo, useState } from "react";
 
 type CategoriesProps = {
   currency: string;
@@ -48,70 +51,15 @@ export function Categories({
 }: CategoriesProps) {
   const { uncategorisedRow, categoriesByGroup } = view;
   const [editCategory] = useEditCategoryMutation();
-  function handleDragEnd(event) {
-    const { active, over } = event;
 
-    if (!over) return;
+  useEffect(() => {
+    setDraftView(categoriesByGroup);
+  }, [categoriesByGroup]);
 
-    const categoryId = active.id;
-    const overId = over.id;
-
-    const categoryIdToGroup = new Map<CategoryId, CategoryGroupId>();
-
-    categoriesByGroup.forEach(({ group, rows }) => {
-      rows.forEach((row) => {
-        categoryIdToGroup.set(row.category.id, group.id);
-      });
-    });
-
-    const fromGroupId = categoryIdToGroup.get(categoryId);
-    if (!fromGroupId) return;
-
-    const overGroupId = categoryIdToGroup.get(overId);
-
-    // -----------------------------
-    // CASE 1: dropping on another category
-    // -----------------------------
-    if (overGroupId) {
-      console.log("dropping on another category");
-      const targetGroup = categoriesByGroup.find(
-        (g) => g.group.id === overGroupId
-      );
-
-      if (!targetGroup) return;
-
-      const overIndex = targetGroup.rows.findIndex(
-        (r) => r.category.id === overId
-      );
-
-      const newIndex = overIndex === -1 ? targetGroup.rows.length : overIndex;
-
-      console.log(categoryId, overGroupId, newIndex);
-
-      editCategory({
-        categoryId,
-        categoryGroupId: overGroupId,
-        position: newIndex,
-      });
-
-      return;
-    }
-
-    // -----------------------------
-    // CASE 2: dropping on group container
-    // -----------------------------
-    const targetGroup = categoriesByGroup.find((g) => g.group.id === overId);
-    console.log("dropping on group container");
-
-    if (targetGroup) {
-      editCategory({
-        categoryId,
-        categoryGroupId: overId,
-        position: targetGroup.rows.length,
-      });
-
-      return;
-    }
+  function handleDragEnd() {
+    if (!updatedCategory) return;
+    editCategory(updatedCategory).unwrap();
+    setUpdatedCategory(null);
   }
 
   const sensors = useSensors(
@@ -122,12 +70,42 @@ export function Categories({
     })
   );
 
+  const [activeId, setActiveId] = useState<CategoryId | null>(null);
+  const [draftView, setDraftView] = useState(view.categoriesByGroup);
+  const [updatedCategory, setUpdatedCategory] =
+    useState<UpdatedCategory | null>(null);
+
+  const activeCategory = useMemo(() => {
+    return draftView
+      .flatMap((g) => g.rows)
+      .find((r) => r.category.id === activeId);
+  }, [activeId, draftView]);
+
   return (
     <>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
+        onDragStart={(event) => {
+          setActiveId(asCategoryId(String(event.active.id)));
+        }}
+        onDragOver={(event: DragOverEvent) => {
+          const { active, over } = event;
+          if (!over) return;
+
+          const activeId = active.id;
+          const overId = over.id;
+
+          const { view, updatedCategory } = moveItem(
+            draftView,
+            activeId,
+            overId
+          );
+          setDraftView(view);
+          setUpdatedCategory(updatedCategory);
+        }}
+        onDragEnd={() => handleDragEnd()}
+        onDragCancel={() => setDraftView(view.categoriesByGroup)}
       >
         <AddCategoryGroupPopover>
           <AddCategoryGroupButton />
@@ -153,8 +131,17 @@ export function Categories({
             />
           </CategoryGridRow>
         )}
+        <DragOverlay>
+          {activeCategory ? (
+            <CategoryRow
+              category={activeCategory.category}
+              month={activeCategory.month}
+              categorySelection={categorySelector}
+            />
+          ) : null}
+        </DragOverlay>
 
-        {categoriesByGroup.map(({ group, rows, open }) => {
+        {draftView.map(({ group, rows, open }) => {
           return (
             <div key={group.id}>
               <CategoryGroupContextMenu categoryGroup={group}>
@@ -181,15 +168,17 @@ export function Categories({
                   items={rows.map((r) => r.category.id)}
                   strategy={verticalListSortingStrategy}
                 >
-                  {rows.map((row) => (
-                    <CategoryRow
-                      key={row.category.id}
-                      category={row.category}
-                      month={row.month}
-                      // TODO:(lewis 2026-05-15 15:05) this should be categorySelector
-                      categorySelection={categorySelector}
-                    />
-                  ))}
+                  {rows.map((row) => {
+                    return (
+                      <CategoryRow
+                        key={row.category.id}
+                        category={row.category}
+                        month={row.month}
+                        // TODO:(lewis 2026-05-15 15:05) this should be categorySelector
+                        categorySelection={categorySelector}
+                      />
+                    );
+                  })}
                 </SortableContext>
               )}
             </div>
@@ -198,4 +187,76 @@ export function Categories({
       </DndContext>
     </>
   );
+}
+
+type MoveResult = {
+  view: MappedCategoryGroupViewWithMetrics[];
+  updatedCategory: UpdatedCategory;
+};
+
+type UpdatedCategory = {
+  categoryId: CategoryId;
+  categoryGroupId: CategoryGroupId;
+  position: number;
+};
+
+function moveItem(
+  view: MappedCategoryGroupViewWithMetrics[],
+  activeId: UniqueIdentifier,
+  overId: UniqueIdentifier
+): MoveResult {
+  const next = structuredClone(view);
+
+  let fromGroup: any;
+  let fromIndex: number | undefined;
+
+  let toGroup: any;
+  let toIndex: number | undefined;
+
+  let droppedOnGroup = false;
+
+  for (const g of next) {
+    if (fromIndex === undefined) {
+      const idx = g.rows.findIndex((r) => r.category.id === activeId);
+      if (idx !== -1) {
+        fromGroup = g;
+        fromIndex = idx;
+      }
+    }
+
+    if (g.group.id === overId) {
+      toGroup = g;
+      droppedOnGroup = true;
+    }
+
+    if (toIndex === undefined) {
+      const idx = g.rows.findIndex((r) => r.category.id === overId);
+      if (idx !== -1) {
+        toGroup = g;
+        toIndex = idx;
+      }
+    }
+  }
+
+  // if (!fromGroup || fromIndex === undefined || !toGroup) return null;
+
+  const [moved] = fromGroup.rows.splice(fromIndex, 1);
+
+  // Compute final index BEFORE insertion
+  const finalIndex =
+    droppedOnGroup || toIndex === undefined ? toGroup.rows.length : toIndex;
+
+  toGroup.rows.splice(finalIndex, 0, moved);
+
+  // Reflect new group id in moved item
+  moved.category.categoryGroupId = toGroup.group.id;
+
+  return {
+    view: next,
+    updatedCategory: {
+      categoryId: asCategoryId(String(activeId)),
+      categoryGroupId: toGroup.group.id,
+      position: finalIndex,
+    },
+  };
 }

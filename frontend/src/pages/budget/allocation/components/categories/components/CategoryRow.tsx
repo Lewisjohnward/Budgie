@@ -38,6 +38,13 @@ export function CategoryRow({
     id: category.id,
   });
 
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0 : 1,
+    background: "white",
+  };
+
   const inputRef = useRef<HTMLInputElement>(null);
   const currency = "£";
 
@@ -56,11 +63,7 @@ export function CategoryRow({
         onClick={handleRowClick}
         className={`${isRowSelected && "bg-gray-100"} cursor-pointer`}
         ref={setNodeRef}
-        style={{
-          transform: CSS.Transform.toString(transform),
-          transition,
-          opacity: isDragging ? 0.5 : 1,
-        }}
+        style={style}
         {...attributes}
         {...listeners}
       >
