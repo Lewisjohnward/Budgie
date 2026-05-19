@@ -9,6 +9,7 @@ import {
   CategoryGroupId,
   CategoryId,
   CategoryMonthMap,
+  MonthId,
 } from "../../types/types";
 import {
   assembleCategoryGroupViews,
@@ -96,7 +97,6 @@ export function useAllocation() {
 
   const assignableLeftOverFromLastMonth = 0;
   const assignableCurrentMonth = currentRtaMonth.activity;
-  console.log("currentRtaMonth:", currentRtaMonth);
   const totalAssignedFuture = 0;
   const available = currentRtaMonth.available;
 
