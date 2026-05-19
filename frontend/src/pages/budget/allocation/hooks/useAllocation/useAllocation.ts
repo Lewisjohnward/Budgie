@@ -10,12 +10,19 @@ import {
   CategoryId,
   CategoryMonthMap,
 } from "../../types/types";
-import { assembleCategoryGroupViews } from "../../utils/assembleCategoryGroupViews";
+import {
+  assembleCategoryGroupViews,
+  CategoryGroupViewWithMetrics,
+} from "../../utils/assembleCategoryGroupViews";
 import { buildCategoryGroupMetrics } from "../../utils/buildCategoryGroupMetrics";
-import { buildCategoryViewModel } from "../../utils/buildCategoryViewModel";
+import {
+  buildCategoryViewModel,
+  CategoryViewRow,
+} from "../../utils/buildCategoryViewModel";
 import {
   CategoryGroupBranded,
   CategoryBranded,
+  MonthBranded,
 } from "@/core/types/NormalizedData";
 import { useMonthInitialiser } from "./useMonthInitialiser";
 import { useAutoAssignViewModel } from "./useAutoAssign";
@@ -217,19 +224,25 @@ type UseCategoryGroupViewsParams = {
 };
 
 // Output
+type CategoryGroupViews = {
+  userCategoryGroupViews: CategoryGroupViewWithMetrics[];
+  uncategorisedRow: CategoryViewRow;
+  rtaRow: CategoryViewRow;
+};
 
 export function buildCategoryGroupViews({
   categoryGroups,
   categories,
   currentCategoryMonthMap,
-}: UseCategoryGroupViewsParams) {
-  const currentUserCategoryMonthMap = useMemo(() => {
-    return Object.fromEntries(
-      Object.entries(currentCategoryMonthMap).filter(
-        ([categoryId]) => categoryId in categories.user
-      )
-    );
-  }, [currentCategoryMonthMap, categories.user]);
+}: UseCategoryGroupViewsParams): CategoryGroupViews {
+  const currentUserCategoryMonthMap: Record<MonthId, MonthBranded> =
+    useMemo(() => {
+      return Object.fromEntries(
+        Object.entries(currentCategoryMonthMap).filter(
+          ([categoryId]) => categoryId in categories.user
+        )
+      );
+    }, [currentCategoryMonthMap, categories.user]);
 
   const viewModel = useMemo(() => {
     return buildCategoryViewModel({

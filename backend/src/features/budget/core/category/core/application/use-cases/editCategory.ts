@@ -23,6 +23,7 @@ export type EditCategoryCommand = Omit<
   userId: UserId;
   categoryId: CategoryId;
   categoryGroupId?: CategoryGroupId;
+  position?: number;
 };
 
 const toEditCategoryCommand = (
@@ -34,6 +35,7 @@ const toEditCategoryCommand = (
   categoryGroupId: p.categoryGroupId
     ? asCategoryGroupId(p.categoryGroupId)
     : undefined,
+  position: p.position,
 });
 
 /**
@@ -69,7 +71,7 @@ const toEditCategoryCommand = (
 export const editCategory = async (
   payload: EditCategoryPayload
 ): Promise<CategoryDto> => {
-  const { categoryId, userId, categoryGroupId, name } =
+  const { categoryId, userId, categoryGroupId, name, position } =
     toEditCategoryCommand(payload);
 
   return await prisma.$transaction(async (tx) => {
@@ -112,13 +114,84 @@ export const editCategory = async (
       );
     }
 
+    /// move logic
+    const fromCategory = categoryToUpdate;
+
+    const fromGroupId = fromCategory.categoryGroupId;
+    const fromPosition = fromCategory.position;
+
+    const toGroupId = categoryGroupId ?? fromGroupId;
+    const toPosition = position ?? fromPosition;
+
+    // same group reorder
+    if (fromGroupId === toGroupId) {
+      if (fromPosition !== toPosition) {
+        if (fromPosition < toPosition) {
+          await tx.category.updateMany({
+            where: {
+              userId,
+              categoryGroupId: fromGroupId,
+              position: {
+                gt: fromPosition,
+                lte: toPosition,
+              },
+            },
+            data: {
+              position: { decrement: 1 },
+            },
+          });
+        } else {
+          await tx.category.updateMany({
+            where: {
+              userId,
+              categoryGroupId: fromGroupId,
+              position: {
+                gte: toPosition,
+                lt: fromPosition,
+              },
+            },
+            data: {
+              position: { increment: 1 },
+            },
+          });
+        }
+      }
+      // move to diff group
+    } else {
+      // remove gap in old group
+      await tx.category.updateMany({
+        where: {
+          userId,
+          categoryGroupId: fromGroupId,
+          position: { gt: fromPosition },
+        },
+        data: {
+          position: { decrement: 1 },
+        },
+      });
+
+      // make space in new group
+      await tx.category.updateMany({
+        where: {
+          userId,
+          categoryGroupId: toGroupId,
+          position: { gte: toPosition },
+        },
+        data: {
+          position: { increment: 1 },
+        },
+      });
+    }
+
     // TODO:(lewis 2026-05-18 14:00) needs to go in service
-    const updatedCategory = await categoryRepository.updateCategory(
-      tx,
-      categoryId,
-      name,
-      categoryGroupId
-    );
+    const updatedCategory = await tx.category.update({
+      where: { id: categoryId },
+      data: {
+        name: name ?? undefined,
+        categoryGroupId: toGroupId,
+        position: toPosition,
+      },
+    });
     const tempC = categoryMapper.toDomainCategory(updatedCategory);
 
     return categoryMapper.toCategoryDto(tempC);

@@ -10,16 +10,17 @@ type UpdateCategoryInput = {
   categoryId: CategoryId;
   name?: string;
   categoryGroupId?: CategoryGroupId;
+  position?: number;
 };
 
 export const categoryApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     editCategory: builder.mutation<CategoryBranded, UpdateCategoryInput>({
-      query: ({ categoryId, name }) => ({
+      query: ({ categoryId, name, position }) => ({
         // TODO:(lewis 2026-05-18 13:47) shouldnt this be using params?
         url: `budget/category`,
         method: "PATCH",
-        body: { categoryId, name },
+        body: { categoryId, name, position },
       }),
 
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
@@ -28,33 +29,57 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
             "getBudgetSnapshot",
             undefined,
             (draft) => {
-              const cat = draft.categories.user[arg.categoryId];
-              if (cat) {
-                if (arg.name !== undefined) cat.name = arg.name;
-                if (arg.categoryGroupId !== undefined) {
-                  cat.categoryGroupId = arg.categoryGroupId;
-                }
-              }
+              const categories = draft.categories.user;
+
+              const moved = categories[arg.categoryId];
+              if (!moved) return;
+
+              const fromGroup = moved.categoryGroupId;
+              const toGroup = arg.categoryGroupId ?? fromGroup;
+
+              const toPos = arg.position ?? moved.position;
+
+              // 1. group categories into arrays
+              const groups: Record<string, CategoryBranded[]> = {};
+
+              Object.values(categories).forEach((c) => {
+                const g = c.categoryGroupId;
+                if (!groups[g]) groups[g] = [];
+                groups[g].push(c);
+              });
+
+              // 2. sort each group by position
+              Object.values(groups).forEach((group) => {
+                group.sort((a, b) => a.position - b.position);
+              });
+
+              // 3. remove from old group
+              const fromList = groups[fromGroup];
+              const [removed] = fromList.splice(
+                fromList.findIndex((c) => c.id === moved.id),
+                1
+              );
+
+              // 4. insert into new group
+              const toList = groups[toGroup];
+              toList.splice(toPos, 0, removed);
+
+              // 5. normalize ALL groups (critical step)
+              Object.values(groups).forEach((group) => {
+                group.forEach((c, index) => {
+                  c.position = index;
+                  c.categoryGroupId = groups[toGroup].includes(c)
+                    ? toGroup
+                    : c.categoryGroupId;
+                });
+              });
             }
           )
         );
 
         try {
-          const { data: updatedCategory } = await queryFulfilled;
-
-          dispatch(
-            budgetSnapshotSlice.util.updateQueryData(
-              "getBudgetSnapshot",
-              undefined,
-              (draft) => {
-                const cat = draft.categories.user[updatedCategory.id];
-
-                if (cat) {
-                  Object.assign(cat, updatedCategory);
-                }
-              }
-            )
-          );
+          const res = await queryFulfilled;
+          console.log("res:", res);
         } catch {
           patchResult.undo();
         }
