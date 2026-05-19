@@ -42,7 +42,6 @@ export function CategoryRow({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0 : 1,
-    background: "white",
   };
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -61,7 +60,7 @@ export function CategoryRow({
     <CategoryContextMenu category={category}>
       <div
         onClick={handleRowClick}
-        className={`${isRowSelected && "bg-gray-100"} cursor-pointer`}
+        className={`${isRowSelected ? "bg-gray-100" : "bg-white"} cursor-pointer`}
         ref={setNodeRef}
         style={style}
         {...attributes}
