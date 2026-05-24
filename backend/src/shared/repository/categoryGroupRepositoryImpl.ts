@@ -1,4 +1,4 @@
-import { type Prisma } from "@prisma/client";
+import { CategoryGroupSource, type Prisma } from "@prisma/client";
 import { PROTECTED_CATEGORY_GROUP_NAMES } from "../../features/budget/core/categorygroup/categoryGroup.constants";
 import { type CategoryGroupRepository } from "../../features/budget/core/categorygroup/categoryGroup.repository";
 import {
@@ -13,7 +13,26 @@ import { type UserId } from "../../features/user/auth/auth.types";
 import { prisma } from "../prisma/client";
 
 export const categoryGroupRepository: CategoryGroupRepository = {
-  getCategoryGroup: async function(
+  getUserCategoryGroup: async function (
+    tx: Prisma.TransactionClient,
+    userId: UserId,
+    categoryGroupId: CategoryGroupId
+  ): Promise<db.CategoryGroup | null> {
+    const row = await tx.categoryGroup.findFirst({
+      where: {
+        id: categoryGroupId,
+        userId,
+        source: CategoryGroupSource.USER,
+      },
+    });
+
+    if (!row) {
+      return null;
+    }
+
+    return row;
+  },
+  getCategoryGroupById: async function (
     tx: Prisma.TransactionClient,
     userId: UserId,
     categoryGroupId: CategoryGroupId
@@ -32,7 +51,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     return row;
   },
 
-  getCategoryGroups: async function(
+  getCategoryGroups: async function (
     userId: UserId
   ): Promise<db.CategoryGroup[]> {
     return prisma.categoryGroup.findMany({ where: { userId } });
@@ -55,7 +74,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
       where: {
         id: categoryGroupId,
         userId,
-        name: { in: Array.from(PROTECTED_CATEGORY_GROUP_NAMES) },
+        source: CategoryGroupSource.SYSTEM,
       },
       select: { id: true },
     });
@@ -63,7 +82,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     return !!row;
   },
 
-  createCategoryGroup: async function(
+  createCategoryGroup: async function (
     tx: Prisma.TransactionClient,
     categoryGroup: CreateCategoryGroupData
   ): Promise<void> {
@@ -72,7 +91,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     });
   },
 
-  existsCategoryGroupByName: async function(
+  existsCategoryGroupByName: async function (
     tx: Prisma.TransactionClient,
     userId: UserId,
     name: string
@@ -90,7 +109,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
 
     return !!row;
   },
-  updateCategoryGroup: async function(
+  updateCategoryGroup: async function (
     tx: Prisma.TransactionClient,
     data: EditCategoryGroupData
   ): Promise<void> {
@@ -104,7 +123,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     });
   },
 
-  deleteCategoryGroup: async function(
+  deleteCategoryGroup: async function (
     tx: Prisma.TransactionClient,
     categoryGroupId: CategoryGroupId
   ): Promise<void> {

@@ -36,6 +36,9 @@ export function CategoryRow({
     isDragging,
   } = useSortable({
     id: category.id,
+    data: {
+      type: "category",
+    },
   });
 
   const style = {

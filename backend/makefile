@@ -22,6 +22,10 @@ help:
 	@echo "  setup-db                   Set up database schema (generate client, run migrations)."
 	@echo "  stop-db                    Stop and remove the database container."
 	@echo "  remove-db-data             Remove the database data volume."
+	@echo ""
+	@echo "Prisma:"
+	@echo "  generate-prisma-client     Generate Prisma client."
+	@echo "  migrate-prisma-schema      Apply Prisma schema changes to the db."
 	@echo "  prisma-gui                 Open Prisma Studio GUI."
 	@echo ""
 	@echo "Testing:"
@@ -77,6 +81,16 @@ remove-db-data:
 # Development Tools
 prisma-gui:
 	npx prisma studio --schema=$(PRISMA_SCHEMA_PATH)
+	
+generate-prisma-client:
+	@echo "Generating Prisma client..."
+	npx prisma generate --schema=$(PRISMA_SCHEMA_PATH)
+	
+migrate-prisma-schema:
+	@echo "Applying Prisma schema changes..."
+	npx prisma migrate dev --name add-category-group-source --schema=$(PRISMA_SCHEMA_PATH)
+	# npx prisma migrate deploy --schema=$(PRISMA_SCHEMA_PATH)
+
 
 run-integration-test-db:
 	@echo "Starting test database container..."

@@ -1,36 +1,44 @@
-const INFLOW_CATEGORY_GROUP = "Inflow";
-const UNCATEGORISED_CATEGORY_GROUP = "Uncategorised";
+export const CATEGORY_GROUP_NAMES = {
+  INFLOW: "Inflow",
+  UNCATEGORISED: "Uncategorised",
+} as const;
 
 export const PROTECTED_CATEGORY_GROUP_NAMES = [
-  INFLOW_CATEGORY_GROUP,
-  UNCATEGORISED_CATEGORY_GROUP,
+  CATEGORY_GROUP_NAMES.INFLOW,
+  CATEGORY_GROUP_NAMES.UNCATEGORISED,
 ] as const;
 
+export enum CategoryGroupSource {
+  SYSTEM = "SYSTEM",
+  USER = "USER",
+}
+
 /**
- * Default category groups created when a new user is initialised.
- *
- * These provide the initial budget structure and include pre-defined categories
- * assigned to each group to help users get started.
+ * Default category groups created for new users.
  */
 export const DEFAULT_CATEGORY_GROUPS = [
   {
-    name: "Inflow",
+    name: CATEGORY_GROUP_NAMES.INFLOW,
     categories: ["Ready to Assign"],
-    position: 0,
+    source: CategoryGroupSource.SYSTEM,
+    position: null,
   },
   {
-    name: "Uncategorised",
+    name: CATEGORY_GROUP_NAMES.UNCATEGORISED,
     categories: ["Uncategorised Transactions"],
-    position: 0,
+    source: CategoryGroupSource.SYSTEM,
+    position: null,
   },
   {
     name: "Bills",
     categories: ["🏠 Rent/Mortgage", "🔌 Utilities"],
+    source: CategoryGroupSource.USER,
     position: 0,
   },
   {
     name: "Other",
     categories: ["❗️ Stuff I forgot to budget for"],
+    source: CategoryGroupSource.USER,
     position: 1,
   },
 ] as const;

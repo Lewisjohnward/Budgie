@@ -4,7 +4,7 @@ import { type HydrationContext } from "./normaliseHydrationData";
 /**
  * Maps raw category group data into the hydration state.
  *
- * This function:
+ * This =function:
  * - Splits system and user-defined category groups
  * - Normalises and indexes user category groups by ID
  * - Extracts and assigns system category groups (inflow, uncategorised)
@@ -21,10 +21,10 @@ import { type HydrationContext } from "./normaliseHydrationData";
  * @returns void (mutates hydration state in place)
  */
 export const mapCategoryGroups = (ctx: HydrationContext): void => {
-  const categoryGroupsSplit = extractSystemCategoryGroups(
-    ctx.input.categoryGroups
-  );
-  for (const group of categoryGroupsSplit.user) {
+  const userGroups = ctx.input.categoryGroups.user;
+  const systemGroups = ctx.input.categoryGroups.system;
+
+  for (const group of userGroups) {
     const { id } = group;
 
     ctx.state.categoryGroups.user[id] = {
@@ -34,23 +34,19 @@ export const mapCategoryGroups = (ctx: HydrationContext): void => {
     };
   }
 
-  const inflow = categoryGroupsSplit.system["INFLOW"];
+  const inflow = systemGroups.find((g) => g.name === "INFLOW");
   if (inflow) {
-    const { id } = inflow;
-
     ctx.state.categoryGroups.inflow = {
-      id,
+      id: inflow.id,
       name: inflow.name,
       position: inflow.position,
     };
   }
 
-  const unc = categoryGroupsSplit.system["UNCATEGORISED"];
+  const unc = systemGroups.find((g) => g.name === "UNCATEGORISED");
   if (unc) {
-    const { id } = unc;
-
     ctx.state.categoryGroups.uncategorised = {
-      id,
+      id: unc.id,
       name: unc.name,
       position: unc.position,
     };

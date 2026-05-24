@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { categoryGroupRepository } from "../../../../../../shared/repository/categoryGroupRepositoryImpl";
-import { DuplicateCategoryGroupNameError } from "../../categoryGroup.errors";
+import { CategoryGroupNameConflictError } from "../../categoryGroup.errors";
 import { type UserId } from "../../../../../user/auth/auth.types";
 
 export const checkCategoryGroupNameIsUnique = async (
@@ -15,6 +15,6 @@ export const checkCategoryGroupNameIsUnique = async (
   );
 
   if (exists) {
-    throw new DuplicateCategoryGroupNameError();
+    throw new CategoryGroupNameConflictError();
   }
 };

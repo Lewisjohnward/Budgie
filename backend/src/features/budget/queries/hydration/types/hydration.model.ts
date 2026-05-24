@@ -51,7 +51,7 @@ export const asMonthKey = (id: string) => id as MonthKey;
 export type CategoryGroup = {
   id: CategoryGroupId;
   name: string;
-  position: number;
+  position: number | null;
 };
 
 export type Transaction = {

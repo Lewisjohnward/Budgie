@@ -2,7 +2,6 @@ import { asUserId, type UserId } from "../../../../../user/auth/auth.types";
 import { hydrationService } from "../../hydration.service";
 import { normaliseHydrationData } from "../../utils/normaliseHydrationData";
 import { getHydrationDateRange } from "../../utils/hydrationDateRange";
-import { assertHydrationIntegrity } from "../../utils/assertHydrationIntegrity";
 import { type BudgetHydrationModel } from "../../hydration.types";
 
 /** Payload identifying the user for whom budget hydration data should be generated. */

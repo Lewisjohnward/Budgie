@@ -36,7 +36,7 @@ export type MonthById = Record<MonthId, NormalisedMonth>;
 export type NormalisedCategoryGroup = {
   id: CategoryGroupId;
   name: string;
-  position: number;
+  position: number | null;
   categories: CategoryId[];
 };
 

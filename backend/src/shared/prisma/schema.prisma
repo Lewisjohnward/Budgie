@@ -42,19 +42,23 @@ model PasswordResetToken {
 //   transactions Transaction[]
 // }
 
+enum CategoryGroupSource {
+  SYSTEM
+  USER
+}
+
 model CategoryGroup {
   id         String     @id @default(uuid())
   userId     String
   name       String
-  position   Int
+  position   Int?
   categories Category[]
+  source     CategoryGroupSource @default(USER) 
 
-  // missing reference to user
+ // TODO:(lewis 2026-05-21 18:11) this needs uncommenting
+  // user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-// add kind categorygroupking
-
-// this needs testing
-    // @@unique([userId, name])
+  @@unique([userId, name])
 }
 
 model Category {
@@ -76,6 +80,7 @@ model Category {
 
 // this needs testing
     // @@unique([userId, name])
+    // @@unique([userId, position])
 }
 
 model Month {

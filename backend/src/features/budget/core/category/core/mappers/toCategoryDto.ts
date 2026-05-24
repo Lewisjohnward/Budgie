@@ -2,10 +2,10 @@ import { type DomainCategory } from "../category.types";
 import { type CategoryDto } from "../types/category.dto";
 
 /**
- * Converts a DomainMonth object into a MonthDto for API responses.
+ * Converts a DomainCategory object into a CategoryDto for API responses.
  *
- * @param month - The domain month to convert
- * @returns The corresponding MonthDto with number numeric fields and ISO date
+ * @param category - The domain category to convert
+ * @returns The corresponding CategoryDto
  */
 export const toCategoryDto = (category: DomainCategory): CategoryDto => {
   return {

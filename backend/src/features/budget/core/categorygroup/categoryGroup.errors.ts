@@ -7,26 +7,41 @@ export class UnableToFindProtectedCategoriesInDBError extends HttpError {
   }
 }
 
-export class AddingCategoryToProtectedCategoryGroupError extends HttpError {
+export class ModifyingCategoryToProtectedCategoryGroupError extends HttpError {
   constructor() {
-    super("Adding a category to a protected category group is prohibited", 403);
+    super("Modifying a category a protected category group is prohibited", 403);
   }
 }
 
 export class NoCategoryGroupFoundError extends HttpError {
   constructor() {
-    super("Unable to find category group", 403);
+    super("Unable to find category group", 404);
   }
 }
 
-export class DuplicateCategoryGroupNameError extends HttpError {
-  constructor() {
-    super("Unable to find category group", 409);
+export class CategoryGroupNameConflictError extends HttpError {
+  constructor(name?: string) {
+    super(
+      name
+        ? `Category group "${name}" already exists`
+        : "Category group name already exists",
+      409
+    );
   }
 }
 
 export class CategoryGroupNotFoundError extends HttpError {
   constructor() {
     super("Category group not found", 404);
+  }
+}
+
+/**
+ * Thrown when a category group is moved to an invalid position
+ * outside the reorderable user category group range.
+ */
+export class InvalidCategoryGroupPositionError extends HttpError {
+  constructor() {
+    super("Invalid category group position", 400);
   }
 }

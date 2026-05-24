@@ -7,7 +7,17 @@ import { type CategoryGroupId, db } from "./categoryGroup.types";
 import { type UserId } from "../../../user/auth/auth.types";
 
 export interface CategoryGroupRepository {
-  getCategoryGroup(
+  /**
+   * Retrieves a USER category group for the given user within a transaction.
+   * Returns null if no matching USER category group exists.
+   */
+  getUserCategoryGroup(
+    tx: Prisma.TransactionClient,
+    userId: UserId,
+    categoryGroupId: CategoryGroupId
+  ): Promise<db.CategoryGroup | null>;
+
+  getCategoryGroupById(
     tx: Prisma.TransactionClient,
     userId: UserId,
     categoryGroupId: CategoryGroupId

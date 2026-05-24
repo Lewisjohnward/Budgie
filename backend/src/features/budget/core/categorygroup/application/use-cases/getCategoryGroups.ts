@@ -1,8 +1,9 @@
 import { asUserId } from "../../../../../user/auth/auth.types";
 import { categoryGroupService } from "../../categoryGroup.service";
-import { type CategoryGroupMap } from "../../types/categoryGroup.dto";
+import { CategoryGroupsMap } from "../../types/categoryGroup.dto";
 import { normaliseCategoryGroups } from "../../utils/normaliseCategoryGroups";
 
+// TODO:(lewis 2026-05-22 04:29) this needs changing
 /**
  * Retrieves all category groups for a user and returns them as a normalized lookup map.
  *
@@ -15,7 +16,7 @@ import { normaliseCategoryGroups } from "../../utils/normaliseCategoryGroups";
  */
 export const getCategoryGroups = async (
   userId: string
-): Promise<CategoryGroupMap> => {
+): Promise<CategoryGroupsMap> => {
   const uId = asUserId(userId);
 
   const categoryGroups = await categoryGroupService.getCategoryGroups(uId);
