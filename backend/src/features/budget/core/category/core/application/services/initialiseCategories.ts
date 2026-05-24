@@ -16,6 +16,7 @@ export const initialiseCategories = async (
         userId,
         name: group.name,
         position: group.position,
+        source: group.source,
       },
     });
 

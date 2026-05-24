@@ -1,23 +1,26 @@
 import { Prisma } from "@prisma/client";
-import { PROTECTED_CATEGORY_GROUP_NAMES } from "../../categoryGroup.constants";
 import { type UserId } from "../../../../../user/auth/auth.types";
+import { CategoryGroupSource } from "../../categoryGroup.constants";
 
 export const getNextCategoryGroupPosition = async (
   prisma: Prisma.TransactionClient,
   userId: UserId
-) => {
-  //TODO: SEPARATE OUT RTA CAT AND UNCATEGORISED?
-  // todo this should be in the repo!!
+): Promise<number> => {
   const latest = await prisma.categoryGroup.findFirst({
     where: {
       userId,
-      name: {
-        notIn: [...PROTECTED_CATEGORY_GROUP_NAMES],
+      source: CategoryGroupSource.USER,
+      position: {
+        not: null,
       },
     },
-    orderBy: { position: "desc" },
-    select: { position: true },
+    orderBy: {
+      position: "desc",
+    },
+    select: {
+      position: true,
+    },
   });
 
-  return latest !== null ? latest.position + 1 : 0;
+  return (latest?.position ?? -1) + 1;
 };

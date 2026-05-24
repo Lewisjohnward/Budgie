@@ -3,7 +3,7 @@ import { categoryGroupUseCase } from "./categorygroup.useCase";
 import {
   createCategoryGroupSchema,
   deleteCategoryGroupSchema,
-  editCategoryGroupSchema,
+  updateCategoryGroupSchema,
 } from "./categorygroup.schema";
 
 /** Retrieves a user's category groups and returns them as a normalised record response */
@@ -41,19 +41,20 @@ export const addCategoryGroup = async (
   }
 };
 
-export const editCategoryGroup = async (
+export const updateCategoryGroup = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const payload = editCategoryGroupSchema.parse({
+    const payload = updateCategoryGroupSchema.parse({
       userId: req.user!._id,
       ...req.body,
     });
 
-    await categoryGroupUseCase.editCategoryGroup(payload);
-    res.sendStatus(200);
+    const updatedCategoryGroup =
+      await categoryGroupUseCase.updateCategoryGroup(payload);
+    res.status(201).json(updatedCategoryGroup);
   } catch (error) {
     next(error);
   }

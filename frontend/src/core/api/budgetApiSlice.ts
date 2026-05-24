@@ -100,7 +100,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
     addCategoryGroup: builder.mutation<void, { name: string }>({
       query: (categoryGroup) => {
         return {
-          url: "budget/categorygroup",
+          url: "budget/categorygroups",
           method: "POST",
           body: categoryGroup,
         };
@@ -110,7 +110,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
     deleteCategoryGroup: builder.mutation<void, { categoryGroupId: string }>({
       query: (categoryGroup) => {
         return {
-          url: "budget/categorygroup",
+          url: "budget/categorygroups",
           method: "DELETE",
           body: categoryGroup,
         };
@@ -123,7 +123,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
     >({
       query: (updatedCategoryGroup) => {
         return {
-          url: "budget/categorygroup",
+          url: "budget/categorygroups",
           method: "PATCH",
           body: updatedCategoryGroup,
         };

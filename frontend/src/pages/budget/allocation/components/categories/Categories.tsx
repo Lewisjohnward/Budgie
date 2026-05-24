@@ -26,6 +26,7 @@ import {
 } from "@dnd-kit/core";
 import {
   SortableContext,
+  useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
@@ -51,17 +52,23 @@ export function Categories({
 }: CategoriesProps) {
   const { uncategorisedRow, categoriesByGroup } = view;
   const [editCategory] = useEditCategoryMutation();
+  const [editCategoryGroup] = useEditCategoryGroupMutation();
 
   useEffect(() => {
     setDraftView(categoriesByGroup);
   }, [categoriesByGroup]);
 
   function handleDragEnd() {
-    if (!updatedCategory) return;
-    editCategory(updatedCategory).unwrap();
-    setUpdatedCategory(null);
+    if (updatedCategory) {
+      editCategory(updatedCategory);
+      setUpdatedCategory(null);
+    }
+    if (updatedCategoryGroup) {
+      editCategoryGroup(updatedCategoryGroup);
+      setUpdatedCategoryGroup(null);
+    }
 
-    setActiveId(null);
+    setActive({ id: null, type: null });
   }
 
   const sensors = useSensors(
@@ -72,16 +79,24 @@ export function Categories({
     })
   );
 
-  const [activeId, setActiveId] = useState<CategoryId | null>(null);
+  const [active, setActive] = useState<{
+    id: UniqueIdentifier | null;
+    type: "group" | "category" | null;
+  }>({ id: null, type: null });
+
   const [draftView, setDraftView] = useState(view.categoriesByGroup);
   const [updatedCategory, setUpdatedCategory] =
     useState<UpdatedCategory | null>(null);
+  const [updatedCategoryGroup, setUpdatedCategoryGroup] =
+    useState<UpdatedCategoryGroup | null>(null);
 
   const activeCategory = useMemo(() => {
     return draftView
       .flatMap((g) => g.rows)
-      .find((r) => r.category.id === activeId);
-  }, [activeId, draftView]);
+      .find((r) => r.category.id === active.id);
+  }, [active, draftView]);
+
+  const isDraggingCategoryGroups = active.type === "group";
 
   return (
     <div className="bg-stone-100">
@@ -89,14 +104,32 @@ export function Categories({
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={(event) => {
-          setActiveId(asCategoryId(String(event.active.id)));
+          console.log("drag start!!");
+          setActive({
+            id: event.active.id,
+            type: event.active.data.current?.type ?? null,
+          });
         }}
         onDragOver={(event: DragOverEvent) => {
           const { active, over } = event;
-          if (!over) return;
-
           const activeId = active.id;
+
+          if (!over) return;
           const overId = over.id;
+
+          console.log("active:", active);
+          if (active.data.current?.type === "group") {
+            console.log("moving group");
+
+            const { view, updatedGroup } = moveGroups(
+              draftView,
+              activeId,
+              overId
+            );
+            setDraftView(view);
+            setUpdatedCategoryGroup(updatedGroup);
+            return;
+          }
 
           const { view, updatedCategory } = moveItem(
             draftView,
@@ -107,7 +140,10 @@ export function Categories({
           setUpdatedCategory(updatedCategory);
         }}
         onDragEnd={() => handleDragEnd()}
-        onDragCancel={() => setDraftView(view.categoriesByGroup)}
+        onDragCancel={() => {
+          setDraftView(view.categoriesByGroup);
+          setActive({ id: null, type: null });
+        }}
       >
         <div className="bg-white">
           <AddCategoryGroupPopover>
@@ -125,16 +161,17 @@ export function Categories({
         </CategoryGridRow>
 
         {/* // TODO:(lewis 2026-05-11 18:36) make this more semantic */}
-        {uncategorisedRow.month.available !== 0 && (
-          <CategoryGridRow>
-            <UncategorisedRow
-              currency={currency}
-              category={uncategorisedRow.category}
-              month={uncategorisedRow.month}
-              categorySelector={categorySelector}
-            />
-          </CategoryGridRow>
-        )}
+        {uncategorisedRow.month.available !== 0 &&
+          !isDraggingCategoryGroups && (
+            <CategoryGridRow>
+              <UncategorisedRow
+                currency={currency}
+                category={uncategorisedRow.category}
+                month={uncategorisedRow.month}
+                categorySelector={categorySelector}
+              />
+            </CategoryGridRow>
+          )}
         <DragOverlay>
           {activeCategory ? (
             <CategoryRow
@@ -145,54 +182,59 @@ export function Categories({
           ) : null}
         </DragOverlay>
 
-        {draftView.map(({ group, rows, open }) => {
-          return (
-            <div key={group.id}>
-              <CategoryGroupContextMenu categoryGroup={group}>
-                <div className="group">
-                  <CategoryGridRow className="bg-stone-200">
-                    <CategoryGroupRow
-                      open={open}
-                      categoryGroup={group}
-                      currency={currency}
-                      onExpandClick={() => {
-                        expandCategoryGroups.expandCategoryGroup(group.id);
-                      }}
-                      selectionState={categorySelector.getCategoryGroupSelectionState(
-                        group.id
-                      )}
-                      onGroupClick={categorySelector.onCategoryGroupClick}
-                    />
-                  </CategoryGridRow>
-                </div>
-              </CategoryGroupContextMenu>
-
-              {open && (
-                <SortableContext
-                  items={rows.map((r) => r.category.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  {rows.map((row) => {
-                    return (
-                      <CategoryRow
-                        key={row.category.id}
-                        category={row.category}
-                        month={row.month}
-                        // TODO:(lewis 2026-05-15 15:05) this should be categorySelector
-                        categorySelection={categorySelector}
+        <SortableContext
+          items={draftView.map((g) => g.group.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {draftView.map(({ group, rows, open }) => {
+            return (
+              <div key={group.id}>
+                <CategoryGroupContextMenu categoryGroup={group}>
+                  <div className="group">
+                    <CategoryGridRow id={group.id} className="bg-stone-200">
+                      <CategoryGroupRow
+                        open={open}
+                        categoryGroup={group}
+                        currency={currency}
+                        onExpandClick={() => {
+                          expandCategoryGroups.expandCategoryGroup(group.id);
+                        }}
+                        selectionState={categorySelector.getCategoryGroupSelectionState(
+                          group.id
+                        )}
+                        onGroupClick={categorySelector.onCategoryGroupClick}
                       />
-                    );
-                  })}
-                </SortableContext>
-              )}
-              <CategoryGroupDropZone
-                groupId={group.id}
-                active={!!activeId}
-                enabled={rows.length === 0 || !open}
-              />
-            </div>
-          );
-        })}
+                    </CategoryGridRow>
+                  </div>
+                </CategoryGroupContextMenu>
+
+                {open && !isDraggingCategoryGroups && (
+                  <SortableContext
+                    items={rows.map((r) => r.category.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {rows.map((row) => {
+                      return (
+                        <CategoryRow
+                          key={row.category.id}
+                          category={row.category}
+                          month={row.month}
+                          // TODO:(lewis 2026-05-15 15:05) this should be categorySelector
+                          categorySelection={categorySelector}
+                        />
+                      );
+                    })}
+                  </SortableContext>
+                )}
+                <CategoryGroupDropZone
+                  groupId={group.id}
+                  active={!!active.id}
+                  enabled={rows.length === 0 || !open}
+                />
+              </div>
+            );
+          })}
+        </SortableContext>
       </DndContext>
     </div>
   );
@@ -205,6 +247,11 @@ type MoveResult = {
 
 type UpdatedCategory = {
   categoryId: CategoryId;
+  categoryGroupId: CategoryGroupId;
+  position: number;
+};
+
+type UpdatedCategoryGroup = {
   categoryGroupId: CategoryGroupId;
   position: number;
 };
@@ -272,6 +319,7 @@ function moveItem(
 
 import { useDroppable } from "@dnd-kit/core";
 import { cn } from "@/core/lib/utils";
+import { useEditCategoryGroupMutation } from "@/core/api/budget/categoryGroup/CategoryGroupApiSlice";
 
 type Props = {
   groupId: string;
@@ -295,4 +343,36 @@ export function CategoryGroupDropZone({ groupId, active, enabled }: Props) {
       )}
     />
   );
+}
+
+type MoveGroupsResult = {
+  view: MappedCategoryGroupViewWithMetrics[];
+  updatedGroup: {
+    categoryGroupId: CategoryGroupId;
+    position: number;
+  };
+};
+
+function moveGroups(
+  view: MappedCategoryGroupViewWithMetrics[],
+  activeId: UniqueIdentifier,
+  overId: UniqueIdentifier
+): MoveGroupsResult {
+  const next = structuredClone(view);
+
+  const fromIndex = next.findIndex((g) => g.group.id === activeId);
+  const toIndex = next.findIndex((g) => g.group.id === overId);
+
+  if (fromIndex === -1 || toIndex === -1) return view;
+
+  const [moved] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, moved);
+
+  return {
+    view: next,
+    updatedGroup: {
+      categoryGroupId: moved.group.id,
+      position: toIndex,
+    },
+  };
 }

@@ -1,19 +1,29 @@
 import {
-  type CategoryGroupMap,
-  type DomainCategoryGroup,
+  type DomainUserCategoryGroup,
+  type DomainSystemCategoryGroup,
+  type CategoryGroupsMap,
 } from "../categoryGroup.types";
 
-/**
- * Normalises an array of category groups into a lookup map keyed by group ID.
- *
- * @param groups - Array of category group DTOs from the API
- * @returns Record keyed by categoryGroupId
- */
-export const normaliseCategoryGroups = (
-  groups: DomainCategoryGroup[]
-): CategoryGroupMap => {
-  return groups.reduce<CategoryGroupMap>((acc, group) => {
-    acc[group.id] = group;
-    return acc;
-  }, {});
+// TODO:(lewis 2026-05-22 04:29) needs a jsdoc
+export const normaliseCategoryGroups = (groups: {
+  user: DomainUserCategoryGroup[];
+  system: DomainSystemCategoryGroup[];
+}): CategoryGroupsMap => {
+  return {
+    user: groups.user.reduce(
+      (acc, g) => {
+        acc[g.id] = g;
+        return acc;
+      },
+      {} as Record<string, DomainUserCategoryGroup>
+    ),
+
+    system: groups.system.reduce(
+      (acc, g) => {
+        acc[g.id] = g;
+        return acc;
+      },
+      {} as Record<string, DomainSystemCategoryGroup>
+    ),
+  };
 };

@@ -3,7 +3,7 @@ import {
   type DomainCategory,
   type DomainMonth,
 } from "../../../core/category/core/category.types";
-import { type DomainCategoryGroup } from "../../../core/categorygroup/categoryGroup.types";
+import { CategoryGroupsBySource } from "../../../core/categorygroup/application/service/getCategoryGroups";
 import { type DomainMemo } from "../../../core/memo/memo.types";
 import { type DomainPayee } from "../../../core/payee/payee.types";
 import { type DomainTransaction } from "../../../core/transaction/transaction.types";
@@ -16,7 +16,7 @@ import { type DomainTransaction } from "../../../core/transaction/transaction.ty
  * - Acts as the source-of-truth snapshot from the backend
  */
 export type HydrationRawData = {
-  categoryGroups: DomainCategoryGroup[];
+  categoryGroups: CategoryGroupsBySource;
   categories: DomainCategory[];
   months: DomainMonth[];
   accounts: DomainAccount[];

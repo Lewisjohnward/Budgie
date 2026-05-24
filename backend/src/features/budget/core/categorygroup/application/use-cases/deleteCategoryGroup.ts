@@ -96,11 +96,12 @@ export const deleteCategoryGroup = async (
     toDeleteCategoryGroupCommand(payload);
 
   await prisma.$transaction(async (tx) => {
-    const categoryGroupToDelete = await categoryGroupService.getCategoryGroup(
-      tx,
-      userId,
-      categoryGroupId
-    );
+    const categoryGroupToDelete =
+      await categoryGroupService.getUserCategoryGroup(
+        tx,
+        userId,
+        categoryGroupId
+      );
 
     if (!categoryGroupToDelete) {
       throw new CategoryGroupNotFoundError();

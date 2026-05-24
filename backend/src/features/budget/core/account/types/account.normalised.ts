@@ -61,5 +61,5 @@ export type NormalisedCategoryGroup = {
   id: string;
   userId: string;
   name: string;
-  position: number;
+  position: number | null;
 };

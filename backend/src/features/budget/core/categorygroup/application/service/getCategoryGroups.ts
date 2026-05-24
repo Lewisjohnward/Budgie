@@ -1,23 +1,39 @@
 import { categoryGroupRepository } from "../../../../../../shared/repository/categoryGroupRepositoryImpl";
 import { categoryGroupMapper } from "../../categorygroup.mapper";
 import { type UserId } from "../../../../../user/auth/auth.types";
-import { type DomainCategoryGroup } from "../../categoryGroup.types";
+import {
+  DomainSystemCategoryGroup,
+  DomainUserCategoryGroup,
+} from "../../categoryGroup.types";
+import { CategoryGroupSource } from "@prisma/client";
+
+export type CategoryGroupsBySource = {
+  user: DomainUserCategoryGroup[];
+  system: DomainSystemCategoryGroup[];
+};
 
 /**
- * Retrieves all category groups belonging to a user
- *
- * This function:
- * - Fetches raw category group records from the repository layer
- * - Maps database rows into domain-level category group entities
- *
- * @param userId - The ID of the user whose category groups should be fetched
- * @returns A list of domain category group entities
+ * Retrieves all category groups belonging to a user,
+ * split into USER (ordered) and SYSTEM (fixed) groups.
  */
 export const getCategoryGroups = async (
   userId: UserId
-): Promise<DomainCategoryGroup[]> => {
-  const categoryGroupRows =
-    await categoryGroupRepository.getCategoryGroups(userId);
+): Promise<CategoryGroupsBySource> => {
+  const rows = await categoryGroupRepository.getCategoryGroups(userId);
 
-  return categoryGroupRows.map(categoryGroupMapper.toDomainCategoryGroup);
+  const user: DomainUserCategoryGroup[] = [];
+  const system: DomainSystemCategoryGroup[] = [];
+
+  for (const row of rows) {
+    if (row.source === CategoryGroupSource.USER) {
+      user.push(categoryGroupMapper.toDomainUserCategoryGroup(row));
+    } else {
+      system.push(categoryGroupMapper.toDomainSystemCategoryGroup(row));
+    }
+  }
+
+  // Ensure ordering invariant for USER groups
+  user.sort((a, b) => a.position - b.position);
+
+  return { user, system };
 };
