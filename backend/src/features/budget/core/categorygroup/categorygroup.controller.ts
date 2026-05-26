@@ -23,7 +23,7 @@ export const getCategoryGroups = async (
   return;
 };
 
-export const addCategoryGroup = async (
+export const createCategoryGroup = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -34,13 +34,18 @@ export const addCategoryGroup = async (
       ...req.body,
     });
 
-    await categoryGroupUseCase.createCategoryGroup(validatedCategoryGroup);
-    res.status(200).json({ message: "Category group added" });
+    const categoryGroup = await categoryGroupUseCase.createCategoryGroup(
+      validatedCategoryGroup
+    );
+    res.status(200).json(categoryGroup);
   } catch (error) {
     next(error);
   }
 };
 
+/**
+ * Updates a category group for the authenticated user and returns the updated result.
+ */
 export const updateCategoryGroup = async (
   req: Request,
   res: Response,

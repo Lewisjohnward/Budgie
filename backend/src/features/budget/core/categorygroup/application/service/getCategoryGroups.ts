@@ -5,7 +5,7 @@ import {
   DomainSystemCategoryGroup,
   DomainUserCategoryGroup,
 } from "../../categoryGroup.types";
-import { CategoryGroupSource } from "@prisma/client";
+import { CategoryGroupSource } from "../../categoryGroup.constants";
 
 export type CategoryGroupsBySource = {
   user: DomainUserCategoryGroup[];
@@ -27,9 +27,15 @@ export const getCategoryGroups = async (
   for (const row of rows) {
     if (row.source === CategoryGroupSource.USER) {
       user.push(categoryGroupMapper.toDomainUserCategoryGroup(row));
-    } else {
-      system.push(categoryGroupMapper.toDomainSystemCategoryGroup(row));
+      continue;
     }
+
+    if (row.source === CategoryGroupSource.SYSTEM) {
+      system.push(categoryGroupMapper.toDomainSystemCategoryGroup(row));
+      continue;
+    }
+
+    throw new Error(`Unknown category group source: ${row.source}`);
   }
 
   // Ensure ordering invariant for USER groups

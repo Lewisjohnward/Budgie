@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CategoryGroupId } from "./categoryGroup.types";
 
 export const createCategoryGroupSchema = z.object({
   userId: z.string().uuid(),
@@ -48,7 +49,16 @@ export type CreateCategoryGroupData = CreateCategoryGroupPayload & {
 export type UpdateCategoryGroupPayload = z.infer<
   typeof updateCategoryGroupSchema
 >;
-export type EditCategoryGroupData = UpdateCategoryGroupPayload;
+
+export type RenameCategoryGroupData = {
+  categoryGroupId: CategoryGroupId;
+  name: string;
+};
+
+export type RepositionCategoryGroupData = {
+  categoryGroupId: CategoryGroupId;
+  position: number;
+};
 
 export type DeleteCategoryGroupPayload = z.infer<
   typeof deleteCategoryGroupSchema

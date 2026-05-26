@@ -1,8 +1,9 @@
 import { prisma } from "../../../../../../shared/prisma/client";
-import { categoryGroupRepository } from "../../../../../../shared/repository/categoryGroupRepositoryImpl";
 import { asUserId, type UserId } from "../../../../../user/auth/auth.types";
+import { categoryGroupMapper } from "../../categorygroup.mapper";
 import { type CreateCategoryGroupPayload } from "../../categorygroup.schema";
 import { categoryGroupService } from "../../categoryGroup.service";
+import { CategoryGroupUserDto } from "../../categoryGroup.types";
 
 export type CreateCategoryGroupCommand = Omit<
   CreateCategoryGroupPayload,
@@ -20,21 +21,13 @@ export const toCreateCategoryGroupCommand = (
 
 export const createCategoryGroup = async (
   payload: CreateCategoryGroupPayload
-): Promise<void> => {
+): Promise<CategoryGroupUserDto> => {
   const { userId, name } = toCreateCategoryGroupCommand(payload);
-  await prisma.$transaction(async (tx) => {
-    const position = await categoryGroupService.getNextCategoryGroupPosition(
+  return await prisma.$transaction(async (tx) => {
+    const createdCategoryGroup = await categoryGroupService.createCategoryGroup(
       tx,
-      userId
+      { userId, name }
     );
-
-    await categoryGroupService.checkCategoryGroupNameIsUnique(tx, userId, name);
-
-    const data = {
-      ...payload,
-      position,
-    };
-
-    await categoryGroupRepository.createCategoryGroup(tx, data);
+    return categoryGroupMapper.toCategoryGroupDto(createdCategoryGroup);
   });
 };

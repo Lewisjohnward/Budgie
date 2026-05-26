@@ -1,3 +1,4 @@
+import { CategoryGroupSource } from "../categoryGroup.constants";
 import {
   type DomainUserCategoryGroup,
   asCategoryGroupId,
@@ -11,7 +12,7 @@ import {
 export const toDomainUserCategoryGroup = (
   row: db.CategoryGroup
 ): DomainUserCategoryGroup => {
-  if (row.source !== "USER") {
+  if (row.source !== CategoryGroupSource.USER) {
     throw new Error("Expected USER category group");
   }
 
@@ -23,18 +24,6 @@ export const toDomainUserCategoryGroup = (
     id: asCategoryGroupId(row.id),
     name: row.name,
     position: row.position,
-    source: mapSource(row.source),
+    source: CategoryGroupSource.USER,
   };
-};
-
-import { CategoryGroupSource as PrismaSource } from "@prisma/client";
-import { CategoryGroupSource as DomainSource } from "../categoryGroup.constants";
-
-export const mapSource = (source: PrismaSource): DomainSource => {
-  switch (source) {
-    case PrismaSource.USER:
-      return DomainSource.USER;
-    case PrismaSource.SYSTEM:
-      return DomainSource.SYSTEM;
-  }
 };

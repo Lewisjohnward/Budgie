@@ -5,7 +5,7 @@ import { type UpdateCategoryGroupPayload } from "../../categorygroup.schema";
 import { categoryGroupService } from "../../categoryGroup.service";
 import {
   asCategoryGroupId,
-  CategoryGroupUserDto,
+  type CategoryGroupUserDto,
   type CategoryGroupId,
 } from "../../categoryGroup.types";
 
@@ -27,6 +27,12 @@ export const toUpdateCategoryGroupCommand = (
   position: p.position,
 });
 
+/**
+ * Updates a category group within a transaction, allowing either a rename or a reposition operation.
+ *
+ * Ensures the category group is modifiable before applying changes, then applies the requested
+ * update (name and/or position) and returns the updated domain DTO.
+ */
 export const updateCategoryGroup = async (
   payload: UpdateCategoryGroupPayload
 ): Promise<CategoryGroupUserDto> => {
@@ -34,58 +40,29 @@ export const updateCategoryGroup = async (
     toUpdateCategoryGroupCommand(payload);
 
   return await prisma.$transaction(async (tx) => {
-    await categoryGroupService.isProtectedCategoryGroup(
+    let categoryGroup = await categoryGroupService.getModifiableCategoryGroup(
       tx,
       userId,
       categoryGroupId
     );
 
-    const categoryGroup = await categoryGroupService.getUserCategoryGroup(
-      tx,
-      userId,
-      categoryGroupId
-    );
-
-    // position: 0 is falsy
-    if (typeof position === "number") {
-      const updatedCategoryGroup =
-        await categoryGroupService.repositionCategoryGroup(
-          tx,
-          userId,
-          categoryGroup,
-          position
-        );
-      return categoryGroupMapper.toCategoryGroupDto(updatedCategoryGroup);
-    }
-
-    if (name) {
-      await categoryGroupService.checkCategoryGroupNameIsUnique(
+    if (position !== undefined) {
+      categoryGroup = await categoryGroupService.repositionCategoryGroup(
         tx,
         userId,
+        categoryGroup,
+        position
+      );
+    }
+
+    if (name !== undefined) {
+      categoryGroup = await categoryGroupService.renameCategoryGroup(
+        tx,
+        categoryGroupId,
         name
       );
-
-      const dbCatGroup = await tx.categoryGroup.update({
-        where: {
-          id: categoryGroup.id,
-        },
-        data: {
-          name: name,
-        },
-      });
-
-      const domainCatGroup =
-        categoryGroupMapper.toDomainUserCategoryGroup(dbCatGroup);
-
-      return categoryGroupMapper.toCategoryGroupDto(domainCatGroup);
     }
 
-    return categoryGroupMapper.toCategoryGroupDto(
-      await categoryGroupService.getUserCategoryGroup(
-        tx,
-        userId,
-        categoryGroupId
-      )
-    );
+    return categoryGroupMapper.toCategoryGroupDto(categoryGroup);
   });
 };
