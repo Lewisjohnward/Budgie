@@ -1,8 +1,5 @@
 import { Prisma } from "@prisma/client";
-import {
-  type CreateCategoryGroupData,
-  type EditCategoryGroupData,
-} from "./categorygroup.schema";
+import { type CreateCategoryGroupData } from "./categorygroup.schema";
 import { type CategoryGroupId, db } from "./categoryGroup.types";
 import { type UserId } from "../../../user/auth/auth.types";
 
@@ -37,30 +34,63 @@ export interface CategoryGroupRepository {
   /**
    * Returns true if the given category group is protected for the user.
    */
+  // TODO:(lewis 2026-05-26 11:17) i'm thinking this can be cleaned up
   isProtectedCategoryGroup(
     tx: Prisma.TransactionClient,
     userId: UserId,
     categoryGroupId: CategoryGroupId
   ): Promise<boolean>;
 
-  /**
-   * Returns true if a category group with the given name exists for the user.
-   */
-  existsCategoryGroupByName(
-    tx: Prisma.TransactionClient,
-    userId: UserId,
-    name: string
-  ): Promise<boolean>;
-
   createCategoryGroup(
     tx: Prisma.TransactionClient,
-    categoryGroup: CreateCategoryGroupData
+    payload: CreateCategoryGroupData
+  ): Promise<db.CategoryGroup>;
+
+  /**
+   * Renames a category group for a given id.
+   */
+  renameCategoryGroup(
+    tx: Prisma.TransactionClient,
+    categoryGroupId: CategoryGroupId,
+    name: string
+  ): Promise<db.CategoryGroup>;
+
+  /**
+   * Returns the number of user-owned category groups for a given user.
+   */
+  getUserCategoryGroupCount(
+    tx: Prisma.TransactionClient,
+    userId: UserId
+  ): Promise<number>;
+
+  /**
+   * Shifts user category groups down within a position range (used when moving an item forward).
+   */
+  shiftUserCategoryGroupsDown(
+    tx: Prisma.TransactionClient,
+    userId: UserId,
+    fromPosition: number,
+    toPosition: number
   ): Promise<void>;
 
-  updateCategoryGroup(
+  /**
+   * Shifts user category groups up within a position range (used when moving an item backward).
+   */
+  shiftUserCategoryGroupsUp(
     tx: Prisma.TransactionClient,
-    categoryGroup: EditCategoryGroupData
+    userId: UserId,
+    fromPosition: number,
+    toPosition: number
   ): Promise<void>;
+
+  /**
+   * Updates the position of a category group by id.
+   */
+  updateCategoryGroupPosition(
+    tx: Prisma.TransactionClient,
+    categoryGroupId: CategoryGroupId,
+    position: number
+  ): Promise<db.CategoryGroup>;
 
   deleteCategoryGroup(
     tx: Prisma.TransactionClient,

@@ -1,4 +1,5 @@
 import { Brand } from "../../../../../shared/types/brand";
+import { UserId } from "../../../../user/auth/auth.types";
 import { CategoryId } from "../../category/core/category.types";
 import { CategoryGroupSource } from "../categoryGroup.constants";
 
@@ -18,7 +19,7 @@ export const asCategoryGroupId = (id: string) => id as CategoryGroupId;
 export type DomainSystemCategoryGroup = {
   id: CategoryGroupId;
   name: string;
-  source: CategoryGroupSource;
+  source: CategoryGroupSource.SYSTEM;
   position: null;
 };
 
@@ -28,7 +29,7 @@ export type DomainSystemCategoryGroup = {
 export type DomainUserCategoryGroup = {
   id: CategoryGroupId;
   name: string;
-  source: CategoryGroupSource;
+  source: CategoryGroupSource.USER;
   position: number;
 };
 
@@ -44,4 +45,13 @@ export type DomainCategoryGroupWithCategoryIds = {
   name: string;
   position: number;
   categoryIds: CategoryId[];
+};
+
+/**
+ * Internal data required to create a user category group including resolved position.
+ */
+export type CreateCategoryGroupData = {
+  userId: UserId;
+  name: string;
+  position: number;
 };

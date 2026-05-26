@@ -114,27 +114,13 @@ type CreateCategoryGroupPayloadTest = Omit<
 export const createCategoryGroup = async (
   cookie: string,
   payload: CreateCategoryGroupPayloadTest
-): Promise<CategoryGroupUserDto> => {
+): Promise<Response> => {
   const res = await request(app)
     .post("/budget/categorygroups")
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload);
-  expect(res.statusCode).toBe(200);
 
-  return await getCategoryGroupByNameOrThrow(cookie, payload.name);
-
-  // const categoryGroupMap = await getCategoryGroups(cookie);
-  // console.log("categoryGroupMap:", categoryGroupMap);
-  //
-  // const categoryGroup = Object.values(categoryGroupMap).find(
-  //   (group) => group.name === payload.name
-  // );
-  //
-  // if (!categoryGroup) {
-  //   throw new Error("Could not find category group");
-  // }
-  //
-  // return categoryGroup;
+  return res;
 };
 
 export const findCategoryGroupByName = (

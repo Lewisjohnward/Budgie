@@ -1,11 +1,11 @@
-import { Prisma } from "@prisma/client";
+import { CategoryGroupSource, Prisma } from "@prisma/client";
 import {
   ModifyingCategoryToProtectedCategoryGroupError,
   NoCategoryGroupFoundError,
 } from "../../categoryGroup.errors";
 import { categoryGroupRepository } from "../../../../../../shared/repository/categoryGroupRepositoryImpl";
 import {
-  DomainCategoryGroup,
+  DomainUserCategoryGroup,
   type CategoryGroupId,
 } from "../../categoryGroup.types";
 import { type UserId } from "../../../../../user/auth/auth.types";
@@ -46,7 +46,7 @@ export const getModifiableCategoryGroup = async (
   tx: Prisma.TransactionClient,
   userId: UserId,
   categoryGroupId: CategoryGroupId
-): Promise<DomainCategoryGroup> => {
+): Promise<DomainUserCategoryGroup> => {
   const row = await categoryGroupRepository.getCategoryGroupById(
     tx,
     userId,
@@ -57,9 +57,9 @@ export const getModifiableCategoryGroup = async (
     throw new NoCategoryGroupFoundError();
   }
 
-  if (row.source === "SYSTEM") {
+  if (row.source === CategoryGroupSource.SYSTEM) {
     throw new ModifyingCategoryToProtectedCategoryGroupError();
   }
 
-  return categoryGroupMapper.toDomainCategoryGroup(row);
+  return categoryGroupMapper.toDomainUserCategoryGroup(row);
 };

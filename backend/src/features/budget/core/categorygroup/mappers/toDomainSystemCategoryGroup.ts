@@ -1,9 +1,9 @@
+import { CategoryGroupSource } from "../categoryGroup.constants";
 import {
   asCategoryGroupId,
   type DomainSystemCategoryGroup,
   type db,
 } from "../categoryGroup.types";
-import { mapSource } from "./toDomainUserCategoryGroup";
 
 /**
  * Maps a Prisma CategoryGroup row into a domain SYSTEM CategoryGroup model.
@@ -25,6 +25,6 @@ export const toDomainSystemCategoryGroup = (
     id: asCategoryGroupId(row.id),
     name: row.name,
     position: row.position,
-    source: mapSource(row.source),
+    source: CategoryGroupSource.SYSTEM,
   };
 };

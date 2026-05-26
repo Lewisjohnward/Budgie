@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-  addCategoryGroup,
+  createCategoryGroup,
   deleteCategoryGroup,
   updateCategoryGroup,
   getCategoryGroups,
@@ -8,7 +8,7 @@ import {
 
 const router = Router();
 router.get("/", getCategoryGroups);
-router.post("/", addCategoryGroup);
+router.post("/", createCategoryGroup);
 router.patch("/", updateCategoryGroup);
 router.delete("/", deleteCategoryGroup);
 
