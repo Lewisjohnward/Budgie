@@ -66,6 +66,7 @@ export type MappedCategoryGroupViewWithMetrics = {
 export function useExpandableCategoryGroups({
   categoryGroups,
 }: UseExpandableCategoryGroupsParams): ExpandableCategoryGroupsState {
+  console.log("categoryGroups:", categoryGroups);
   const [openState, setOpenState] = useState<Record<CategoryGroupId, boolean>>(
     () => {
       const initial: Record<CategoryGroupId, boolean> = {};

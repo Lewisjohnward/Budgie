@@ -2,10 +2,11 @@ import { categoryGroupRepository } from "../../../../../../shared/repository/cat
 import { categoryGroupMapper } from "../../categorygroup.mapper";
 import { type UserId } from "../../../../../user/auth/auth.types";
 import {
-  DomainSystemCategoryGroup,
-  DomainUserCategoryGroup,
+  type DomainSystemCategoryGroup,
+  type DomainUserCategoryGroup,
 } from "../../categoryGroup.types";
 import { CategoryGroupSource } from "../../categoryGroup.constants";
+import { UnknownCategoryGroupSourceError } from "../../categoryGroup.errors";
 
 export type CategoryGroupsBySource = {
   user: DomainUserCategoryGroup[];
@@ -13,8 +14,24 @@ export type CategoryGroupsBySource = {
 };
 
 /**
- * Retrieves all category groups belonging to a user,
- * split into USER (ordered) and SYSTEM (fixed) groups.
+ * Retrieves all category groups for a user and partitions them by source.
+ *
+ * This use case:
+ * - Loads all category groups for the given user from the repository
+ * - Maps persistence models into domain models
+ * - Splits results into USER and SYSTEM category groups
+ * - Enforces ordering invariants for USER groups (by `position`)
+ *
+ * Domain invariants enforced:
+ * - Only known `CategoryGroupSource` values are allowed
+ * - USER groups are always returned in position order
+ *
+ * @param userId - Strongly-typed identifier of the user
+ * @returns A partitioned collection of category groups grouped by source type
+ *
+ * @throws {UnknownCategoryGroupSourceError}
+ * Thrown when a category group has an unsupported or unknown source value,
+ * indicating a data integrity issue between persistence and domain model.
  */
 export const getCategoryGroups = async (
   userId: UserId
@@ -35,7 +52,7 @@ export const getCategoryGroups = async (
       continue;
     }
 
-    throw new Error(`Unknown category group source: ${row.source}`);
+    throw new UnknownCategoryGroupSourceError(row.source);
   }
 
   // Ensure ordering invariant for USER groups

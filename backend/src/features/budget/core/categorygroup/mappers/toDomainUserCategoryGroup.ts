@@ -1,5 +1,9 @@
 import { CategoryGroupSource } from "../categoryGroup.constants";
 import {
+  CategoryGroupMissingPositionError,
+  InvalidCategoryGroupSourceForUserMapperError,
+} from "../categoryGroup.errors";
+import {
   type DomainUserCategoryGroup,
   asCategoryGroupId,
   type db,
@@ -13,11 +17,11 @@ export const toDomainUserCategoryGroup = (
   row: db.CategoryGroup
 ): DomainUserCategoryGroup => {
   if (row.source !== CategoryGroupSource.USER) {
-    throw new Error("Expected USER category group");
+    throw new InvalidCategoryGroupSourceForUserMapperError(row.source);
   }
 
   if (row.position === null) {
-    throw new Error("Invalid state: USER category group has null position");
+    throw new CategoryGroupMissingPositionError(row.id);
   }
 
   return {

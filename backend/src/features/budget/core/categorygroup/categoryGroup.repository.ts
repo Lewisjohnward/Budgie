@@ -34,7 +34,6 @@ export interface CategoryGroupRepository {
   /**
    * Returns true if the given category group is protected for the user.
    */
-  // TODO:(lewis 2026-05-26 11:17) i'm thinking this can be cleaned up
   isProtectedCategoryGroup(
     tx: Prisma.TransactionClient,
     userId: UserId,

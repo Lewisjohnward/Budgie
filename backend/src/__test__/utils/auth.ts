@@ -56,6 +56,7 @@ export const registerUser = async (
   const responseBody = categoriesResponse.body as NormalisedCategoryData;
 
   const { categoryGroups } = responseBody;
+  console.log("categoryGroups:", categoryGroups);
 
   const testCategoryGroup = Object.values(categoryGroups).find(
     (categoryGroup) => categoryGroup.name === "test category group"

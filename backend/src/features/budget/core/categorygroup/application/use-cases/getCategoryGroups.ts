@@ -1,18 +1,20 @@
 import { asUserId } from "../../../../../user/auth/auth.types";
 import { categoryGroupService } from "../../categoryGroup.service";
-import { CategoryGroupsMap } from "../../types/categoryGroup.dto";
+import { type CategoryGroupsMap } from "../../types/categoryGroup.dto";
 import { normaliseCategoryGroups } from "../../utils/normaliseCategoryGroups";
 
-// TODO:(lewis 2026-05-22 04:29) this needs changing
 /**
- * Retrieves all category groups for a user and returns them as a normalized lookup map.
+ * Fetches all category groups for a given user and returns them as a normalized lookup map.
  *
  * This use case:
- * - Converts the raw `userId` into a strongly-typed domain `UserId`
- * - Fetches category groups from the service layer
+ * - Converts the raw `userId` string into a strongly-typed `UserId`
+ * - Delegates retrieval of category groups to the service layer
+ * - Normalizes the result into a key-based map for efficient access
  *
- * @param userId - The ID of the user whose category groups should be retrieved
- * @returns A record of category groups indexed by their ID
+ * @param {string} userId - The unique identifier of the user
+ * @returns {Promise<CategoryGroupsMap>} A promise that resolves to a map of category groups indexed by their ID
+ *
+ * @throws {Error} If the `userId` is invalid or the underlying service fails
  */
 export const getCategoryGroups = async (
   userId: string

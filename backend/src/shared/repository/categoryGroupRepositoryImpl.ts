@@ -1,5 +1,4 @@
 import { CategoryGroupSource, type Prisma } from "@prisma/client";
-import { PROTECTED_CATEGORY_GROUP_NAMES } from "../../features/budget/core/categorygroup/categoryGroup.constants";
 import { type CategoryGroupRepository } from "../../features/budget/core/categorygroup/categoryGroup.repository";
 import { type CreateCategoryGroupData } from "../../features/budget/core/categorygroup/categorygroup.schema";
 import {
@@ -10,7 +9,7 @@ import { type UserId } from "../../features/user/auth/auth.types";
 import { prisma } from "../prisma/client";
 
 export const categoryGroupRepository: CategoryGroupRepository = {
-  getUserCategoryGroup: async function(
+  getUserCategoryGroup: async function (
     tx: Prisma.TransactionClient,
     userId: UserId,
     categoryGroupId: CategoryGroupId
@@ -29,7 +28,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
 
     return row;
   },
-  getCategoryGroupById: async function(
+  getCategoryGroupById: async function (
     tx: Prisma.TransactionClient,
     userId: UserId,
     categoryGroupId: CategoryGroupId
@@ -48,7 +47,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     return row;
   },
 
-  getCategoryGroups: async function(
+  getCategoryGroups: async function (
     userId: UserId
   ): Promise<db.CategoryGroup[]> {
     return prisma.categoryGroup.findMany({ where: { userId } });
@@ -62,7 +61,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     return !!row;
   },
 
-  isProtectedCategoryGroup: async function(
+  isProtectedCategoryGroup: async function (
     tx: Prisma.TransactionClient,
     userId: UserId,
     categoryGroupId: CategoryGroupId
@@ -81,7 +80,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
 
   /**
    * Inserts a new category group record into the database. */
-  createCategoryGroup: async function(
+  createCategoryGroup: async function (
     tx: Prisma.TransactionClient,
     data: CreateCategoryGroupData
   ): Promise<db.CategoryGroup> {
@@ -90,7 +89,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     });
   },
 
-  deleteCategoryGroup: async function(
+  deleteCategoryGroup: async function (
     tx: Prisma.TransactionClient,
     categoryGroupId: CategoryGroupId
   ): Promise<void> {
@@ -101,7 +100,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     });
   },
 
-  renameCategoryGroup: async function(
+  renameCategoryGroup: async function (
     tx: Prisma.TransactionClient,
     categoryGroupId: CategoryGroupId,
     name: string
@@ -112,7 +111,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     });
   },
 
-  getUserCategoryGroupCount: async function(
+  getUserCategoryGroupCount: async function (
     tx: Prisma.TransactionClient,
     userId: UserId
   ): Promise<number> {
@@ -121,7 +120,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     });
   },
 
-  updateCategoryGroupPosition: async function(
+  updateCategoryGroupPosition: async function (
     tx: Prisma.TransactionClient,
     categoryGroupId: CategoryGroupId,
     position: number
@@ -132,7 +131,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     });
   },
 
-  shiftUserCategoryGroupsDown: async function(
+  shiftUserCategoryGroupsDown: async function (
     tx: Prisma.TransactionClient,
     userId: UserId,
     fromPosition: number,
@@ -155,7 +154,7 @@ export const categoryGroupRepository: CategoryGroupRepository = {
     });
   },
 
-  shiftUserCategoryGroupsUp: async function(
+  shiftUserCategoryGroupsUp: async function (
     tx: Prisma.TransactionClient,
     userId: UserId,
     fromPosition: number,
@@ -166,8 +165,8 @@ export const categoryGroupRepository: CategoryGroupRepository = {
         userId,
         source: CategoryGroupSource.USER,
         position: {
-          gte: fromPosition,
-          lt: toPosition,
+          gte: toPosition,
+          lt: fromPosition,
         },
       },
       data: {
