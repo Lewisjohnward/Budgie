@@ -1,5 +1,9 @@
 import { CategoryGroupSource } from "../categoryGroup.constants";
 import {
+  CategoryGroupInvalidSystemPositionError,
+  InvalidCategoryGroupSourceForSystemMapperError,
+} from "../categoryGroup.errors";
+import {
   asCategoryGroupId,
   type DomainSystemCategoryGroup,
   type db,
@@ -13,12 +17,12 @@ import {
 export const toDomainSystemCategoryGroup = (
   row: db.CategoryGroup
 ): DomainSystemCategoryGroup => {
-  if (row.source !== "SYSTEM") {
-    throw new Error("Expected USER category group");
+  if (row.source !== CategoryGroupSource.SYSTEM) {
+    throw new InvalidCategoryGroupSourceForSystemMapperError(row.source);
   }
 
   if (row.position !== null) {
-    throw new Error("Invalid state: USER category group has null position");
+    throw new CategoryGroupInvalidSystemPositionError(row.id);
   }
 
   return {

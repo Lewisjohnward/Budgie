@@ -11,11 +11,6 @@ import {
   UpdateCategoryGroupPayload,
 } from "../../features/budget/core/categorygroup/categorygroup.schema";
 
-// low-level CRUD
-// createCategoryGroup()
-// getCategoryGroups()
-// updateCategoryGroup()
-
 /**
  * Sends a raw request to fetch category groups, returning the full HTTP response for testing status codes and edge cases
  */
@@ -50,7 +45,7 @@ export const getCategoryGroups = async (
  */
 type UpdateCategoryGroupPayloadTest = Omit<
   UpdateCategoryGroupPayload,
-  "userId"
+  "userId" | "categoryGroupId"
 >;
 
 /**
@@ -58,10 +53,11 @@ type UpdateCategoryGroupPayloadTest = Omit<
  */
 export const updateCategoryGroup = async (
   cookie: string,
+  id: string,
   payload?: UpdateCategoryGroupPayloadTest
 ): Promise<Response> => {
   const res = await request(app)
-    .patch("/budget/categorygroups")
+    .patch(`/budget/categorygroups/${id}`)
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload);
 
@@ -123,6 +119,9 @@ export const createCategoryGroup = async (
   return res;
 };
 
+/**
+ * Finds a category group by name within a user category group map.
+ */
 export const findCategoryGroupByName = (
   groups: CategoryGroupUserMap,
   name: string
@@ -130,6 +129,9 @@ export const findCategoryGroupByName = (
   return Object.values(groups).find((g) => g.name === name);
 };
 
+/**
+ * Fetches category groups and returns the one matching the given name, or throws if not found.
+ */
 export const getCategoryGroupByNameOrThrow = async (
   cookie: string,
   name: string
@@ -143,4 +145,43 @@ export const getCategoryGroupByNameOrThrow = async (
   }
 
   return group;
+};
+
+/**
+ * Creates a set of test category groups for use in integration tests.
+ */
+export const createTestCategoryGroups = async (cookie: string) => {
+  const g1 = await createCategoryGroup(cookie, { name: "A" });
+  const g2 = await createCategoryGroup(cookie, { name: "B" });
+  const g3 = await createCategoryGroup(cookie, { name: "C" });
+
+  return { g1, g2, g3 };
+};
+
+/**
+ * Deletes a category group for the authenticated user.
+ */
+export const deleteCategoryGroup = async (
+  cookie: string,
+  id: string
+): Promise<Response> => {
+  const res = await request(app)
+    .delete(`/budget/categorygroups/${id}`)
+    .set("Authorization", `Bearer ${cookie}`);
+
+  return res;
+};
+
+/**
+ * Deletes a category group and returns updated category groups state.
+ */
+export const deleteCategoryGroupAndGetState = async (
+  cookie: string,
+  id: string
+) => {
+  const res = await deleteCategoryGroup(cookie, id);
+
+  const after = await getCategoryGroups(cookie);
+
+  return { res, after };
 };

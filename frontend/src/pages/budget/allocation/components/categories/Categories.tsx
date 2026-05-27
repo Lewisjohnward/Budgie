@@ -52,7 +52,7 @@ export function Categories({
 }: CategoriesProps) {
   const { uncategorisedRow, categoriesByGroup } = view;
   const [editCategory] = useEditCategoryMutation();
-  const [editCategoryGroup] = useEditCategoryGroupMutation();
+  const [editCategoryGroup] = useUpdateCategoryGroupMutation();
 
   useEffect(() => {
     setDraftView(categoriesByGroup);
@@ -319,7 +319,10 @@ function moveItem(
 
 import { useDroppable } from "@dnd-kit/core";
 import { cn } from "@/core/lib/utils";
-import { useEditCategoryGroupMutation } from "@/core/api/budget/categoryGroup/CategoryGroupApiSlice";
+import {
+  useEditCategoryGroupMutation,
+  useUpdateCategoryGroupMutation,
+} from "@/core/api/budget/categoryGroup/CategoryGroupApiSlice";
 
 type Props = {
   groupId: string;

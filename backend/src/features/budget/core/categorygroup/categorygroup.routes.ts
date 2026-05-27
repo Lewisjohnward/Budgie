@@ -9,7 +9,7 @@ import {
 const router = Router();
 router.get("/", getCategoryGroups);
 router.post("/", createCategoryGroup);
-router.patch("/", updateCategoryGroup);
-router.delete("/", deleteCategoryGroup);
+router.patch("/:id", updateCategoryGroup);
+router.delete("/:id", deleteCategoryGroup);
 
 export default router;

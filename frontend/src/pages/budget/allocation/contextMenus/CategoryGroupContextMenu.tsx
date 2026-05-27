@@ -1,7 +1,5 @@
-import {
-  useDeleteCategoryGroupMutation,
-  useEditCategoryGroupMutation,
-} from "@/core/api/budgetApiSlice";
+import { useUpdateCategoryGroupMutation } from "@/core/api/budget/categoryGroup/CategoryGroupApiSlice";
+import { useDeleteCategoryGroupMutation } from "@/core/api/budgetApiSlice";
 import { Button } from "@/core/components/uiLibrary/button";
 import {
   Form,
@@ -39,7 +37,7 @@ export function CategoryGroupContextMenu({
   children: ReactNode;
 }) {
   const [contextOpen, setContextOpen] = useState(false);
-  const [editCategoryGroup] = useEditCategoryGroupMutation();
+  const [editCategoryGroup] = useUpdateCategoryGroupMutation();
   const [deleteCategoryGroup] = useDeleteCategoryGroupMutation();
 
   const form = useForm<CategoryGroupContextType>({

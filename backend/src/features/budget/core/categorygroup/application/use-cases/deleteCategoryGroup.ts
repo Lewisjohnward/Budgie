@@ -6,7 +6,6 @@ import {
   asCategoryId,
   type CategoryId,
 } from "../../../category/core/category.types";
-import { CategoryGroupNotFoundError } from "../../categoryGroup.errors";
 import { type DeleteCategoryGroupPayload } from "../../categorygroup.schema";
 import { categoryGroupService } from "../../categoryGroup.service";
 import {
@@ -94,20 +93,10 @@ export const deleteCategoryGroup = async (
 ): Promise<void> => {
   const { userId, categoryGroupId, inheritingCategoryId } =
     toDeleteCategoryGroupCommand(payload);
+  console.log("the use case is being called");
 
   await prisma.$transaction(async (tx) => {
-    const categoryGroupToDelete =
-      await categoryGroupService.getUserCategoryGroup(
-        tx,
-        userId,
-        categoryGroupId
-      );
-
-    if (!categoryGroupToDelete) {
-      throw new CategoryGroupNotFoundError();
-    }
-
-    await categoryGroupService.isProtectedCategoryGroup(
+    const categoryGroup = await categoryGroupService.getModifiableCategoryGroup(
       tx,
       userId,
       categoryGroupId
@@ -117,15 +106,12 @@ export const deleteCategoryGroup = async (
     const transactions =
       await transactionRepository.getTransactionsByCategoryGroupId(
         tx,
-        categoryGroupToDelete.id
+        categoryGroup.id
       );
 
     if (transactions.length === 0) {
       // if no transactions, delete category group, delete categories, delete months
-      await categoryGroupRepository.deleteCategoryGroup(
-        tx,
-        categoryGroupToDelete.id
-      );
+      await categoryGroupRepository.deleteCategoryGroup(tx, categoryGroup.id);
     }
 
     // if transactions, delete category group, delete categories, delete months, move transactions to new category, update months for inherting category

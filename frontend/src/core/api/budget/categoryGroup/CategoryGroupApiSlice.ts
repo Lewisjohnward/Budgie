@@ -11,16 +11,14 @@ type UpdatedCategoryGroupInput = {
 
 export const categoryGroupApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    editCategoryGroup: builder.mutation<
+    updateCategoryGroup: builder.mutation<
       CategoryGroupBranded,
       UpdatedCategoryGroupInput
     >({
       query: ({ name, position, categoryGroupId }) => ({
-        // TODO:(lewis 2026-05-18 13:47) shouldnt this be using params?
-        // TODO:(lewis 2026-05-20 04:42) should it be plural or singular?
-        url: `budget/categorygroups`,
+        url: `budget/categorygroups/${categoryGroupId}`,
         method: "PATCH",
-        body: { name, position, categoryGroupId },
+        body: { name, position },
       }),
 
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
@@ -71,4 +69,4 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
   }),
 });
 
-export const { useEditCategoryGroupMutation } = categoryGroupApiSlice;
+export const { useUpdateCategoryGroupMutation } = categoryGroupApiSlice;

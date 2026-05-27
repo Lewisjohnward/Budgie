@@ -70,6 +70,7 @@ export function useAllocation() {
   const expandCategoryGroups = useExpandableCategoryGroups({
     categoryGroups: userCategoryGroupViews,
   });
+  console.log("userCategoryGroupViews:", userCategoryGroupViews);
 
   /*
    * notes

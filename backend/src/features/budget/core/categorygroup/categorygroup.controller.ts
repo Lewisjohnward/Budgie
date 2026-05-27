@@ -6,7 +6,9 @@ import {
   updateCategoryGroupSchema,
 } from "./categorygroup.schema";
 
-/** Retrieves a user's category groups and returns them as a normalised record response */
+/**
+ * Retrieves a user's category groups and returns them as a normalised record response.
+ */
 export const getCategoryGroups = async (
   req: Request,
   res: Response,
@@ -23,6 +25,9 @@ export const getCategoryGroups = async (
   return;
 };
 
+/**
+ * Creates a new category group.
+ */
 export const createCategoryGroup = async (
   req: Request,
   res: Response,
@@ -37,24 +42,27 @@ export const createCategoryGroup = async (
     const categoryGroup = await categoryGroupUseCase.createCategoryGroup(
       validatedCategoryGroup
     );
-    res.status(200).json(categoryGroup);
+    res.status(201).json(categoryGroup);
   } catch (error) {
     next(error);
   }
 };
 
 /**
- * Updates a category group for the authenticated user and returns the updated result.
+ * Updates a category group and returns the updated result.
  */
 export const updateCategoryGroup = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  const categoryGroupId = req.params.id;
+
   try {
     const payload = updateCategoryGroupSchema.parse({
-      userId: req.user!._id,
       ...req.body,
+      userId: req.user!._id,
+      categoryGroupId: categoryGroupId,
     });
 
     const updatedCategoryGroup =
@@ -65,15 +73,20 @@ export const updateCategoryGroup = async (
   }
 };
 
+/**
+ * Deletes a category group and returns the updated result.
+ */
 export const deleteCategoryGroup = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
+  const categoryGroupId = req.params.id;
   try {
     const payload = deleteCategoryGroupSchema.parse({
-      userId: req.user!._id,
       ...req.body,
+      userId: req.user!._id,
+      categoryGroupId: categoryGroupId,
     });
 
     await categoryGroupUseCase.deleteCategoryGroup(payload);
