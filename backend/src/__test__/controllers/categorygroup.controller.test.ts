@@ -379,19 +379,17 @@ describe("Category group", () => {
 
     describe("Success", () => {
       it("Should delete a category group", async () => {
-        const { g1 } = await createTestCategoryGroups(cookie);
+        const g = await getTestCategoryGroup(cookie);
 
         const before = await getCategoryGroups(cookie);
 
-        const res = await deleteCategoryGroup(cookie, g1.body.id);
+        const res = await deleteCategoryGroup(cookie, g.id);
 
         expect(res.statusCode).toBe(200);
 
         const after = await getCategoryGroups(cookie);
 
-        const exists = Object.values(after.user).some(
-          (g) => g.id === g1.body.id
-        );
+        const exists = Object.values(after.user).some((g) => g.id === g.id);
 
         expect(exists).toBe(false);
 
@@ -406,14 +404,9 @@ describe("Category group", () => {
         expect(Object.keys(after.user).length).toBe(
           Object.keys(before.user).length - 1
         );
+        console.log(res.body);
       });
+      it.todo("should transfer to inherting category");
     });
-  });
-  describe("delete", () => {
-    it.todo("should delete category group");
-    it.todo("should prevent user from deleting protected categories");
-    it.todo("should transfer to inherting category group");
-    it.todo("should transfer to inherting category");
-    it.todo("should prevent user deleting non existent / other users groups");
   });
 });

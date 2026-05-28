@@ -1,4 +1,5 @@
 import { createCategoryGroup } from "./application/service/createCategoryGroup";
+import { deleteCategoryGroup } from "./application/service/deleteCategoryGroup";
 import { ensureUserOwnsCategoryGroup } from "./application/service/ensureUserOwnsCategoryGroup";
 import { getUserCategoryGroup } from "./application/service/getCategoryGroup";
 import { getCategoryGroups } from "./application/service/getCategoryGroups";
@@ -18,6 +19,8 @@ export const categoryGroupService = {
 
   renameCategoryGroup,
   repositionCategoryGroup,
+  // TODO:(lewis 2026-05-27 11:58) is this used?
   getUserCategoryGroup,
   getCategoryGroups,
+  deleteCategoryGroup,
 };

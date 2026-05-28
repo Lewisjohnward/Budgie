@@ -95,4 +95,13 @@ export interface CategoryGroupRepository {
     tx: Prisma.TransactionClient,
     categoryGroupId: CategoryGroupId
   ): Promise<void>;
+
+  /**
+   * Shifts all user category groups after a deleted position down by one to maintain continuous ordering.
+   */
+  shiftAfterDelete(
+    tx: Prisma.TransactionClient,
+    userId: UserId,
+    deletedPosition: number
+  ): Promise<void>;
 }

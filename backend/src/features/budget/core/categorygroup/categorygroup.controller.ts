@@ -13,7 +13,7 @@ export const getCategoryGroups = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   const userId = req.user!._id;
   try {
     const normalisedCategoryGroups =
@@ -22,7 +22,6 @@ export const getCategoryGroups = async (
   } catch (error) {
     next(error);
   }
-  return;
 };
 
 /**
@@ -32,7 +31,7 @@ export const createCategoryGroup = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const validatedCategoryGroup = createCategoryGroupSchema.parse({
       userId: req.user!._id,
@@ -55,7 +54,7 @@ export const updateCategoryGroup = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   const categoryGroupId = req.params.id;
 
   try {
@@ -80,7 +79,7 @@ export const deleteCategoryGroup = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   const categoryGroupId = req.params.id;
   try {
     const payload = deleteCategoryGroupSchema.parse({

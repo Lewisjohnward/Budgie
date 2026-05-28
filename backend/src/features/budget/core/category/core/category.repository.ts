@@ -52,6 +52,14 @@ export interface CategoryRepository {
     userId: UserId
   ): Promise<string | null>;
 
+  /**
+   * Retrieves all categories ids belonging to a specific category group.
+   */
+  getCategoryIdsByCategoryGroupId(
+    tx: Prisma.TransactionClient,
+    categoryGroupId: CategoryGroupId
+  ): Promise<string[]>;
+
   // ──────────────── Category Mutation ────────────────
 
   createCategory(
