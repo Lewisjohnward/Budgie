@@ -1,4 +1,3 @@
-import { categoryRepository } from "../../../../../../../shared/repository/categoryRepositoryImpl";
 import { type EditCategoryPayload } from "../../category.schema";
 import { prisma } from "../../../../../../../shared/prisma/client";
 import { CategoryNotFoundError } from "../../category.errors";
@@ -11,7 +10,7 @@ import {
 } from "../../../../categorygroup/categoryGroup.types";
 import { asUserId, type UserId } from "../../../../../../user/auth/auth.types";
 import { categoryMapper } from "../../category.mapper";
-import { CategoryDto } from "../../types/category.dto";
+import { type CategoryDto } from "../../types/category.dto";
 
 //  TODO: IMPLEMENT CHANGE POSITION
 // TODO: IF NOTHING CHANGES DON'T INTERACT WITH DB

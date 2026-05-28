@@ -6,10 +6,16 @@ import { asUserId, type UserId } from "../../../../../user/auth/auth.types";
 import { categoryService } from "../../../category/core/category.service";
 import {
   asCategoryId,
+  DomainMonth,
   type CategoryId,
 } from "../../../category/core/category.types";
 import { transactionService } from "../../../transaction/transaction.service";
-import { DomainNormalTransaction } from "../../../transaction/transaction.types";
+import { type DomainNormalTransaction } from "../../../transaction/transaction.types";
+import { type DeleteCategoryGroupResult } from "../../categoryGroup.contract";
+import {
+  InheritingCategoryBelongsToDeletedGroupError,
+  InheritingCategoryRequiredError,
+} from "../../categoryGroup.errors";
 import { type DeleteCategoryGroupPayload } from "../../categorygroup.schema";
 import { categoryGroupService } from "../../categoryGroup.service";
 import {
@@ -94,11 +100,11 @@ export const toDeleteCategoryGroupCommand = (
  */
 export const deleteCategoryGroup = async (
   payload: DeleteCategoryGroupPayload
-): Promise<void> => {
+): Promise<DeleteCategoryGroupResult> => {
   const { userId, categoryGroupId, inheritingCategoryId } =
     toDeleteCategoryGroupCommand(payload);
 
-  await prisma.$transaction(async (tx) => {
+  return await prisma.$transaction(async (tx) => {
     // Get the category group to be deleted
     const categoryGroup = await categoryGroupService.getModifiableCategoryGroup(
       tx,
@@ -119,33 +125,42 @@ export const deleteCategoryGroup = async (
       categoryIds
     );
 
-    if (transactions.length > 0 && !inheritingCategoryId) {
-      throw new Error("Inheriting category required"); // temporary domain rule
-    }
+    const hasTransactions = transactions.length > 0;
+    let updatedMonths: DomainMonth[] = [];
+    let updatedTransactions: DomainNormalTransaction[] = [];
+    if (hasTransactions) {
+      if (!inheritingCategoryId) {
+        throw new InheritingCategoryRequiredError();
+      }
 
-    const transactionsWithNewCategoryId: DomainNormalTransaction[] =
-      transactions.map((tx) => ({
+      const newCategory =
+        await categoryService.categories.getModifiableCategory(
+          tx,
+          userId,
+          inheritingCategoryId
+        );
+
+      if (newCategory.categoryGroupId === categoryGroupId)
+        throw new InheritingCategoryBelongsToDeletedGroupError();
+
+      updatedTransactions = transactions.map((tx) => ({
         ...tx,
-        categoryId: inheritingCategoryId!,
+        categoryId: newCategory.id,
       }));
 
-    // Calculate months for the inheriting category
-    const updatedMonths =
-      await categoryService.months.recalculateCategoryMonthsForTransactions(
-        tx,
-        transactionsWithNewCategoryId,
-        OperationMode.Add
-      );
+      // Calculate months for the inheriting category
+      updatedMonths =
+        await categoryService.months.recalculateCategoryMonthsForTransactions(
+          tx,
+          updatedTransactions,
+          OperationMode.Add
+        );
 
-    if (transactionsWithNewCategoryId.length > 0) {
       // if transactions, delete category group, delete categories, delete months, move transactions to new category, update months for inherting category
-
-      // TODO:(lewis 2026-05-28 09:01) Check that user owns inherting category and isn't a system category
-
       await transactionRepository.bulkUpdateTransactionCategory(
         tx,
         categoryIds,
-        inheritingCategoryId!
+        inheritingCategoryId
       );
     }
 
@@ -164,31 +179,9 @@ export const deleteCategoryGroup = async (
 
       deletedCategoryIds: categoryIds,
 
-      transactionReassignments:
-        transactions.length > 0 && inheritingCategoryId
-          ? transactions.map((t) => ({
-              transactionId: t.id,
-              categoryId: inheritingCategoryId,
-            }))
-          : [],
+      updatedTransactions,
 
-      monthUpdates: updatedMonths,
+      updatedMonths,
     };
   });
 };
-
-// type DeleteCategoryGroupResult = {
-//   deletedCategoryGroupId: string;
-//   deletedCategoryIds: string[];
-//
-//   transactionReassignments: Array<{
-//     transactionId: string;
-//     categoryId: string;
-//   }>;
-//
-//   monthUpdates: Array<{
-//     monthId: string;
-//     activityDelta: number;
-//     assignedDelta: number;
-//   }>;
-// };

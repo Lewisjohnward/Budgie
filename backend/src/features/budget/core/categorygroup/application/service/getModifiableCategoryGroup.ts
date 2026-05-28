@@ -3,7 +3,7 @@ import { categoryGroupRepository } from "../../../../../../shared/repository/cat
 import { UserId } from "../../../../../user/auth/auth.types";
 import {
   NoCategoryGroupFoundError,
-  ModifyingCategoryToProtectedCategoryGroupError,
+  ModifyingAProtectedCategoryGroupError,
 } from "../../categoryGroup.errors";
 import { categoryGroupMapper } from "../../categorygroup.mapper";
 import {
@@ -40,7 +40,7 @@ export const getModifiableCategoryGroup = async (
   }
 
   if (row.source === CategoryGroupSource.SYSTEM) {
-    throw new ModifyingCategoryToProtectedCategoryGroupError();
+    throw new ModifyingAProtectedCategoryGroupError();
   }
 
   return categoryGroupMapper.toDomainUserCategoryGroup(row);

@@ -1,4 +1,11 @@
+import { createAccountAndFetch } from "../utils/account";
+import { getMonthsForCategories } from "../utils/assign";
 import { login, registerUser } from "../utils/auth";
+import {
+  createCategory,
+  fetchCategoryByName,
+  getRTACategory,
+} from "../utils/category";
 import {
   createCategoryGroup,
   createTestCategoryGroups,
@@ -10,6 +17,10 @@ import {
   getTestCategoryGroup,
   updateCategoryGroup,
 } from "../utils/categoryGroup";
+import {
+  addTransaction,
+  getTransactionsForAccountId,
+} from "../utils/transaction";
 
 describe("Category group", () => {
   let cookie: string;
@@ -329,7 +340,7 @@ describe("Category group", () => {
     });
   });
 
-  describe("delete", () => {
+  describe("Delete", () => {
     describe("Error cases", () => {
       it("Should return 401 on unauthenticated requests", async () => {
         const res = await deleteCategoryGroup("invalid-cookie", "some-id");
@@ -375,21 +386,197 @@ describe("Category group", () => {
 
         expect(res.statusCode).toBe(404);
       });
+
+      describe("With transactions", () => {
+        it("Should return 403 when inheriting category is protected", async () => {
+          const rtaCategory = await getRTACategory(cookie);
+          const g = await getTestCategoryGroup(cookie);
+
+          // Create category
+          await createCategory(cookie, {
+            name: "cat-a",
+            categoryGroupId: g.id,
+          });
+          const catA = await fetchCategoryByName(cookie, "cat-a");
+
+          // Create account
+          const testAccount = await createAccountAndFetch(cookie, 0);
+
+          // Create transactions assigned to cat-a
+          await addTransaction(cookie, {
+            accountId: testAccount.id,
+            categoryId: catA.id,
+            outflow: "4",
+          });
+
+          const res = await deleteCategoryGroup(cookie, g.id, rtaCategory.id);
+
+          expect(res.statusCode).toBe(403);
+        });
+        it("Should return 400 when category group has transactions but no inheriting category id", async () => {
+          const g = await getTestCategoryGroup(cookie);
+
+          // Create category
+          await createCategory(cookie, {
+            name: "cat-a",
+            categoryGroupId: g.id,
+          });
+          const catA = await fetchCategoryByName(cookie, "cat-a");
+
+          // Create account
+          const testAccount = await createAccountAndFetch(cookie, 0);
+
+          // Create transactions assigned to cat-a
+          await addTransaction(cookie, {
+            accountId: testAccount.id,
+            categoryId: catA.id,
+            outflow: "4",
+          });
+
+          const res = await deleteCategoryGroup(cookie, g.id);
+
+          expect(res.statusCode).toBe(400);
+        });
+        it("Should return 404 when inheriting category doesn't exist", async () => {
+          const testGroups = await createTestCategoryGroups(cookie);
+          const { g1 } = testGroups;
+
+          // Create category
+          await createCategory(cookie, {
+            name: "cat-a",
+            categoryGroupId: g1.id,
+          });
+          const catA = await fetchCategoryByName(cookie, "cat-a");
+
+          // Create account
+          const testAccount = await createAccountAndFetch(cookie, 0);
+
+          // Create transactions assigned to cat-a
+          await addTransaction(cookie, {
+            accountId: testAccount.id,
+            categoryId: catA.id,
+            outflow: "4",
+          });
+
+          const res = await deleteCategoryGroup(
+            cookie,
+            g1.id,
+            "7f3c2d91-8a44-4b2d-b6f1-3e9a1c5d7f20"
+          );
+
+          expect(res.statusCode).toBe(404);
+        });
+
+        it("Should return 400 when inheriting category is owned by category group being deleted", async () => {
+          const testGroups = await createTestCategoryGroups(cookie);
+          const { g1 } = testGroups;
+
+          // Create category for g1
+          await createCategory(cookie, {
+            name: "cat-a",
+            categoryGroupId: g1.id,
+          });
+          const catA = await fetchCategoryByName(cookie, "cat-a");
+
+          // Create another category for g1
+          await createCategory(cookie, {
+            name: "cat-b",
+            categoryGroupId: g1.id,
+          });
+          const catB = await fetchCategoryByName(cookie, "cat-b");
+
+          // Create account
+          const testAccount = await createAccountAndFetch(cookie, 0);
+
+          // Create transactions assigned to cat-a
+          await addTransaction(cookie, {
+            accountId: testAccount.id,
+            categoryId: catA.id,
+            outflow: "4",
+          });
+
+          const res = await deleteCategoryGroup(cookie, g1.id, catB.id);
+
+          expect(res.statusCode).toBe(400);
+        });
+        it("Should return 404 when inheriting category id isn't owned by user", async () => {
+          const testGroups = await createTestCategoryGroups(cookie);
+          const { g1 } = testGroups;
+
+          // Register other account
+          await registerUser({
+            email: "other@test.com",
+            password: "testpasswordABC$",
+          });
+
+          // Login other account
+          const otherCookie = await login({
+            email: "other@test.com",
+            password: "testpasswordABC$",
+          });
+
+          // Create category group for other user
+          const { body } = await createCategoryGroup(otherCookie, {
+            name: "OTHER_GROUP",
+          });
+
+          // Create category for g1
+          await createCategory(cookie, {
+            name: "cat-a",
+            categoryGroupId: g1.id,
+          });
+          const catA = await fetchCategoryByName(cookie, "cat-a");
+
+          // Create account
+          const testAccount = await createAccountAndFetch(cookie, 0);
+
+          // Create transactions assigned to cat-a
+          await addTransaction(cookie, {
+            accountId: testAccount.id,
+            categoryId: catA.id,
+            outflow: "4",
+          });
+
+          // Create category for other user
+          await createCategory(otherCookie, {
+            name: "not-owned",
+            categoryGroupId: body.id,
+          });
+          const notOwnedCategory = await fetchCategoryByName(
+            otherCookie,
+            "not-owned"
+          );
+
+          const res = await deleteCategoryGroup(
+            cookie,
+            g1.id,
+            notOwnedCategory.id
+          );
+
+          expect(res.statusCode).toBe(404);
+        });
+      });
     });
 
     describe("Success", () => {
-      it("Should delete a category group", async () => {
+      it("Should delete a category group and reindex groups", async () => {
         const g = await getTestCategoryGroup(cookie);
+        console.log("to delete g:", g);
 
         const before = await getCategoryGroups(cookie);
+        console.log("before:", before);
 
         const res = await deleteCategoryGroup(cookie, g.id);
 
         expect(res.statusCode).toBe(200);
+        console.log(res.body);
 
         const after = await getCategoryGroups(cookie);
+        console.log("after:", after);
 
-        const exists = Object.values(after.user).some((g) => g.id === g.id);
+        const exists = Object.values(after.user).some(
+          (group) => group.id === g.id
+        );
 
         expect(exists).toBe(false);
 
@@ -404,8 +591,100 @@ describe("Category group", () => {
         expect(Object.keys(after.user).length).toBe(
           Object.keys(before.user).length - 1
         );
-        console.log(res.body);
       });
+      it("Should reassign transactions to inheriting category and returns DTO", async () => {
+        const testGroups = await createTestCategoryGroups(cookie);
+
+        const { g1, g2 } = testGroups;
+
+        // create account
+        const testAccount = await createAccountAndFetch(cookie, 0);
+
+        // create category a of test category group
+        await createCategory(cookie, {
+          name: "cat-a",
+          categoryGroupId: g1.id,
+        });
+        const catA = await fetchCategoryByName(cookie, "cat-a");
+
+        // create category b of different test category group
+        await createCategory(cookie, {
+          name: "cat-b",
+          categoryGroupId: g2.id,
+        });
+        const catB = await fetchCategoryByName(cookie, "cat-b");
+
+        // Create transactions assigned to cat-a
+        const txA = await addTransaction(cookie, {
+          accountId: testAccount.id,
+          categoryId: catA.id,
+          outflow: "4",
+        });
+
+        const txB = await addTransaction(cookie, {
+          accountId: testAccount.id,
+          categoryId: catA.id,
+          outflow: "4",
+        });
+
+        // Group before transactions
+        const txIdsBefore = [txA.id, txB.id];
+
+        // Get months before
+        const monthsBefore = await getMonthsForCategories(cookie, [catB.id]);
+
+        // Delete test category group, and assign transactions to category b
+        const res = await deleteCategoryGroup(cookie, g1.id, catB.id);
+
+        expect(res.statusCode).toBe(200);
+
+        // DTO check
+        expect(res.body.deletedCategoryGroupId).toBe(g1.id);
+        expect(Object.keys(res.body.transactionReassignments).length).toBe(2);
+
+        // Get updated transactions
+        const transactions = await getTransactionsForAccountId(
+          cookie,
+          testAccount.id
+        );
+
+        // Filter only test transactions
+        const updatedTxs = transactions.filter((t) =>
+          txIdsBefore.includes(t.id)
+        );
+
+        // Ensure transactions are assigned to new category
+        for (const tx of updatedTxs) {
+          expect(tx.categoryId).toBe(catB.id);
+        }
+
+        // Get months after
+        const monthsAfter = await getMonthsForCategories(cookie, [catB.id]);
+        console.log("monthsAfter:", monthsAfter);
+
+        // Assert that months are correct
+
+        // Assert that category group is deleted
+
+        // Assert that categories are deleted
+
+        // Assert that months are deleted
+      });
+      // it("updates months correctly after reassignment", async () => {
+      //   const group = await getTestCategoryGroup(cookie);
+      //
+      //   const before = await getMonthsForCategories(cookie, group.categoryIds);
+      //
+      //   const res = await deleteCategoryGroup(cookie, group.id);
+      //
+      //   expect(res.statusCode).toBe(200);
+      //
+      //   const after = await getMonthsForCategories(cookie, group.categoryIds);
+      //
+      //   for (const categoryId of group.categoryIds) {
+      //     expect(after[categoryId]).toBeDefined();
+      //   }
+      // });
       it.todo("should transfer to inherting category");
     });
   });

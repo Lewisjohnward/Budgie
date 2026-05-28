@@ -37,7 +37,7 @@ export const recalculateCategoryMonthsForTransactions = async (
   transactions: DomainNormalTransaction[],
   mode: OperationMode
 ): Promise<DomainMonth[]> => {
-  if (transactions.length === 0) [];
+  if (transactions.length === 0) return [];
 
   // round all txs to start of month
   const transactionsRoundedToStartOfMonth =

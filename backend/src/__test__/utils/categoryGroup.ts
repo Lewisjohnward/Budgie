@@ -151,11 +151,15 @@ export const getCategoryGroupByNameOrThrow = async (
  * Creates a set of test category groups for use in integration tests.
  */
 export const createTestCategoryGroups = async (cookie: string) => {
-  const g1 = await createCategoryGroup(cookie, { name: "A" });
-  const g2 = await createCategoryGroup(cookie, { name: "B" });
-  const g3 = await createCategoryGroup(cookie, { name: "C" });
+  const { body: body1 } = await createCategoryGroup(cookie, { name: "A" });
+  const { body: body2 } = await createCategoryGroup(cookie, { name: "B" });
+  const { body: body3 } = await createCategoryGroup(cookie, { name: "C" });
 
-  return { g1, g2, g3 };
+  return {
+    g1: body1 as CategoryGroupUserDto,
+    g2: body2 as CategoryGroupUserDto,
+    g3: body3 as CategoryGroupUserDto,
+  };
 };
 
 /**
@@ -163,11 +167,13 @@ export const createTestCategoryGroups = async (cookie: string) => {
  */
 export const deleteCategoryGroup = async (
   cookie: string,
-  id: string
+  id: string,
+  inheritingCategoryId?: string
 ): Promise<Response> => {
   const res = await request(app)
     .delete(`/budget/categorygroups/${id}`)
-    .set("Authorization", `Bearer ${cookie}`);
+    .set("Authorization", `Bearer ${cookie}`)
+    .send({ inheritingCategoryId });
 
   return res;
 };

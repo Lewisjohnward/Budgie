@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { ModifyingCategoryToProtectedCategoryGroupError } from "../../categoryGroup.errors";
+import { ModifyingAProtectedCategoryGroupError } from "../../categoryGroup.errors";
 import { categoryGroupRepository } from "../../../../../../shared/repository/categoryGroupRepositoryImpl";
 import { type CategoryGroupId } from "../../categoryGroup.types";
 import { type UserId } from "../../../../../user/auth/auth.types";
@@ -18,6 +18,6 @@ export const isProtectedCategoryGroup = async (
   );
 
   if (isProtected) {
-    throw new ModifyingCategoryToProtectedCategoryGroupError();
+    throw new ModifyingAProtectedCategoryGroupError();
   }
 };
