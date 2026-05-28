@@ -68,3 +68,36 @@ export type TransferTransactionInsertData = Omit<
 > & {
   transferAccountId: AccountId;
 };
+
+export type TransactionNormalDto = {
+  type: "normal";
+  id: string;
+  accountId: string;
+  categoryId: string;
+  payeeId: string | null;
+  date: string;
+  memo: string;
+  inflow: string;
+  outflow: string;
+};
+
+/**
+ * Data Transfer Object representing a financial transaction as exposed to the client.
+ *
+ * This is the canonical representation of a transaction used for API responses
+ * and frontend state hydration. It includes all fields required to render,
+ * categorize, and compute financial summaries for a transaction.
+ */
+export type TransactionDto =
+  | TransactionNormalDto
+  | {
+    type: "transfer";
+    id: string;
+    accountId: string;
+    date: string;
+    memo: string;
+    inflow: string;
+    outflow: string;
+    transferAccountId: string;
+    transferTransactionId: string;
+  };

@@ -108,11 +108,11 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["Categories"],
     }),
     deleteCategoryGroup: builder.mutation<void, { categoryGroupId: string }>({
-      query: (categoryGroup) => {
+      query: ({ categoryGroupId }) => {
         return {
-          url: "budget/categorygroups",
+          url: `budget/categorygroups/${categoryGroupId}`,
           method: "DELETE",
-          body: categoryGroup,
+          body: {},
         };
       },
       invalidatesTags: ["Categories"],

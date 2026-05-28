@@ -17,21 +17,39 @@ export const toDeleteCategoryGroupDto = (
   result: DeleteCategoryGroupResult
 ): DeleteCategoryGroupDto => {
   return {
-    deletedCategoryGroupId: result.deletedCategoryGroupId,
-    deletedCategoryIds: result.deletedCategoryIds,
-
-    transactionReassignments: Object.fromEntries(
-      result.updatedTransactions.map((tx) => [tx.id, tx.categoryId])
-    ),
-
-    monthUpdates: Object.fromEntries(
-      Object.entries(result.updatedMonths).map(([monthId, value]) => [
-        monthId,
-        {
-          activity: value.activity.toNumber(),
-          assigned: value.assigned.toNumber(),
-        },
-      ])
-    ),
+    deleted: {
+      categoryGroupId: result.deletedCategoryGroupId,
+    },
+    updated: {
+      transactions: Object.fromEntries(
+        result.updatedTransactions.map((tx) => [
+          tx.id,
+          {
+            type: tx.type,
+            id: tx.id,
+            accountId: tx.accountId,
+            categoryId: tx.categoryId,
+            payeeId: tx.payeeId ?? null,
+            date: tx.date.toISOString(),
+            memo: tx.memo,
+            inflow: tx.inflow.toString(),
+            outflow: tx.outflow.toString(),
+          },
+        ])
+      ),
+      months: Object.fromEntries(
+        result.updatedMonths.map((month) => [
+          month.id,
+          {
+            id: month.id,
+            categoryId: month.categoryId,
+            month: month.month.toISOString(),
+            activity: month.activity.toNumber?.() ?? month.activity,
+            assigned: month.assigned.toNumber?.() ?? month.assigned,
+            available: month.available.toNumber?.() ?? month.available,
+          },
+        ])
+      ),
+    },
   };
 };
