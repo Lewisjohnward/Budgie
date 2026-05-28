@@ -6,7 +6,7 @@ import { isCategoryProtected } from "./application/services/isCategoryProtected"
 import { createMonthsForCategory } from "./application/services/months/createMonthsForCategory";
 import { insertMissingMonths } from "./application/services/months/insertMissingMonths";
 import { ensureMonthsContinuity } from "./application/services/months/ensureMonthsContinuity";
-import { recalculateCategoryMonthsForTransactions } from "./application/services/months/recalculateForTransactions";
+import { recalculateCategoryMonthsForTransactions } from "./application/services/months/recalculateForCategoryMonthsForTransactions";
 import { getMonth } from "./application/services/months/getMonth";
 import { getAllMonthsForCategories } from "./application/services/months/getAllMonthsForCategories";
 import { getMonthsForCategoriesStartingFrom } from "./application/services/months/getMonthsForCategoriesStartingFrom";
@@ -22,6 +22,7 @@ import { getMonthsForCategories } from "./application/services/months/getMonthsF
 import { getCategories } from "./application/services/getCategories";
 import { getMonths } from "./application/services/months/getMonths";
 import { getCategoryIdsByCategoryGroupId } from "./application/services/getCategoryIdsByCategoryGroupId";
+import { getModifiableCategory } from "./application/services/getModifiableCategory";
 
 export const categoryService = {
   rta: {
@@ -48,6 +49,7 @@ export const categoryService = {
     getCategories,
     getUncategorisedCategoryId,
     getCategoryIdsByCategoryGroupId,
+    getModifiableCategory,
     initialiseCategories,
     checkCategoryNameIsUniqueInGroup,
     getNextCategoryPosition,

@@ -5,6 +5,7 @@ import {
   deleteCategoryGroupSchema,
   updateCategoryGroupSchema,
 } from "./categorygroup.schema";
+import { categoryGroupMapper } from "./categorygroup.mapper";
 
 /**
  * Retrieves a user's category groups and returns them as a normalised record response.
@@ -88,8 +89,11 @@ export const deleteCategoryGroup = async (
       categoryGroupId: categoryGroupId,
     });
 
-    await categoryGroupUseCase.deleteCategoryGroup(payload);
-    res.sendStatus(200);
+    const result = await categoryGroupUseCase.deleteCategoryGroup(payload);
+
+    const dto = categoryGroupMapper.toDeleteCategoryGroupDto(result);
+
+    res.status(200).json(dto);
   } catch (error) {
     next(error);
   }

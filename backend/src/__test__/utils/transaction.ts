@@ -30,7 +30,7 @@ export const addTransaction = async (
   cookie: string,
   transaction: TestInsertTransactionInputWithoutUserId,
   expectCode: number = 200
-): Promise<NormalisedTransaction | void> => {
+): Promise<NormalisedTransaction> => {
   // Create a unique memo to identify this transaction
   const uniqueId =
     Date.now().toString() + Math.random().toString(36).substring(2, 10);
@@ -45,7 +45,7 @@ export const addTransaction = async (
     .expect(expectCode);
 
   if (expectCode != 200) {
-    return;
+    throw new Error("");
   }
 
   // Find the transaction with our unique memo

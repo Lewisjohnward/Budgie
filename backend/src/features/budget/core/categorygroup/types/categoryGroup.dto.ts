@@ -25,3 +25,24 @@ export type CategoryGroupsMap = {
 export type CategoryGroupUserMap = Record<string, CategoryGroupUserDto>;
 
 export type CategoryGroupSystemMap = Record<string, CategoryGroupSystemDto>;
+
+/**
+ * DTO returned from the API after deleting a category group.
+ *
+ * Contains a normalized snapshot of all side effects produced by the operation,
+ * including deleted entities, transaction reassignment mappings, and updated month values.
+ */
+export type DeleteCategoryGroupDto = {
+  deletedCategoryGroupId: string;
+  deletedCategoryIds: string[];
+
+  transactionReassignments: Record<string, string>;
+
+  monthUpdates: Record<
+    string,
+    {
+      activity: number;
+      assigned: number;
+    }
+  >;
+};

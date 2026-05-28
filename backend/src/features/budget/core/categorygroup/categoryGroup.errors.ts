@@ -7,9 +7,9 @@ export class UnableToFindProtectedCategoriesInDBError extends HttpError {
   }
 }
 
-export class ModifyingCategoryToProtectedCategoryGroupError extends HttpError {
+export class ModifyingAProtectedCategoryGroupError extends HttpError {
   constructor() {
-    super("Modifying a category a protected category group is prohibited", 403);
+    super("Modifying a protected category group is prohibited", 403);
   }
 }
 
@@ -65,7 +65,7 @@ export class UnknownCategoryGroupSourceError extends HttpError {
  * This indicates a violation of domain assumptions or a data integrity issue
  * between persistence and domain mapping layers.
  */
-export class InvalidCategoryGroupSourceForUserMapperError extends Error {
+export class InvalidCategoryGroupSourceForUserMapperError extends HttpError {
   constructor(source: string) {
     super(`Expected USER category group, received: ${source}`);
   }
@@ -77,7 +77,7 @@ export class InvalidCategoryGroupSourceForUserMapperError extends Error {
  * In the domain model, USER category groups must always have a defined position
  * for ordering purposes. A null value indicates corrupted or invalid persisted state.
  */
-export class CategoryGroupMissingPositionError extends Error {
+export class CategoryGroupMissingPositionError extends HttpError {
   constructor(id: string) {
     super(`Invalid state: USER category group has null position (id: ${id})`);
   }
@@ -90,7 +90,7 @@ export class CategoryGroupMissingPositionError extends Error {
  * This indicates a violation of domain assumptions or a data integrity issue
  * between persistence and domain mapping layers.
  */
-export class InvalidCategoryGroupSourceForSystemMapperError extends Error {
+export class InvalidCategoryGroupSourceForSystemMapperError extends HttpError {
   constructor(source: string) {
     super(`Expected SYSTEM category group, received: ${source}`);
   }
@@ -102,10 +102,32 @@ export class InvalidCategoryGroupSourceForSystemMapperError extends Error {
  * In the domain model, SYSTEM category groups must always have a `null` position,
  * since ordering is not applicable. A non-null value indicates corrupted or invalid persisted state.
  */
-export class CategoryGroupInvalidSystemPositionError extends Error {
+export class CategoryGroupInvalidSystemPositionError extends HttpError {
   constructor(id: string) {
     super(
       `Invalid state: SYSTEM category group must have null position (id: ${id})`
+    );
+  }
+}
+
+/**
+ * Error thrown when a category group deletion requires an inheriting category,
+ * but none was provided while transactions still exist.
+ */
+export class InheritingCategoryRequiredError extends HttpError {
+  constructor() {
+    super("Inheriting category is required when transactions exist", 400);
+  }
+}
+
+/**
+ * Thrown when the provided inheriting category belongs to the category group being deleted
+ */
+export class InheritingCategoryBelongsToDeletedGroupError extends HttpError {
+  constructor() {
+    super(
+      "Inheriting category cannot belong to the deleted category group",
+      400
     );
   }
 }

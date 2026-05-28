@@ -39,9 +39,9 @@ export class MonthNotFoundError extends HttpError {
   }
 }
 
-export class DeletingProtectedCategoryError extends HttpError {
+export class ModifyingAProtectedCategoryError extends HttpError {
   constructor() {
-    super("You are not allowed to delete to protected categories.", 403);
+    super("You are not allowed to modified to protected categories.", 403);
   }
 }
 

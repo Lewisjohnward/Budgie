@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { categoryRepository } from "../../../../../../../shared/repository/categoryRepositoryImpl";
 import {
-  DeletingProtectedCategoryError,
+  ModifyingAProtectedCategoryError,
   UnableToFindProtectedCategoriesInDBError,
 } from "../../category.errors";
 import { type CategoryId } from "../../category.types";
@@ -34,7 +34,7 @@ import { type UserId } from "../../../../../../user/auth/auth.types";
  *         If no protected categories are found for the user, indicating
  *         invalid system configuration.
  *
- * @throws {DeletingProtectedCategoryError}
+ * @throws {ModifyingAProtectedCategoryError}
  *         If the provided category is protected and cannot be deleted.
  */
 export const isCategoryProtected = async (
@@ -55,6 +55,6 @@ export const isCategoryProtected = async (
   const protectedIds = new Set(protectedCategoryIds);
 
   if (protectedIds.has(categoryId)) {
-    throw new DeletingProtectedCategoryError();
+    throw new ModifyingAProtectedCategoryError();
   }
 };
