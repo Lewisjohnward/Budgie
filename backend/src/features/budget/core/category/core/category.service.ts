@@ -21,6 +21,7 @@ import { ensureUserOwnsCategories } from "./application/services/ensureUserOwnsC
 import { getMonthsForCategories } from "./application/services/months/getMonthsForCategories";
 import { getCategories } from "./application/services/getCategories";
 import { getMonths } from "./application/services/months/getMonths";
+import { getCategoryIdsByCategoryGroupId } from "./application/services/getCategoryIdsByCategoryGroupId";
 
 export const categoryService = {
   rta: {
@@ -46,6 +47,7 @@ export const categoryService = {
     getCategory,
     getCategories,
     getUncategorisedCategoryId,
+    getCategoryIdsByCategoryGroupId,
     initialiseCategories,
     checkCategoryNameIsUniqueInGroup,
     getNextCategoryPosition,

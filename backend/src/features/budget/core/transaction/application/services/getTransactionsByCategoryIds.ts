@@ -6,18 +6,18 @@ import { type DomainNormalTransaction } from "../../transaction.types";
 
 /**
  * @name getTransactionsByCategoryId
- * @description Retrieves all transactions associated with a specific category ID.
+ * @description Retrieves all transactions associated with given category IDs.
  * @param {Prisma.TransactionClient} tx - The Prisma transaction client.
- * @param {CategoryId} categoryId - The ID of the category to retrieve transactions for.
+ * @param {CategoryId} categoryIds - The ID of the category to retrieve transactions for.
  * @returns {Promise<DomainNormalTransaction[]>} A promise that resolves to an array of normal domain transactions.
  */
-export const getTransactionsByCategoryId = async (
+export const getTransactionsByCategoryIds = async (
   tx: Prisma.TransactionClient,
-  categoryId: CategoryId
+  categoryIds: CategoryId[]
 ): Promise<DomainNormalTransaction[]> => {
-  const transactions = await transactionRepository.getTransactionsByCategoryId(
+  const transactions = await transactionRepository.getTransactionsByCategoryIds(
     tx,
-    categoryId
+    categoryIds
   );
 
   return transactions.map(transactionMapper.toDomainNormalTransaction);

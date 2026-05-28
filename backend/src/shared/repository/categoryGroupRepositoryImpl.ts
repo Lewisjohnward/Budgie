@@ -176,4 +176,25 @@ export const categoryGroupRepository: CategoryGroupRepository = {
       },
     });
   },
+
+  shiftAfterDelete: async (
+    tx: Prisma.TransactionClient,
+    userId: UserId,
+    deletedPosition: number
+  ) => {
+    await tx.categoryGroup.updateMany({
+      where: {
+        userId,
+        source: CategoryGroupSource.USER,
+        position: {
+          gt: deletedPosition,
+        },
+      },
+      data: {
+        position: {
+          decrement: 1,
+        },
+      },
+    });
+  },
 };

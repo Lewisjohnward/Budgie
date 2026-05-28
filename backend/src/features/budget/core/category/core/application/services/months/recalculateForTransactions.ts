@@ -9,6 +9,7 @@ import { groupTransactionsByCategoryId } from "../../../domain/transaction.domai
 import { roundTransactionsToStartOfMonth } from "../../../utils/roundTransactionsToStartOfMonth";
 import { type DomainNormalTransaction } from "../../../../../transaction/transaction.types";
 import { categoryService } from "../../../category.service";
+import { DomainMonth } from "../../../category.types";
 
 /**
  * Recalculates and updates category month records based on a set of transactions.
@@ -35,9 +36,8 @@ export const recalculateCategoryMonthsForTransactions = async (
   prisma: Prisma.TransactionClient,
   transactions: DomainNormalTransaction[],
   mode: OperationMode
-): Promise<void> => {
-  if (transactions.length === 0) return;
-  // get the unique category Ids
+): Promise<DomainMonth[]> => {
+  if (transactions.length === 0) [];
 
   // round all txs to start of month
   const transactionsRoundedToStartOfMonth =
@@ -77,4 +77,6 @@ export const recalculateCategoryMonthsForTransactions = async (
 
   // Call the repository method once with all updated months
   await categoryRepository.updateMonths(prisma, allUpdatedMonths);
+
+  return allUpdatedMonths;
 };

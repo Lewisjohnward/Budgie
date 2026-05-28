@@ -91,9 +91,9 @@ export const deleteCategory = async (
       categoryToDelete.id
     );
 
-    const transactions = await transactionService.getTransactionsByCategoryId(
+    const transactions = await transactionService.getTransactionsByCategoryIds(
       tx,
-      categoryId
+      [categoryId]
     );
 
     const rtaCategoryId = await categoryService.rta.getRtaCategoryId(

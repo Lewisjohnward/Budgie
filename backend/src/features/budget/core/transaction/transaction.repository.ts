@@ -8,7 +8,6 @@ import {
 import { type CategoryId } from "../category/core/category.types";
 import { type AccountId } from "../account/account.types";
 import { type PayeeId } from "../payee/payee.types";
-import { type CategoryGroupId } from "../categorygroup/categoryGroup.types";
 import { type UserId } from "../../user/auth/auth.types";
 
 export interface TransactionRepository {
@@ -35,15 +34,22 @@ export interface TransactionRepository {
     transactionIds: TransactionId[]
   ): Promise<DomainNormalTransaction[]>;
 
-  getTransactionsByCategoryId(
+  /**
+   * Retrieves all transactions associated with the given category IDs.
+   */
+  getTransactionsByCategoryIds(
     tx: Prisma.TransactionClient,
-    categoryId: CategoryId
+    categoryIds: CategoryId[]
   ): Promise<db.Transaction[]>;
 
-  getTransactionsByCategoryGroupId(
+  /**
+   * Reassigns all transactions associated with the given category IDs.
+   */
+  bulkUpdateTransactionCategory(
     tx: Prisma.TransactionClient,
-    categoryGroupId: CategoryGroupId
-  ): Promise<db.Transaction[]>;
+    categoryIds: CategoryId[],
+    newCategoryId: CategoryId
+  ): Promise<void>;
 
   getTransactionIdsByAccountId(
     tx: Prisma.TransactionClient,

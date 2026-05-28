@@ -8,6 +8,7 @@ import {
 import { NoPastMonthsFoundError } from "../../features/budget/core/category/core/category.errors";
 import { type UserId } from "../../features/user/auth/auth.types";
 import { prisma } from "../prisma/client";
+import { CategoryGroupId } from "../../features/budget/core/categorygroup/categoryGroup.types";
 
 export const categoryRepository: CategoryRepository = {
   // ──────────────── Category Retrieval ────────────────
@@ -87,6 +88,17 @@ export const categoryRepository: CategoryRepository = {
     if (!row) return null;
 
     return row.id;
+  },
+
+  getCategoryIdsByCategoryGroupId: async function (
+    tx: Prisma.TransactionClient,
+    categoryGroupId: CategoryGroupId
+  ): Promise<string[]> {
+    const rows = await tx.category.findMany({
+      where: { categoryGroupId },
+      select: { id: true },
+    });
+    return rows.map((r) => r.id);
   },
 
   getMaxCategoryPositionInGroup: async (tx, categoryGroupId) => {
@@ -238,7 +250,7 @@ export const categoryRepository: CategoryRepository = {
     return mostRecentMonths;
   },
 
-  getMonths: async function(
+  getMonths: async function (
     userId: UserId,
     range: { from?: Date; to?: Date }
   ): Promise<db.Month[]> {

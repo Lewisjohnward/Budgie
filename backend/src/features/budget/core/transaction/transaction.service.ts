@@ -1,6 +1,6 @@
 import { updatePayeeForTransactions } from "./application/services/updatePayeeForTransactions";
 import { getTransactionsWithPairs } from "./application/services/getTransactionsWithPairs";
-import { getTransactionsByCategoryId } from "./application/services/getTransactionsByCategoryId";
+import { getTransactionsByCategoryIds } from "./application/services/getTransactionsByCategoryIds";
 import { applyCategoryChange } from "./application/services/bulk/applyCategoryChange";
 import { applyMemoChange } from "./application/services/bulk/applyMemoChange";
 import { applyAccountChange } from "./application/services/bulk/applyAccountChange/applyAccountChange";
@@ -86,7 +86,7 @@ export const transactionService = {
   getTransactionsByAccountIds,
   getTransactionById,
   getTransactionsWithPairs,
-  getTransactionsByCategoryId,
+  getTransactionsByCategoryIds,
 
   // delete
   deleteTransactionsById,
