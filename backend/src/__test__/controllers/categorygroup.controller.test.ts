@@ -561,18 +561,14 @@ describe("Category group", () => {
     describe("Success", () => {
       it("Should delete a category group and reindex groups", async () => {
         const g = await getTestCategoryGroup(cookie);
-        console.log("to delete g:", g);
 
         const before = await getCategoryGroups(cookie);
-        console.log("before:", before);
 
         const res = await deleteCategoryGroup(cookie, g.id);
 
         expect(res.statusCode).toBe(200);
-        console.log(res.body);
 
         const after = await getCategoryGroups(cookie);
-        console.log("after:", after);
 
         const exists = Object.values(after.user).some(
           (group) => group.id === g.id
@@ -635,6 +631,7 @@ describe("Category group", () => {
 
         // Delete test category group, and assign transactions to category b
         const res = await deleteCategoryGroup(cookie, g1.id, catB.id);
+        console.log("res:", res.body);
 
         expect(res.statusCode).toBe(200);
 
@@ -660,7 +657,6 @@ describe("Category group", () => {
 
         // Get months after
         const monthsAfter = await getMonthsForCategories(cookie, [catB.id]);
-        console.log("monthsAfter:", monthsAfter);
 
         // Assert that months are correct
 
@@ -689,3 +685,9 @@ describe("Category group", () => {
     });
   });
 });
+// describe("Success", () => {
+//   describe("when no transactions exist", ...)
+//   describe("when transactions exist", ...)
+//   describe("month updates", ...)
+//   describe("dto shape", ...)
+// });

@@ -1,3 +1,9 @@
+import { MonthDto } from "../../category/core/category.types";
+import {
+  TransactionDto,
+  TransactionNormalDto,
+} from "../../transaction/transaction.types";
+
 /**
  * Represents a month DTO and a mapping of category IDs to arrays of month DTOs
  */
@@ -27,22 +33,28 @@ export type CategoryGroupUserMap = Record<string, CategoryGroupUserDto>;
 export type CategoryGroupSystemMap = Record<string, CategoryGroupSystemDto>;
 
 /**
- * DTO returned from the API after deleting a category group.
+ * DTO returned after a category group deletion operation.
  *
- * Contains a normalized snapshot of all side effects produced by the operation,
- * including deleted entities, transaction reassignment mappings, and updated month values.
+ * This DTO represents a partial state update intended for client-side
+ * hydration or incremental state reconciliation.
+ *
+ * It does not return a full snapshot of the budget state; instead, it
+ * provides only the entities that were directly affected by the operation.
+ *
+ * Structure:
+ * - `deleted`: Identifies the category group that was removed.
+ * - `updated.transactions`: Transactions that were modified as a result of
+ *   reassignment (e.g. category changes due to group deletion).
+ * - `updated.months`: Month aggregates that were recalculated due to
+ *   transaction reassignment.
  */
 export type DeleteCategoryGroupDto = {
-  deletedCategoryGroupId: string;
-  deletedCategoryIds: string[];
+  deleted: {
+    categoryGroupId: string;
+  };
 
-  transactionReassignments: Record<string, string>;
-
-  monthUpdates: Record<
-    string,
-    {
-      activity: number;
-      assigned: number;
-    }
-  >;
+  updated: {
+    transactions: Record<string, TransactionNormalDto>;
+    months: Record<string, MonthDto>;
+  };
 };

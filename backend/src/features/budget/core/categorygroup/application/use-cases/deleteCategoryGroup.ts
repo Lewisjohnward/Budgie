@@ -177,10 +177,7 @@ export const deleteCategoryGroup = async (
     return {
       deletedCategoryGroupId: categoryGroup.id,
 
-      deletedCategoryIds: categoryIds,
-
       updatedTransactions,
-
       updatedMonths,
     };
   });
