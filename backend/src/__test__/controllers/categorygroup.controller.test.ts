@@ -1,3 +1,8 @@
+import { DeleteCategoryGroupDto } from "../../features/budget/core/categorygroup/categoryGroup.types";
+import {
+  TransactionDto,
+  TransactionNormalDto,
+} from "../../features/budget/core/transaction/transaction.types";
 import { createAccountAndFetch } from "../utils/account";
 import { getMonthsForCategories } from "../utils/assign";
 import { login, registerUser } from "../utils/auth";
@@ -616,12 +621,14 @@ describe("Category group", () => {
           categoryId: catA.id,
           outflow: "4",
         });
+        console.log("txA:", txA);
 
         const txB = await addTransaction(cookie, {
           accountId: testAccount.id,
           categoryId: catA.id,
           outflow: "4",
         });
+        console.log("txB:", txB);
 
         // Group before transactions
         const txIdsBefore = [txA.id, txB.id];
@@ -636,7 +643,65 @@ describe("Category group", () => {
         expect(res.statusCode).toBe(200);
 
         // DTO check
-        expect(res.body.deletedCategoryGroupId).toBe(g1.id);
+        const expectedDto =
+        // : DeleteCategoryGroupDto
+        {
+          deleted: {
+            categoryGroupId: g1.id,
+          },
+          updated: {
+            transactions: {
+              [txA.id]: {
+                ...txA,
+                date: txA.date as unknown as string,
+                categoryId: catB.id,
+              } as TransactionNormalDto,
+              [txB.id]: {
+                ...txB,
+                date: txB.date as unknown as string,
+                categoryId: catB.id,
+              } as TransactionNormalDto,
+            },
+            // months: undefined,
+          },
+        };
+        //           Object {
+        //     "0b4837f9-d973-4e8c-a274-a0067842a0b5": Object {
+        //       "accountId": "e2a4073d-04f3-404b-9919-3ad64899f3a7",
+        //       "categoryId": "6e764a64-6647-45da-a90b-f84caaf60c12",
+        // -     "cleared": false,
+        //       "date": "2026-05-29T09:44:41.388Z",
+        //       "id": "0b4837f9-d973-4e8c-a274-a0067842a0b5",
+        //       "inflow": 0,
+        //       "memo": "test_transaction_1780047881344oomwv690",
+        //       "outflow": 4,
+        //       "payeeId": null,
+        // -     "transferAccountId": null,
+        // -     "transferTransactionId": null,
+        //     },
+        //     "62f40561-1cf1-49d2-b71e-4a64401aea3c": Object {
+        //       "accountId": "e2a4073d-04f3-404b-9919-3ad64899f3a7",
+        //       "categoryId": "6e764a64-6647-45da-a90b-f84caaf60c12",
+        // -     "cleared": false,
+        //       "date": "2026-05-29T09:44:41.506Z",
+        //       "id": "62f40561-1cf1-49d2-b71e-4a64401aea3c",
+        //       "inflow": 0,
+        //       "memo": "test_transaction_1780047881494nd7tbsuq",
+        //       "outflow": 4,
+        //     "0b4837f9-d973-4e8c-a274-a0067842a0b5": Object {
+        //       "accountId": "e2a4073d-04f3-404b-9919-3ad64899f3a7",
+        // -     "transferTransactionId": null,
+        //     },
+        //   }
+
+        console.log("res body updated txs", res.body.updated.transactions);
+        expect(res.body.deleted.categoryGroupId).toBe(
+          expectedDto.deleted.categoryGroupId
+        );
+
+        expect(res.body.updated.transactions).toEqual(
+          expectedDto.updated.transactions
+        );
         expect(Object.keys(res.body.transactionReassignments).length).toBe(2);
 
         // Get updated transactions

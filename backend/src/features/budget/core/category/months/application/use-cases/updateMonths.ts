@@ -60,11 +60,9 @@ const toUpdateMonthCommand = (p: AssignmentsPayload): UpdateMonthCommand => ({
 export const updateMonths = async (
   payload: AssignmentsPayload
 ): Promise<UpdatedMonthsById> => {
-  console.log("payload:", payload);
   const { userId, assignments } = toUpdateMonthCommand(payload);
 
   const monthIds = assignments.map((a) => a.monthId);
-  console.log("monthIds:", monthIds);
 
   // Prevent duplicate monthIds in the assignmentsArray.
   // This ensures a single assignment per month and avoids conflicting updates or
@@ -98,7 +96,6 @@ export const updateMonths = async (
     });
 
     const monthsToUpdate = rows.map(categoryMapper.toDomainMonth);
-    console.log("monthsToUpdate:", monthsToUpdate);
 
     if (monthsToUpdate.length !== monthIds.length) {
       throw new MonthNotFoundError();
@@ -170,7 +167,6 @@ export const updateMonths = async (
 
       allUpdatedMonths.push(...updatedMonths);
     }
-    console.log("allUpdatedMonths:", allUpdatedMonths);
 
     // Update months
     await categoryRepository.updateMonths(tx, allUpdatedMonths);

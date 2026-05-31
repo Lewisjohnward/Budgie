@@ -19,11 +19,12 @@ export const insertTransaction = async (
   try {
     const userId = req.user?._id!;
     const payload = insertTransactionSchema.parse(req.body);
-    await transactionUseCase.insertTransaction({
+    const dto = await transactionUseCase.insertTransaction({
       ...payload,
       userId,
     });
-    res.status(200).json({ message: "Transaction added" });
+    // should this be 201??
+    res.status(200).json(dto);
   } catch (error) {
     next(error);
   }
