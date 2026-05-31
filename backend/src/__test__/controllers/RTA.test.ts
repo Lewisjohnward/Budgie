@@ -10,6 +10,7 @@ import { prisma } from "../../shared/prisma/client";
 import { createAccountAndFetch } from "../utils/account";
 import { updateMonthAssignments } from "../utils/assign";
 import { db } from "../../features/budget/core/account/account.types";
+import { startOfMonth, subMonths } from "date-fns";
 
 const compareRTAMonthsToExpected = async (
   expected: number[],
@@ -626,12 +627,8 @@ describe("RTA allocation", () => {
       it("bug fix add RTA inflow £10 3ma, add RTA outflow £20 2ma, add cat outflow 20 cm", async () => {
         const { categories } = await getCategories(cookie);
 
-        const now = new Date();
-        const year = now.getUTCFullYear();
-        const month = now.getUTCMonth(); // 0-based: 0 = Jan
-
-        const oneMonthAgoUTC = new Date(Date.UTC(year, month - 1, 1));
-        const threeMonthAgoUTC = new Date(Date.UTC(year, month - 3, 1));
+        const threeMonthAgoUTC = subMonths(new Date(), 3);
+        const oneMonthAgoUTC = subMonths(new Date(), 1);
         const testAccount = await createAccountAndFetch(cookie);
 
         const testCategory = Object.values(categories).find(
@@ -737,13 +734,8 @@ describe("RTA allocation", () => {
         });
 
         const testAccount = await createAccountAndFetch(cookie);
-        const now = new Date();
-        const twoMonthsAgo = new Date(
-          Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 2)
-        );
-        const lastMonth = new Date(
-          Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1)
-        );
+        const twoMonthsAgo = subMonths(new Date(), 2);
+        const lastMonth = subMonths(new Date(), 1);
         await request(app)
           .post("/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
@@ -934,8 +926,7 @@ describe("RTA allocation", () => {
 
         await compareRTAMonthsToExpected([10, 10], cookie);
 
-        const dateThreeMonthsAgo = new Date();
-        dateThreeMonthsAgo.setMonth(dateThreeMonthsAgo.getMonth() - 3);
+        const dateThreeMonthsAgo = subMonths(new Date(), 3);
 
         await request(app)
           .post("/budget/transaction")
@@ -988,9 +979,6 @@ describe("RTA allocation", () => {
           .expect(200);
 
         await compareRTAMonthsToExpected([0, -50], cookie);
-
-        const dateThreeMonthsAgo = new Date();
-        dateThreeMonthsAgo.setMonth(dateThreeMonthsAgo.getMonth() - 3);
 
         await request(app)
           .post("/budget/transaction")
@@ -1165,8 +1153,7 @@ describe("RTA allocation", () => {
         await compareRTAMonthsToExpected([0, 0], cookie);
 
         const rtaCategoryId = await getRTACategoryId(cookie);
-        const dateThreeMonthsAgo = new Date();
-        dateThreeMonthsAgo.setMonth(dateThreeMonthsAgo.getMonth() - 3);
+        const dateThreeMonthsAgo = subMonths(new Date(), 3);
 
         await request(app)
           .post("/budget/transaction")
@@ -1181,7 +1168,8 @@ describe("RTA allocation", () => {
 
         await compareRTAMonthsToExpected(
           [1.12, 1.12, 1.12, 1.12, 1.12],
-          cookie
+          cookie,
+          true
         );
 
         await request(app)
@@ -1457,8 +1445,7 @@ describe("RTA allocation", () => {
     });
 
     it("Should correctly delete single RTA outflow transactions", async () => {
-      const dateThreeMonthsAgo = new Date();
-      dateThreeMonthsAgo.setMonth(dateThreeMonthsAgo.getMonth() - 3);
+      const dateThreeMonthsAgo = subMonths(new Date(), 3);
 
       const { categories } = await getCategories(cookie);
 
@@ -2026,8 +2013,7 @@ describe("RTA allocation", () => {
         })
         .expect(200);
 
-      const dateThreeMonthsAgo = new Date();
-      dateThreeMonthsAgo.setMonth(dateThreeMonthsAgo.getMonth() - 3);
+      const dateThreeMonthsAgo = subMonths(new Date(), 3);
 
       await request(app)
         .post("/budget/transaction")
@@ -2162,8 +2148,7 @@ describe("RTA allocation", () => {
         })
         .expect(200);
 
-      const dateThreeMonthsAgo = new Date();
-      dateThreeMonthsAgo.setMonth(dateThreeMonthsAgo.getMonth() - 3);
+      const dateThreeMonthsAgo = subMonths(new Date(), 3);
 
       await request(app)
         .post("/budget/transaction")
@@ -2211,7 +2196,7 @@ describe("RTA allocation", () => {
   });
 
   describe.skip("editing transactions", () => {
-    it.skip("Should correctly update rta months when editing from uncategorised to category", async () => { });
+    it.skip("Should correctly update rta months when editing from uncategorised to category", async () => {});
     it("first test", async () => {
       const { id: accountId } = testAccount;
 

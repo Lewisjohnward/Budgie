@@ -9,6 +9,7 @@ import { type InsertTransactionPayload } from "../../transaction.schema";
 import { type AccountId, asAccountId } from "../../../account/account.types";
 import { asPayeeId, type PayeeId } from "../../../payee/payee.types";
 import { asUserId, type UserId } from "../../../../../user/auth/auth.types";
+import { TransactionDto } from "../../transaction.types";
 
 /**
  * Base structure for a transaction insert command after transforming raw input.
@@ -141,12 +142,9 @@ export const insertTransaction = async (
     await accountService.getAccount(tx, command.accountId, command.userId);
 
     if (command.type === "transfer") {
-      await transactionService.insertTransferTransaction(tx, command);
+      return await transactionService.insertTransferTransaction(tx, command);
     } else {
-      const transaction = await transactionService.insertNormalTransaction(
-        tx,
-        command
-      );
+      return await transactionService.insertNormalTransaction(tx, command);
     }
   });
 };

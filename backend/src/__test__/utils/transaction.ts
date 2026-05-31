@@ -7,6 +7,7 @@ import {
 } from "../../features/budget/core/transaction/transaction.schema";
 import { getAccounts } from "./getData";
 import { type NormalisedTransaction } from "../../features/budget/core/account/account.types";
+import { TransactionDto } from "../../features/budget/core/transaction/transaction.types";
 
 /**
  * Input type for creating transactions in tests,
@@ -30,7 +31,7 @@ export const addTransaction = async (
   cookie: string,
   transaction: TestInsertTransactionInputWithoutUserId,
   expectCode: number = 200
-): Promise<NormalisedTransaction> => {
+): Promise<NormalisedTransaction | void> => {
   // Create a unique memo to identify this transaction
   const uniqueId =
     Date.now().toString() + Math.random().toString(36).substring(2, 10);
@@ -45,7 +46,7 @@ export const addTransaction = async (
     .expect(expectCode);
 
   if (expectCode != 200) {
-    throw new Error("");
+    return;
   }
 
   // Find the transaction with our unique memo

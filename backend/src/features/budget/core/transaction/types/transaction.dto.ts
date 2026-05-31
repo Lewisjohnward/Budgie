@@ -77,8 +77,21 @@ export type TransactionNormalDto = {
   payeeId: string | null;
   date: string;
   memo: string;
-  inflow: string;
-  outflow: string;
+  inflow: number;
+  outflow: number;
+};
+
+export type TransactionTransferDto = {
+  type: "transfer";
+  id: string;
+  accountId: string;
+  payeeId: string | null;
+  date: string;
+  memo: string;
+  inflow: number;
+  outflow: number;
+  transferAccountId: string;
+  transferTransactionId: string;
 };
 
 /**
@@ -88,16 +101,4 @@ export type TransactionNormalDto = {
  * and frontend state hydration. It includes all fields required to render,
  * categorize, and compute financial summaries for a transaction.
  */
-export type TransactionDto =
-  | TransactionNormalDto
-  | {
-    type: "transfer";
-    id: string;
-    accountId: string;
-    date: string;
-    memo: string;
-    inflow: string;
-    outflow: string;
-    transferAccountId: string;
-    transferTransactionId: string;
-  };
+export type TransactionDto = TransactionNormalDto | TransactionTransferDto;

@@ -32,8 +32,8 @@ export const toDeleteCategoryGroupDto = (
             payeeId: tx.payeeId ?? null,
             date: tx.date.toISOString(),
             memo: tx.memo,
-            inflow: tx.inflow.toString(),
-            outflow: tx.outflow.toString(),
+            inflow: tx.inflow.toNumber(),
+            outflow: tx.outflow.toNumber(),
           },
         ])
       ),
