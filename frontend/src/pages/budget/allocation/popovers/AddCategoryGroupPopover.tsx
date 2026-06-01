@@ -1,4 +1,3 @@
-import { useAddCategoryGroupMutation } from "@/core/api/budgetApiSlice";
 import { ReactNode, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,6 +10,7 @@ import { PopoverArrow, PopoverPortal } from "@radix-ui/react-popover";
 import { Input } from "@/core/components/uiLibrary/input";
 import { Button } from "@/core/components/uiLibrary/button";
 import { z } from "zod";
+import { useCreateCategoryGroupMutation } from "@/core/api/budget/categoryGroup/CategoryGroupApiSlice";
 
 const AddCategoryGroupSchema = z.object({
   name: z.string().min(1, { message: "Category group requires a name" }),
@@ -20,7 +20,7 @@ type AddCategoryGroupType = z.infer<typeof AddCategoryGroupSchema>;
 
 export function AddCategoryGroupPopover({ children }: { children: ReactNode }) {
   const [displayPopover, setDisplayPopover] = useState(false);
-  const [addCategoryGroup] = useAddCategoryGroupMutation();
+  const [createCategoryGroup] = useCreateCategoryGroupMutation();
 
   const {
     register,
@@ -42,7 +42,7 @@ export function AddCategoryGroupPopover({ children }: { children: ReactNode }) {
   };
 
   const onSubmit = (categoryGroup: AddCategoryGroupType) => {
-    addCategoryGroup(categoryGroup);
+    createCategoryGroup(categoryGroup);
     togglePopover();
     reset();
   };

@@ -97,26 +97,6 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
       },
       invalidatesTags: ["Categories", "Accounts"],
     }),
-    addCategoryGroup: builder.mutation<void, { name: string }>({
-      query: (categoryGroup) => {
-        return {
-          url: "budget/categorygroups",
-          method: "POST",
-          body: categoryGroup,
-        };
-      },
-      invalidatesTags: ["Categories"],
-    }),
-    deleteCategoryGroup: builder.mutation<void, { categoryGroupId: string }>({
-      query: ({ categoryGroupId }) => {
-        return {
-          url: `budget/categorygroups/${categoryGroupId}`,
-          method: "DELETE",
-          body: {},
-        };
-      },
-      invalidatesTags: ["Categories"],
-    }),
     editMonth: builder.mutation<UpdatedMonthsById, UpdateMonthsPayload>({
       query: (assigned) => ({
         url: "budget/category/months",
@@ -159,8 +139,6 @@ export const {
   useGetCategoriesQuery,
   useAddCategoryMutation,
   useDeleteCategoryMutation,
-  useAddCategoryGroupMutation,
-  useDeleteCategoryGroupMutation,
   useEditMonthMutation,
   useDuplicateTransactionsMutation,
 } = budgetApiSlice;
