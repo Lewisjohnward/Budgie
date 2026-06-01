@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from "../../app";
 import { getAccounts, getCategories } from "../utils/getData";
-import { addAccount, addTransaction } from "../utils/transaction";
+import { addAccount, addTransactionLegacy } from "../utils/transaction";
 import { login, registerUser } from "../utils/auth";
 import { createAccountAndFetch } from "../utils/account";
 import { NormalisedCategoryData } from "../../features/budget/core/category/core/category.types";
@@ -197,7 +197,7 @@ describe("Budget", () => {
       );
     });
 
-    describe.skip("Deleting", () => { });
+    describe.skip("Deleting", () => {});
     it("When adding a transaction without logging in returns 401", async () => {
       const testTransaction = {
         outflow: 10,
@@ -235,7 +235,7 @@ describe("Budget", () => {
       "should throw error if category id provided doesn't exist/ not owned by user"
     );
 
-    it.skip("When adding a transaction with no account, returns 400", async () => { });
+    it.skip("When adding a transaction with no account, returns 400", async () => {});
 
     it.todo("Should return error when user doesn't own category");
 
@@ -285,7 +285,7 @@ describe("Budget", () => {
     });
   });
 
-  describe("Ready to assign", () => { });
+  describe("Ready to assign", () => {});
 
   describe("Months", () => {
     describe("assigning", () => {
@@ -693,7 +693,7 @@ describe("Budget", () => {
             categoryId: readyToAssignCategory.id,
             accountId: testAccount.id,
           };
-          await addTransaction(cookie, testTransaction);
+          await addTransactionLegacy(cookie, testTransaction);
 
           jest.setSystemTime(new Date("2025-08-01T00:00:00.000Z"));
           cookie = await login();
@@ -728,7 +728,7 @@ describe("Budget", () => {
             categoryId: readyToAssignCategory.id,
             accountId: testAccount.id,
           };
-          await addTransaction(cookie, testTransaction);
+          await addTransactionLegacy(cookie, testTransaction);
 
           jest.setSystemTime(new Date("2025-08-01T00:00:00.000Z"));
           cookie = await login();
@@ -763,7 +763,7 @@ describe("Budget", () => {
             categoryId: testCategory.id,
             accountId: testAccount.id,
           };
-          await addTransaction(cookie, testTransaction);
+          await addTransactionLegacy(cookie, testTransaction);
 
           jest.setSystemTime(new Date("2025-08-01T00:00:00.000Z"));
           cookie = await login();
@@ -798,7 +798,7 @@ describe("Budget", () => {
             categoryId: testCategory.id,
             accountId: testAccount.id,
           };
-          await addTransaction(cookie, testTransaction);
+          await addTransactionLegacy(cookie, testTransaction);
 
           jest.setSystemTime(new Date("2025-08-01T00:00:00.000Z"));
           cookie = await login();

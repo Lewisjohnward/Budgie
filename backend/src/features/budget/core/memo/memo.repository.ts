@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { db, type MemoId } from "./memo.types";
 import { UserId } from "../../../user/auth/auth.types";
+import { MonthId } from "../category/core/category.types";
 
 export interface MemoRepository {
   /**
@@ -49,8 +50,12 @@ export interface MemoRepository {
 
   insertMemos(
     tx: Prisma.TransactionClient,
-    userId: UserId,
-    months: Date[]
+    memos: {
+      id: MonthId;
+      userId: UserId;
+      month: Date;
+      content: string;
+    }[]
   ): Promise<void>;
 
   /**

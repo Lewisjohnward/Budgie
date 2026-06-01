@@ -1,8 +1,5 @@
-import { MonthDto } from "../../category/core/category.types";
-import {
-  TransactionDto,
-  TransactionNormalDto,
-} from "../../transaction/transaction.types";
+import { type MonthDto } from "../../category/core/category.types";
+import { type TransactionNormalDto } from "../../transaction/transaction.types";
 
 /**
  * Represents a month DTO and a mapping of category IDs to arrays of month DTOs

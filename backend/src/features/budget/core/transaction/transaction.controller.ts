@@ -4,25 +4,29 @@ import {
   duplicateTransactionsSchema,
   editSingleTransactionSchema,
   editBulkTransactionsSchema,
-  insertTransactionSchema,
+  createTransactionSchema,
 } from "./transaction.schema";
 import { transactionUseCase } from "./transaction.useCase";
+import { transactionMapper } from "./transaction.mapper";
 
 /**
- * Inserts a single transaction.
+ * Creates a single transaction.
  */
-export const insertTransaction = async (
+export const createTransaction = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
     const userId = req.user?._id!;
-    const payload = insertTransactionSchema.parse(req.body);
-    const dto = await transactionUseCase.insertTransaction({
+    const payload = createTransactionSchema.parse(req.body);
+    const result = await transactionUseCase.createTransaction({
       ...payload,
       userId,
     });
+
+    const dto = transactionMapper.toCreateTransactionDto(result);
+
     // should this be 201??
     res.status(200).json(dto);
   } catch (error) {

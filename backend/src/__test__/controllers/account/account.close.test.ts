@@ -3,7 +3,7 @@ import { login, registerUser } from "../../utils/auth";
 import { fetchAccountByName, toggleCloseAccount } from "../../utils/account";
 import { createAccount } from "../../utils/account";
 import {
-  addTransaction,
+  addTransactionLegacy,
   getClosedAccountTransaction,
   TestInsertTransactionInputWithoutUserId,
 } from "../../utils/transaction";
@@ -73,7 +73,7 @@ describe("Account - Close", () => {
           outflow: "10",
         };
 
-        await addTransaction(cookie, transaction);
+        await addTransactionLegacy(cookie, transaction);
 
         const accountAfterTransaction = await fetchAccountByName(
           cookie,
@@ -113,7 +113,7 @@ describe("Account - Close", () => {
           outflow: "10",
         };
 
-        await addTransaction(cookie, transaction);
+        await addTransactionLegacy(cookie, transaction);
 
         await toggleCloseAccount(cookie, id);
 

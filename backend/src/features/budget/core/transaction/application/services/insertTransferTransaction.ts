@@ -1,20 +1,27 @@
 import { Prisma } from "@prisma/client";
 import { ZERO } from "../../../../../../shared/constants/zero";
 import { OperationMode } from "../../../../../../shared/enums/operation-mode";
-import { transactionRepository } from "../../../../../../shared/repository/transactionRepositoryImpl";
+import { v4 as uuidv4 } from "uuid";
 import { accountService } from "../../../account/account.service";
 import { SameAccountTransferError } from "../../transaction.errors";
-import {
-  createTransferDestinationTransaction,
-  createTransferSourceTransaction,
-} from "./create/createTransferTransaction";
 import { categoryService } from "../../../category/core/category.service";
 import { memoService } from "../../../memo/memo.service";
-import { type AccountId } from "../../../account/account.types";
-import { type InsertTransactionCommand } from "../use-cases/insertTransaction";
+import {
+  type DomainAccount,
+  type AccountId,
+} from "../../../account/account.types";
+import { type CreateTransactionCommand } from "../use-cases/insertTransaction";
+import {
+  asTransactionId,
+  DomainTransferTransaction,
+} from "../../transaction.types";
+import { transactionMapper } from "../../transaction.mapper";
+import { type DomainMemo } from "../../../memo/memo.types";
+import { accountMapper } from "../../../account/account.mapper";
+import { accountRepository } from "../../../../../../shared/repository/accountRepositoryImpl";
 
 /**
- * Inserts a **transfer transaction** between two accounts for a given user.
+ * Creates a **transfer transaction** between two accounts for a given user.
  *
  * This function creates both sides of a transfer:
  * - **Source transaction** – represents money leaving the `accountId`.
@@ -42,12 +49,16 @@ import { type InsertTransactionCommand } from "../use-cases/insertTransaction";
  *
  * @returns A promise that resolves once both transactions are successfully created and balances updated.
  */
-export async function insertTransferTransaction(
+export async function createTransferTransaction(
   tx: Prisma.TransactionClient,
-  command: InsertTransactionCommand & {
+  command: CreateTransactionCommand & {
     transferAccountId: AccountId;
   }
-): Promise<void> {
+): Promise<{
+  transactions: DomainTransferTransaction[];
+  accounts: DomainAccount[];
+  memos: DomainMemo[];
+}> {
   const {
     userId,
     accountId,
@@ -69,6 +80,9 @@ export async function insertTransferTransaction(
     userId
   );
 
+  // TODO:(lewis 2026-05-31 14:52) needs testing that cant proivide a non owned source and dest account
+  const sourceAccount = await accountService.getAccount(tx, accountId, userId);
+
   // Prevent same-account transfer
   if (destinationAccount.id === accountId) {
     throw new SameAccountTransferError();
@@ -77,33 +91,79 @@ export async function insertTransferTransaction(
   const inflowAmount = inflow ?? ZERO;
   const outflowAmount = outflow ?? ZERO;
 
-  // Create source transaction (money leaving or entering source account)
-  const sourceTransaction = await createTransferSourceTransaction(tx, {
+  const sourceId = asTransactionId(uuidv4());
+  const destinationId = asTransactionId(uuidv4());
+
+  const sourceTx = {
     ...txInput,
+    id: sourceId,
     accountId,
     date,
     transferAccountId: destinationAccount.id,
+    transferTransactionId: destinationId,
     inflow: inflowAmount,
     outflow: outflowAmount,
-  });
+    categoryId: null,
+  };
 
-  // Create destination transaction (inverse of source)
-  const destinationTransaction = await createTransferDestinationTransaction(
-    tx,
-    {
-      ...txInput,
-      accountId: destinationAccount.id,
-      date,
-      transferAccountId: accountId,
-      transferTransactionId: sourceTransaction.id,
-      inflow: outflowAmount,
-      outflow: inflowAmount,
-    }
+  const destinationTx = {
+    ...txInput,
+    id: destinationId,
+    accountId: destinationAccount.id,
+    date,
+    transferAccountId: accountId,
+    transferTransactionId: sourceId,
+    inflow: outflowAmount,
+    outflow: inflowAmount,
+    categoryId: null,
+  };
+
+  // Create source transaction (money leaving or entering source account)
+  // const sourceTransaction = await createTransferSourceTransaction(tx, {
+  //   ...txInput,
+  //   accountId,
+  //   date,
+  //   transferAccountId: destinationAccount.id,
+  //   inflow: inflowAmount,
+  //   outflow: outflowAmount,
+  // });
+
+  const rows = await tx.transaction.createManyAndReturn({
+    data: [sourceTx, destinationTx],
+  });
+  // await tx.transaction.createMany({
+  //   data: [sourceTx, destinationTx],
+  // });
+  //
+  // const rows = await tx.transaction.findMany({
+  //   where: {
+  //     id: {
+  //       in: [sourceId, destinationId],
+  //     },
+  //   },
+  // });
+  //
+  const [sourceTransaction, destinationTransaction] = rows.map(
+    transactionMapper.toDomainTransferTransaction
   );
 
-  await transactionRepository.updateTransaction(tx, sourceTransaction.id, {
-    transferTransactionId: destinationTransaction.id,
-  });
+  // Create destination transaction (inverse of source)
+  // const destinationTransaction = await createTransferDestinationTransaction(
+  //   tx,
+  //   {
+  //     ...txInput,
+  //     accountId: destinationAccount.id,
+  //     date,
+  //     transferAccountId: accountId,
+  //     transferTransactionId: sourceTransaction.id,
+  //     inflow: outflowAmount,
+  //     outflow: inflowAmount,
+  //   }
+  // );
+  //
+  // await transactionRepository.updateTransaction(tx, sourceTransaction.id, {
+  //   transferTransactionId: destinationTransaction.id,
+  // });
 
   // Update balances for both accounts
   await accountService.updateAccountBalances(
@@ -120,10 +180,37 @@ export async function insertTransferTransaction(
   );
 
   // insert the missing memos
-  await memoService.insertMissingMemos(tx, userId, sourceTransaction.date);
+  const memos = await memoService.insertMissingMemos(
+    tx,
+    userId,
+    sourceTransaction.date
+  );
 
   await accountService.refreshDeletableStatus(tx, [
     accountId,
     destinationAccount.id,
   ]);
+
+  await accountService.refreshDeletableStatus(tx, [
+    accountId,
+    destinationAccount.id,
+  ]);
+
+  const destRow = await accountRepository.getAccount(tx, accountId, userId);
+  if (!destRow) throw new Error("where is the account?");
+  const destAccount = accountMapper.toDomainAccount(destRow);
+
+  const sourceRowUpdated = await accountRepository.getAccount(
+    tx,
+    accountId,
+    userId
+  );
+  if (!sourceRowUpdated) throw new Error("where is the account?");
+  const sourceAccountUpdated = accountMapper.toDomainAccount(destRow);
+
+  return {
+    transactions: [sourceTransaction, destinationTransaction],
+    accounts: [destAccount, sourceAccountUpdated],
+    memos,
+  };
 }

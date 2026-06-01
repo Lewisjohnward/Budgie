@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import app from "../../../app";
 import { getAccounts, getCategories } from "../../utils/getData";
 import {
-  addTransaction,
+  addTransactionLegacy,
   TestInsertTransactionInputWithoutUserId,
 } from "../../utils/transaction";
 import { login, registerUser } from "../../utils/auth";
@@ -46,7 +46,7 @@ describe("Transaction Create", () => {
         date: new Date(2025, 6, 15, 1, 0, 0).toISOString(),
       };
 
-      await addTransaction(cookie, transaction, 400);
+      await addTransactionLegacy(cookie, transaction, 400);
     });
     it("Should return 400 when adding a transaction a memo over 100 characters", async () => {
       const userAccount = await createAccountAndFetch(cookie);
@@ -58,7 +58,7 @@ describe("Transaction Create", () => {
         memo: "a".repeat(101),
       };
 
-      await addTransaction(cookie, transaction, 400);
+      await addTransactionLegacy(cookie, transaction, 400);
     });
     it('Should return 400 when adding a transaction with "" as payeeName', async () => {
       const userAccount = await createAccountAndFetch(cookie);
@@ -70,7 +70,7 @@ describe("Transaction Create", () => {
         date: new Date(2025, 6, 15, 1, 0, 0).toISOString(),
       };
 
-      await addTransaction(cookie, transaction, 400);
+      await addTransactionLegacy(cookie, transaction, 400);
     });
     it('Should return 400 when adding a transaction with " " as payeeName', async () => {
       const userAccount = await createAccountAndFetch(cookie);
@@ -82,7 +82,7 @@ describe("Transaction Create", () => {
         date: new Date(2025, 6, 15, 1, 0, 0).toISOString(),
       };
 
-      await addTransaction(cookie, transaction, 400);
+      await addTransactionLegacy(cookie, transaction, 400);
     });
     it("Should return 400 when creating a normal transaction older than the 12-month window", async () => {
       const account = await createAccountAndFetch(cookie, 0);
@@ -100,7 +100,7 @@ describe("Transaction Create", () => {
         date: tooOld.toISOString(),
       };
 
-      await addTransaction(cookie, payload, 400);
+      await addTransactionLegacy(cookie, payload, 400);
     });
     it("Should return 404 when adding a transaction to an account not owned by the user", async () => {
       await registerUser({
@@ -119,7 +119,7 @@ describe("Transaction Create", () => {
         outflow: "10",
       };
 
-      await addTransaction(cookie, transactionPayload, 404);
+      await addTransactionLegacy(cookie, transactionPayload, 404);
     });
   });
   describe("Bugs", () => {
@@ -183,7 +183,7 @@ describe("Transaction Create", () => {
           Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11, 1)
         );
 
-        await addTransaction(
+        await addTransactionLegacy(
           cookie,
           {
             accountId: account.id,
@@ -248,7 +248,7 @@ describe("Transaction Create", () => {
             outflow: "10",
           };
 
-          await addTransaction(cookie, transactionPayload);
+          await addTransactionLegacy(cookie, transactionPayload);
 
           const { memoByMonth: memoByMonthAfter, monthKeys: monthKeysAfter } =
             await getCategories(cookie);
@@ -272,7 +272,7 @@ describe("Transaction Create", () => {
             Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 10, 1)
           );
 
-          await addTransaction(
+          await addTransactionLegacy(
             cookie,
             {
               accountId: account.id,
@@ -306,7 +306,7 @@ describe("Transaction Create", () => {
             date: pastDate,
           };
 
-          await addTransaction(cookie, transferTransaction, 200);
+          await addTransactionLegacy(cookie, transferTransaction, 200);
 
           const { months: monthsAfter } = await getCategories(cookie);
 
@@ -332,7 +332,7 @@ describe("Transaction Create", () => {
             outflow: "10",
           };
 
-          await addTransaction(cookie, transferTransaction, 200);
+          await addTransactionLegacy(cookie, transferTransaction, 200);
 
           const accountAfter = await fetchAccountByName(
             cookie,
@@ -358,7 +358,7 @@ describe("Transaction Create", () => {
           date: new Date(2025, 6, 15, 1, 0, 0).toISOString(),
         };
 
-        await addTransaction(cookie, transaction, 400);
+        await addTransactionLegacy(cookie, transaction, 400);
       });
 
       it("Should return 400 when providing both payeeName and transferAccountId", async () => {
@@ -372,7 +372,7 @@ describe("Transaction Create", () => {
           date: new Date(2025, 6, 15, 1, 0, 0).toISOString(),
         };
 
-        await addTransaction(cookie, transaction, 400);
+        await addTransactionLegacy(cookie, transaction, 400);
       });
 
       it("Should return 400 when providing both transferAccountId and categoryId", async () => {
@@ -389,7 +389,7 @@ describe("Transaction Create", () => {
           date: new Date(2025, 6, 15, 1, 0, 0).toISOString(),
         };
 
-        await addTransaction(cookie, transaction, 400);
+        await addTransactionLegacy(cookie, transaction, 400);
       });
 
       it("Should return 400 when trying to transfer to same account", async () => {
@@ -402,7 +402,7 @@ describe("Transaction Create", () => {
           transferAccountId: userAccount.id,
         };
 
-        await addTransaction(cookie, transferTransaction, 400);
+        await addTransactionLegacy(cookie, transferTransaction, 400);
       });
       it("Should return 400 when creating a transfer transaction older than the 12-month window", async () => {
         const from = await createAccountAndFetch(cookie, 0);
@@ -420,7 +420,7 @@ describe("Transaction Create", () => {
           date: tooOld.toISOString(),
         };
 
-        await addTransaction(cookie, payload, 400);
+        await addTransactionLegacy(cookie, payload, 400);
       });
     });
 
@@ -444,7 +444,7 @@ describe("Transaction Create", () => {
           outflow: "10",
         };
 
-        await addTransaction(cookie, transactionPayload, 404);
+        await addTransactionLegacy(cookie, transactionPayload, 404);
       });
       it("Should return 404 when trying to transfer to unowned account", async () => {
         const user = {
@@ -464,7 +464,7 @@ describe("Transaction Create", () => {
           date: new Date(2025, 6, 15, 1, 0, 0).toISOString(),
         };
 
-        await addTransaction(cookie, transaction, 200);
+        await addTransactionLegacy(cookie, transaction, 200);
 
         const transferTransaction: TestInsertTransactionInputWithoutUserId = {
           accountId: userAccount.id,
@@ -473,7 +473,7 @@ describe("Transaction Create", () => {
           date: new Date(2025, 6, 15, 1, 0, 0).toISOString(),
         };
 
-        await addTransaction(cookie, transferTransaction, 404);
+        await addTransactionLegacy(cookie, transferTransaction, 404);
       });
     });
 
@@ -489,7 +489,7 @@ describe("Transaction Create", () => {
           date: new Date(2025, 6, 15, 1, 0, 0).toISOString(),
         };
 
-        await addTransaction(cookie, transferTransaction, 200);
+        await addTransactionLegacy(cookie, transferTransaction, 200);
 
         // Verify account balances updated correctly
         const { accounts, transactions } = await getAccounts(cookie);
@@ -569,7 +569,7 @@ describe("Transaction Create", () => {
             outflow: "10",
           };
 
-          await addTransaction(cookie, transferPayload);
+          await addTransactionLegacy(cookie, transferPayload);
 
           const { memoByMonth: after, monthKeys: afterKeys } =
             await getCategories(cookie);
@@ -599,7 +599,7 @@ describe("Transaction Create", () => {
             date: pastDate,
           };
 
-          await addTransaction(cookie, transferTransaction, 200);
+          await addTransactionLegacy(cookie, transferTransaction, 200);
 
           const { accounts, transactions } = await getAccounts(cookie);
 
@@ -671,7 +671,7 @@ describe("Transaction Create", () => {
             transferAccountId: account2Before.id,
           };
 
-          await addTransaction(cookie, transferTransaction, 200);
+          await addTransactionLegacy(cookie, transferTransaction, 200);
 
           const account1After = await fetchAccountByName(cookie, account1.name);
 

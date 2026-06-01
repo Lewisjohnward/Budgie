@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { memoRepository } from "../../../../../../shared/repository/memoRepositoryImpl";
 import { memoMapper } from "../../memo.mapper";
-import { MemoId, UpdatedMemo } from "../../memo.types";
+import { type MemoId, type MemoDto, DomainMemo } from "../../memo.types";
 
 /**
  * Updates a memo's content within a transaction and returns the updated memo as an API DTO.
@@ -11,8 +11,8 @@ export const updateMemo = async (
   tx: Prisma.TransactionClient,
   memoId: MemoId,
   content: string
-): Promise<UpdatedMemo> => {
+): Promise<DomainMemo> => {
   const memo = await memoRepository.updateMemo(tx, memoId, content);
 
-  return memoMapper.toUpdatedMemo(memo);
+  return memoMapper.toDomainMemo(memo);
 };

@@ -22,7 +22,7 @@ export const transactionBaseSchema = z.object({
   outflow: decimalFromString("outflow"),
 });
 
-export const insertTransactionSchema = transactionBaseSchema
+export const createTransactionSchema = transactionBaseSchema
   // Prevent date from being in the future
   .refine(dateNotInFuture, { message: "Date cannot be in the future" })
   // Prevent providing both inflow and outflow, and require any provided value to be non-zero
@@ -66,10 +66,10 @@ export const insertTransactionSchema = transactionBaseSchema
   );
 
 // Input type - for API/external input (strings before transformation)
-export type InsertTransactionInput = z.input<typeof insertTransactionSchema>;
+export type CreateTransactionInput = z.input<typeof createTransactionSchema>;
 
 // Output type - for internal use (Decimals after transformation)
-export type InsertTransactionPayload = z.output<typeof insertTransactionSchema>;
+export type CreateTransactionPayload = z.output<typeof createTransactionSchema>;
 
 // Internal schema used only by services/repo
 export const transferTransactionCreateSchema = transactionBaseSchema.extend({

@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import { getAccounts, getCategories } from "../../utils/getData";
 import {
-  addTransaction,
+  addTransactionLegacy,
   editSingleTransaction,
   type TestInsertTransactionInputWithoutUserId,
 } from "../../utils/transaction";
@@ -38,7 +38,10 @@ describe("Transaction Single Edit", () => {
         outflow: "10",
       };
 
-      const newTransaction = await addTransaction(cookie, transactionPayload);
+      const newTransaction = await addTransactionLegacy(
+        cookie,
+        transactionPayload
+      );
 
       const editTransactionPayload: EditSingleTransactionInput = {};
 
@@ -58,7 +61,10 @@ describe("Transaction Single Edit", () => {
         outflow: "10",
       };
 
-      const newTransaction = await addTransaction(cookie, transactionPayload);
+      const newTransaction = await addTransactionLegacy(
+        cookie,
+        transactionPayload
+      );
 
       const editTransactionPayload: EditSingleTransactionInput = {
         transferAccountId: uuidv4(),
@@ -106,7 +112,7 @@ describe("Transaction Single Edit", () => {
         outflow: "10",
       };
 
-      const transaction = await addTransaction(
+      const transaction = await addTransactionLegacy(
         cookie2,
         transactionPayload,
         200
@@ -135,7 +141,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const invalidAccountId = "not-a-valid-uuid";
 
@@ -159,7 +168,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const nonExistentId = uuidv4();
 
@@ -183,7 +195,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         await registerUser({
           email: "testa@test.com",
@@ -220,7 +235,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           accountId: account2.id,
@@ -270,7 +288,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         for (const invalidDate of invalidDates) {
           const { res } = await editSingleTransaction(
@@ -290,7 +311,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         // Create a date 1 year in the future
         const futureDate = new Date();
@@ -319,7 +343,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
         const newDate = new Date(new Date(date).getTime() + 1000).toISOString();
 
         const editTransactionPayload: EditSingleTransactionInput = {
@@ -357,7 +384,7 @@ describe("Transaction Single Edit", () => {
           // Create a normal transaction (in current window / default date)
           const account1 = await createAccountAndFetch(cookie, 0);
 
-          const created = await addTransaction(cookie, {
+          const created = await addTransactionLegacy(cookie, {
             accountId: account1.id,
             outflow: "10",
           });
@@ -403,7 +430,7 @@ describe("Transaction Single Edit", () => {
             outflow: "10",
           };
 
-          const newTransaction = await addTransaction(
+          const newTransaction = await addTransactionLegacy(
             cookie,
             transactionPayload
           );
@@ -444,7 +471,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const invalidPayeeId = "not-a-valid-uuid";
 
@@ -468,7 +498,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const mockPayeeId = uuidv4();
 
@@ -493,7 +526,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           payeeName: "",
@@ -515,7 +551,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           payeeName: " ",
@@ -537,7 +576,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const nonExistentPayeeId = uuidv4();
 
@@ -561,7 +603,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         await registerUser({
           email: "testa@test.com",
@@ -575,7 +620,7 @@ describe("Transaction Single Edit", () => {
 
         const account2 = await createAccountAndFetch(cookie2, 0);
 
-        await addTransaction(cookie2, {
+        await addTransactionLegacy(cookie2, {
           accountId: account2.id,
           payeeName: "User2 Payee",
           outflow: "10",
@@ -608,7 +653,7 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        await addTransaction(cookie, transactionPayload1);
+        await addTransactionLegacy(cookie, transactionPayload1);
 
         const transactionPayload2: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
@@ -616,7 +661,7 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(
+        const newTransaction = await addTransactionLegacy(
           cookie,
           transactionPayload2
         );
@@ -654,7 +699,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const transaction = await addTransaction(cookie, transactionPayload1);
+        const transaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload1
+        );
 
         const NEW_PAYEE_NAME = "new payee name";
         const editTransactionPayload: EditSingleTransactionInput = {
@@ -684,7 +732,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         expect(newTransaction!.payeeId).not.toBeNull();
 
@@ -717,7 +768,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         // Verify no user-created payees exist initially (system payees excluded)
         const { payees: payeesBefore } = await getPayees(cookie);
@@ -787,7 +841,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const invalidCategoryId = "not-a-valid-uuid";
 
@@ -811,7 +868,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const nonExistentId = uuidv4();
 
@@ -835,7 +895,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         await registerUser({
           email: "testa@test.com",
@@ -874,7 +937,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           categoryId: category.id,
@@ -907,7 +973,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           categoryId: null,
@@ -940,7 +1009,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           categoryId: rtaCategory.id,
@@ -975,7 +1047,10 @@ describe("Transaction Single Edit", () => {
           inflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           categoryId: testCategory.id,
@@ -1011,7 +1086,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           categoryId: testCategory.id,
@@ -1049,7 +1127,10 @@ describe("Transaction Single Edit", () => {
           inflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           categoryId: testCategory.id,
@@ -1088,7 +1169,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const longMemo = "a".repeat(101);
 
@@ -1114,7 +1198,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           memo: "updated memo",
@@ -1141,7 +1228,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           memo: " ",
@@ -1167,7 +1257,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           memo: "updated memo",
@@ -1197,7 +1290,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           outflow: "20",
@@ -1222,7 +1318,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           outflow: "20",
@@ -1252,7 +1351,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           outflow: "0",
@@ -1280,7 +1382,10 @@ describe("Transaction Single Edit", () => {
           inflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           inflow: "0",
@@ -1309,7 +1414,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           inflow: "0",
@@ -1339,7 +1447,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           outflow: "20",
@@ -1363,7 +1474,10 @@ describe("Transaction Single Edit", () => {
           inflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           inflow: "20",
@@ -1387,7 +1501,10 @@ describe("Transaction Single Edit", () => {
           outflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           inflow: "20",
@@ -1411,7 +1528,10 @@ describe("Transaction Single Edit", () => {
           inflow: "10",
         };
 
-        const newTransaction = await addTransaction(cookie, transactionPayload);
+        const newTransaction = await addTransactionLegacy(
+          cookie,
+          transactionPayload
+        );
 
         const editTransactionPayload: EditSingleTransactionInput = {
           outflow: "10",
@@ -1441,7 +1561,7 @@ describe("Transaction Single Edit", () => {
             inflow: "10",
           };
 
-          const newTransaction = await addTransaction(
+          const newTransaction = await addTransactionLegacy(
             cookie,
             transactionPayload
           );
@@ -1474,7 +1594,7 @@ describe("Transaction Single Edit", () => {
             outflow: "10",
           };
 
-          const newTransaction = await addTransaction(
+          const newTransaction = await addTransactionLegacy(
             cookie,
             transactionPayload
           );
@@ -1507,7 +1627,7 @@ describe("Transaction Single Edit", () => {
             inflow: "10",
           };
 
-          const newTransaction = await addTransaction(
+          const newTransaction = await addTransactionLegacy(
             cookie,
             transactionPayload
           );
@@ -1540,7 +1660,7 @@ describe("Transaction Single Edit", () => {
             outflow: "10",
           };
 
-          const newTransaction = await addTransaction(
+          const newTransaction = await addTransactionLegacy(
             cookie,
             transactionPayload
           );
@@ -1573,7 +1693,7 @@ describe("Transaction Single Edit", () => {
             outflow: "10",
           };
 
-          const newTransaction = await addTransaction(
+          const newTransaction = await addTransactionLegacy(
             cookie,
             transactionPayload
           );
@@ -1606,7 +1726,7 @@ describe("Transaction Single Edit", () => {
             inflow: "10",
           };
 
-          const newTransaction = await addTransaction(
+          const newTransaction = await addTransactionLegacy(
             cookie,
             transactionPayload
           );
@@ -1641,7 +1761,7 @@ describe("Transaction Single Edit", () => {
             inflow: "10",
           };
 
-          const newTransaction = await addTransaction(
+          const newTransaction = await addTransactionLegacy(
             cookie,
             transactionPayload
           );
@@ -1678,7 +1798,7 @@ describe("Transaction Single Edit", () => {
             outflow: "10",
           };
 
-          const newTransaction = await addTransaction(
+          const newTransaction = await addTransactionLegacy(
             cookie,
             transactionPayload
           );
@@ -1723,7 +1843,7 @@ describe("Transaction Single Edit", () => {
             outflow: "10",
           };
 
-          const newTransaction = await addTransaction(
+          const newTransaction = await addTransactionLegacy(
             cookie,
             transactionPayload
           );
@@ -1768,7 +1888,7 @@ describe("Transaction Single Edit", () => {
             inflow: "10",
           };
 
-          const newTransaction = await addTransaction(
+          const newTransaction = await addTransactionLegacy(
             cookie,
             transactionPayload
           );
@@ -1813,7 +1933,7 @@ describe("Transaction Single Edit", () => {
             inflow: "10",
           };
 
-          const newTransaction = await addTransaction(
+          const newTransaction = await addTransactionLegacy(
             cookie,
             transactionPayload
           );
@@ -1858,7 +1978,7 @@ describe("Transaction Single Edit", () => {
             outflow: "10",
           };
 
-          const newTransaction = await addTransaction(
+          const newTransaction = await addTransactionLegacy(
             cookie,
             transactionPayload
           );
@@ -1907,7 +2027,10 @@ describe("Transaction Single Edit", () => {
         outflow: "10",
       };
 
-      const newTransaction = await addTransaction(cookie, transactionPayload);
+      const newTransaction = await addTransactionLegacy(
+        cookie,
+        transactionPayload
+      );
 
       const { transactions } = await getAccounts(cookie);
       const main = transactions[newTransaction!.id];
@@ -1948,7 +2071,7 @@ describe("Transaction Single Edit", () => {
         memo: "normal-to-transfer",
       };
 
-      const created = await addTransaction(cookie, transactionPayload);
+      const created = await addTransactionLegacy(cookie, transactionPayload);
 
       {
         const { transactions } = await getAccounts(cookie);
@@ -2002,7 +2125,7 @@ describe("Transaction Single Edit", () => {
       const accountB = await createAccountAndFetch(cookie, 0);
       const accountC = await createAccountAndFetch(cookie, 0);
 
-      const created = await addTransaction(cookie, {
+      const created = await addTransactionLegacy(cookie, {
         accountId: accountA.id,
         transferAccountId: accountB.id,
         outflow: "10",
@@ -2060,7 +2183,7 @@ describe("Transaction Single Edit", () => {
       const testCategory = await getTestCategory(cookie);
 
       // Create transfer
-      const created = await addTransaction(cookie, {
+      const created = await addTransactionLegacy(cookie, {
         accountId: account1.id,
         transferAccountId: account2.id,
         outflow: "10",
@@ -2125,7 +2248,7 @@ describe("Transaction Single Edit", () => {
             const fromAccount = await createAccountAndFetch(cookie, 0);
             const toAccount = await createAccountAndFetch(cookie, 0);
 
-            const created = await addTransaction(cookie, {
+            const created = await addTransactionLegacy(cookie, {
               accountId: fromAccount.id,
               transferAccountId: toAccount.id,
               outflow: "10",
@@ -2216,7 +2339,7 @@ describe("Transaction Single Edit", () => {
       const rtaCategory = await getRTACategory(cookie);
 
       // Seed a payee we can switch to - will be uncategorised
-      await addTransaction(cookie, {
+      await addTransactionLegacy(cookie, {
         accountId: accountC.id,
         outflow: "1",
         payeeName: "Target Payee",
@@ -2229,7 +2352,7 @@ describe("Transaction Single Edit", () => {
       expect(targetPayee).toBeDefined();
 
       // Create initial normal tx
-      const created = await addTransaction(cookie, {
+      const created = await addTransactionLegacy(cookie, {
         accountId: accountA.id,
         categoryId: testCategory.id,
         outflow: "10",
@@ -2304,7 +2427,7 @@ describe("Transaction Single Edit", () => {
       const accountD = await createAccountAndFetch(cookie, 0);
 
       // initial transaction
-      const initialTx = await addTransaction(cookie, {
+      const initialTx = await addTransactionLegacy(cookie, {
         accountId: accountA.id,
         transferAccountId: accountB.id,
         outflow: "10",
@@ -2323,7 +2446,7 @@ describe("Transaction Single Edit", () => {
       const monthsBefore = await getCategoryMonths(cookie, testCategory.id);
 
       // Seed a payee - will be ignored because its a transfer transactions
-      await addTransaction(cookie, {
+      await addTransactionLegacy(cookie, {
         accountId: accountC.id,
         outflow: "1",
         payeeName: "Transfer Target Payee",
@@ -2430,7 +2553,7 @@ describe("Transaction Single Edit", () => {
       const accountD = await createAccountAndFetch(cookie, 0);
 
       // initial transaction
-      const created = await addTransaction(cookie, {
+      const created = await addTransactionLegacy(cookie, {
         accountId: accountA.id,
         transferAccountId: accountB.id,
         outflow: "10",
@@ -2449,7 +2572,7 @@ describe("Transaction Single Edit", () => {
       const monthsBefore = await getCategoryMonths(cookie, testCategory.id);
 
       // Seed a payee - will be ignored because its a transfer transactions
-      await addTransaction(cookie, {
+      await addTransactionLegacy(cookie, {
         accountId: accountC.id,
         outflow: "1",
         payeeName: "Transfer Target Payee",
@@ -2556,7 +2679,7 @@ describe("Transaction Single Edit", () => {
       const accountD = await createAccountAndFetch(cookie, 0);
 
       // initial transaction
-      const created = await addTransaction(cookie, {
+      const created = await addTransactionLegacy(cookie, {
         accountId: accountA.id,
         outflow: "10",
         memo: "seed-transfer",
@@ -2568,7 +2691,7 @@ describe("Transaction Single Edit", () => {
       expect(txBefore.transferTransactionId).toBeFalsy();
 
       // Seed a payee
-      await addTransaction(cookie, {
+      await addTransactionLegacy(cookie, {
         accountId: accountC.id,
         outflow: "1",
         payeeName: "Transfer Target Payee",

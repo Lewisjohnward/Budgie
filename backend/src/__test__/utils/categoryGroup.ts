@@ -5,6 +5,7 @@ import {
   CategoryGroupSystemMap,
   CategoryGroupUserDto,
   CategoryGroupUserMap,
+  DeleteCategoryGroupDto,
 } from "../../features/budget/core/categorygroup/types/categoryGroup.dto";
 import {
   CreateCategoryGroupPayload,
@@ -49,9 +50,9 @@ type UpdateCategoryGroupPayloadTest = Omit<
 >;
 
 /**
- * Fetches all category groups for the authenticated user and returns them as a keyed map by id
+ * Updates a category group and returns the raw HTTP response.
  */
-export const updateCategoryGroup = async (
+export const updateCategoryGroupRaw = async (
   cookie: string,
   id: string,
   payload?: UpdateCategoryGroupPayloadTest
@@ -62,6 +63,22 @@ export const updateCategoryGroup = async (
     .send(payload);
 
   return res;
+};
+
+/**
+ * Updates a category group and returns the dto.
+ */
+export const updateCategoryGroup = async (
+  cookie: string,
+  id: string,
+  payload?: UpdateCategoryGroupPayloadTest
+): Promise<CategoryGroupUserDto> => {
+  const res = await request(app)
+    .patch(`/budget/categorygroups/${id}`)
+    .set("Authorization", `Bearer ${cookie}`)
+    .send(payload);
+
+  return res.body;
 };
 
 /*
@@ -104,10 +121,10 @@ type CreateCategoryGroupPayloadTest = Omit<
   "userId"
 >;
 
-/*
- * Create category group for the user
+/**
+ * Creates a category group and returns the raw HTTP response.
  */
-export const createCategoryGroup = async (
+export const createCategoryGroupRaw = async (
   cookie: string,
   payload: CreateCategoryGroupPayloadTest
 ): Promise<Response> => {
@@ -117,6 +134,23 @@ export const createCategoryGroup = async (
     .send(payload);
 
   return res;
+};
+
+/*
+ * Create category group for the user
+ */
+export const createCategoryGroup = async (
+  cookie: string,
+  payload: CreateCategoryGroupPayloadTest
+): Promise<CategoryGroupUserDto> => {
+  const res = await request(app)
+    .post("/budget/categorygroups")
+    .set("Authorization", `Bearer ${cookie}`)
+    .send(payload);
+
+  expect(res.statusCode).toBe(201);
+
+  return res.body;
 };
 
 /**
@@ -151,9 +185,9 @@ export const getCategoryGroupByNameOrThrow = async (
  * Creates a set of test category groups for use in integration tests.
  */
 export const createTestCategoryGroups = async (cookie: string) => {
-  const { body: body1 } = await createCategoryGroup(cookie, { name: "A" });
-  const { body: body2 } = await createCategoryGroup(cookie, { name: "B" });
-  const { body: body3 } = await createCategoryGroup(cookie, { name: "C" });
+  const { body: body1 } = await createCategoryGroupRaw(cookie, { name: "A" });
+  const { body: body2 } = await createCategoryGroupRaw(cookie, { name: "B" });
+  const { body: body3 } = await createCategoryGroupRaw(cookie, { name: "C" });
 
   return {
     g1: body1 as CategoryGroupUserDto,
@@ -165,7 +199,7 @@ export const createTestCategoryGroups = async (cookie: string) => {
 /**
  * Deletes a category group for the authenticated user.
  */
-export const deleteCategoryGroup = async (
+export const deleteCategoryGroupRaw = async (
   cookie: string,
   id: string,
   inheritingCategoryId?: string
@@ -179,13 +213,31 @@ export const deleteCategoryGroup = async (
 };
 
 /**
+ * Deletes a category group for the authenticated user.
+ */
+export const deleteCategoryGroup = async (
+  cookie: string,
+  id: string,
+  inheritingCategoryId?: string
+): Promise<DeleteCategoryGroupDto> => {
+  const res = await request(app)
+    .delete(`/budget/categorygroups/${id}`)
+    .set("Authorization", `Bearer ${cookie}`)
+    .send({ inheritingCategoryId });
+
+  expect(res.status).toBe(200);
+
+  return res.body;
+};
+
+/**
  * Deletes a category group and returns updated category groups state.
  */
 export const deleteCategoryGroupAndGetState = async (
   cookie: string,
   id: string
 ) => {
-  const res = await deleteCategoryGroup(cookie, id);
+  const res = await deleteCategoryGroupRaw(cookie, id);
 
   const after = await getCategoryGroups(cookie);
 

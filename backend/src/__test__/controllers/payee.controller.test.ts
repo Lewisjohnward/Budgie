@@ -1,5 +1,5 @@
 import { registerUser } from "../utils/auth";
-import { addTransaction } from "../utils/transaction";
+import { addTransactionLegacy } from "../utils/transaction";
 import {
   getPayees,
   editPayee,
@@ -37,7 +37,7 @@ describe("Payee", () => {
         outflow: "10",
       };
 
-      await addTransaction(cookie, transaction);
+      await addTransactionLegacy(cookie, transaction);
       const { payees: afterPayees } = await getPayees(cookie);
       const payeesArray = Object.values(afterPayees);
 
@@ -54,7 +54,7 @@ describe("Payee", () => {
         outflow: "10",
       };
 
-      await addTransaction(cookie, transactionInput);
+      await addTransactionLegacy(cookie, transactionInput);
 
       const { payees } = await getPayees(cookie);
       const { transactions } = await getAccounts(cookie);
@@ -84,7 +84,7 @@ describe("Payee", () => {
         outflow: "10",
       };
 
-      await addTransaction(cookie, transaction);
+      await addTransactionLegacy(cookie, transaction);
 
       const { payees } = await getPayees(cookie);
       const payeesArray = Object.values(payees);
@@ -104,9 +104,9 @@ describe("Payee", () => {
         outflow: "10",
       };
 
-      await addTransaction(cookie, transaction);
+      await addTransactionLegacy(cookie, transaction);
 
-      await addTransaction(cookie, transaction, 409);
+      await addTransactionLegacy(cookie, transaction, 409);
     });
 
     it("Should return 400 if user sends payeeName and payeeId", async () => {
@@ -119,7 +119,7 @@ describe("Payee", () => {
         outflow: "10",
       };
 
-      await addTransaction(cookie, transaction, 400);
+      await addTransactionLegacy(cookie, transaction, 400);
     });
     it("Should return 400 if user sends payeeName as empty string", async () => {
       const account = await createAccountAndFetch(cookie);
@@ -130,7 +130,7 @@ describe("Payee", () => {
         outflow: "10",
       };
 
-      await addTransaction(cookie, transaction, 400);
+      await addTransactionLegacy(cookie, transaction, 400);
     });
     it("Should return 400 if payeeName exceeds maximum length", async () => {
       const account = await createAccountAndFetch(cookie);
@@ -143,7 +143,7 @@ describe("Payee", () => {
         outflow: "10",
       };
 
-      await addTransaction(cookie, transaction, 400);
+      await addTransactionLegacy(cookie, transaction, 400);
     });
 
     it("Should create payee with minimum name length of 1 character", async () => {
@@ -155,7 +155,7 @@ describe("Payee", () => {
         outflow: "10",
       };
 
-      await addTransaction(cookie, transaction);
+      await addTransactionLegacy(cookie, transaction);
 
       const { payees } = await getPayees(cookie);
       const payeesArray = Object.values(payees);
@@ -219,7 +219,7 @@ describe("Payee", () => {
         outflow: "10",
       };
 
-      await addTransaction(cookie, transactionInput);
+      await addTransactionLegacy(cookie, transactionInput);
 
       const { payees } = await getPayees(cookie);
       const { transactions } = await getAccounts(cookie);
@@ -245,7 +245,7 @@ describe("Payee", () => {
         payeeName: PAYEE_NAME,
         outflow: "10",
       };
-      await addTransaction(cookie, transaction1);
+      await addTransactionLegacy(cookie, transaction1);
 
       const { payees } = await getPayees(cookie);
       const testPayee = Object.values(payees).find(
@@ -258,7 +258,7 @@ describe("Payee", () => {
         payeeId: testPayee!.id,
         outflow: "20",
       };
-      await addTransaction(cookie, transaction2);
+      await addTransactionLegacy(cookie, transaction2);
 
       const { transactions } = await getAccounts(cookie);
       const transactionsArray = Object.values(transactions).filter(
@@ -283,7 +283,7 @@ describe("Payee", () => {
         outflow: "10",
       };
 
-      await addTransaction(cookie, transaction);
+      await addTransactionLegacy(cookie, transaction);
 
       const user = {
         email: "test2@test.com",
@@ -305,7 +305,7 @@ describe("Payee", () => {
         payeeId: testPayee.id,
         outflow: "10",
       };
-      await addTransaction(cookie2, transaction2, 404);
+      await addTransactionLegacy(cookie2, transaction2, 404);
     });
   });
 
@@ -329,9 +329,9 @@ describe("Payee", () => {
         outflow: "30",
       };
 
-      await addTransaction(cookie, transaction1);
-      await addTransaction(cookie, transaction2);
-      await addTransaction(cookie, transaction3);
+      await addTransactionLegacy(cookie, transaction1);
+      await addTransactionLegacy(cookie, transaction2);
+      await addTransactionLegacy(cookie, transaction3);
 
       // Create another user and their payee
       const user2 = { email: "user2@test.com", password: "testpasswordABC$" };
@@ -343,7 +343,7 @@ describe("Payee", () => {
         payeeName: "User2 Payee",
         outflow: "40",
       };
-      await addTransaction(cookie2, transaction4);
+      await addTransactionLegacy(cookie2, transaction4);
 
       const { payees } = await getPayees(cookie);
       const payeesArray = Object.values(payees);
@@ -371,7 +371,7 @@ describe("Payee", () => {
     it("Should delete payee and update transactions with null when no new payeeId provided", async () => {
       const account = await createAccountAndFetch(cookie);
 
-      await addTransaction(cookie, {
+      await addTransactionLegacy(cookie, {
         accountId: account.id,
         payeeName: PAYEE_NAME,
         outflow: "10",
@@ -383,14 +383,14 @@ describe("Payee", () => {
       );
       expect(createdPayee).toBeDefined();
 
-      await addTransaction(cookie, {
+      await addTransactionLegacy(cookie, {
         accountId: account.id,
         payeeId: createdPayee!.id,
         outflow: "20",
       });
 
       const differentPayeeName = "Different Payee";
-      await addTransaction(cookie, {
+      await addTransactionLegacy(cookie, {
         accountId: account.id,
         payeeName: differentPayeeName,
         outflow: "30",
@@ -441,13 +441,13 @@ describe("Payee", () => {
     it("Should delete payee and update transactions with replacement payee when payeeId provided", async () => {
       const account = await createAccountAndFetch(cookie);
 
-      await addTransaction(cookie, {
+      await addTransactionLegacy(cookie, {
         accountId: account.id,
         payeeName: PAYEE_NAME,
         outflow: "10",
       });
 
-      await addTransaction(cookie, {
+      await addTransactionLegacy(cookie, {
         accountId: account.id,
         payeeName: "Replacement Payee",
         outflow: "15",
@@ -461,7 +461,7 @@ describe("Payee", () => {
         (p) => p.name === "Replacement Payee"
       );
 
-      await addTransaction(cookie, {
+      await addTransactionLegacy(cookie, {
         accountId: account.id,
         payeeId: payeesToDelete!.id,
         outflow: "20",
@@ -499,7 +499,7 @@ describe("Payee", () => {
 
     it("Should return 404 if user doesn't own original payeeId", async () => {
       const account = await createAccountAndFetch(cookie);
-      await addTransaction(cookie, {
+      await addTransactionLegacy(cookie, {
         accountId: account.id,
         payeeName: PAYEE_NAME,
         outflow: "10",
@@ -527,7 +527,7 @@ describe("Payee", () => {
 
     it("Should return 404 if user doesn't own replacement payeeId", async () => {
       const account = await createAccountAndFetch(cookie);
-      await addTransaction(cookie, {
+      await addTransactionLegacy(cookie, {
         accountId: account.id,
         payeeName: PAYEE_NAME,
         outflow: "10",
@@ -548,7 +548,7 @@ describe("Payee", () => {
       const { accounts } = await getAccounts(cookie2);
       const account2 = Object.values(accounts)[0];
 
-      await addTransaction(cookie2, {
+      await addTransactionLegacy(cookie2, {
         accountId: account2.id,
         payeeName: "User2 Payee",
         outflow: "30",
@@ -602,7 +602,7 @@ describe("Payee", () => {
       it("Should return 400 if no update fields are provided", async () => {
         // Setup: create account and add a transaction with a payee
         const account = await createAccountAndFetch(cookie);
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: PAYEE_NAME,
           outflow: "10",
@@ -666,17 +666,17 @@ describe("Payee", () => {
       it("Should update includeInPayeeList for multiple payees", async () => {
         const account = await createAccountAndFetch(cookie);
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 1",
           outflow: "10",
         });
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 2",
           outflow: "20",
         });
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 3",
           outflow: "30",
@@ -716,7 +716,7 @@ describe("Payee", () => {
       it("Should return 404 if user doesn't own one of the payees", async () => {
         const account = await createAccountAndFetch(cookie);
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "User1 Payee",
           outflow: "10",
@@ -743,7 +743,7 @@ describe("Payee", () => {
       it("Should return 400 if no update fields provided", async () => {
         const account = await createAccountAndFetch(cookie);
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 1",
           outflow: "10",
@@ -796,17 +796,17 @@ describe("Payee", () => {
       it("Should combine multiple payees into target payee", async () => {
         const account = await createAccountAndFetch(cookie);
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 1",
           outflow: "10",
         });
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 2",
           outflow: "20",
         });
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 3",
           outflow: "30",
@@ -818,12 +818,12 @@ describe("Payee", () => {
         const payee2 = payeesArray.find((p) => p.name === "Payee 2")!;
         const payee3 = payeesArray.find((p) => p.name === "Payee 3")!;
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeId: payee2.id,
           outflow: "40",
         });
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeId: payee3.id,
           outflow: "50",
@@ -856,12 +856,12 @@ describe("Payee", () => {
       it("Should return 400 if target payee is in payeeIds list", async () => {
         const account = await createAccountAndFetch(cookie);
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 1",
           outflow: "10",
         });
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 2",
           outflow: "20",
@@ -883,12 +883,12 @@ describe("Payee", () => {
       it("Should return 400 if target payee is a system payee", async () => {
         const account = await createAccountAndFetch(cookie);
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 1",
           outflow: "10",
         });
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 2",
           outflow: "20",
@@ -918,12 +918,12 @@ describe("Payee", () => {
       it("Should return 400 if combining a system payee", async () => {
         const account = await createAccountAndFetch(cookie);
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 1",
           outflow: "10",
         });
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 2",
           outflow: "20",
@@ -953,13 +953,13 @@ describe("Payee", () => {
       it("Should return 404 if user doesn't own one of the payees", async () => {
         const account = await createAccountAndFetch(cookie);
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "User1 Payee",
           outflow: "10",
         });
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "User1 Payee2",
           outflow: "10",
@@ -980,7 +980,7 @@ describe("Payee", () => {
         const { accounts: accounts2 } = await getAccounts(cookie2);
         const account2 = Object.values(accounts2)[0];
 
-        await addTransaction(cookie2, {
+        await addTransactionLegacy(cookie2, {
           accountId: account2.id,
           payeeName: "User2 Payee",
           outflow: "20",
@@ -1000,7 +1000,7 @@ describe("Payee", () => {
       it("Should require at least 2 payees to combine", async () => {
         const account = await createAccountAndFetch(cookie);
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 1",
           outflow: "10",
@@ -1024,19 +1024,19 @@ describe("Payee", () => {
       it("Should delete multiple payees and set transactions to null", async () => {
         const account = await createAccountAndFetch(cookie);
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 1",
           outflow: "10",
         });
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 2",
           outflow: "20",
         });
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Keep Payee",
           outflow: "30",
@@ -1069,17 +1069,17 @@ describe("Payee", () => {
       it("Should delete multiple payees and reassign to replacement payee", async () => {
         const account = await createAccountAndFetch(cookie);
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 1",
           outflow: "10",
         });
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 2",
           outflow: "20",
         });
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Replacement",
           outflow: "30",
@@ -1113,13 +1113,13 @@ describe("Payee", () => {
       it("Should return 400 if replacement payee is in delete list", async () => {
         const account = await createAccountAndFetch(cookie);
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 1",
           outflow: "10",
         });
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 2",
           outflow: "20",
@@ -1140,12 +1140,12 @@ describe("Payee", () => {
       it("Should return 400 if deleting a system payee", async () => {
         const account = await createAccountAndFetch(cookie);
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 1",
           outflow: "10",
         });
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 2",
           outflow: "20",
@@ -1174,12 +1174,12 @@ describe("Payee", () => {
       it("Should return 400 if a system payee is the replacement", async () => {
         const account = await createAccountAndFetch(cookie);
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 1",
           outflow: "10",
         });
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "Payee 2",
           outflow: "20",
@@ -1208,7 +1208,7 @@ describe("Payee", () => {
       it("Should return 404 if user doesn't own one of the payees to delete", async () => {
         const account = await createAccountAndFetch(cookie);
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "User1 Payee",
           outflow: "10",
@@ -1234,7 +1234,7 @@ describe("Payee", () => {
       it("Should return 404 if user doesn't own replacement payee", async () => {
         const account = await createAccountAndFetch(cookie);
 
-        await addTransaction(cookie, {
+        await addTransactionLegacy(cookie, {
           accountId: account.id,
           payeeName: "User1 Payee",
           outflow: "10",
@@ -1254,7 +1254,7 @@ describe("Payee", () => {
         const { accounts: accounts2 } = await getAccounts(cookie2);
         const account2 = Object.values(accounts2)[0];
 
-        await addTransaction(cookie2, {
+        await addTransactionLegacy(cookie2, {
           accountId: account2.id,
           payeeName: "User2 Payee",
           outflow: "20",

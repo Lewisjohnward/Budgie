@@ -7,7 +7,7 @@ import {
 import { transactionMapper } from "../../../transaction.mapper";
 
 /**
- * Creates a normal (non-transfer) transaction for a specific account.
+ * Inserts a normal (non-transfer) transaction for a specific account into db.
  *
  * Characteristics of a normal transaction:
  * - Must belong to a category.
@@ -27,7 +27,7 @@ import { transactionMapper } from "../../../transaction.mapper";
  * @throws Will throw an error if the transaction creation fails due to database
  *         constraints or invalid data.
  */
-export async function createNormalTransaction(
+export async function insertNormalTransaction(
   tx: Prisma.TransactionClient,
   normalTransactionData: NormalTransactionCreateData
 ): Promise<DomainNormalTransaction> {

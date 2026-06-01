@@ -34,15 +34,16 @@ export const createCategoryGroup = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const validatedCategoryGroup = createCategoryGroupSchema.parse({
+    const payload = createCategoryGroupSchema.parse({
       userId: req.user!._id,
       ...req.body,
     });
 
-    const categoryGroup = await categoryGroupUseCase.createCategoryGroup(
-      validatedCategoryGroup
-    );
-    res.status(201).json(categoryGroup);
+    const result = await categoryGroupUseCase.createCategoryGroup(payload);
+
+    const dto = categoryGroupMapper.toCategoryGroupDto(result);
+
+    res.status(201).json(dto);
   } catch (error) {
     next(error);
   }
@@ -65,9 +66,11 @@ export const updateCategoryGroup = async (
       categoryGroupId: categoryGroupId,
     });
 
-    const updatedCategoryGroup =
-      await categoryGroupUseCase.updateCategoryGroup(payload);
-    res.status(201).json(updatedCategoryGroup);
+    const result = await categoryGroupUseCase.updateCategoryGroup(payload);
+
+    const dto = categoryGroupMapper.toCategoryGroupDto(result);
+
+    res.status(200).json(dto);
   } catch (error) {
     next(error);
   }
