@@ -1,13 +1,13 @@
-import { Decimal } from "@prisma/client/runtime/library";
-import { UserId } from "../../../../../user/auth/auth.types";
-import { AccountId } from "../../../account/account.types";
+import { type Decimal } from "@prisma/client/runtime/library";
+import { type UserId } from "../../../../../user/auth/auth.types";
+import { type AccountId } from "../../../account/account.types";
 import { Prisma } from "@prisma/client";
 import { categoryService } from "../../../category/core/category.service";
-import { createNormalTransaction } from "./create/createNormalTransaction";
 import { OperationMode } from "../../../../../../shared/enums/operation-mode";
 import { accountService } from "../../../account/account.service";
 import { ZERO } from "../../../../../../shared/constants/zero";
 import { PayeeId } from "../../../payee/payee.types";
+import { transactionService } from "../../transaction.service";
 
 type SystemTransactionOptions = {
   userId: UserId;
@@ -63,7 +63,7 @@ export const createSystemTransaction = async (
 
   const categoryId = await categoryService.rta.getRtaCategoryId(tx, userId);
 
-  const transaction = await createNormalTransaction(tx, {
+  const transaction = await transactionService.insertNormalTransaction(tx, {
     accountId,
     date,
     inflow: amount.gt(0) ? amount.abs() : ZERO,

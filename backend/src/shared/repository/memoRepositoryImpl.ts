@@ -41,13 +41,9 @@ export const memoRepository: MemoRepository = {
     });
   },
 
-  insertMemos: async function (tx, userId, months) {
+  insertMemos: async function (tx, memos) {
     await tx.monthMemo.createMany({
-      data: months.map((m) => ({
-        userId,
-        month: m,
-        content: "",
-      })),
+      data: memos,
       skipDuplicates: true,
     });
   },

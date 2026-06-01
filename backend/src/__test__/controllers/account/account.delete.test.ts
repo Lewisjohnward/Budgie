@@ -4,7 +4,7 @@ import { getAccounts } from "../../utils/getData";
 import { deleteAccount, fetchAccountByName } from "../../utils/account";
 import { createAccount } from "../../utils/account";
 import {
-  addTransaction,
+  addTransactionLegacy,
   getTransactionsForAccountId,
   TestInsertTransactionInputWithoutUserId,
 } from "../../utils/transaction";
@@ -50,7 +50,7 @@ describe("Account - Delete", () => {
         outflow: "10",
       };
 
-      await addTransaction(cookie, transaction);
+      await addTransactionLegacy(cookie, transaction);
       const transactionsBefore = await getTransactionsForAccountId(cookie, id);
 
       const accountAfterTransaction = await fetchAccountByName(

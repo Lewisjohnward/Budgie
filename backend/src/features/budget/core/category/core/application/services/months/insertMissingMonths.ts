@@ -23,7 +23,7 @@ export const insertMissingMonths = async (
   prisma: PrismaClient | Prisma.TransactionClient,
   userId: UserId,
   transactionDate: Date
-) => {
+): Promise<void> => {
   const earliestMonth = await categoryRepository.getEarliestPastMonth(
     prisma,
     userId

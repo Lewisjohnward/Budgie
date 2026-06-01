@@ -2,7 +2,7 @@ import { prisma } from "../../../../../../shared/prisma/client";
 import { asUserId, type UserId } from "../../../../../user/auth/auth.types";
 import { type EditMemoPayload } from "../../memo.schema";
 import { memoService } from "../../memo.service";
-import { asMemoId, UpdatedMemo, type MemoId } from "../../memo.types";
+import { asMemoId, type DomainMemo, type MemoId } from "../../memo.types";
 
 /**
  * Represents the internal command used to edit a memo.
@@ -55,7 +55,7 @@ const toEditMemoCommand = (p: EditMemoPayload): EditMemoCommand => ({
  */
 export const editMemo = async (
   payload: EditMemoPayload
-): Promise<UpdatedMemo> => {
+): Promise<DomainMemo> => {
   const { userId, memoId, content } = toEditMemoCommand(payload);
 
   return await prisma.$transaction(async (tx) => {

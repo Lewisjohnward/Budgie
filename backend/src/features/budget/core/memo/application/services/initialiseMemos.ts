@@ -1,7 +1,9 @@
 import { Prisma } from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
 import { getMonth } from "../../../category/core/utils/getMonth";
 import { memoRepository } from "../../../../../../shared/repository/memoRepositoryImpl";
 import { type UserId } from "../../../../../user/auth/auth.types";
+import { asMonthId } from "../../../category/core/category.types";
 
 /**
  * Initializes month memos for a newly created user.
@@ -18,7 +20,12 @@ export const initialiseMemos = async (
   userId: UserId
 ): Promise<void> => {
   const { startOfCurrentMonth, nextMonth } = getMonth();
-  const monthsToCreate = [startOfCurrentMonth, nextMonth];
+  const monthsToCreate = [startOfCurrentMonth, nextMonth].map((m) => ({
+    id: asMonthId(uuidv4()),
+    userId,
+    month: m,
+    content: "",
+  }));
 
-  await memoRepository.insertMemos(tx, userId, monthsToCreate);
+  await memoRepository.insertMemos(tx, monthsToCreate);
 };

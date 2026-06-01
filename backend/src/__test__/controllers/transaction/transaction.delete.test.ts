@@ -1,6 +1,6 @@
 import { getAccounts } from "../../utils/getData";
 import {
-  addTransaction,
+  addTransactionLegacy,
   deleteTransactions,
   TestInsertTransactionInputWithoutUserId,
 } from "../../utils/transaction";
@@ -50,7 +50,11 @@ describe("Transaction Delete", () => {
         outflow: "10",
       };
 
-      const transaction = await addTransaction(cookie, transactionPayload, 200);
+      const transaction = await addTransactionLegacy(
+        cookie,
+        transactionPayload,
+        200
+      );
 
       await deleteTransactions(cookieA, [transaction!.id], 404);
     });
@@ -67,7 +71,7 @@ describe("Transaction Delete", () => {
         outflow: "10",
       };
 
-      const tx = await addTransaction(cookie, transactionPayload, 200);
+      const tx = await addTransactionLegacy(cookie, transactionPayload, 200);
 
       await deleteTransactions(cookie, [tx!.id]);
       const { transactions, accounts } = await getAccounts(cookie);
@@ -87,7 +91,11 @@ describe("Transaction Delete", () => {
         outflow: "10",
       };
 
-      const transaction = await addTransaction(cookie, transactionPayload, 200);
+      const transaction = await addTransactionLegacy(
+        cookie,
+        transactionPayload,
+        200
+      );
 
       await deleteTransactions(cookie, [transaction!.id]);
       const { transactions, accounts } = await getAccounts(cookie);
@@ -114,8 +122,12 @@ describe("Transaction Delete", () => {
         outflow: "10",
       };
 
-      const transferTx = await addTransaction(cookie, transferTxPayload, 200);
-      const tx = await addTransaction(cookie, txPayload, 200);
+      const transferTx = await addTransactionLegacy(
+        cookie,
+        transferTxPayload,
+        200
+      );
+      const tx = await addTransactionLegacy(cookie, txPayload, 200);
 
       await deleteTransactions(cookie, [transferTx!.id, tx!.id]);
       const { transactions, accounts } = await getAccounts(cookie);
@@ -138,7 +150,7 @@ describe("Transaction Delete", () => {
         outflow: "10",
       };
 
-      await addTransaction(cookie, transferTxPayload);
+      await addTransactionLegacy(cookie, transferTxPayload);
 
       const { transactions } = await getAccounts(cookie);
       const transferTransactions = Object.values(transactions).filter(
@@ -169,7 +181,7 @@ describe("Transaction Delete", () => {
           outflow: "10",
         };
 
-        const transaction = await addTransaction(
+        const transaction = await addTransactionLegacy(
           cookie,
           transactionPayload,
           200

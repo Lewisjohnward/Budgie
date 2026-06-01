@@ -1,7 +1,11 @@
-import { type AccountId } from "../../account/account.types";
-import { type CategoryId } from "../../category/core/category.types";
-import { type PayeeId } from "../../payee/payee.types";
-import { type InsertTransactionPayload } from "../transaction.schema";
+import { type AccountDto, type AccountId } from "../../account/account.types";
+import {
+  type MonthDto,
+  type CategoryId,
+} from "../../category/core/category.types";
+import { type MemoDto } from "../../memo/memo.types";
+import { type PayeeDto, type PayeeId } from "../../payee/payee.types";
+import { type CreateTransactionPayload } from "../transaction.schema";
 import {
   type DomainNormalTransaction,
   type DomainTransferTransaction,
@@ -29,7 +33,7 @@ export type TransactionInsertData =
  * Internal convenience: same as AddTransactionPayload but guarantees a concrete Date.
  */
 export type InsertTransactionPayloadWithDate = Omit<
-  InsertTransactionPayload,
+  CreateTransactionPayload,
   "date"
 > & {
   date: Date;
@@ -102,3 +106,22 @@ export type TransactionTransferDto = {
  * categorize, and compute financial summaries for a transaction.
  */
 export type TransactionDto = TransactionNormalDto | TransactionTransferDto;
+
+type CreatedTransaction =
+  | { type: "normal"; transaction: TransactionDto }
+  | { type: "transfer"; source: TransactionDto; destination: TransactionDto };
+
+export type CreateTransactionDto = {
+  created: {
+    result: CreatedTransaction;
+    sideEffects?: {
+      payee?: PayeeDto;
+      memos?: MemoDto[];
+    };
+  };
+
+  updated: {
+    accounts: Record<string, AccountDto>;
+    months?: Record<string, MonthDto>;
+  };
+};

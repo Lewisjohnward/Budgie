@@ -1,8 +1,4 @@
-import { DeleteCategoryGroupDto } from "../../features/budget/core/categorygroup/categoryGroup.types";
-import {
-  TransactionDto,
-  TransactionNormalDto,
-} from "../../features/budget/core/transaction/transaction.types";
+import { TransactionNormalDto } from "../../features/budget/core/transaction/transaction.types";
 import { createAccountAndFetch } from "../utils/account";
 import { getMonthsForCategories } from "../utils/assign";
 import { login, registerUser } from "../utils/auth";
@@ -13,17 +9,22 @@ import {
 } from "../utils/category";
 import {
   createCategoryGroup,
+  createCategoryGroupRaw,
   createTestCategoryGroups,
   deleteCategoryGroup,
+  deleteCategoryGroupRaw,
   getCategoryGroupByNameOrThrow,
   getCategoryGroups,
   getCategoryGroupsRaw,
   getProtectedCategoryGroups,
   getTestCategoryGroup,
   updateCategoryGroup,
+  updateCategoryGroupRaw,
 } from "../utils/categoryGroup";
 import {
-  addTransaction,
+  addTransactionLegacy,
+  createTransaction,
+  getTransactionIds,
   getTransactionsForAccountId,
 } from "../utils/transaction";
 
@@ -60,14 +61,14 @@ describe("Category group", () => {
   describe("Create", () => {
     describe("Error cases", () => {
       it("Should return 401 on unauthenticated requests", async () => {
-        const res = await createCategoryGroup("0000", { name: "test" });
+        const res = await createCategoryGroupRaw("0000", { name: "test" });
 
         expect(res.statusCode).toBe(401);
       });
       it("Should return 409 on name collision", async () => {
-        await createCategoryGroup(cookie, { name: "test" });
+        await createCategoryGroupRaw(cookie, { name: "test" });
 
-        const res = await createCategoryGroup(cookie, { name: "test" });
+        const res = await createCategoryGroupRaw(cookie, { name: "test" });
 
         expect(res.statusCode).toBe(409);
 
@@ -83,13 +84,11 @@ describe("Category group", () => {
       it("Should create a category group and return it", async () => {
         const before = await getCategoryGroups(cookie);
 
-        const res = await createCategoryGroup(cookie, { name: "new-group" });
-
-        expect(res.statusCode).toBe(201);
+        const result = await createCategoryGroup(cookie, { name: "new-group" });
 
         // response should return the created category group
-        expect(res.body).toBeDefined();
-        expect(res.body.name).toBe("new-group");
+        expect(result).toBeDefined();
+        expect(result.name).toBe("new-group");
 
         const after = await getCategoryGroups(cookie);
 
@@ -121,7 +120,10 @@ describe("Category group", () => {
   describe("Update", () => {
     describe("Error Cases", () => {
       it("Should return 401 on unauthenticated requests", async () => {
-        const res = await updateCategoryGroup("invalid-id", "invalid-cookie");
+        const res = await updateCategoryGroupRaw(
+          "invalid-id",
+          "invalid-cookie"
+        );
 
         expect(res.statusCode).toBe(401);
       });
@@ -136,7 +138,7 @@ describe("Category group", () => {
         );
 
         for (const group of protectedCategoryGroupsArray) {
-          const res = await updateCategoryGroup(cookie, group.id, {
+          const res = await updateCategoryGroupRaw(cookie, group.id, {
             name: "SHOULD_NOT_WORK",
           });
 
@@ -146,7 +148,7 @@ describe("Category group", () => {
 
       it("Should return 400 when providing name and position", async () => {
         const testCategoryGroup = await getTestCategoryGroup(cookie);
-        const res = await updateCategoryGroup(cookie, testCategoryGroup.id, {
+        const res = await updateCategoryGroupRaw(cookie, testCategoryGroup.id, {
           name: "SHOULD_NOT_WORK",
           position: 0,
         });
@@ -154,7 +156,7 @@ describe("Category group", () => {
       });
 
       it("Should return 404 when category group does not exist", async () => {
-        const res = await updateCategoryGroup(
+        const res = await updateCategoryGroupRaw(
           cookie,
           "00000000-0000-0000-0000-000000000000",
           {
@@ -175,14 +177,14 @@ describe("Category group", () => {
           password: "testpasswordABC$",
         });
 
-        const { body: otherUserGroup } = await createCategoryGroup(
+        const { body: otherUserGroup } = await createCategoryGroupRaw(
           otherUserCookie,
           {
             name: "Other Group",
           }
         );
 
-        const res = await updateCategoryGroup(cookie, otherUserGroup.id, {
+        const res = await updateCategoryGroupRaw(cookie, otherUserGroup.id, {
           name: "NOT_ALLOWED",
         });
 
@@ -193,7 +195,7 @@ describe("Category group", () => {
     describe("Name", () => {
       describe("Error cases", () => {
         it("Should return 409 on name collision", async () => {
-          await createCategoryGroup(cookie, {
+          await createCategoryGroupRaw(cookie, {
             name: "TEST_CATEGORY",
           });
 
@@ -202,9 +204,13 @@ describe("Category group", () => {
             "test category group"
           );
 
-          const res = await updateCategoryGroup(cookie, testCategoryGroup.id, {
-            name: "TEST_CATEGORY",
-          });
+          const res = await updateCategoryGroupRaw(
+            cookie,
+            testCategoryGroup.id,
+            {
+              name: "TEST_CATEGORY",
+            }
+          );
 
           expect(res.statusCode).toBe(409);
         });
@@ -212,12 +218,25 @@ describe("Category group", () => {
       describe("Success", () => {
         it("Should correctly update name", async () => {
           const testCategoryGroup = await getTestCategoryGroup(cookie);
-          const res = await updateCategoryGroup(cookie, testCategoryGroup.id, {
-            name: "UPDATED_NAME",
-          });
+          const res = await updateCategoryGroupRaw(
+            cookie,
+            testCategoryGroup.id,
+            {
+              name: "UPDATED_NAME",
+            }
+          );
 
-          expect(res.statusCode).toBe(201);
+          expect(res.statusCode).toBe(200);
           await getCategoryGroupByNameOrThrow(cookie, "UPDATED_NAME");
+        });
+        it("Should return updated category group", async () => {
+          const categoryGroup = await createCategoryGroup(cookie, {
+            name: "new-group",
+          });
+          const res = await updateCategoryGroup(cookie, categoryGroup.id, {
+            name: "new-name",
+          });
+          expect(res.name).toBe("new-name");
         });
       });
     });
@@ -230,27 +249,32 @@ describe("Category group", () => {
 
           const invalidPosition = Object.keys(categoryGroups.user).length + 100;
 
-          const res = await updateCategoryGroup(cookie, testCategoryGroup.id, {
-            position: invalidPosition,
-          });
+          const res = await updateCategoryGroupRaw(
+            cookie,
+            testCategoryGroup.id,
+            {
+              position: invalidPosition,
+            }
+          );
 
           expect(res.statusCode).toBe(400);
         });
         it("Should return 400 on negative positions", async () => {
           const testCategoryGroup = await getTestCategoryGroup(cookie);
 
-          const res = await updateCategoryGroup(cookie, testCategoryGroup.id, {
-            position: -1,
-          });
+          const res = await updateCategoryGroupRaw(
+            cookie,
+            testCategoryGroup.id,
+            {
+              position: -1,
+            }
+          );
 
           expect(res.statusCode).toBe(400);
         });
       });
 
       describe("Success", () => {
-        it("Should return updated category group", async () => {
-          expect.hasAssertions();
-        });
         it("Should move category group up in position order", async () => {
           // Seed test categories so there are enough to reposition
           await createTestCategoryGroups(cookie);
@@ -266,11 +290,11 @@ describe("Category group", () => {
 
           const newPosition = originalPosition - 1;
 
-          const res = await updateCategoryGroup(cookie, targetGroup.id, {
+          const res = await updateCategoryGroupRaw(cookie, targetGroup.id, {
             position: newPosition,
           });
 
-          expect(res.statusCode).toBe(201);
+          expect(res.statusCode).toBe(200);
 
           const categoryGroupsAfter = await getCategoryGroups(cookie);
 
@@ -304,11 +328,11 @@ describe("Category group", () => {
           const target = groups[1];
           const newPosition = 0;
 
-          const res = await updateCategoryGroup(cookie, target.id, {
+          const res = await updateCategoryGroupRaw(cookie, target.id, {
             position: newPosition,
           });
 
-          expect(res.statusCode).toBe(201);
+          expect(res.statusCode).toBe(200);
 
           const after = await getCategoryGroups(cookie);
 
@@ -348,7 +372,7 @@ describe("Category group", () => {
   describe("Delete", () => {
     describe("Error cases", () => {
       it("Should return 401 on unauthenticated requests", async () => {
-        const res = await deleteCategoryGroup("invalid-cookie", "some-id");
+        const res = await deleteCategoryGroupRaw("invalid-cookie", "some-id");
 
         expect(res.statusCode).toBe(401);
       });
@@ -357,14 +381,14 @@ describe("Category group", () => {
         const protectedGroups = await getProtectedCategoryGroups(cookie);
 
         for (const group of Object.values(protectedGroups)) {
-          const res = await deleteCategoryGroup(cookie, group.id);
+          const res = await deleteCategoryGroupRaw(cookie, group.id);
 
           expect(res.statusCode).toBe(403);
         }
       });
 
       it("Should return 404 when category group does not exist", async () => {
-        const res = await deleteCategoryGroup(
+        const res = await deleteCategoryGroupRaw(
           cookie,
           "00000000-0000-0000-0000-000000000000"
         );
@@ -383,11 +407,11 @@ describe("Category group", () => {
           password: "testpasswordABC$",
         });
 
-        const { body } = await createCategoryGroup(otherCookie, {
+        const { body } = await createCategoryGroupRaw(otherCookie, {
           name: "OTHER_GROUP",
         });
 
-        const res = await deleteCategoryGroup(cookie, body.id);
+        const res = await deleteCategoryGroupRaw(cookie, body.id);
 
         expect(res.statusCode).toBe(404);
       });
@@ -408,13 +432,17 @@ describe("Category group", () => {
           const testAccount = await createAccountAndFetch(cookie, 0);
 
           // Create transactions assigned to cat-a
-          await addTransaction(cookie, {
+          await addTransactionLegacy(cookie, {
             accountId: testAccount.id,
             categoryId: catA.id,
             outflow: "4",
           });
 
-          const res = await deleteCategoryGroup(cookie, g.id, rtaCategory.id);
+          const res = await deleteCategoryGroupRaw(
+            cookie,
+            g.id,
+            rtaCategory.id
+          );
 
           expect(res.statusCode).toBe(403);
         });
@@ -432,13 +460,13 @@ describe("Category group", () => {
           const testAccount = await createAccountAndFetch(cookie, 0);
 
           // Create transactions assigned to cat-a
-          await addTransaction(cookie, {
+          await addTransactionLegacy(cookie, {
             accountId: testAccount.id,
             categoryId: catA.id,
             outflow: "4",
           });
 
-          const res = await deleteCategoryGroup(cookie, g.id);
+          const res = await deleteCategoryGroupRaw(cookie, g.id);
 
           expect(res.statusCode).toBe(400);
         });
@@ -457,13 +485,13 @@ describe("Category group", () => {
           const testAccount = await createAccountAndFetch(cookie, 0);
 
           // Create transactions assigned to cat-a
-          await addTransaction(cookie, {
+          await addTransactionLegacy(cookie, {
             accountId: testAccount.id,
             categoryId: catA.id,
             outflow: "4",
           });
 
-          const res = await deleteCategoryGroup(
+          const res = await deleteCategoryGroupRaw(
             cookie,
             g1.id,
             "7f3c2d91-8a44-4b2d-b6f1-3e9a1c5d7f20"
@@ -494,13 +522,13 @@ describe("Category group", () => {
           const testAccount = await createAccountAndFetch(cookie, 0);
 
           // Create transactions assigned to cat-a
-          await addTransaction(cookie, {
+          await addTransactionLegacy(cookie, {
             accountId: testAccount.id,
             categoryId: catA.id,
             outflow: "4",
           });
 
-          const res = await deleteCategoryGroup(cookie, g1.id, catB.id);
+          const res = await deleteCategoryGroupRaw(cookie, g1.id, catB.id);
 
           expect(res.statusCode).toBe(400);
         });
@@ -521,7 +549,7 @@ describe("Category group", () => {
           });
 
           // Create category group for other user
-          const { body } = await createCategoryGroup(otherCookie, {
+          const { body } = await createCategoryGroupRaw(otherCookie, {
             name: "OTHER_GROUP",
           });
 
@@ -536,7 +564,7 @@ describe("Category group", () => {
           const testAccount = await createAccountAndFetch(cookie, 0);
 
           // Create transactions assigned to cat-a
-          await addTransaction(cookie, {
+          await addTransactionLegacy(cookie, {
             accountId: testAccount.id,
             categoryId: catA.id,
             outflow: "4",
@@ -552,7 +580,7 @@ describe("Category group", () => {
             "not-owned"
           );
 
-          const res = await deleteCategoryGroup(
+          const res = await deleteCategoryGroupRaw(
             cookie,
             g1.id,
             notOwnedCategory.id
@@ -569,7 +597,7 @@ describe("Category group", () => {
 
         const before = await getCategoryGroups(cookie);
 
-        const res = await deleteCategoryGroup(cookie, g.id);
+        const res = await deleteCategoryGroupRaw(cookie, g.id);
 
         expect(res.statusCode).toBe(200);
 
@@ -593,7 +621,7 @@ describe("Category group", () => {
           Object.keys(before.user).length - 1
         );
       });
-      it("Should reassign transactions to inheriting category and returns DTO", async () => {
+      it("Should reassign transactions to inheriting category and return DTO", async () => {
         const testGroups = await createTestCategoryGroups(cookie);
 
         const { g1, g2 } = testGroups;
@@ -616,143 +644,75 @@ describe("Category group", () => {
         const catB = await fetchCategoryByName(cookie, "cat-b");
 
         // Create transactions assigned to cat-a
-        const txA = await addTransaction(cookie, {
+        const resultA = await createTransaction(cookie, {
           accountId: testAccount.id,
           categoryId: catA.id,
           outflow: "4",
         });
-        console.log("txA:", txA);
 
-        const txB = await addTransaction(cookie, {
+        const resultB = await createTransaction(cookie, {
           accountId: testAccount.id,
           categoryId: catA.id,
           outflow: "4",
         });
-        console.log("txB:", txB);
 
         // Group before transactions
-        const txIdsBefore = [txA.id, txB.id];
+        const txIdsBefore = [
+          ...getTransactionIds(resultA),
+          ...getTransactionIds(resultB),
+        ];
 
         // Get months before
         const monthsBefore = await getMonthsForCategories(cookie, [catB.id]);
+        const beforeMonth = monthsBefore[catB.id][0];
 
         // Delete test category group, and assign transactions to category b
-        const res = await deleteCategoryGroup(cookie, g1.id, catB.id);
-        console.log("res:", res.body);
+        const result = await deleteCategoryGroup(cookie, g1.id, catB.id);
 
-        expect(res.statusCode).toBe(200);
+        // ----------------------------
+        // DTO assertions
+        // ----------------------------
 
-        // DTO check
-        const expectedDto =
-        // : DeleteCategoryGroupDto
-        {
-          deleted: {
-            categoryGroupId: g1.id,
-          },
-          updated: {
-            transactions: {
-              [txA.id]: {
-                ...txA,
-                date: txA.date as unknown as string,
-                categoryId: catB.id,
-              } as TransactionNormalDto,
-              [txB.id]: {
-                ...txB,
-                date: txB.date as unknown as string,
-                categoryId: catB.id,
-              } as TransactionNormalDto,
-            },
-            // months: undefined,
-          },
-        };
-        //           Object {
-        //     "0b4837f9-d973-4e8c-a274-a0067842a0b5": Object {
-        //       "accountId": "e2a4073d-04f3-404b-9919-3ad64899f3a7",
-        //       "categoryId": "6e764a64-6647-45da-a90b-f84caaf60c12",
-        // -     "cleared": false,
-        //       "date": "2026-05-29T09:44:41.388Z",
-        //       "id": "0b4837f9-d973-4e8c-a274-a0067842a0b5",
-        //       "inflow": 0,
-        //       "memo": "test_transaction_1780047881344oomwv690",
-        //       "outflow": 4,
-        //       "payeeId": null,
-        // -     "transferAccountId": null,
-        // -     "transferTransactionId": null,
-        //     },
-        //     "62f40561-1cf1-49d2-b71e-4a64401aea3c": Object {
-        //       "accountId": "e2a4073d-04f3-404b-9919-3ad64899f3a7",
-        //       "categoryId": "6e764a64-6647-45da-a90b-f84caaf60c12",
-        // -     "cleared": false,
-        //       "date": "2026-05-29T09:44:41.506Z",
-        //       "id": "62f40561-1cf1-49d2-b71e-4a64401aea3c",
-        //       "inflow": 0,
-        //       "memo": "test_transaction_1780047881494nd7tbsuq",
-        //       "outflow": 4,
-        //     "0b4837f9-d973-4e8c-a274-a0067842a0b5": Object {
-        //       "accountId": "e2a4073d-04f3-404b-9919-3ad64899f3a7",
-        // -     "transferTransactionId": null,
-        //     },
-        //   }
+        expect(result.deleted.categoryGroupId).toBe(g1.id);
 
-        console.log("res body updated txs", res.body.updated.transactions);
-        expect(res.body.deleted.categoryGroupId).toBe(
-          expectedDto.deleted.categoryGroupId
-        );
+        expect(result.updated.transactions).toBeDefined();
+        expect(Object.keys(result.updated.transactions).length).toBe(2);
 
-        expect(res.body.updated.transactions).toEqual(
-          expectedDto.updated.transactions
-        );
-        expect(Object.keys(res.body.transactionReassignments).length).toBe(2);
+        // Ensure DTO shows reassignment correctly
+        for (const txId of txIdsBefore) {
+          const updatedTx = result.updated.transactions[txId];
+          expect(updatedTx).toBeDefined();
+          expect(updatedTx.categoryId).toBe(catB.id);
+        }
 
-        // Get updated transactions
+        // ----------------------------
+        // Check transactions
+        // ----------------------------
+
         const transactions = await getTransactionsForAccountId(
           cookie,
           testAccount.id
         );
 
-        // Filter only test transactions
         const updatedTxs = transactions.filter((t) =>
           txIdsBefore.includes(t.id)
         );
 
-        // Ensure transactions are assigned to new category
         for (const tx of updatedTxs) {
           expect(tx.categoryId).toBe(catB.id);
         }
 
-        // Get months after
+        // ----------------------------
+        // Check months
+        // ----------------------------
+
         const monthsAfter = await getMonthsForCategories(cookie, [catB.id]);
 
-        // Assert that months are correct
+        const afterMonth = monthsAfter[catB.id][0];
 
-        // Assert that category group is deleted
-
-        // Assert that categories are deleted
-
-        // Assert that months are deleted
+        expect(afterMonth.activity).toBe(beforeMonth.activity - 8);
+        expect(afterMonth.available).toBe(beforeMonth.available - 8);
       });
-      // it("updates months correctly after reassignment", async () => {
-      //   const group = await getTestCategoryGroup(cookie);
-      //
-      //   const before = await getMonthsForCategories(cookie, group.categoryIds);
-      //
-      //   const res = await deleteCategoryGroup(cookie, group.id);
-      //
-      //   expect(res.statusCode).toBe(200);
-      //
-      //   const after = await getMonthsForCategories(cookie, group.categoryIds);
-      //
-      //   for (const categoryId of group.categoryIds) {
-      //     expect(after[categoryId]).toBeDefined();
-      //   }
-      // });
-      it.todo("should transfer to inherting category");
     });
   });
 });
-// describe("Success", () => {
-//   describe("when no transactions exist", ...)
-//   describe("when transactions exist", ...)
-//   describe("month updates", ...)
-//   describe("dto shape", ...)
-// });

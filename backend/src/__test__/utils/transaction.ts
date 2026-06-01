@@ -1,20 +1,20 @@
-import request from "supertest";
+import request, { Response } from "supertest";
 import app from "../../app";
 import {
   type EditBulkTransactionsInput,
   type EditSingleTransactionInput,
-  type InsertTransactionInput,
+  type CreateTransactionInput,
 } from "../../features/budget/core/transaction/transaction.schema";
 import { getAccounts } from "./getData";
 import { type NormalisedTransaction } from "../../features/budget/core/account/account.types";
-import { TransactionDto } from "../../features/budget/core/transaction/transaction.types";
+import { CreateTransactionDto } from "../../features/budget/core/transaction/transaction.types";
 
 /**
  * Input type for creating transactions in tests,
  * without the `userId` field.
  */
 export type TestInsertTransactionInputWithoutUserId = Omit<
-  InsertTransactionInput,
+  CreateTransactionInput,
   "userId"
 >;
 
@@ -27,7 +27,7 @@ export type TestEditBulkTransactionsInputWithoutUserId = Omit<
   "userId"
 >;
 
-export const addTransaction = async (
+export const addTransactionLegacy = async (
   cookie: string,
   transaction: TestInsertTransactionInputWithoutUserId,
   expectCode: number = 200
@@ -61,6 +61,54 @@ export const addTransaction = async (
   }
 
   return createdTransaction;
+};
+
+/**
+ * Creates a transaction and returns the raw HTTP response.
+ *
+ * For tests that need to assert status codes, headers,
+ * or inspect the full response object.
+ */
+export const createTransactionRaw = async (
+  cookie: string,
+  transaction: TestInsertTransactionInputWithoutUserId
+): Promise<Response> => {
+  const res = await request(app)
+    .post("/budget/transaction")
+    .set("Authorization", `Bearer ${cookie}`)
+    .send(transaction);
+
+  return res;
+};
+
+/**
+ * Creates a transaction.
+ *
+ * For tests that only need the transaction result and
+ * do not require access to the full HTTP response.
+ */
+export const createTransaction = async (
+  cookie: string,
+  transaction: TestInsertTransactionInputWithoutUserId
+): Promise<CreateTransactionDto> => {
+  const res = await request(app)
+    .post("/budget/transaction")
+    .set("Authorization", `Bearer ${cookie}`)
+    .send(transaction);
+
+  expect(res.status).toBe(200);
+
+  return res.body;
+};
+
+export const getTransactionIds = (result: CreateTransactionDto): string[] => {
+  const r = result.created.result;
+
+  if (r.type === "normal") {
+    return [r.transaction.id];
+  }
+
+  return [r.source.id, r.destination.id];
 };
 
 export const deleteTransactions = async (

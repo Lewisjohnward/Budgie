@@ -1,11 +1,10 @@
 import { prisma } from "../../../../../../shared/prisma/client";
 import { asUserId, type UserId } from "../../../../../user/auth/auth.types";
-import { categoryGroupMapper } from "../../categorygroup.mapper";
 import { type UpdateCategoryGroupPayload } from "../../categorygroup.schema";
 import { categoryGroupService } from "../../categoryGroup.service";
 import {
   asCategoryGroupId,
-  type CategoryGroupUserDto,
+  type DomainUserCategoryGroup,
   type CategoryGroupId,
 } from "../../categoryGroup.types";
 
@@ -31,11 +30,11 @@ export const toUpdateCategoryGroupCommand = (
  * Updates a category group within a transaction, allowing either a rename or a reposition operation.
  *
  * Ensures the category group is modifiable before applying changes, then applies the requested
- * update (name and/or position) and returns the updated domain DTO.
+ * update (name and/or position) and returns the domain category group.
  */
 export const updateCategoryGroup = async (
   payload: UpdateCategoryGroupPayload
-): Promise<CategoryGroupUserDto> => {
+): Promise<DomainUserCategoryGroup> => {
   const { userId, categoryGroupId, name, position } =
     toUpdateCategoryGroupCommand(payload);
 
@@ -62,7 +61,6 @@ export const updateCategoryGroup = async (
         name
       );
     }
-
-    return categoryGroupMapper.toCategoryGroupDto(categoryGroup);
+    return categoryGroup;
   });
 };

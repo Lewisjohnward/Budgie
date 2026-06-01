@@ -4,23 +4,26 @@ import { getTransactionsByCategoryIds } from "./application/services/getTransact
 import { applyCategoryChange } from "./application/services/bulk/applyCategoryChange";
 import { applyMemoChange } from "./application/services/bulk/applyMemoChange";
 import { applyAccountChange } from "./application/services/bulk/applyAccountChange/applyAccountChange";
-import { insertTransferTransaction } from "./application/services/insertTransferTransaction";
-import { insertNormalTransaction } from "./application/services/insertNormalTransaction";
+import { createTransferTransaction } from "./application/services/insertTransferTransaction";
+import { createNormalTransaction } from "./application/services/insertNormalTransaction";
 import { getTransactionById } from "./application/services/getTransactionById";
 import { Prisma } from "@prisma/client";
-import { UserId } from "../../../user/auth/auth.types";
-import { AccountId } from "../account/account.types";
-import { Decimal } from "@prisma/client/runtime/library";
+import { type UserId } from "../../../user/auth/auth.types";
+import { type AccountId } from "../account/account.types";
+import { type Decimal } from "@prisma/client/runtime/library";
 import { createSystemTransaction } from "./application/services/createSystemTransaction";
 import { ZERO } from "../../../../shared/constants/zero";
 import { deleteTransactionsById } from "./application/services/deleteTransactionsById";
 import { deleteTransactionsByAccountId } from "./application/services/deleteTransactionsByAccountId";
 import { payeeService } from "../payee/payee.service";
 import { getTransactionsByAccountIds } from "./application/services/getTransactionsByAccountIds";
+import { insertNormalTransaction } from "./application/services/create/insertNormalTransaction";
 
 export const transactionService = {
   // insert
-  insertTransferTransaction,
+  createTransferTransaction,
+  createNormalTransaction,
+
   insertNormalTransaction,
 
   // create
