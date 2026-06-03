@@ -4,9 +4,18 @@ import {
   MonthBranded,
 } from "@/core/types/NormalizedData";
 import { CategoryGroupId, CategoryId } from "../types/types";
+import { CategoryMetricsById } from "../hooks/useAllocation/useAllocationIndexes";
 
 // Input
-export type CategoryGroupsWithMetricsParams = Record<
+type BuildCategoryGroupsWithMetricsParams = {
+  categoryGroups: Record<CategoryGroupId, CategoryGroupBranded>;
+  categories: Record<CategoryId, CategoryBranded>;
+  currentUserCategoryMonthMap: Record<CategoryId, MonthBranded>;
+  categoryMetricsById: CategoryMetricsById;
+};
+
+// Output
+export type CategoryGroupsWithMetrics = Record<
   CategoryGroupId,
   {
     id: CategoryGroupId;
@@ -16,15 +25,11 @@ export type CategoryGroupsWithMetricsParams = Record<
     assigned: number;
     activity: number;
     available: number;
+
+    transactionCount: number;
+    hasAssigned: boolean;
   }
 >;
-
-// Output
-type BuildCategoryGroupMetrics = {
-  categoryGroups: Record<CategoryGroupId, CategoryGroupBranded>;
-  categories: Record<CategoryId, CategoryBranded>;
-  currentUserCategoryMonthMap: Record<CategoryId, MonthBranded>;
-};
 
 /**
  * Computes aggregated financial metrics for each category group for a given month.
@@ -68,12 +73,13 @@ type BuildCategoryGroupMetrics = {
  * @returns A record keyed by `CategoryGroupId`, where each entry contains
  * aggregated financial metrics for that group
  */
-export function buildCategoryGroupMetrics(
-  params: BuildCategoryGroupMetrics
-): CategoryGroupsWithMetricsParams {
-  const { categoryGroups, categories, currentUserCategoryMonthMap } = params;
-
-  const result: CategoryGroupsWithMetricsParams = {};
+export function buildCategoryGroupMetrics({
+  categoryGroups,
+  categories,
+  currentUserCategoryMonthMap,
+  categoryMetricsById,
+}: BuildCategoryGroupsWithMetricsParams): CategoryGroupsWithMetrics {
+  const result: CategoryGroupsWithMetrics = {};
 
   // init groups
   for (const group of Object.values(categoryGroups)) {
@@ -84,6 +90,8 @@ export function buildCategoryGroupMetrics(
       assigned: 0,
       activity: 0,
       available: 0,
+      transactionCount: 0,
+      hasAssigned: false,
     };
   }
   // accumulate
@@ -109,5 +117,26 @@ export function buildCategoryGroupMetrics(
     group.activity += month.activity;
     group.available += month.available;
   }
+  for (const category of Object.values(categories)) {
+    const groupId = category.categoryGroupId;
+    const group = result[groupId];
+
+    if (!group) {
+      throw new Error(
+        `Missing category group for categoryId: ${category.id}, groupId: ${groupId}`
+      );
+    }
+
+    const metrics = categoryMetricsById[category.id];
+
+    if (!metrics) continue;
+
+    group.transactionCount += metrics.transactionCount;
+
+    if (metrics.hasAssigned) {
+      group.hasAssigned = true;
+    }
+  }
+
   return result;
 }

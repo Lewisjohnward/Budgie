@@ -1,5 +1,8 @@
 import { useMonthIndex } from "../../slices/monthSlice";
-import { useAllocationIndexes } from "./useAllocationIndexes";
+import {
+  CategoryMetricsById,
+  useAllocationIndexes,
+} from "./useAllocationIndexes";
 import { useBudgetSnapshot } from "./useCategories";
 import { useSelectedCategories } from "../../slices/selectedCategorySlice";
 import {
@@ -46,6 +49,7 @@ export type AllocationEngine = {
   computed: {
     currentCategoryMonthMap: CategoryMonthMap;
     previousCategoryMonthMap: CategoryMonthMap | null;
+    categoryMetricsById: CategoryMetricsById;
   };
 
   // 📅 time state
@@ -79,6 +83,7 @@ export function useAllocationEngine(): AllocationEngine {
     monthKeys: data.monthKeys,
     monthIndex: monthIndex,
     userCategories: data.categories.user,
+    transactions: data.transactions,
   });
 
   /*
@@ -133,6 +138,7 @@ export function useAllocationEngine(): AllocationEngine {
     computed: {
       currentCategoryMonthMap: indexes.currentCategoryMonthMap,
       previousCategoryMonthMap: indexes.previousCategoryMonthMap,
+      categoryMetricsById: indexes.categoryMetricsById,
     },
 
     time: {

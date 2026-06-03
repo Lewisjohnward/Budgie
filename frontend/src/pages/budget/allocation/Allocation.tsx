@@ -15,7 +15,9 @@ export default function Allocation() {
     selectedCategories,
     expandCategoryGroups,
     view,
+    deleteState,
     monthSelectorViewModel,
+    selectors,
     categoriesSelector,
   } = useAllocation();
 
@@ -35,6 +37,8 @@ export default function Allocation() {
           view={view}
           expandCategoryGroups={expandCategoryGroups}
           categorySelector={categorySelector}
+          deleteState={deleteState}
+          selectors={selectors}
         />
       }
       sidebar={

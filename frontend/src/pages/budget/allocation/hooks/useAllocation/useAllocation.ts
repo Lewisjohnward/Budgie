@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
 import { useMonthSelectorViewModel } from "../useMonthSelector";
 import { useExpandableCategoryGroups } from "./useExpandableCategoryGroups";
@@ -10,6 +10,7 @@ import {
   CategoryId,
   CategoryMonthMap,
   MonthId,
+  TransactionId,
 } from "../../types/types";
 import {
   assembleCategoryGroupViews,
@@ -24,10 +25,14 @@ import {
   CategoryGroupBranded,
   CategoryBranded,
   MonthBranded,
+  TransactionBranded,
 } from "@/core/types/NormalizedData";
 import { useMonthInitialiser } from "./useMonthInitialiser";
 import { useAutoAssignViewModel } from "./useAutoAssign";
 import { useNoteViewModel } from "../../components/assign/hooks/useNoteViewModel";
+import { CategoryMetricsById } from "./useAllocationIndexes";
+import { getCategoryDeleteState as resolveCategoryDeleteState } from "../../utils/getCategoryDeleteState";
+import { getCategoryGroupDeleteState as resolveCategoryGroupDeleteState } from "../../utils/getCategoryGroupDeleteState";
 
 export type RtaInformation = {
   assignableLeftOverFromLastMonth: number;
@@ -65,12 +70,12 @@ export function useAllocation() {
       categoryGroups: engine.entities.categoryGroups,
       categories: engine.entities.categories,
       currentCategoryMonthMap: engine.computed.currentCategoryMonthMap,
+      categoryMetricsById: engine.computed.categoryMetricsById,
     });
 
   const expandCategoryGroups = useExpandableCategoryGroups({
     categoryGroups: userCategoryGroupViews,
   });
-  console.log("userCategoryGroupViews:", userCategoryGroupViews);
 
   /*
    * notes
@@ -156,6 +161,95 @@ export function useAllocation() {
   }, []);
 
   /*
+   * category/category group deletion
+   */
+
+  const categoryIdsByGroupId = useMemo(() => {
+    const result: Record<CategoryGroupId, CategoryId[]> = {};
+
+    for (const category of Object.values(engine.entities.categories.user)) {
+      (result[category.categoryGroupId] ??= []).push(category.id);
+    }
+
+    return result;
+  }, [engine.entities.categories.user]);
+
+  const getCategoryDeleteState = useCallback(
+    (categoryId: CategoryId) =>
+      resolveCategoryDeleteState({
+        categoryId,
+        metrics: engine.computed.categoryMetricsById,
+      }),
+    [engine.computed.categoryMetricsById]
+  );
+
+  const getCategoryGroupDeleteState = useCallback(
+    (categoryGroupId: CategoryGroupId) =>
+      resolveCategoryGroupDeleteState({
+        categoryIdsInGroup: categoryIdsByGroupId[categoryGroupId] ?? [],
+        metrics: engine.computed.categoryMetricsById,
+      }),
+    [engine.computed.categoryMetricsById]
+  );
+
+  type ExcludeTarget =
+    | { type: "categoryGroup"; id: CategoryGroupId }
+    | { type: "category"; id: CategoryId };
+
+  // Used to select inheriting category
+  const getCategorySelectOptions = useCallback(
+    (exclude?: ExcludeTarget) => {
+      console.log("hello world");
+      const groups = Object.values(engine.entities.categoryGroups.user);
+
+      return groups
+        .filter((g) => {
+          if (!exclude) return true;
+
+          if (exclude.type === "categoryGroup") {
+            return g.id !== exclude.id;
+          }
+
+          if (exclude.type === "category") {
+            // only exclude groups that contain this category
+            const categoryGroupId =
+              engine.entities.categories.user[exclude.id]?.categoryGroupId;
+
+            return g.id !== categoryGroupId;
+          }
+
+          return true;
+        })
+        .map((group) => ({
+          groupId: group.id,
+          groupName: group.name,
+          categories: (categoryIdsByGroupId[group.id] ?? [])
+            .filter((id) => {
+              if (!exclude || exclude.type === "categoryGroup") return true;
+              if (exclude.type === "category") return id !== exclude.id;
+              return true;
+            })
+            .map((id) => {
+              const cat = engine.entities.categories.user[id];
+              const m = engine.computed.currentCategoryMonthMap[id];
+
+              return {
+                id,
+                name: cat.name,
+                available: m?.available ?? 0,
+              };
+            }),
+        }));
+    },
+    [
+      engine.entities.categoryGroups.user,
+      engine.entities.categories.user,
+      engine.computed.currentCategoryMonthMap,
+      categoryIdsByGroupId,
+    ]
+  );
+
+  /*
    * misc
    */
   //  SIDE EFFECT: reset selection on mount (kept explicit)
@@ -197,6 +291,15 @@ export function useAllocation() {
       available,
     },
 
+    deleteState: {
+      getCategoryDeleteState,
+      getCategoryGroupDeleteState,
+    },
+
+    selectors: {
+      getCategorySelectOptions,
+    },
+
     monthSelectorViewModel,
     categoriesSelector,
 
@@ -220,8 +323,8 @@ type UseCategoryGroupViewsParams = {
     rta: CategoryBranded;
     uncategorised: CategoryBranded;
   };
-
   currentCategoryMonthMap: CategoryMonthMap;
+  categoryMetricsById: CategoryMetricsById;
 };
 
 // Output
@@ -235,6 +338,7 @@ export function buildCategoryGroupViews({
   categoryGroups,
   categories,
   currentCategoryMonthMap,
+  categoryMetricsById,
 }: UseCategoryGroupViewsParams): CategoryGroupViews {
   const currentUserCategoryMonthMap: Record<MonthId, MonthBranded> =
     useMemo(() => {
@@ -250,6 +354,7 @@ export function buildCategoryGroupViews({
       categories,
       categoryGroups,
       currentCategoryMonthMap,
+      categoryMetricsById,
     });
   }, [categories, categoryGroups, currentCategoryMonthMap]);
 
@@ -258,6 +363,7 @@ export function buildCategoryGroupViews({
       categoryGroups: categoryGroups.user,
       categories: categories.user,
       currentUserCategoryMonthMap,
+      categoryMetricsById,
     });
   }, [categoryGroups, categories, currentUserCategoryMonthMap]);
 
