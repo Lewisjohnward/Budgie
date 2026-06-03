@@ -42,12 +42,25 @@ type CategoriesProps = {
   };
   expandCategoryGroups: ExpandableCategoryGroupsState;
   categorySelector: CategorySelectionState;
+  deleteState: {
+    getCategoryDeleteState: (categoryId: CategoryId) => {
+      hasAssigned: boolean;
+      transactionCount: number;
+      canDelete: boolean;
+    };
+    getCategoryGroupDeleteState: (
+      categoryGroupId: CategoryGroupId
+    ) => CategoryGroupDeleteState;
+  };
+  selectors: any;
 };
 
 export function Categories({
   currency,
   view,
   expandCategoryGroups,
+  deleteState,
+  selectors,
   categorySelector,
 }: CategoriesProps) {
   const { uncategorisedRow, categoriesByGroup } = view;
@@ -85,6 +98,7 @@ export function Categories({
   }>({ id: null, type: null });
 
   const [draftView, setDraftView] = useState(view.categoriesByGroup);
+  console.log("draftView:", draftView);
   const [updatedCategory, setUpdatedCategory] =
     useState<UpdatedCategory | null>(null);
   const [updatedCategoryGroup, setUpdatedCategoryGroup] =
@@ -189,7 +203,13 @@ export function Categories({
           {draftView.map(({ group, rows, open }) => {
             return (
               <div key={group.id}>
-                <CategoryGroupContextMenu categoryGroup={group}>
+                <CategoryGroupContextMenu
+                  categoryGroup={group}
+                  getCategoryGroupDeleteState={
+                    deleteState.getCategoryGroupDeleteState
+                  }
+                  selectors={selectors}
+                >
                   <div className="group">
                     <CategoryGridRow id={group.id} className="bg-stone-200">
                       <CategoryGroupRow
@@ -323,6 +343,7 @@ import {
   useEditCategoryGroupMutation,
   useUpdateCategoryGroupMutation,
 } from "@/core/api/budget/categoryGroup/CategoryGroupApiSlice";
+import { CategoryGroupDeleteState } from "../../utils/getCategoryGroupDeleteState";
 
 type Props = {
   groupId: string;

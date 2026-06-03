@@ -126,7 +126,7 @@ export const deleteCategoryGroup = async (
     );
 
     const hasTransactions = transactions.length > 0;
-    let updatedMonths: DomainMonth[] = [];
+    let updatedCategoryMonths: DomainMonth[] = [];
     let updatedTransactions: DomainNormalTransaction[] = [];
     if (hasTransactions) {
       if (!inheritingCategoryId) {
@@ -149,7 +149,7 @@ export const deleteCategoryGroup = async (
       }));
 
       // Calculate months for the inheriting category
-      updatedMonths =
+      updatedCategoryMonths =
         await categoryService.months.recalculateCategoryMonthsForTransactions(
           tx,
           updatedTransactions,
@@ -174,11 +174,24 @@ export const deleteCategoryGroup = async (
     // Delete category group
     await categoryGroupRepository.deleteCategoryGroup(tx, categoryGroup.id);
 
+    // Get rta category id
+    const rtaCategoryId = await categoryService.rta.getRtaCategoryId(
+      tx,
+      userId
+    );
+
+    // Recalculate rta months
+    const updatedRtaMonths = await categoryService.rta.calculateMonthsAvailable(
+      tx,
+      userId,
+      rtaCategoryId
+    );
+
     return {
       deletedCategoryGroupId: categoryGroup.id,
 
       updatedTransactions,
-      updatedMonths,
+      updatedMonths: [...updatedCategoryMonths, ...updatedRtaMonths],
     };
   });
 };

@@ -1,11 +1,11 @@
 import { CategoryGroupId } from "../types/types";
-import { CategoryGroupsWithMetricsParams } from "./buildCategoryGroupMetrics";
+import { CategoryGroupsWithMetrics } from "./buildCategoryGroupMetrics";
 import { CategoryViewRow } from "./buildCategoryViewModel";
 
 // Input
 type AssembleCategoryGroupViewParams = {
   categoryGroupViews: CategoryGroupViewInput[];
-  categoryGroupMetrics: CategoryGroupsWithMetricsParams;
+  categoryGroupMetrics: CategoryGroupsWithMetrics;
 };
 
 type CategoryGroupViewInput = {
@@ -30,6 +30,8 @@ export type CategoryGroupWithMetrics = {
   assigned: number;
   activity: number;
   available: number;
+  hasAssigned: boolean;
+  transactionCount: number;
 };
 
 export function assembleCategoryGroupViews(
@@ -53,6 +55,8 @@ export function assembleCategoryGroupViews(
         assigned: metrics.assigned,
         activity: metrics.activity,
         available: metrics.available,
+        hasAssigned: metrics.hasAssigned,
+        transactionCount: metrics.transactionCount,
       },
     };
   });

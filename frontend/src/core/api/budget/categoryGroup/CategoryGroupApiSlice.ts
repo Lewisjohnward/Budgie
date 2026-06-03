@@ -97,7 +97,6 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
       query: ({ categoryGroupId }) => ({
         url: `budget/categorygroups/${categoryGroupId}`,
         method: "DELETE",
-        body: {},
       }),
 
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {

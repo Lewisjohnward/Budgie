@@ -4,6 +4,7 @@ import {
   CategoryGroupBranded,
 } from "@/core/types/NormalizedData";
 import { CategoryId, CategoryGroupId } from "../types/types";
+import { CategoryMetricsById } from "../hooks/useAllocation/useAllocationIndexes";
 
 // Input
 type BuildCategoryViewModelParams = {
@@ -18,6 +19,7 @@ type BuildCategoryViewModelParams = {
     uncategorised: CategoryGroupBranded;
   };
   currentCategoryMonthMap: Record<CategoryId, MonthBranded>;
+  categoryMetricsById: CategoryMetricsById;
 };
 
 // Output
@@ -29,6 +31,8 @@ type CategoryViewModel = {
 
 export type CategoryViewRow = {
   category: CategoryBranded;
+  transactionCount: number;
+  hasAssigned: boolean;
   month: MonthBranded;
 };
 
@@ -37,14 +41,21 @@ type CategoryGroupView = {
   rows: CategoryViewRow[];
 };
 
-export function buildCategoryViewModel(
-  params: BuildCategoryViewModelParams
-): CategoryViewModel {
-  const { categories, categoryGroups, currentCategoryMonthMap } = params;
-
+export function buildCategoryViewModel({
+  categories,
+  categoryGroups,
+  currentCategoryMonthMap,
+  categoryMetricsById,
+}: BuildCategoryViewModelParams): CategoryViewModel {
   //  Build rows
   const rows: CategoryViewRow[] = Object.values(categories.user)
-    .map((category) => buildCategoryViewRow(category, currentCategoryMonthMap))
+    .map((category) =>
+      buildCategoryViewRow(
+        category,
+        currentCategoryMonthMap,
+        categoryMetricsById
+      )
+    )
     // Sort based on position
     .sort((a, b) => a.category.position - b.category.position);
 
@@ -74,11 +85,16 @@ export function buildCategoryViewModel(
   // Special row - uncategorised
   const uncategorisedRow = buildCategoryViewRow(
     categories.uncategorised,
-    currentCategoryMonthMap
+    currentCategoryMonthMap,
+    categoryMetricsById
   );
 
   // Special row - RTA
-  const rtaRow = buildCategoryViewRow(categories.rta, currentCategoryMonthMap);
+  const rtaRow = buildCategoryViewRow(
+    categories.rta,
+    currentCategoryMonthMap,
+    categoryMetricsById
+  );
 
   return {
     userCategoryGroupViews,
@@ -89,13 +105,23 @@ export function buildCategoryViewModel(
 
 function buildCategoryViewRow(
   category: CategoryBranded,
-  map: Record<CategoryId, MonthBranded>
+  map: Record<CategoryId, MonthBranded>,
+  categoryMetricsById: CategoryMetricsById
 ): CategoryViewRow {
   const month = map[category.id];
 
   if (!month) {
     throw new Error(`Missing month for ${category.id}`);
   }
+  const metrics = categoryMetricsById[category.id];
 
-  return { category, month };
+  const hasAssigned = metrics?.hasAssigned ?? false;
+  const transactionCount = metrics?.transactionCount ?? 0;
+
+  return {
+    category,
+    month,
+    transactionCount,
+    hasAssigned,
+  };
 }
