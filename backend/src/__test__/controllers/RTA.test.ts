@@ -69,7 +69,7 @@ const createCategory = async ({
   name: string;
 }) => {
   await request(app)
-    .post("/budget/categorygroups")
+    .post("/budget/category-groups")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       name: "test categoryGroup",
@@ -85,7 +85,7 @@ const createCategory = async ({
     throw new Error(`Unable to find created- ${name} category group`);
 
   await request(app)
-    .post("/budget/category")
+    .post("/budget/categories")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       categoryGroupId: testCategoryGroup.id,
@@ -103,7 +103,7 @@ const createCategory = async ({
 
 const createTestCategory = async (cookie: string) => {
   await request(app)
-    .post("/budget/categorygroups")
+    .post("/budget/category-groups")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       name: "test category group a",
@@ -118,7 +118,7 @@ const createTestCategory = async (cookie: string) => {
   if (!testCategoryGroup) throw new Error("Unable to find test category group");
 
   await request(app)
-    .post("/budget/category")
+    .post("/budget/categories")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       categoryGroupId: testCategoryGroup.id,

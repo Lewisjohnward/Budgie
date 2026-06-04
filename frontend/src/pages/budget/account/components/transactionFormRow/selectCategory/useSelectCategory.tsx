@@ -2,11 +2,9 @@ import { useMemo, useReducer, useRef, useState } from "react";
 import { useForm, useFormContext } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  useAddCategoryMutation,
-  useGetCategoriesQuery,
-} from "@/core/api/budgetApiSlice";
+import { useGetCategoriesQuery } from "@/core/api/budgetApiSlice";
 import { CategoryT, CategoryGroup } from "@/core/types/NormalizedData";
+import { useCreateCategoryMutation } from "@/core/api/budget/category/categoryApiSlice";
 
 type SelectCategoryForm = {
   showAddCategoryForm: boolean;
@@ -234,7 +232,8 @@ export const useSelectCategory = () => {
   }, [categories, months]);
 
   // to add a category /////
-  const [createCategory, { isLoading, isSuccess }] = useAddCategoryMutation();
+  const [createCategory, { isLoading, isSuccess }] =
+    useCreateCategoryMutation();
   const form = useForm<SelectCategoryForm>({
     defaultValues: {
       showAddCategoryForm: false,

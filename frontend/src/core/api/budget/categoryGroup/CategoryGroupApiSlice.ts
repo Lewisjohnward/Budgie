@@ -11,22 +11,30 @@ import {
   TransactionBranded,
 } from "@/core/types/NormalizedData";
 
+const CATEGORY_GROUP_ENDPOINT_URL = "budget/category-groups";
+
+// Input to create category group
+type CreateCategoryGroupInput = {
+  name: string;
+};
+
+// Input to update category group
 type UpdatedCategoryGroupInput = {
   categoryGroupId: CategoryGroupId;
   name?: string;
   position?: number;
 };
 
-type CreateCategoryGroupInput = {
-  name: string;
-};
-
+// Input to delete category group
 type DeleteCategoryGroupInput = {
   categoryGroupId: CategoryGroupId;
 };
 
+// Response to create category group
 type CreateCategoryGroupDto = CategoryGroupBranded;
+// Response to update category group
 type UpdateCategoryGroupDto = CategoryGroupBranded;
+// Response to delete category group
 type DeleteCategoryGroupDto = {
   deleted: {
     categoryGroupId: CategoryGroupId;
@@ -46,7 +54,7 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
     >({
       query: (categoryGroup) => {
         return {
-          url: "budget/categorygroups",
+          url: CATEGORY_GROUP_ENDPOINT_URL,
           method: "POST",
           body: categoryGroup,
         };
@@ -64,6 +72,7 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
               const newGroup = {
                 id: tempId,
                 name: arg.name,
+                // Put temp newly created category group at the last position
                 position: groups.length,
               };
 
@@ -90,12 +99,71 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
         }
       },
     }),
+    updateCategoryGroup: builder.mutation<
+      UpdateCategoryGroupDto,
+      UpdatedCategoryGroupInput
+    >({
+      query: ({ name, position, categoryGroupId }) => ({
+        url: `${CATEGORY_GROUP_ENDPOINT_URL}/${categoryGroupId}`,
+        method: "PATCH",
+        body: { name, position },
+      }),
+
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          budgetSnapshotSlice.util.updateQueryData(
+            "getBudgetSnapshot",
+            undefined,
+            (draft) => {
+              const groups = draft.categoryGroups.user;
+              const moved = groups[arg.categoryGroupId];
+
+              if (!moved) return;
+
+              // Handle position update
+              if (arg.position !== undefined) {
+                const list = Object.values(groups);
+                const fromPos = moved.position;
+                const toPos = arg.position;
+
+                if (toPos !== fromPos) {
+                  const without = list.filter(
+                    (g) => g.id !== arg.categoryGroupId
+                  );
+
+                  without.splice(toPos, 0, moved);
+
+                  without.forEach((g, index) => {
+                    g.position = index;
+                  });
+
+                  draft.categoryGroups.user = Object.fromEntries(
+                    without.map((g) => [g.id, g])
+                  );
+                }
+              }
+
+              // Handle name update
+              if (arg.name !== undefined) {
+                moved.name = arg.name;
+              }
+            }
+          )
+        );
+
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
+    }),
     deleteCategoryGroup: builder.mutation<
       DeleteCategoryGroupDto,
       DeleteCategoryGroupInput
     >({
       query: ({ categoryGroupId }) => ({
-        url: `budget/categorygroups/${categoryGroupId}`,
+        url: `${CATEGORY_GROUP_ENDPOINT_URL}/${categoryGroupId}`,
         method: "DELETE",
       }),
 
@@ -178,70 +246,11 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
         }
       },
     }),
-    updateCategoryGroup: builder.mutation<
-      UpdateCategoryGroupDto,
-      UpdatedCategoryGroupInput
-    >({
-      query: ({ name, position, categoryGroupId }) => ({
-        url: `budget/categorygroups/${categoryGroupId}`,
-        method: "PATCH",
-        body: { name, position },
-      }),
-
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          budgetSnapshotSlice.util.updateQueryData(
-            "getBudgetSnapshot",
-            undefined,
-            (draft) => {
-              const groups = draft.categoryGroups.user;
-              const moved = groups[arg.categoryGroupId];
-
-              if (!moved) return;
-
-              // Handle position update
-              if (arg.position !== undefined) {
-                const list = Object.values(groups);
-                const fromPos = moved.position;
-                const toPos = arg.position;
-
-                if (toPos !== fromPos) {
-                  const without = list.filter(
-                    (g) => g.id !== arg.categoryGroupId
-                  );
-
-                  without.splice(toPos, 0, moved);
-
-                  without.forEach((g, index) => {
-                    g.position = index;
-                  });
-
-                  draft.categoryGroups.user = Object.fromEntries(
-                    without.map((g) => [g.id, g])
-                  );
-                }
-              }
-
-              // Handle name update
-              if (arg.name !== undefined) {
-                moved.name = arg.name;
-              }
-            }
-          )
-        );
-
-        try {
-          await queryFulfilled;
-        } catch {
-          patchResult.undo();
-        }
-      },
-    }),
   }),
 });
 
 export const {
   useCreateCategoryGroupMutation,
-  useDeleteCategoryGroupMutation,
   useUpdateCategoryGroupMutation,
+  useDeleteCategoryGroupMutation,
 } = categoryGroupApiSlice;

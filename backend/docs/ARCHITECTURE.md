@@ -27,22 +27,22 @@ DELETE /budget/account/:id
 
 # Categories - Core
 
-GET /budget/category
-POST /budget/category
-PATCH /budget/category/:id
-DELETE /budget/category/:id
+GET /budget/categories
+POST /budget/categories
+PATCH /budget/categories/:id
+DELETE /budget/categories/:id
 
 # Categories - Months
 
-GET /budget/category/months
-PATCH /budget/category/months
+GET /budget/categories/months
+PATCH /budget/categories/months
 
 # Category Groups
 
-GET /budget/categorygroups
-POST /budget/categorygroups
-PATCH /budget/categorygroups/:id
-DELETE /budget/categorygroups/:id
+GET /budget/category-groups
+POST /budget/category-groups
+PATCH /budget/category-groups/:id
+DELETE /budget/category-groups/:id
 
 # Transactions
 
@@ -282,7 +282,7 @@ All dates are returned as ISO 8601 strings (date-time format)
 
 **Get Category Groups**
 
-- **Endpoint:** `GET /budget/categorygroups`
+- **Endpoint:** `GET /budget/category-groups`
 - **Auth Required:** The user must be logged in.
 - **Description:** Fetches all category groups for the provided user id.
 
@@ -318,7 +318,7 @@ All dates are returned as ISO 8601 strings (date-time format)
 
 **Get Months For Categories**
 
-- **Endpoint:** `GET /budget/category/months`
+- **Endpoint:** `GET /budget/categories/months`
 - **Auth Required:** The user must be logged in.
 - **Description:** Fetches all months for the provided category IDs.
 
@@ -342,7 +342,7 @@ All dates are returned as ISO 8601 strings (date-time format)
 
 **Update Months Assignments**
 
-- **Endpoint:** `PATCH /budget/category/months`
+- **Endpoint:** `PATCH /budget/categories/months`
 - **Auth Required:** The user must be logged in.
 - **Description:** Updates the assigned amounts for one or more months. Only months belonging to categories owned by the user can be updated. Protected categories (RTA and Uncategorised) cannot be modified.
 

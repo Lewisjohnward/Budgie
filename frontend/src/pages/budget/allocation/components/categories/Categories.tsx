@@ -30,7 +30,6 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
-import { useEditCategoryMutation } from "@/core/api/budget/category/categoryApiSlice";
 import { asCategoryId, CategoryGroupId, CategoryId } from "../../types/types";
 import { useEffect, useMemo, useState } from "react";
 
@@ -64,7 +63,7 @@ export function Categories({
   categorySelector,
 }: CategoriesProps) {
   const { uncategorisedRow, categoriesByGroup } = view;
-  const [editCategory] = useEditCategoryMutation();
+  const [updateCategory] = useUpdateCategoryMutation();
   const [editCategoryGroup] = useUpdateCategoryGroupMutation();
 
   useEffect(() => {
@@ -73,7 +72,7 @@ export function Categories({
 
   function handleDragEnd() {
     if (updatedCategory) {
-      editCategory(updatedCategory);
+      updateCategory(updatedCategory);
       setUpdatedCategory(null);
     }
     if (updatedCategoryGroup) {
@@ -339,11 +338,9 @@ function moveItem(
 
 import { useDroppable } from "@dnd-kit/core";
 import { cn } from "@/core/lib/utils";
-import {
-  useEditCategoryGroupMutation,
-  useUpdateCategoryGroupMutation,
-} from "@/core/api/budget/categoryGroup/CategoryGroupApiSlice";
+import { useUpdateCategoryGroupMutation } from "@/core/api/budget/categoryGroup/CategoryGroupApiSlice";
 import { CategoryGroupDeleteState } from "../../utils/getCategoryGroupDeleteState";
+import { useUpdateCategoryMutation } from "@/core/api/budget/category/categoryApiSlice";
 
 type Props = {
   groupId: string;

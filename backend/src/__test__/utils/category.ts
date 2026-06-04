@@ -1,16 +1,30 @@
-import request from "supertest";
+import request, { Response } from "supertest";
 import app from "../../app";
 import { getCategories } from "./getData";
 import { CreateCategoryPayload } from "../../features/budget/core/category/core/category.schema";
 
+const CATEGORIES_ENDPOINT_URL = "/budget/categories";
+
 export type CreateCategoryPayloadTest = Omit<CreateCategoryPayload, "userId">;
+
+export const createCategoryRaw = async (
+  cookie: string,
+  payload: CreateCategoryPayloadTest
+): Promise<Response> => {
+  const res = await request(app)
+    .post(CATEGORIES_ENDPOINT_URL)
+    .set("Authorization", `Bearer ${cookie}`)
+    .send(payload);
+
+  return res;
+};
 
 export const createCategory = async (
   cookie: string,
   payload: CreateCategoryPayloadTest
 ): Promise<void> => {
   await request(app)
-    .post("/budget/category")
+    .post(CATEGORIES_ENDPOINT_URL)
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload);
 };

@@ -13,9 +13,23 @@ type UpdateCategoryInput = {
   position?: number;
 };
 
+type UpdatedCategoryDto = CategoryBranded;
+
+const CATEGORY_ENDPOINT_URL = "budget/categories";
+
 export const categoryApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    editCategory: builder.mutation<CategoryBranded, UpdateCategoryInput>({
+    createCategory: builder.mutation<void, any>({
+      query: (category) => {
+        return {
+          url: CATEGORY_ENDPOINT_URL,
+          method: "POST",
+          body: category,
+        };
+      },
+      invalidatesTags: ["Categories"],
+    }),
+    updateCategory: builder.mutation<UpdatedCategoryDto, UpdateCategoryInput>({
       query: ({ categoryId, name, position, categoryGroupId }) => ({
         // TODO:(lewis 2026-05-18 13:47) shouldnt this be using params?
         url: `budget/category`,
@@ -87,7 +101,21 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
         }
       },
     }),
+    deleteCategory: builder.mutation<void, { categoryId: string }>({
+      query: (categoryId) => {
+        return {
+          url: CATEGORY_ENDPOINT_URL,
+          method: "DELETE",
+          body: categoryId,
+        };
+      },
+      invalidatesTags: ["Categories", "Accounts"],
+    }),
   }),
 });
 
-export const { useEditCategoryMutation } = categoryApiSlice;
+export const {
+  useCreateCategoryMutation,
+  useUpdateCategoryMutation,
+  useDeleteCategoryMutation,
+} = categoryApiSlice;

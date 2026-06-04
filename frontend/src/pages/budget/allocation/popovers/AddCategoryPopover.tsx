@@ -1,4 +1,3 @@
-import { useAddCategoryMutation } from "@/core/api/budgetApiSlice";
 import { ReactNode, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AddCategoryFormData, AddCategorySchema } from "../types/types";
@@ -11,6 +10,7 @@ import {
 import { PopoverArrow, PopoverPortal } from "@radix-ui/react-popover";
 import { Input } from "@/core/components/uiLibrary/input";
 import { Button } from "@/core/components/uiLibrary/button";
+import { useCreateCategoryMutation } from "@/core/api/budget/category/categoryApiSlice";
 
 export function AddCategoryPopover({
   id,
@@ -20,7 +20,7 @@ export function AddCategoryPopover({
   children: ReactNode;
 }) {
   const [displayPopover, setDisplayPopover] = useState(false);
-  const [createCategory] = useAddCategoryMutation();
+  const [createCategory] = useCreateCategoryMutation();
 
   const {
     register,
