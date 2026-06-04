@@ -1,4 +1,4 @@
-import request from "supertest";
+import request, { Response } from "supertest";
 import app from "../../app";
 import { prisma } from "../../shared/prisma/client";
 import { NormalisedCategoryData } from "../../features/budget/core/category/core/category.types";
@@ -10,25 +10,41 @@ export const testUser = {
 
 export const login = async (
   user: { email: string; password: string } = testUser
-) => {
+): Promise<string> => {
   const res = await request(app).post("/user/auth/login").send(user);
   const cookie = res.body;
 
   return cookie;
 };
 
-/** Registers a new user via the auth register endpoint. */
-export const register = async ({
+/** Registers a new user via the auth register endpoint. and returns the raw HTTP response */
+export const registerRaw = async ({
   email,
   password,
 }: {
   email?: string;
   password?: string;
-}) => {
+}): Promise<Response> => {
   return await request(app).post("/user/auth/register").send({
     email,
     password,
   });
+};
+
+/** Registers a new user and returns the logged in cookie */
+export const register = async ({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}): Promise<string> => {
+  await request(app).post("/user/auth/register").send({
+    email,
+    password,
+  });
+
+  return await login({ email, password });
 };
 
 /**

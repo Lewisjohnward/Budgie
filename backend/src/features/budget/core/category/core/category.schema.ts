@@ -10,7 +10,7 @@ import { z } from "zod";
  */
 export const createCategorySchema = z.object({
   userId: z.string().uuid(),
-  name: z.string().min(1, { message: "Category name cannot be empty" }),
+  name: z.string().trim().min(1, { message: "Category name cannot be empty" }),
   categoryGroupId: z.string().uuid({ message: "Invalid Category Group ID" }),
 });
 

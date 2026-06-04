@@ -176,7 +176,7 @@ export interface CategoryRepository {
   createMonths(
     tx: Prisma.TransactionClient,
     months: Prisma.MonthCreateManyInput[]
-  ): Promise<void>;
+  ): Promise<number>;
 
   deleteMonthsByCategoryId(
     tx: Prisma.TransactionClient,

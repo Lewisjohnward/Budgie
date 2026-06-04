@@ -22,6 +22,7 @@ export const mapPayees = (ctx: HydrationContext) => {
     const { id } = payee;
     ctx.state.payees[id] = {
       id: id,
+      userId: payee.userId,
       name: payee.name,
       origin: payee.origin,
       defaultCategoryId: payee.defaultCategoryId,

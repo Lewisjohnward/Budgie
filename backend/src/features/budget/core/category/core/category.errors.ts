@@ -75,3 +75,14 @@ export class NoPastMonthsFoundError extends CategoryInvariantError {
     this.name = "NoPastMonthsFoundError";
   }
 }
+
+/**
+ * Thrown when the number of created months does not match the expected number,
+ * indicating a violation of the month creation invariant.
+ */
+export class MonthCreationMismatchError extends CategoryInvariantError {
+  constructor(expected: number, actual: number) {
+    super(`Expected ${expected} months but got ${actual}`);
+    this.name = "MonthCreationMismatchError";
+  }
+}

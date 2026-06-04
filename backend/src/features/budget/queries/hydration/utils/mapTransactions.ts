@@ -1,4 +1,3 @@
-import { convertDecimalToNumber } from "../../../../../shared/utils/convertDecimalToNumber";
 import { type HydrationContext } from "./normaliseHydrationData";
 
 /**
@@ -18,17 +17,34 @@ import { type HydrationContext } from "./normaliseHydrationData";
  * @returns void (mutates hydration state in place)
  */
 export const mapTransactions = (ctx: HydrationContext): void => {
-  const { transactions } = ctx.input;
-  for (const t of transactions) {
+  for (const t of ctx.input.transactions) {
+    if (t.type === "normal") {
+      ctx.state.transactions[t.id] = {
+        type: t.type,
+        id: t.id,
+        accountId: t.accountId,
+        categoryId: t.categoryId,
+        payeeId: t.payeeId,
+        date: t.date,
+        memo: t.memo,
+        inflow: t.inflow,
+        outflow: t.outflow,
+      };
+
+      continue;
+    }
+
     ctx.state.transactions[t.id] = {
+      type: t.type,
       id: t.id,
       accountId: t.accountId,
-      categoryId: t.type === "normal" ? t.categoryId : undefined,
       payeeId: t.payeeId,
-      date: t.date.toISOString(),
+      date: t.date,
       memo: t.memo,
-      inflow: convertDecimalToNumber(t.inflow),
-      outflow: convertDecimalToNumber(t.outflow),
+      inflow: t.inflow,
+      outflow: t.outflow,
+      transferAccountId: t.transferAccountId,
+      transferTransactionId: t.transferTransactionId,
     };
   }
 };

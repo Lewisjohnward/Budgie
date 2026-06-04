@@ -1,20 +1,20 @@
 import { login, registerUser } from "../utils/auth";
-import { getAppSnapshot, getAppSnapshotBody } from "../utils/appSnapshot";
-import { BudgetHydrationModel } from "../../features/budget/queries/hydration/hydration.types";
+import { type BudgetHydrationDto } from "../../features/budget/queries/hydration/hydration.types";
+import { getAppSnapshot, getAppSnapshotRaw } from "../utils/appSnapshot";
 
 describe("Snapshot", () => {
   let cookie: string;
-  let snapshot: BudgetHydrationModel;
+  let snapshot: BudgetHydrationDto;
 
   beforeEach(async () => {
     await registerUser();
     cookie = await login();
-    snapshot = await getAppSnapshotBody(cookie);
+    snapshot = await getAppSnapshot(cookie);
   });
 
   describe("Success", () => {
     it("Should return 200 get snapshot", async () => {
-      const res = await getAppSnapshot(cookie);
+      const res = await getAppSnapshotRaw(cookie);
       expect(res.statusCode).toBe(200);
     });
     it("Should return a valid snapshot", async () => {

@@ -2,15 +2,29 @@ import { Brand } from "../../../../../shared/types/brand";
 import {
   type AccountType,
   type AccountId,
+  type DomainAccount,
 } from "../../../core/account/account.types";
 import {
+  type DomainCategory,
+  type DomainMonth,
   type CategoryId,
   type MonthId,
 } from "../../../core/category/core/category.types";
-import { type CategoryGroupId } from "../../../core/categorygroup/categoryGroup.types";
-import { PayeeOrigin } from "../../../core/payee/payee.constants";
-import { type PayeeId } from "../../../core/payee/payee.types";
-import { type TransactionId } from "../../../core/transaction/transaction.types";
+import {
+  type DomainSystemCategoryGroup,
+  type DomainUserCategoryGroup,
+  type CategoryGroupId,
+} from "../../../core/categorygroup/categoryGroup.types";
+import { type DomainMemo } from "../../../core/memo/memo.types";
+import { type PayeeOrigin } from "../../../core/payee/payee.constants";
+import {
+  type DomainPayee,
+  type PayeeId,
+} from "../../../core/payee/payee.types";
+import {
+  type DomainTransaction,
+  type TransactionId,
+} from "../../../core/transaction/transaction.types";
 
 /**
  * Fully hydrated, application-ready data model used by the frontend UI layer.
@@ -28,20 +42,20 @@ import { type TransactionId } from "../../../core/transaction/transaction.types"
  */
 export type BudgetHydrationModel = {
   categoryGroups: {
-    user: Record<CategoryGroupId, CategoryGroup>;
-    inflow: CategoryGroup;
-    uncategorised: CategoryGroup;
+    user: Record<CategoryGroupId, DomainUserCategoryGroup>;
+    inflow: DomainSystemCategoryGroup;
+    uncategorised: DomainSystemCategoryGroup;
   };
   categories: {
-    user: Record<CategoryId, Category>;
-    rta: Category;
-    uncategorised: Category;
+    user: Record<CategoryId, DomainCategory>;
+    rta: DomainCategory;
+    uncategorised: DomainCategory;
   };
-  months: Record<MonthId, Month>;
-  accounts: Record<AccountId, Account>;
-  transactions: Record<TransactionId, Transaction>;
-  payees: Record<PayeeId, Payee>;
-  memosByMonth: Record<MonthKey, Memo>;
+  months: Record<MonthId, DomainMonth>;
+  accounts: Record<AccountId, DomainAccount>;
+  transactions: Record<TransactionId, DomainTransaction>;
+  payees: Record<PayeeId, DomainPayee>;
+  memosByMonth: Record<MonthKey, DomainMemo>;
   monthKeys: MonthKey[];
 };
 

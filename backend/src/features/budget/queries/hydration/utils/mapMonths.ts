@@ -1,4 +1,3 @@
-import { convertDecimalToNumber } from "../../../../../shared/utils/convertDecimalToNumber";
 import { toMonthKey } from "../../../utils/toMonthKey";
 import { type HydrationContext } from "./normaliseHydrationData";
 
@@ -28,10 +27,10 @@ export const mapMonths = (ctx: HydrationContext): void => {
     ctx.state.months[id] = {
       id,
       categoryId: m.categoryId,
-      month: toMonthKey(m.month),
-      activity: convertDecimalToNumber(m.activity),
-      assigned: convertDecimalToNumber(m.assigned),
-      available: convertDecimalToNumber(m.available),
+      month: m.month,
+      activity: m.activity,
+      assigned: m.assigned,
+      available: m.available,
     };
   }
 };

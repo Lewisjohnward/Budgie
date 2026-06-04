@@ -1,4 +1,3 @@
-import { extractSystemCategoryGroups } from "../../../core/categorygroup/utils/extractSystemCategoryGroups";
 import { type HydrationContext } from "./normaliseHydrationData";
 
 /**
@@ -31,6 +30,7 @@ export const mapCategoryGroups = (ctx: HydrationContext): void => {
       id,
       name: group.name,
       position: group.position,
+      source: group.source,
     };
   }
 
@@ -40,6 +40,7 @@ export const mapCategoryGroups = (ctx: HydrationContext): void => {
       id: inflow.id,
       name: inflow.name,
       position: inflow.position,
+      source: inflow.source,
     };
   }
 
@@ -49,6 +50,7 @@ export const mapCategoryGroups = (ctx: HydrationContext): void => {
       id: unc.id,
       name: unc.name,
       position: unc.position,
+      source: unc.source,
     };
   }
 };

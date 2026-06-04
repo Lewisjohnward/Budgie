@@ -1,4 +1,5 @@
 import { toCategoryDto } from "./mappers/toCategoryDto";
+import { toCreateCategoryDto } from "./mappers/toCreateCategoryDto";
 import { toDomainCategory } from "./mappers/toDomainCategory";
 import { toDomainCategoryIds } from "./mappers/toDomainCategoryIds";
 import { toDomainMonth } from "./mappers/toDomainMonth";
@@ -14,6 +15,7 @@ export const categoryMapper = {
   toCategoryDto,
   toDomainMonth,
   toMonthDto,
+  toCreateCategoryDto,
   mapMonthsByCategoryToDto,
   mapMonthsImproveName,
 };

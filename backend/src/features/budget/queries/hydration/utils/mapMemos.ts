@@ -35,7 +35,8 @@ export const mapMemos = (ctx: HydrationContext): void => {
     }
     ctx.state.memosByMonth[key] = {
       id: memo.id,
-      month: key,
+      userId: memo.userId,
+      month: memo.month,
       content: memo.content,
     };
   }
