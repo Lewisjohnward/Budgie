@@ -26,6 +26,7 @@ export const mapCategories = (ctx: HydrationContext): void => {
 
     ctx.state.categories.user[id] = {
       id,
+      userId: category.userId,
       name: category.name,
       position: category.position,
       categoryGroupId: asCategoryGroupId(category.categoryGroupId),
@@ -38,6 +39,7 @@ export const mapCategories = (ctx: HydrationContext): void => {
 
     ctx.state.categories.rta = {
       id,
+      userId: rta.userId,
       name: rta.name,
       position: rta.position,
       categoryGroupId: asCategoryGroupId(rta.categoryGroupId),
@@ -50,6 +52,7 @@ export const mapCategories = (ctx: HydrationContext): void => {
 
     ctx.state.categories.uncategorised = {
       id,
+      userId: unc.userId,
       name: unc.name,
       position: unc.position,
       categoryGroupId: asCategoryGroupId(unc.categoryGroupId),

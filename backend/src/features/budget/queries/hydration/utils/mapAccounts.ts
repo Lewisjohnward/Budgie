@@ -1,4 +1,3 @@
-import { convertDecimalToNumber } from "../../../../../shared/utils/convertDecimalToNumber";
 import { type HydrationContext } from "./normaliseHydrationData";
 
 /**
@@ -21,13 +20,14 @@ export const mapAccounts = (ctx: HydrationContext): void => {
   const { accounts } = ctx.input;
   for (const account of accounts) {
     ctx.state.accounts[account.id] = {
+      userId: account.userId,
       id: account.id,
       name: account.name,
       position: account.position,
       open: account.open,
       type: account.type,
       deletable: account.deletable,
-      balance: convertDecimalToNumber(account.balance),
+      balance: account.balance,
     };
   }
 };

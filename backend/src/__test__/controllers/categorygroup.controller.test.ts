@@ -1,4 +1,3 @@
-import { TransactionNormalDto } from "../../features/budget/core/transaction/transaction.types";
 import { createAccountAndFetch } from "../utils/account";
 import { getMonthsForCategories } from "../utils/assign";
 import { login, registerUser } from "../utils/auth";
@@ -60,6 +59,7 @@ describe("Category group", () => {
   });
   describe("Create", () => {
     describe("Error cases", () => {
+      // trim whitespace
       it("Should return 401 on unauthenticated requests", async () => {
         const res = await createCategoryGroupRaw("0000", { name: "test" });
 

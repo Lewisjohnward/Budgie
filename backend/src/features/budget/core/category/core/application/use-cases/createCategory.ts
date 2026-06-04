@@ -5,6 +5,7 @@ import {
   asCategoryGroupId,
   type CategoryGroupId,
 } from "../../../../categorygroup/categoryGroup.types";
+import { CreateCategoryResult } from "../../category.contract";
 import { type CreateCategoryPayload } from "../../category.schema";
 import { categoryService } from "../../category.service";
 
@@ -26,17 +27,11 @@ export const toCreateCategoryCommand = (
 
 export const createCategory = async (
   payload: CreateCategoryPayload
-): Promise<void> => {
-  await prisma.$transaction(async (tx) => {
+): Promise<CreateCategoryResult> => {
+  return await prisma.$transaction(async (tx) => {
     const { userId, categoryGroupId, name } = toCreateCategoryCommand(payload);
 
-    await categoryGroupService.ensureUserOwnsCategoryGroup(
-      tx,
-      userId,
-      categoryGroupId
-    );
-
-    await categoryGroupService.isProtectedCategoryGroup(
+    await categoryGroupService.getModifiableCategoryGroup(
       tx,
       userId,
       categoryGroupId
@@ -55,15 +50,23 @@ export const createCategory = async (
         categoryGroupId
       );
 
-    const newCategory = await categoryService.categories.createCategory(tx, {
-      ...payload,
-      position: nextPosition,
-    });
+    const createdCategory = await categoryService.categories.createCategory(
+      tx,
+      {
+        ...payload,
+        position: nextPosition,
+      }
+    );
 
-    await categoryService.months.createMonthsForCategory(
+    const createdMonths = await categoryService.months.createMonthsForCategory(
       tx,
       userId,
-      newCategory.id
+      createdCategory.id
     );
+
+    return {
+      createdCategory,
+      createdMonths,
+    };
   });
 };

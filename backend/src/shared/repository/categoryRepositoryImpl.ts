@@ -267,7 +267,11 @@ export const categoryRepository: CategoryRepository = {
 
   // ──────────────── Month Mutation ────────────────
   createMonths: async (tx, months) => {
-    await tx.month.createMany({ data: months, skipDuplicates: true });
+    const payload = await tx.month.createMany({
+      data: months,
+      skipDuplicates: true,
+    });
+    return payload.count;
   },
 
   deleteMonthsByCategoryId: async (tx, categoryId) => {

@@ -4,7 +4,7 @@ import request from "supertest";
 import app from "../../app";
 import { getCategories } from "../utils/getData";
 import { LENGTH_ON_SIGNUP } from "../utils/memo";
-import { login, register } from "../utils/auth";
+import { login, registerRaw } from "../utils/auth";
 import { getPayees } from "../utils/payee";
 import { SYSTEM_PAYEE_NAMES } from "../../features/budget/core/payee/payee.constants";
 
@@ -18,7 +18,7 @@ describe("Auth Controller", () => {
 
     describe("Error Cases", () => {
       it("should return 400 if email is missing", async () => {
-        const response = await register({
+        const response = await registerRaw({
           password: testPassword,
         });
 
@@ -26,7 +26,7 @@ describe("Auth Controller", () => {
       });
 
       it("should return 400 if password is missing", async () => {
-        const response = await register({
+        const response = await registerRaw({
           email: testEmail,
         });
 
@@ -34,7 +34,7 @@ describe("Auth Controller", () => {
       });
 
       it("should return 400 if email is invalid", async () => {
-        const response = await register({
+        const response = await registerRaw({
           email: "invalid-email",
           password: testPassword,
         });
@@ -43,12 +43,12 @@ describe("Auth Controller", () => {
       });
 
       it("should return 409 if email is already registered", async () => {
-        await register({
+        await registerRaw({
           email: testEmail,
           password: testPassword,
         });
 
-        const response = await register({
+        const response = await registerRaw({
           email: testEmail,
           password: "AnotherPassword123!",
         });
@@ -59,7 +59,7 @@ describe("Auth Controller", () => {
 
     describe("Success", () => {
       it("should register a new user successfully", async () => {
-        const response = await register({
+        const response = await registerRaw({
           email: testEmail,
           password: testPassword,
         });
@@ -84,7 +84,7 @@ describe("Auth Controller", () => {
     describe("Side Effects", () => {
       describe("Categories", () => {
         it("should create default categories for new users", async () => {
-          await register({
+          await registerRaw({
             email: testEmail,
             password: testPassword,
           });
@@ -148,7 +148,7 @@ describe("Auth Controller", () => {
       });
       describe("Memo Month", () => {
         it("Should have a memo month entry for each month when registering", async () => {
-          await register({
+          await registerRaw({
             email: testEmail,
             password: testPassword,
           });
@@ -189,7 +189,7 @@ describe("Auth Controller", () => {
       });
       describe("Payee", () => {
         it("Should create system payees when registering", async () => {
-          await register({
+          await registerRaw({
             email: testEmail,
             password: testPassword,
           });
@@ -221,7 +221,7 @@ describe("Auth Controller", () => {
     let testUserId: string;
 
     beforeEach(async () => {
-      await register({
+      await registerRaw({
         email: testEmail,
         password: testPassword,
       });

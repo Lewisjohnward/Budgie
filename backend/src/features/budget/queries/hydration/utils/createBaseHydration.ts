@@ -1,4 +1,6 @@
+import { UserId } from "../../../../user/auth/auth.types";
 import { type CategoryId } from "../../../core/category/core/category.types";
+import { CategoryGroupSource } from "../../../core/categorygroup/categoryGroup.constants";
 import { type CategoryGroupId } from "../../../core/categorygroup/categoryGroup.types";
 import { type BudgetHydrationModel } from "../hydration.types";
 import { buildMonthKeysFromRange } from "./buildMonthKeysFromRange";
@@ -27,23 +29,27 @@ export const createBaseHydration = (
     inflow: {
       id: "inflow" as CategoryGroupId,
       name: "Inflow",
-      position: 0,
+      source: CategoryGroupSource.SYSTEM,
+      position: null,
     },
     uncategorised: {
       id: "uncategorised" as CategoryGroupId,
       name: "Uncategorised",
-      position: 0,
+      source: CategoryGroupSource.SYSTEM,
+      position: null,
     },
   },
   categories: {
     user: {},
     rta: {
+      userId: "" as UserId,
       id: "rta" as CategoryId,
       name: "RTA",
       position: 0,
       categoryGroupId: "inflow" as CategoryGroupId,
     },
     uncategorised: {
+      userId: "" as UserId,
       id: "uncategorised" as CategoryId,
       name: "Uncategorised",
       position: 0,

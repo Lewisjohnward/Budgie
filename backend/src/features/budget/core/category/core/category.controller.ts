@@ -6,6 +6,7 @@ import {
 } from "./category.schema";
 import { normaliseCategories } from "./utils/normaliseCategories";
 import { categoryUseCase } from "./category.useCase";
+import { categoryMapper } from "./category.mapper";
 
 export const getCategories = async (
   req: Request,
@@ -34,8 +35,11 @@ export const createCategory = async (
       userId: req.user!._id,
       ...req.body,
     });
-    await categoryUseCase.createCategory(payload);
-    res.status(201).json({ message: "New category created" });
+    const result = await categoryUseCase.createCategory(payload);
+
+    const dto = categoryMapper.toCreateCategoryDto(result);
+
+    res.status(201).json(dto);
   } catch (error) {
     next(error);
   }

@@ -1,7 +1,8 @@
-import request, { Response } from "supertest";
+import request, { type Response } from "supertest";
 import app from "../../app";
 import { getCategories } from "./getData";
-import { CreateCategoryPayload } from "../../features/budget/core/category/core/category.schema";
+import { type CreateCategoryPayload } from "../../features/budget/core/category/core/category.schema";
+import { type CreateCategoryDto } from "../../features/budget/core/category/core/types/category.dto";
 
 const CATEGORIES_ENDPOINT_URL = "/budget/categories";
 
@@ -11,22 +12,22 @@ export const createCategoryRaw = async (
   cookie: string,
   payload: CreateCategoryPayloadTest
 ): Promise<Response> => {
-  const res = await request(app)
+  return await request(app)
     .post(CATEGORIES_ENDPOINT_URL)
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload);
-
-  return res;
 };
 
 export const createCategory = async (
   cookie: string,
   payload: CreateCategoryPayloadTest
-): Promise<void> => {
-  await request(app)
+): Promise<CreateCategoryDto> => {
+  const res = await request(app)
     .post(CATEGORIES_ENDPOINT_URL)
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload);
+
+  return res.body;
 };
 
 export const fetchCategoryByName = async (cookie: string, name: string) => {

@@ -4,8 +4,11 @@ import {
 } from "@/pages/budget/allocation/types/types";
 import { apiSlice } from "../../apiSlice";
 import { budgetSnapshotSlice } from "../budgetSnapshotSlice";
-import { CategoryBranded } from "@/core/types/NormalizedData";
+import { CategoryBranded, MonthBranded } from "@/core/types/NormalizedData";
 
+const CATEGORY_ENDPOINT_URL = "budget/categories";
+
+// Input to update category
 type UpdateCategoryInput = {
   categoryId: CategoryId;
   name?: string;
@@ -13,21 +16,67 @@ type UpdateCategoryInput = {
   position?: number;
 };
 
-type UpdatedCategoryDto = CategoryBranded;
+// Input to create category
+type CreateCategoryInput = {
+  name: string;
+  categoryGroupId: CategoryGroupId;
+};
 
-const CATEGORY_ENDPOINT_URL = "budget/categories";
+// Response to update category
+type UpdatedCategoryDto = CategoryBranded;
+// Response to create category
+type CreatedCategoryDto = {
+  created: {
+    category: CategoryBranded;
+    months: Record<string, MonthBranded>;
+  };
+};
 
 export const categoryApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    createCategory: builder.mutation<void, any>({
-      query: (category) => {
-        return {
-          url: CATEGORY_ENDPOINT_URL,
-          method: "POST",
-          body: category,
-        };
+    createCategory: builder.mutation<CreatedCategoryDto, CreateCategoryInput>({
+      query: (category) => ({
+        url: CATEGORY_ENDPOINT_URL,
+        method: "POST",
+        body: category,
+      }),
+
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          budgetSnapshotSlice.util.updateQueryData(
+            "getBudgetSnapshot",
+            undefined,
+            (draft) => {
+              // NO-OP optimistic placeholder is optional here
+              // because we don't yet know server-generated IDs
+            }
+          )
+        );
+
+        try {
+          const { data } = await queryFulfilled;
+
+          dispatch(
+            budgetSnapshotSlice.util.updateQueryData(
+              "getBudgetSnapshot",
+              undefined,
+              (draft) => {
+                const { category, months } = data.created;
+
+                draft.categories.user[category.id] = category;
+
+                draft.categories.user[category.id] = category;
+
+                for (const month of Object.values(months)) {
+                  draft.months[month.id] = month;
+                }
+              }
+            )
+          );
+        } catch {
+          patchResult.undo();
+        }
       },
-      invalidatesTags: ["Categories"],
     }),
     updateCategory: builder.mutation<UpdatedCategoryDto, UpdateCategoryInput>({
       query: ({ categoryId, name, position, categoryGroupId }) => ({
