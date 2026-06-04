@@ -1,5 +1,7 @@
-import { useEditCategoryMutation } from "@/core/api/budget/category/categoryApiSlice";
-import { useDeleteCategoryMutation } from "@/core/api/budgetApiSlice";
+import {
+  useDeleteCategoryMutation,
+  useUpdateCategoryMutation,
+} from "@/core/api/budget/category/categoryApiSlice";
 import { Button } from "@/core/components/uiLibrary/button";
 import {
   Form,
@@ -36,7 +38,7 @@ export function CategoryContextMenu({
   children: ReactNode;
 }) {
   const [contextOpen, setContextOpen] = useState(false);
-  const [editCategory] = useEditCategoryMutation();
+  const [updateCategory] = useUpdateCategoryMutation();
   const [deleteCategory] = useDeleteCategoryMutation();
 
   const form = useForm<CategoryContextType>({
@@ -61,7 +63,7 @@ export function CategoryContextMenu({
   }, [category.name, category.id]);
 
   const onSubmit = (updatedCategory: CategoryContextType) => {
-    editCategory({
+    updateCategory({
       categoryId: asCategoryId(updatedCategory.id),
       name: updatedCategory.name,
     });

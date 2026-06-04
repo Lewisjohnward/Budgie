@@ -43,14 +43,14 @@ export const registerUser = async (
 
   // Create a test category group
   await request(app)
-    .post("/budget/categorygroups")
+    .post("/budget/category-groups")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       name: "test category group",
     });
 
   const categoriesResponse = await request(app)
-    .get("/budget/category")
+    .get("/budget/categories")
     .set("Authorization", `Bearer ${cookie}`);
 
   const responseBody = categoriesResponse.body as NormalisedCategoryData;
@@ -65,7 +65,7 @@ export const registerUser = async (
 
   // Create a test category for the user
   await request(app)
-    .post("/budget/category")
+    .post("/budget/categories")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       categoryGroupId: testCategoryGroup.id,
@@ -74,7 +74,7 @@ export const registerUser = async (
 
   // Create another test category for the user
   await request(app)
-    .post("/budget/category")
+    .post("/budget/categories")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       categoryGroupId: testCategoryGroup.id,

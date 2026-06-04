@@ -76,14 +76,14 @@ describe("Budget", () => {
         };
 
         const addCategoryResponse = await request(app)
-          .post("/budget/category")
+          .post("/budget/categories")
           .send(testCategory)
           .set("Authorization", `Bearer ${cookie}`);
 
         expect(addCategoryResponse.status).toBe(403);
 
         const categoriesResponseAfter = await request(app)
-          .get("/budget/category")
+          .get("/budget/categories")
           .set("Authorization", `Bearer ${cookie}`);
 
         const responseBodyAfter =
@@ -112,14 +112,14 @@ describe("Budget", () => {
         };
 
         const addCategoryResponse = await request(app)
-          .post("/budget/category")
+          .post("/budget/categories")
           .send(testCategory)
           .set("Authorization", `Bearer ${cookie}`);
 
         expect(addCategoryResponse.status).toBe(403);
 
         const categoriesResponseAfter = await request(app)
-          .get("/budget/category")
+          .get("/budget/categories")
           .set("Authorization", `Bearer ${cookie}`);
 
         const responseBodyAfter =
@@ -155,14 +155,14 @@ describe("Budget", () => {
 
         if (!existingCategory) {
           await request(app)
-            .post("/budget/category")
+            .post("/budget/categories")
             .set("Authorization", `Bearer ${cookie}`)
             .send(testCategory)
             .expect(201);
         }
 
         const duplicateCategoryRes = await request(app)
-          .post("/budget/category")
+          .post("/budget/categories")
           .set("Authorization", `Bearer ${cookie}`)
           .send(testCategory);
 

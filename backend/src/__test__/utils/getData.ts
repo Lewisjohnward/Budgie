@@ -5,7 +5,7 @@ import { NormalisedAccounts } from "../../features/budget/core/account/types/acc
 
 export const getCategories = async (cookie: string) => {
   const res = await request(app)
-    .get("/budget/category")
+    .get("/budget/categories")
     .set("Authorization", `Bearer ${cookie}`);
   return res.body as NormalisedData;
 };
@@ -19,7 +19,7 @@ export const getAccounts = async (cookie: string) => {
 
 export const getReadyToAssignMonths = async (cookie: string) => {
   const res = await request(app)
-    .get("/budget/category")
+    .get("/budget/categories")
     .set("Authorization", `Bearer ${cookie}`);
 
   const { categories, months } = res.body as NormalisedData;

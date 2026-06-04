@@ -12,6 +12,8 @@ import {
   UpdateCategoryGroupPayload,
 } from "../../features/budget/core/categorygroup/categorygroup.schema";
 
+const CATEGORY_GROUPS_ENDPOINT_URL = "/budget/category-groups";
+
 /**
  * Sends a raw request to fetch category groups, returning the full HTTP response for testing status codes and edge cases
  */
@@ -19,7 +21,7 @@ export const getCategoryGroupsRaw = async (
   cookie?: string
 ): Promise<Response> => {
   return request(app)
-    .get("/budget/categorygroups")
+    .get(CATEGORY_GROUPS_ENDPOINT_URL)
     .set("Authorization", cookie ? `Bearer ${cookie}` : "");
 };
 
@@ -30,7 +32,7 @@ export const getCategoryGroups = async (
   cookie: string
 ): Promise<CategoryGroupsMap> => {
   const res = await request(app)
-    .get("/budget/categorygroups")
+    .get(CATEGORY_GROUPS_ENDPOINT_URL)
     .set("Authorization", `Bearer ${cookie}`);
 
   expect(res.statusCode).toBe(200);
@@ -58,7 +60,7 @@ export const updateCategoryGroupRaw = async (
   payload?: UpdateCategoryGroupPayloadTest
 ): Promise<Response> => {
   const res = await request(app)
-    .patch(`/budget/categorygroups/${id}`)
+    .patch(`${CATEGORY_GROUPS_ENDPOINT_URL}/${id}`)
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload);
 
@@ -74,7 +76,7 @@ export const updateCategoryGroup = async (
   payload?: UpdateCategoryGroupPayloadTest
 ): Promise<CategoryGroupUserDto> => {
   const res = await request(app)
-    .patch(`/budget/categorygroups/${id}`)
+    .patch(`${CATEGORY_GROUPS_ENDPOINT_URL}/${id}`)
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload);
 
@@ -129,7 +131,7 @@ export const createCategoryGroupRaw = async (
   payload: CreateCategoryGroupPayloadTest
 ): Promise<Response> => {
   const res = await request(app)
-    .post("/budget/categorygroups")
+    .post(CATEGORY_GROUPS_ENDPOINT_URL)
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload);
 
@@ -144,7 +146,7 @@ export const createCategoryGroup = async (
   payload: CreateCategoryGroupPayloadTest
 ): Promise<CategoryGroupUserDto> => {
   const res = await request(app)
-    .post("/budget/categorygroups")
+    .post(CATEGORY_GROUPS_ENDPOINT_URL)
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload);
 
@@ -205,7 +207,7 @@ export const deleteCategoryGroupRaw = async (
   inheritingCategoryId?: string
 ): Promise<Response> => {
   const res = await request(app)
-    .delete(`/budget/categorygroups/${id}`)
+    .delete(`${CATEGORY_GROUPS_ENDPOINT_URL}/${id}`)
     .set("Authorization", `Bearer ${cookie}`)
     .send({ inheritingCategoryId });
 
@@ -221,7 +223,7 @@ export const deleteCategoryGroup = async (
   inheritingCategoryId?: string
 ): Promise<DeleteCategoryGroupDto> => {
   const res = await request(app)
-    .delete(`/budget/categorygroups/${id}`)
+    .delete(`${CATEGORY_GROUPS_ENDPOINT_URL}/${id}`)
     .set("Authorization", `Bearer ${cookie}`)
     .send({ inheritingCategoryId });
 
