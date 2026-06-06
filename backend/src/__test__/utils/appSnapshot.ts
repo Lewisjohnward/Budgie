@@ -3,8 +3,12 @@ import app from "../../app";
 import { type BudgetHydrationDto } from "../../features/budget/queries/hydration/hydration.types";
 import { CategoryDto } from "../../features/budget/core/category/core/types/category.dto";
 import { MonthDto } from "../../features/budget/core/category/core/category.types";
+import {
+  CategoryGroupUserDto,
+  CategoryGroupSystemDto,
+} from "../../features/budget/core/categorygroup/categoryGroup.types";
 
-const SNAPSHOT_ENDPOINT_URL = "/budget/categories";
+const SNAPSHOT_ENDPOINT_URL = "/budget/snapshot";
 
 /**
  * Executes a raw HTTP request to fetch the full budget application snapshot.
@@ -77,4 +81,30 @@ export const getMonthsByCategoryId = async (
   const months = await getMonths(cookie);
 
   return Object.values(months).filter((m) => m.categoryId === categoryId);
+};
+
+/**
+ */
+export const getCategoryGroups = async (
+  cookie: string
+): Promise<{
+  user: Record<string, CategoryGroupUserDto>;
+  inflow: CategoryGroupSystemDto;
+  uncategorised: CategoryGroupSystemDto;
+}> => {
+  const snapshot = await getAppSnapshot(cookie);
+
+  return snapshot.categoryGroups;
+};
+
+/**
+ * Gets inflow category group
+ */
+export const getInflowCategoryGroup = async (
+  cookie: string
+): Promise<CategoryGroupSystemDto> => {
+  const categoryGroups = await getCategoryGroups(cookie);
+  console.log("categoryGroups:", categoryGroups);
+
+  return categoryGroups.inflow;
 };

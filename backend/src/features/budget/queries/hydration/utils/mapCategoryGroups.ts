@@ -34,7 +34,7 @@ export const mapCategoryGroups = (ctx: HydrationContext): void => {
     };
   }
 
-  const inflow = systemGroups.find((g) => g.name === "INFLOW");
+  const inflow = systemGroups.find((g) => g.name === "Inflow");
   if (inflow) {
     ctx.state.categoryGroups.inflow = {
       id: inflow.id,
@@ -44,7 +44,7 @@ export const mapCategoryGroups = (ctx: HydrationContext): void => {
     };
   }
 
-  const unc = systemGroups.find((g) => g.name === "UNCATEGORISED");
+  const unc = systemGroups.find((g) => g.name === "Uncategorised");
   if (unc) {
     ctx.state.categoryGroups.uncategorised = {
       id: unc.id,

@@ -37,6 +37,7 @@ type UpdateCategoryGroupDto = CategoryGroupBranded;
 // Response to delete category group
 type DeleteCategoryGroupDto = {
   deleted: {
+    // TODO:(lewis 2026-06-05 18:15) shouldn't this also have delete categoryIds and monthIds ?
     categoryGroupId: CategoryGroupId;
   };
 

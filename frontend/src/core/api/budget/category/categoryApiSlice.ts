@@ -4,9 +4,19 @@ import {
 } from "@/pages/budget/allocation/types/types";
 import { apiSlice } from "../../apiSlice";
 import { budgetSnapshotSlice } from "../budgetSnapshotSlice";
-import { CategoryBranded, MonthBranded } from "@/core/types/NormalizedData";
+import {
+  CategoryBranded,
+  MonthBranded,
+  TransactionBranded,
+} from "@/core/types/NormalizedData";
 
 const CATEGORY_ENDPOINT_URL = "budget/categories";
+
+// Input to create category
+type CreateCategoryInput = {
+  name: string;
+  categoryGroupId: CategoryGroupId;
+};
 
 // Input to update category
 type UpdateCategoryInput = {
@@ -16,25 +26,37 @@ type UpdateCategoryInput = {
   position?: number;
 };
 
-// Input to create category
-type CreateCategoryInput = {
-  name: string;
-  categoryGroupId: CategoryGroupId;
+// Input to update category
+type DeleteCategoryInput = {
+  categoryId: CategoryId;
+  inheritingCategoryId: CategoryId;
 };
 
-// Response to update category
-type UpdatedCategoryDto = CategoryBranded;
 // Response to create category
-type CreatedCategoryDto = {
+type CreateCategoryDto = {
   created: {
     category: CategoryBranded;
+    months: Record<string, MonthBranded>;
+  };
+};
+// Response to update category
+type UpdateCategoryDto = CategoryBranded;
+// Response to update category
+// Response to delete category
+type DeleteCategoryDto = {
+  deleted: {
+    categoryId: CategoryId;
+  };
+
+  updated: {
+    transactions: Record<string, TransactionBranded>;
     months: Record<string, MonthBranded>;
   };
 };
 
 export const categoryApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    createCategory: builder.mutation<CreatedCategoryDto, CreateCategoryInput>({
+    createCategory: builder.mutation<CreateCategoryDto, CreateCategoryInput>({
       query: (category) => ({
         url: CATEGORY_ENDPOINT_URL,
         method: "POST",
@@ -47,7 +69,7 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
             "getBudgetSnapshot",
             undefined,
             (draft) => {
-              // NO-OP optimistic placeholder is optional here
+              // NO-OP optimistic placeholder
               // because we don't yet know server-generated IDs
             }
           )
@@ -78,12 +100,11 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
         }
       },
     }),
-    updateCategory: builder.mutation<UpdatedCategoryDto, UpdateCategoryInput>({
+    updateCategory: builder.mutation<UpdateCategoryDto, UpdateCategoryInput>({
       query: ({ categoryId, name, position, categoryGroupId }) => ({
-        // TODO:(lewis 2026-05-18 13:47) shouldnt this be using params?
-        url: `budget/category`,
+        url: `${CATEGORY_ENDPOINT_URL}/${categoryId}`,
         method: "PATCH",
-        body: { categoryId, name, position, categoryGroupId },
+        body: { name, position, categoryGroupId },
       }),
 
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
@@ -92,6 +113,7 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
             "getBudgetSnapshot",
             undefined,
             (draft) => {
+              // TODO:(lewis 2026-06-05 04:35) this can be optimised with short curcuits
               const categories = draft.categories.user;
 
               const moved = categories[arg.categoryId];
@@ -139,6 +161,11 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
                     : c.categoryGroupId;
                 });
               });
+
+              // Optimistically update name
+              if (arg.name !== undefined) {
+                moved.name = arg.name;
+              }
             }
           )
         );
@@ -150,15 +177,63 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
         }
       },
     }),
-    deleteCategory: builder.mutation<void, { categoryId: string }>({
-      query: (categoryId) => {
+    deleteCategory: builder.mutation<DeleteCategoryDto, DeleteCategoryInput>({
+      query: ({ categoryId, inheritingCategoryId }) => {
         return {
-          url: CATEGORY_ENDPOINT_URL,
+          url: `${CATEGORY_ENDPOINT_URL}/${categoryId}`,
           method: "DELETE",
-          body: categoryId,
+          body: inheritingCategoryId,
         };
       },
-      invalidatesTags: ["Categories", "Accounts"],
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          budgetSnapshotSlice.util.updateQueryData(
+            "getBudgetSnapshot",
+            undefined,
+            (draft) => {
+              // Find months belonging to category
+              const monthIds = Object.values(draft.months)
+                .filter((m) => m.categoryId === arg.categoryId)
+                .map((m) => m.id);
+
+              // Delete category
+              delete draft.categories.user[arg.categoryId];
+
+              // Delete months
+              for (const id of monthIds) {
+                delete draft.months[id];
+              }
+
+              // NO-OP optimistic placeholder is optional here
+              // because we don't yet know server-generated IDs
+            }
+          )
+        );
+
+        try {
+          const { data } = await queryFulfilled;
+
+          dispatch(
+            budgetSnapshotSlice.util.updateQueryData(
+              "getBudgetSnapshot",
+              undefined,
+              (draft) => {
+                const { category, months } = data.created;
+
+                draft.categories.user[category.id] = category;
+
+                draft.categories.user[category.id] = category;
+
+                for (const month of Object.values(months)) {
+                  draft.months[month.id] = month;
+                }
+              }
+            )
+          );
+        } catch {
+          patchResult.undo();
+        }
+      },
     }),
   }),
 });
