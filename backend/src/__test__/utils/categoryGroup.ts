@@ -15,7 +15,7 @@ import {
 const CATEGORY_GROUPS_ENDPOINT_URL = "/budget/category-groups";
 
 /**
- * Sends a raw request to fetch category groups, returning the full HTTP response for testing status codes and edge cases
+ * Sends a request to fetch category groups, returning the full HTTP response for testing status codes and edge cases
  */
 export const getCategoryGroupsRaw = async (
   cookie?: string

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import {
   createCategorySchema,
-  editCategorySchema,
+  updateCategorySchema,
   deleteCategorySchema,
 } from "./category.schema";
 import { normaliseCategories } from "./utils/normaliseCategories";
@@ -50,15 +50,19 @@ export const updateCategory = async (
   res: Response,
   next: NextFunction
 ) => {
+  const categoryId = req.params.id;
   try {
-    const payload = editCategorySchema.parse({
-      userId: req.user!._id,
+    const payload = updateCategorySchema.parse({
       ...req.body,
+      userId: req.user!._id,
+      categoryId,
     });
 
-    const updatedCategory = await categoryUseCase.editCategory(payload);
+    const updatedCategory = await categoryUseCase.updateCategory(payload);
 
-    res.status(201).json(updatedCategory);
+    const dto = categoryMapper.toCategoryDto(updatedCategory);
+
+    res.status(200).json(dto);
   } catch (error) {
     next(error);
   }
@@ -69,10 +73,12 @@ export const deleteCategory = async (
   res: Response,
   next: NextFunction
 ) => {
+  const categoryId = req.params.id;
   try {
     const payload = deleteCategorySchema.parse({
-      userId: req.user!._id,
       ...req.body,
+      userId: req.user!._id,
+      categoryId,
     });
 
     await categoryUseCase.deleteCategory(payload);

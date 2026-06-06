@@ -75,25 +75,15 @@ export const deleteCategory = async (
     toDeleteCategoryCommand(payload);
 
   await prisma.$transaction(async (tx) => {
-    const categoryToDelete = await categoryService.categories.getCategory(
+    const category = await categoryService.categories.getModifiableCategory(
       tx,
       userId,
       categoryId
     );
 
-    if (!categoryToDelete) {
-      throw new CategoryNotFoundError();
-    }
-
-    await categoryService.categories.isCategoryProtected(
-      tx,
-      userId,
-      categoryToDelete.id
-    );
-
     const transactions = await transactionService.getTransactionsByCategoryIds(
       tx,
-      [categoryId]
+      [category.id]
     );
 
     const rtaCategoryId = await categoryService.rta.getRtaCategoryId(
@@ -102,9 +92,9 @@ export const deleteCategory = async (
     );
 
     if (transactions.length === 0) {
-      await categoryRepository.deleteMonthsByCategoryId(tx, categoryId);
+      await categoryRepository.deleteMonthsByCategoryId(tx, category.id);
 
-      await categoryRepository.deleteCategory(tx, categoryId);
+      await categoryRepository.deleteCategory(tx, category.id);
 
       await categoryService.rta.calculateMonthsAvailable(
         tx,
@@ -115,25 +105,17 @@ export const deleteCategory = async (
       if (!inheritingCategoryId) {
         throw new InheritingCategoryIdNotProvidedError();
       }
-      await categoryService.categories.getCategory(
-        tx,
-        userId,
-        inheritingCategoryId
-      );
-
-      await categoryService.categories.isCategoryProtected(
-        tx,
-        userId,
-        inheritingCategoryId
-      );
-
-      const uncategorisedCategoryId =
-        await categoryService.categories.getUncategorisedCategoryId(tx, userId);
+      const inheritingCategory =
+        await categoryService.categories.getModifiableCategory(
+          tx,
+          userId,
+          inheritingCategoryId
+        );
 
       await transactionService.bulk.applyCategoryChange(
         tx,
         userId,
-        uncategorisedCategoryId,
+        inheritingCategory.id,
         transactions
       );
 

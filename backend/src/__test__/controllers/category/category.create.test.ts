@@ -7,13 +7,12 @@
 // accepts either name or cat id but not both (maybe)
 
 import {
-  getMonthsByCategoryId,
-  getUserCategories,
   getUserCategoryByName,
-} from "../utils/appSnapshot";
-import { login, register, registerUser } from "../utils/auth";
-import { createCategory, createCategoryRaw } from "../utils/category";
-import { createCategoryGroup } from "../utils/categoryGroup";
+  getMonthsByCategoryId,
+} from "../../utils/appSnapshot";
+import { registerUser, login, register } from "../../utils/auth";
+import { createCategoryRaw, createCategory } from "../../utils/category";
+import { createCategoryGroup } from "../../utils/categoryGroup";
 
 describe("Category", () => {
   let cookie: string;
@@ -67,7 +66,6 @@ describe("Category", () => {
           categoryGroupId: "3f2c1d8e-9b6a-4f1d-8c2e-7a1d9c5b0e4f",
         });
 
-        console.log("res:", res);
         expect(res.statusCode).toBe(404);
       });
       it("Should return 409 on name collision", async () => {
@@ -101,7 +99,10 @@ describe("Category", () => {
           categoryGroupId: testCategoryGroupId,
         });
 
-        const createdCategory = getUserCategoryByName(cookie, "test-category");
+        const createdCategory = await getUserCategoryByName(
+          cookie,
+          "test-category"
+        );
 
         expect(createdCategory).toBeDefined();
 

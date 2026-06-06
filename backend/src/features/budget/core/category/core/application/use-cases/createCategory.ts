@@ -36,13 +36,12 @@ export const createCategory = async (
       userId,
       categoryGroupId
     );
-
-    await categoryService.categories.checkCategoryNameIsUniqueInGroup(
-      tx,
-      userId,
-      categoryGroupId,
-      name
-    );
+    // await categoryService.categories.checkCategoryNameIsUniqueInGroup(
+    //   tx,
+    //   userId,
+    //   categoryGroupId,
+    //   name
+    // );
 
     const nextPosition =
       await categoryService.categories.getNextCategoryPosition(

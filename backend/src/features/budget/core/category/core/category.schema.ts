@@ -45,7 +45,7 @@ export type CreateCategoryData = CreateCategoryPayload & { position: number };
  *   - must be 50 characters or fewer
  * - `categoryGroupId`, when provided, must be a valid UUID
  */
-export const editCategorySchema = z.object({
+export const updateCategorySchema = z.object({
   userId: z.string().uuid(),
   categoryId: z.string().uuid(),
   position: z.number().optional(),
@@ -70,9 +70,9 @@ export const editCategorySchema = z.object({
 // );
 
 /**
- * Payload used when editing a category.
+ * Payload used when updating a category.
  */
-export type EditCategoryPayload = z.infer<typeof editCategorySchema>;
+export type UpdateCategoryPayload = z.infer<typeof updateCategorySchema>;
 
 /**
  * Schema for deleting a category.
