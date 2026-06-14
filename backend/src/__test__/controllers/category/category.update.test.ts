@@ -1,8 +1,4 @@
-// test whitespace trim
 // test position edit correctly (other cats updated too)
-// test updated category is returned
-// accepts either name or cat id but not both (maybe)
-// allows editing both categoryGropuId and position or name but not both
 
 import { getInflowCategoryGroup } from "../../utils/appSnapshot";
 import { registerUser, login, register } from "../../utils/auth";
@@ -43,8 +39,7 @@ describe("Category", () => {
 
         expect(res.status).toBe(401);
       });
-      // it("Should return 404 if user doesnt own inheriting category")
-      it("Should return 404 if user doesn't own category group", async () => {
+      it("Should return 404 if user doesn't own inherting category group", async () => {
         const otherUserCookie = await register({
           email: "test1@test.com",
           password: "testpasswordABC$",
@@ -66,7 +61,7 @@ describe("Category", () => {
         expect(res.statusCode).toBe(404);
       });
       it("Should return 404 if category group doesn't exist", async () => {
-        // Create a category with non existent id
+        // Update using non existent group id
         const res = await updateCategoryRaw(cookie, testCategoryId, {
           name: "test-category",
           // Fake uuid
@@ -109,6 +104,10 @@ describe("Category", () => {
         expect(res.statusCode).toBe(403);
       });
     });
-    describe("Success", () => {});
+    describe("Success", () => {
+      it("should ", async () => {
+        expect.hasAssertions();
+      });
+    });
   });
 });

@@ -1,8 +1,9 @@
-import { categoryRepository } from "../../../../../../../shared/repository/categoryRepositoryImpl";
 import { Prisma } from "@prisma/client";
-import { type DomainCategory } from "../../category.types";
+import { categoryRepository } from "../../../../../../../shared/repository/categoryRepositoryImpl";
+import { DuplicateCategoryNameError } from "../../category.errors";
 import { categoryMapper } from "../../category.mapper";
-import { CreateCategoryData } from "../../category.schema";
+import { type CreateCategoryData } from "../../category.schema";
+import { type DomainCategory } from "../../category.types";
 
 /**
  * Creates a new category and maps the persisted record to a domain entity.
@@ -28,7 +29,21 @@ export const createCategory = async (
   tx: Prisma.TransactionClient,
   categoryData: CreateCategoryData
 ): Promise<DomainCategory> => {
-  const rawCategory = await categoryRepository.createCategory(tx, categoryData);
+  try {
+    const rawCategory = await categoryRepository.createCategory(
+      tx,
+      categoryData
+    );
 
-  return categoryMapper.toDomainCategory(rawCategory);
+    return categoryMapper.toDomainCategory(rawCategory);
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      throw new DuplicateCategoryNameError();
+    }
+
+    throw error;
+  }
 };

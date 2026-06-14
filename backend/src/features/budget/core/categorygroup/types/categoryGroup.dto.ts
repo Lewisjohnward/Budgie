@@ -55,3 +55,12 @@ export type DeleteCategoryGroupDto = {
     months: Record<string, MonthDto>;
   };
 };
+
+/**
+ * DTO returned after a category group creation operation.
+ */
+export type CreateCategoryGroupDto = {
+  created: {
+    categoryGroup: CategoryGroupUserDto;
+  };
+};

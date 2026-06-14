@@ -1,32 +1,20 @@
 import { getInflowCategoryGroup } from "../../utils/appSnapshot";
 import { registerUser, login, register } from "../../utils/auth";
-import {
-  createCategoryRaw,
-  createCategory,
-  updateCategoryRaw,
-  deleteCategoryRaw,
-} from "../../utils/category";
-import { createCategoryGroup } from "../../utils/categoryGroup";
+import { getUncategorisedCategory } from "../../utils/category";
+import { deleteCategoryRaw } from "../../utils/category/category.delete";
+import { createGroupWithCategory } from "../../utils/scenarios/createGroupWithCategory";
+import { createTransactionForCategory } from "../../utils/scenarios/createTransactionForCategory";
 
 describe("Category", () => {
   let cookie: string;
-  let testCategoryGroupId: string;
-  let testCategoryId: string;
+  let categoryId: string;
 
   beforeEach(async () => {
     await registerUser();
     cookie = await login();
-    // Create a category group
-    const categoryGroup = await createCategoryGroup(cookie, {
-      name: "test-group",
-    });
-    testCategoryGroupId = categoryGroup.id;
-    // Create a category
-    const createCategoryDto = await createCategory(cookie, {
-      name: "test-category",
-      categoryGroupId: testCategoryGroupId,
-    });
-    testCategoryId = createCategoryDto.created.category.id;
+    // Create a category group and category
+    const { category } = await createGroupWithCategory(cookie);
+    categoryId = category.id;
   });
   describe("Delete", () => {
     describe("Error Cases", () => {
@@ -35,78 +23,91 @@ describe("Category", () => {
 
         expect(res.status).toBe(401);
       });
-      // it("Should return 404 if user doesnt own inheriting category")
       it("Should return 404 if user doesn't own category", async () => {
         const otherUserCookie = await register({
           email: "test1@test.com",
           password: "testpasswordABC$",
         });
 
-        // Create category group for other user
-        const otherUserCategoryGroup = await createCategoryGroup(
-          otherUserCookie,
-          {
-            name: "other-user-category-group",
-          }
-        );
-
-        // Create category for other user
-        const otherUserCategory = await createCategory(otherUserCookie, {
-          name: "other-user-category-group",
-          categoryGroupId: otherUserCategoryGroup.id,
-        });
+        const { category: otherUserCategory } =
+          await createGroupWithCategory(otherUserCookie);
 
         // Delete category using unowned category group
-        const res = await deleteCategoryRaw(
-          cookie,
-          otherUserCategory.created.category.id
-        );
-        expect(res.statusCode).toBe(404);
+        const res = await deleteCategoryRaw(cookie, otherUserCategory.id);
+        expect(res.status).toBe(404);
       });
-      it.skip("Should return 404 if category group doesn't exist", async () => {
-        // Create a category with non existent id
-        const res = await updateCategoryRaw(cookie, testCategoryId, {
-          name: "test-category",
-          // Fake uuid
-          categoryGroupId: "3f2c1d8e-9b6a-4f1d-8c2e-7a1d9c5b0e4f",
+
+      it("Should return 404 if user doesn't own inheriting category", async () => {
+        const otherUserCookie = await register({
+          email: "test1@test.com",
+          password: "testpasswordABC$",
         });
 
-        expect(res.statusCode).toBe(404);
-      });
-      it("Should return 409 on name collision", async () => {
-        // Create a category
-        await createCategoryRaw(cookie, {
-          name: "unique-name",
-          categoryGroupId: testCategoryGroupId,
-        });
+        const { category: otherUserCategory } =
+          await createGroupWithCategory(otherUserCookie);
 
-        // Update category with the same name
-        const res = await updateCategoryRaw(cookie, testCategoryId, {
-          name: "unique-name",
-          categoryGroupId: testCategoryGroupId,
+        await createTransactionForCategory(cookie, categoryId);
+
+        // Delete category using unowned category group
+        const res = await deleteCategoryRaw(cookie, categoryId, {
+          inheritingCategoryId: otherUserCategory.id,
         });
-        expect(res.statusCode).toBe(409);
+        expect(res.status).toBe(404);
       });
-      it("Should return 409 when updating more than one field", async () => {
-        const res = await updateCategoryRaw(cookie, testCategoryId, {
-          name: "update-name",
-          position: 1,
-        });
-        expect(res.statusCode).toBe(409);
-      });
-      it("Should return 403 when moving a category into a system category group", async () => {
+
+      it("Should return 403 when inheriting category is a system category", async () => {
         // Get a system category group
-        const inflowCategoryGroup = await getInflowCategoryGroup(cookie);
-        console.log("inflowCategoryGroup:", inflowCategoryGroup);
+        const uncategorisedCategory = await getUncategorisedCategory(cookie);
 
-        // Update category using system category group id
-        const res = await updateCategoryRaw(cookie, testCategoryId, {
-          categoryGroupId: inflowCategoryGroup.id,
+        await createTransactionForCategory(cookie, categoryId);
+
+        // Delete category using system category group id
+        const res = await deleteCategoryRaw(cookie, categoryId, {
+          inheritingCategoryId: uncategorisedCategory.id,
         });
 
-        expect(res.statusCode).toBe(403);
+        expect(res.status).toBe(403);
+      });
+      it("Should return 422 when category has transactions but no inheriting id is provided", async () => {
+        await createTransactionForCategory(cookie, categoryId);
+
+        // Delete category without providing inheriting category id
+        const res = await deleteCategoryRaw(cookie, categoryId);
+        expect(res.status).toBe(422);
       });
     });
-    describe("Success", () => {});
+    describe("Success", () => {
+      it("Should return 200 when deleting a category", async () => {
+        const res = await deleteCategoryRaw(cookie, categoryId);
+        expect(res.status).toBe(200);
+      });
+      it("Should return a delete category dto", async () => {
+        const { body } = await deleteCategoryRaw(cookie, categoryId);
+        expect(body.deleted.category.id).toBe(categoryId);
+        expect(body).toHaveProperty("updated");
+        expect(body.deleted.category.id).toBe(categoryId);
+      });
+      it("Should return deleted months", async () => {
+        const { body } = await deleteCategoryRaw(cookie, categoryId);
+
+        expect(Object.values(body.deleted.months).length).toBeGreaterThan(0);
+      });
+      it("Should reassign transactions when inheritingCategoryId is provided", async () => {
+        // Create inheriting category
+        const { category: inheritingCategory } =
+          await createGroupWithCategory(cookie);
+        await createTransactionForCategory(cookie, categoryId);
+
+        const { body } = await deleteCategoryRaw(cookie, categoryId, {
+          inheritingCategoryId: inheritingCategory.id,
+        });
+
+        const updatedTransactions = Object.values(body.updated.transactions);
+
+        expect(updatedTransactions).toHaveLength(1);
+
+        expect(updatedTransactions[0].categoryId).toBe(inheritingCategory.id);
+      });
+    });
   });
 });

@@ -28,7 +28,7 @@ export class InheritingCategoryIdNotProvidedError extends HttpError {
   constructor() {
     super(
       "You must provide an inheriting category ID to transfer transactions to.",
-      400
+      422
     );
   }
 }

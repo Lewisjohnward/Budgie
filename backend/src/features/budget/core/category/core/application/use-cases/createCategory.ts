@@ -1,11 +1,11 @@
 import { prisma } from "../../../../../../../shared/prisma/client";
-import { asUserId, UserId } from "../../../../../../user/auth/auth.types";
+import { asUserId, type UserId } from "../../../../../../user/auth/auth.types";
 import { categoryGroupService } from "../../../../categorygroup/categoryGroup.service";
 import {
   asCategoryGroupId,
   type CategoryGroupId,
 } from "../../../../categorygroup/categoryGroup.types";
-import { CreateCategoryResult } from "../../category.contract";
+import { type CreateCategoryResult } from "../../category.contract";
 import { type CreateCategoryPayload } from "../../category.schema";
 import { categoryService } from "../../category.service";
 
@@ -36,12 +36,6 @@ export const createCategory = async (
       userId,
       categoryGroupId
     );
-    // await categoryService.categories.checkCategoryNameIsUniqueInGroup(
-    //   tx,
-    //   userId,
-    //   categoryGroupId,
-    //   name
-    // );
 
     const nextPosition =
       await categoryService.categories.getNextCategoryPosition(
@@ -52,7 +46,9 @@ export const createCategory = async (
     const createdCategory = await categoryService.categories.createCategory(
       tx,
       {
-        ...payload,
+        userId,
+        name,
+        categoryGroupId,
         position: nextPosition,
       }
     );

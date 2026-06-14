@@ -81,8 +81,11 @@ export const deleteCategory = async (
       categoryId,
     });
 
-    await categoryUseCase.deleteCategory(payload);
-    res.sendStatus(204);
+    const result = await categoryUseCase.deleteCategory(payload);
+
+    const dto = categoryMapper.toDeleteCategoryDto(result);
+
+    res.status(200).json(dto);
   } catch (error) {
     next(error);
   }

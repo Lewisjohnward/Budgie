@@ -19,6 +19,7 @@ import { type CategoryGroupId } from "../categoryGroup.types";
  */
 export type DeleteCategoryGroupResult = {
   deletedCategoryGroupId: CategoryGroupId;
+  // TODO:(lewis 2026-06-12 10:53) shouldn-t this also have deletedMonths?
 
   updatedTransactions: DomainNormalTransaction[];
   updatedMonths: DomainMonth[];
