@@ -1,8 +1,8 @@
 import { prisma } from "../../../../../../shared/prisma/client";
 import { asUserId, type UserId } from "../../../../../user/auth/auth.types";
+import { type CreateCategoryGroupResult } from "../../categoryGroup.contract";
 import { type CreateCategoryGroupPayload } from "../../categorygroup.schema";
 import { categoryGroupService } from "../../categoryGroup.service";
-import { type DomainUserCategoryGroup } from "../../categoryGroup.types";
 
 export type CreateCategoryGroupCommand = Omit<
   CreateCategoryGroupPayload,
@@ -20,7 +20,7 @@ export const toCreateCategoryGroupCommand = (
 
 export const createCategoryGroup = async (
   payload: CreateCategoryGroupPayload
-): Promise<DomainUserCategoryGroup> => {
+): Promise<CreateCategoryGroupResult> => {
   const { userId, name } = toCreateCategoryGroupCommand(payload);
   return await prisma.$transaction(async (tx) => {
     const createdCategoryGroup = await categoryGroupService.createCategoryGroup(
@@ -28,6 +28,6 @@ export const createCategoryGroup = async (
       { userId, name }
     );
 
-    return createdCategoryGroup;
+    return { createdCategoryGroup };
   });
 };

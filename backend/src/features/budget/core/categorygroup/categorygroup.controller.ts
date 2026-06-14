@@ -41,7 +41,7 @@ export const createCategoryGroup = async (
 
     const result = await categoryGroupUseCase.createCategoryGroup(payload);
 
-    const dto = categoryGroupMapper.toCategoryGroupUserDto(result);
+    const dto = categoryGroupMapper.toCreateCategoryGroupDto(result);
 
     res.status(201).json(dto);
   } catch (error) {

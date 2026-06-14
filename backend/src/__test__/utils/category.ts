@@ -2,43 +2,14 @@ import request, { type Response } from "supertest";
 import app from "../../app";
 import { getCategories } from "./getData";
 import {
-  DeleteCategoryPayload,
-  UpdateCategoryPayload,
-  type CreateCategoryPayload,
+  type DeleteCategoryPayload,
+  type UpdateCategoryPayload,
 } from "../../features/budget/core/category/core/category.schema";
-import { type CreateCategoryDto } from "../../features/budget/core/category/core/types/category.dto";
-
-const CATEGORIES_ENDPOINT_URL = "/budget/categories";
-
-export type CreateCategoryPayloadTest = Omit<CreateCategoryPayload, "userId">;
-
-/**
- * Sends a request to create a category, returning the full HTTP response for testing status codes and edge cases
- */
-export const createCategoryRaw = async (
-  cookie: string,
-  payload: CreateCategoryPayloadTest
-): Promise<Response> => {
-  return await request(app)
-    .post(CATEGORIES_ENDPOINT_URL)
-    .set("Authorization", `Bearer ${cookie}`)
-    .send(payload);
-};
-
-/**
- * Creates a category for the authenticated user and returns dto
- */
-export const createCategory = async (
-  cookie: string,
-  payload: CreateCategoryPayloadTest
-): Promise<CreateCategoryDto> => {
-  const res = await request(app)
-    .post(CATEGORIES_ENDPOINT_URL)
-    .set("Authorization", `Bearer ${cookie}`)
-    .send(payload);
-
-  return res.body;
-};
+import {
+  type DeleteCategoryDto,
+  type CreateCategoryDto,
+} from "../../features/budget/core/category/core/types/category.dto";
+import { CATEGORIES_ENDPOINT_URL } from "./category/category.endpoint";
 
 export type UpdateCategoryPayloadTest = Omit<
   UpdateCategoryPayload,
@@ -68,39 +39,6 @@ export const updateCategory = async (
 ): Promise<CreateCategoryDto> => {
   const res = await request(app)
     .patch(`${CATEGORIES_ENDPOINT_URL}/${categoryId}`)
-    .set("Authorization", `Bearer ${cookie}`)
-    .send(payload);
-
-  return res.body;
-};
-export type DeleteCategoryPayloadTest = Omit<
-  DeleteCategoryPayload,
-  "userId" | "categoryId"
->;
-/**
- * Sends a request to delete a category, returning the full HTTP response for testing status codes and edge cases
- */
-export const deleteCategoryRaw = async (
-  cookie: string,
-  categoryId: string,
-  payload?: DeleteCategoryPayloadTest
-): Promise<Response> => {
-  return await request(app)
-    .delete(`${CATEGORIES_ENDPOINT_URL}/${categoryId}`)
-    .set("Authorization", `Bearer ${cookie}`)
-    .send(payload);
-};
-
-/**
- * Deletes a category for the authenticated user and returns dto
- */
-export const deleteCategory = async (
-  cookie: string,
-  categoryId: string,
-  payload?: DeleteCategoryPayloadTest
-): Promise<CreateCategoryDto> => {
-  const res = await request(app)
-    .delete(`${CATEGORIES_ENDPOINT_URL}/${categoryId}`)
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload);
 

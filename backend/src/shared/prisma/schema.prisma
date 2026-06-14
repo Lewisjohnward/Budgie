@@ -79,7 +79,7 @@ model Category {
 
 
 // this needs testing
-    // @@unique([userId, name])
+    @@unique([userId, name])
     // @@unique([userId, position])
 }
 

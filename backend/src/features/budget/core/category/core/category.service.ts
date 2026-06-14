@@ -1,8 +1,6 @@
 import { getCategory } from "./application/services/getCategory";
-import { checkCategoryNameIsUniqueInGroup } from "./application/services/checkCategoryNameIsUniqueInGroup";
 import { getNextCategoryPosition } from "./application/services/getNextCategoryPosition";
 import { initialiseCategories } from "./application/services/initialiseCategories";
-import { isCategoryProtected } from "./application/services/isCategoryProtected";
 import { createMonthsForCategory } from "./application/services/months/createMonthsForCategory";
 import { insertMissingMonths } from "./application/services/months/insertMissingMonths";
 import { ensureMonthsContinuity } from "./application/services/months/ensureMonthsContinuity";
@@ -23,6 +21,8 @@ import { getCategories } from "./application/services/getCategories";
 import { getMonths } from "./application/services/months/getMonths";
 import { getCategoryIdsByCategoryGroupId } from "./application/services/getCategoryIdsByCategoryGroupId";
 import { getModifiableCategory } from "./application/services/getModifiableCategory";
+import { renameCategory } from "./application/services/renameCategory";
+import { moveCategory } from "./application/services/moveCategory";
 
 export const categoryService = {
   rta: {
@@ -49,11 +49,11 @@ export const categoryService = {
     getCategories,
     getUncategorisedCategoryId,
     getCategoryIdsByCategoryGroupId,
+    renameCategory,
     getModifiableCategory,
     initialiseCategories,
-    checkCategoryNameIsUniqueInGroup,
     getNextCategoryPosition,
-    isCategoryProtected,
     ensureUserOwnsCategories,
+    moveCategory,
   },
 };

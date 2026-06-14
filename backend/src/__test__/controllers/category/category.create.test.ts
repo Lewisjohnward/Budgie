@@ -1,18 +1,14 @@
-// edit
-// test whitespace trim
-// test user not moving category to protected
-// test position edit correctly (other cats updated too)
-// test updated category is returned
-// 201 response
-// accepts either name or cat id but not both (maybe)
-
 import {
   getUserCategoryByName,
   getMonthsByCategoryId,
 } from "../../utils/appSnapshot";
 import { registerUser, login, register } from "../../utils/auth";
-import { createCategoryRaw, createCategory } from "../../utils/category";
-import { createCategoryGroup } from "../../utils/categoryGroup";
+import { createCategoryGroup } from "../../utils/category-group/categoryGroup.create";
+import {
+  createCategory,
+  createCategoryRaw,
+} from "../../utils/category/category.create";
+import { createGroupWithCategory } from "../../utils/scenarios/createGroupWithCategory";
 
 describe("Category", () => {
   let cookie: string;
@@ -43,20 +39,15 @@ describe("Category", () => {
           password: "testpasswordABC$",
         });
 
-        // Create category group for other user
-        const otherUserCategoryGroup = await createCategoryGroup(
-          otherUserCookie,
-          {
-            name: "other-user-category-group",
-          }
-        );
+        const { categoryGroup: notOwnedCategoryGroup } =
+          await createGroupWithCategory(otherUserCookie);
 
         // Create category using unowned category group
         const res = await createCategoryRaw(cookie, {
           name: "test-category",
-          categoryGroupId: otherUserCategoryGroup.id,
+          categoryGroupId: notOwnedCategoryGroup.id,
         });
-        expect(res.statusCode).toBe(404);
+        expect(res.status).toBe(404);
       });
       it("Should return 404 if category group doesn't exist", async () => {
         // Create a category with non existent id
@@ -66,7 +57,7 @@ describe("Category", () => {
           categoryGroupId: "3f2c1d8e-9b6a-4f1d-8c2e-7a1d9c5b0e4f",
         });
 
-        expect(res.statusCode).toBe(404);
+        expect(res.status).toBe(404);
       });
       it("Should return 409 on name collision", async () => {
         // Create a test category
@@ -80,7 +71,7 @@ describe("Category", () => {
           name: "test-category",
           categoryGroupId: testCategoryGroupId,
         });
-        expect(res.statusCode).toBe(409);
+        expect(res.status).toBe(409);
       });
     });
     describe("Success", () => {
@@ -91,7 +82,7 @@ describe("Category", () => {
           categoryGroupId: testCategoryGroupId,
         });
 
-        expect(res.statusCode).toBe(201);
+        expect(res.status).toBe(201);
       });
       it("Should create and persist category", async () => {
         await createCategory(cookie, {
@@ -111,9 +102,9 @@ describe("Category", () => {
           categoryGroupId: testCategoryGroupId,
         });
       });
-      it("Should return category dto", async () => {
+      it("Should return created entities", async () => {
         // Create category
-        const dto = await createCategory(cookie, {
+        const { body: dto } = await createCategoryRaw(cookie, {
           name: "test-category",
           categoryGroupId: testCategoryGroupId,
         });
@@ -127,21 +118,22 @@ describe("Category", () => {
         expect(dto.created.months).toBeDefined();
         expect(Object.keys(dto.created.months).length).toBeGreaterThan(0);
       });
-      it("Should assign next index", async () => {
-        await createCategory(cookie, {
+      it("Should assign the next available position", async () => {
+        const categoryA = await createCategory(cookie, {
           name: "category-1",
           categoryGroupId: testCategoryGroupId,
         });
 
-        const dto = await createCategory(cookie, {
+        const categoryB = await createCategory(cookie, {
           name: "category-2",
           categoryGroupId: testCategoryGroupId,
         });
 
-        expect(dto.created.category.position).toBe(1);
+        expect(categoryA.position).toBe(0);
+        expect(categoryB.position).toBe(1);
       });
       it("Should trim whitespace", async () => {
-        const dto = await createCategory(cookie, {
+        const { body: dto } = await createCategoryRaw(cookie, {
           name: "   test-category   ",
           categoryGroupId: testCategoryGroupId,
         });
@@ -151,7 +143,7 @@ describe("Category", () => {
       describe("Side Effects", () => {
         describe("Months", () => {
           it("Should create new months for category initialised to 0", async () => {
-            const dto = await createCategory(cookie, {
+            const { body: dto } = await createCategoryRaw(cookie, {
               name: "test-category",
               categoryGroupId: testCategoryGroupId,
             });
@@ -170,6 +162,43 @@ describe("Category", () => {
                   available: 0,
                 }),
               ])
+            );
+          });
+          it("Should create months with same date set as existing categories", async () => {
+            // Create first category to establish baseline months
+            const { body: first } = await createCategoryRaw(cookie, {
+              name: "category-1",
+              categoryGroupId: testCategoryGroupId,
+            });
+
+            const baselineMonths = await getMonthsByCategoryId(
+              cookie,
+              first.created.category.id
+            );
+
+            const baselineDates = baselineMonths.map((m) => m.month).sort();
+
+            // Create second category
+            const { body: second } = await createCategoryRaw(cookie, {
+              name: "category-2",
+              categoryGroupId: testCategoryGroupId,
+            });
+
+            const newCategoryMonths = await getMonthsByCategoryId(
+              cookie,
+              second.created.category.id
+            );
+
+            const newDates = newCategoryMonths.map((m) => m.month).sort();
+
+            // Check same “timeline”
+            expect(newDates).toEqual(baselineDates);
+
+            // Check All months initialized correctly
+            expect(newCategoryMonths.every((m) => m.activity === 0)).toBe(true);
+            expect(newCategoryMonths.every((m) => m.assigned === 0)).toBe(true);
+            expect(newCategoryMonths.every((m) => m.available === 0)).toBe(
+              true
             );
           });
         });

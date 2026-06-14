@@ -67,6 +67,22 @@ export interface CategoryRepository {
     categoryData: CreateCategoryData
   ): Promise<db.Category>;
 
+  renameCategory(
+    tx: Prisma.TransactionClient,
+    categoryId: CategoryId,
+    name: string
+  ): Promise<db.Category>;
+
+  /**
+   * Moves the category (position and category group).
+   */
+  moveCategory(
+    tx: Prisma.TransactionClient,
+    categoryId: CategoryId,
+    position: number,
+    categoryGroupId?: CategoryGroupId
+  ): Promise<db.Category>;
+
   updateCategory(
     tx: Prisma.TransactionClient,
     categoryId: CategoryId,

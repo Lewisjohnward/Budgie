@@ -1,18 +1,13 @@
-import request, { Response } from "supertest";
+import request, { type Response } from "supertest";
 import app from "../../app";
 import {
-  CategoryGroupsMap,
-  CategoryGroupSystemMap,
-  CategoryGroupUserDto,
-  CategoryGroupUserMap,
-  DeleteCategoryGroupDto,
+  type CategoryGroupsMap,
+  type CategoryGroupSystemMap,
+  type CategoryGroupUserDto,
+  type CategoryGroupUserMap,
 } from "../../features/budget/core/categorygroup/types/categoryGroup.dto";
-import {
-  CreateCategoryGroupPayload,
-  UpdateCategoryGroupPayload,
-} from "../../features/budget/core/categorygroup/categorygroup.schema";
-
-const CATEGORY_GROUPS_ENDPOINT_URL = "/budget/category-groups";
+import { type UpdateCategoryGroupPayload } from "../../features/budget/core/categorygroup/categorygroup.schema";
+import { CATEGORY_GROUPS_ENDPOINT_URL } from "./category-group/categoryGroup.endpoint";
 
 /**
  * Sends a request to fetch category groups, returning the full HTTP response for testing status codes and edge cases
@@ -113,49 +108,6 @@ export const getTestCategoryGroup = async (
 };
 
 /**
- * Test version of UpdateCategoryGroupPayload.
- *
- * Omits `userId` because it is derived internally from the authentication cookie
- * and is not provided directly in test requests.
- */
-type CreateCategoryGroupPayloadTest = Omit<
-  CreateCategoryGroupPayload,
-  "userId"
->;
-
-/**
- * Creates a category group and returns the raw HTTP response.
- */
-export const createCategoryGroupRaw = async (
-  cookie: string,
-  payload: CreateCategoryGroupPayloadTest
-): Promise<Response> => {
-  const res = await request(app)
-    .post(CATEGORY_GROUPS_ENDPOINT_URL)
-    .set("Authorization", `Bearer ${cookie}`)
-    .send(payload);
-
-  return res;
-};
-
-/*
- * Create category group for the user
- */
-export const createCategoryGroup = async (
-  cookie: string,
-  payload: CreateCategoryGroupPayloadTest
-): Promise<CategoryGroupUserDto> => {
-  const res = await request(app)
-    .post(CATEGORY_GROUPS_ENDPOINT_URL)
-    .set("Authorization", `Bearer ${cookie}`)
-    .send(payload);
-
-  expect(res.statusCode).toBe(201);
-
-  return res.body;
-};
-
-/**
  * Finds a category group by name within a user category group map.
  */
 export const findCategoryGroupByName = (
@@ -181,67 +133,4 @@ export const getCategoryGroupByNameOrThrow = async (
   }
 
   return group;
-};
-
-/**
- * Creates a set of test category groups for use in integration tests.
- */
-export const createTestCategoryGroups = async (cookie: string) => {
-  const { body: body1 } = await createCategoryGroupRaw(cookie, { name: "A" });
-  const { body: body2 } = await createCategoryGroupRaw(cookie, { name: "B" });
-  const { body: body3 } = await createCategoryGroupRaw(cookie, { name: "C" });
-
-  return {
-    g1: body1 as CategoryGroupUserDto,
-    g2: body2 as CategoryGroupUserDto,
-    g3: body3 as CategoryGroupUserDto,
-  };
-};
-
-/**
- * Deletes a category group for the authenticated user.
- */
-export const deleteCategoryGroupRaw = async (
-  cookie: string,
-  id: string,
-  inheritingCategoryId?: string
-): Promise<Response> => {
-  const res = await request(app)
-    .delete(`${CATEGORY_GROUPS_ENDPOINT_URL}/${id}`)
-    .set("Authorization", `Bearer ${cookie}`)
-    .send({ inheritingCategoryId });
-
-  return res;
-};
-
-/**
- * Deletes a category group for the authenticated user.
- */
-export const deleteCategoryGroup = async (
-  cookie: string,
-  id: string,
-  inheritingCategoryId?: string
-): Promise<DeleteCategoryGroupDto> => {
-  const res = await request(app)
-    .delete(`${CATEGORY_GROUPS_ENDPOINT_URL}/${id}`)
-    .set("Authorization", `Bearer ${cookie}`)
-    .send({ inheritingCategoryId });
-
-  expect(res.status).toBe(200);
-
-  return res.body;
-};
-
-/**
- * Deletes a category group and returns updated category groups state.
- */
-export const deleteCategoryGroupAndGetState = async (
-  cookie: string,
-  id: string
-) => {
-  const res = await deleteCategoryGroupRaw(cookie, id);
-
-  const after = await getCategoryGroups(cookie);
-
-  return { res, after };
 };

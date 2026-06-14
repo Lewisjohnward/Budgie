@@ -5,6 +5,7 @@ import {
 import { toDeleteCategoryGroupDto } from "./mappers/toDeleteCategoryGroupDto";
 import { toDomainSystemCategoryGroup } from "./mappers/toDomainSystemCategoryGroup";
 import { toDomainUserCategoryGroup } from "./mappers/toDomainUserCategoryGroup";
+import { toCreateCategoryGroupDto } from "./mappers/toCreateCategoryGroupDto";
 
 export const categoryGroupMapper = {
   toCategoryGroupUserDto,
@@ -13,5 +14,6 @@ export const categoryGroupMapper = {
   toDomainUserCategoryGroup,
   toDomainSystemCategoryGroup,
 
+  toCreateCategoryGroupDto,
   toDeleteCategoryGroupDto,
 };

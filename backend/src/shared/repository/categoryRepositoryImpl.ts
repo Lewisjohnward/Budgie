@@ -90,7 +90,7 @@ export const categoryRepository: CategoryRepository = {
     return row.id;
   },
 
-  getCategoryIdsByCategoryGroupId: async function (
+  getCategoryIdsByCategoryGroupId: async function(
     tx: Prisma.TransactionClient,
     categoryGroupId: CategoryGroupId
   ): Promise<string[]> {
@@ -115,6 +115,25 @@ export const categoryRepository: CategoryRepository = {
     const row = await tx.category.create({ data: categoryData });
 
     return row;
+  },
+
+  renameCategory: async (tx, categoryId, name) => {
+    const row = await tx.category.update({
+      where: { id: categoryId },
+      data: { name },
+    });
+
+    return row;
+  },
+
+  moveCategory: async (tx, categoryId, position, categoryGroupId) => {
+    return tx.category.update({
+      where: { id: categoryId },
+      data: {
+        categoryGroupId,
+        position,
+      },
+    });
   },
 
   updateCategory: async (tx, categoryId, name, categoryGroupId) => {
@@ -250,7 +269,7 @@ export const categoryRepository: CategoryRepository = {
     return mostRecentMonths;
   },
 
-  getMonths: async function (
+  getMonths: async function(
     userId: UserId,
     range: { from?: Date; to?: Date }
   ): Promise<db.Month[]> {
