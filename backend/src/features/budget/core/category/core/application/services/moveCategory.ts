@@ -1,9 +1,10 @@
 import { Prisma } from "@prisma/client";
 import { categoryRepository } from "../../../../../../../shared/repository/categoryRepositoryImpl";
 import { categoryMapper } from "../../category.mapper";
-import { type CategoryId } from "../../category.types";
+import { DomainCategory, type CategoryId } from "../../category.types";
 import { type CategoryGroupId } from "../../../../categorygroup/categoryGroup.types";
 import { type UserId } from "../../../../../../user/auth/auth.types";
+import { InvalidCategoryPositionError } from "../../category.errors";
 
 type MoveCategoryInput = {
   tx: Prisma.TransactionClient;
@@ -15,6 +16,11 @@ type MoveCategoryInput = {
   toPosition: number;
 };
 
+// TODO:(lewis 2026-06-15 14:29) rename this , chatgpt wrote it because we had been talking about results
+export type MoveCategoryResult = {
+  updatedCategory: DomainCategory;
+  affectedCategories: DomainCategory[];
+};
 /**
  * Handles all category repositioning logic:
  * - reorder within same group
@@ -29,33 +35,39 @@ export const moveCategory = async ({
   newGroupId: toGroupId,
   fromPosition,
   toPosition,
-}: MoveCategoryInput) => {
-  // Same group reorder
+}: MoveCategoryInput): Promise<MoveCategoryResult> => {
+  const targetGroupSize = await tx.category.count({
+    where: {
+      userId,
+      categoryGroupId: toGroupId,
+    },
+  });
+
+  if (toPosition < 0 || toPosition >= targetGroupSize) {
+    throw new InvalidCategoryPositionError();
+  }
+
   if (fromGroupId === toGroupId) {
     if (fromPosition !== toPosition) {
       if (fromPosition < toPosition) {
-        await tx.category.updateMany({
+        const updated = await tx.category.updateMany({
           where: {
             userId,
             categoryGroupId: fromGroupId,
-            position: {
-              gt: fromPosition,
-              lte: toPosition,
-            },
+            position: { gt: fromPosition, lte: toPosition },
           },
           data: {
             position: { decrement: 1 },
           },
         });
+
+        // Prisma doesn't return rows, so we re-fetch later
       } else {
         await tx.category.updateMany({
           where: {
             userId,
             categoryGroupId: fromGroupId,
-            position: {
-              gte: toPosition,
-              lt: fromPosition,
-            },
+            position: { gte: toPosition, lt: fromPosition },
           },
           data: {
             position: { increment: 1 },
@@ -64,18 +76,30 @@ export const moveCategory = async ({
       }
     }
 
-    // Place moved group
-    const updatedCategoryGroup = await categoryRepository.moveCategory(
+    const updated = await categoryRepository.moveCategory(
       tx,
       categoryId,
       toPosition,
       toGroupId
     );
 
-    return categoryMapper.toDomainCategory(updatedCategoryGroup);
+    // collect final state of group
+    const affectedCategories = await tx.category.findMany({
+      where: {
+        userId,
+        categoryGroupId: fromGroupId,
+      },
+    });
+
+    return {
+      updatedCategory: categoryMapper.toDomainCategory(updated),
+      affectedCategories: affectedCategories.map(
+        categoryMapper.toDomainCategory
+      ),
+    };
   }
 
-  // move across groups
+  // CROSS GROUP MOVE
 
   await tx.category.updateMany({
     where: {
@@ -99,13 +123,24 @@ export const moveCategory = async ({
     },
   });
 
-  // Place moved group
-  const updatedCategoryGroup = await categoryRepository.moveCategory(
+  const updated = await categoryRepository.moveCategory(
     tx,
     categoryId,
     toPosition,
     toGroupId
   );
 
-  return categoryMapper.toDomainCategory(updatedCategoryGroup);
+  const affectedCategories = await tx.category.findMany({
+    where: {
+      userId,
+      categoryGroupId: {
+        in: [fromGroupId, toGroupId],
+      },
+    },
+  });
+
+  return {
+    updatedCategory: categoryMapper.toDomainCategory(updated),
+    affectedCategories: affectedCategories.map(categoryMapper.toDomainCategory),
+  };
 };

@@ -45,6 +45,12 @@ export class ModifyingAProtectedCategoryError extends HttpError {
   }
 }
 
+export class InvalidCategoryPositionError extends HttpError {
+  constructor() {
+    super("Invalid category group position", 400);
+  }
+}
+
 export class CategoryInvariantError extends Error {
   constructor(
     message: string,

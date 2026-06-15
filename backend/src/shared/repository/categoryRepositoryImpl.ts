@@ -25,6 +25,7 @@ export const categoryRepository: CategoryRepository = {
   getCategories: async (userId) => {
     const row = await prisma.category.findMany({
       where: { userId },
+      orderBy: { position: "asc" },
     });
 
     return row;
@@ -90,7 +91,7 @@ export const categoryRepository: CategoryRepository = {
     return row.id;
   },
 
-  getCategoryIdsByCategoryGroupId: async function(
+  getCategoryIdsByCategoryGroupId: async function (
     tx: Prisma.TransactionClient,
     categoryGroupId: CategoryGroupId
   ): Promise<string[]> {
@@ -269,7 +270,7 @@ export const categoryRepository: CategoryRepository = {
     return mostRecentMonths;
   },
 
-  getMonths: async function(
+  getMonths: async function (
     userId: UserId,
     range: { from?: Date; to?: Date }
   ): Promise<db.Month[]> {
