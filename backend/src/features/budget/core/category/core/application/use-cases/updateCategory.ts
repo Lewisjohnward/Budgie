@@ -13,6 +13,7 @@ import {
 } from "../../../../categorygroup/categoryGroup.types";
 import { asUserId, type UserId } from "../../../../../../user/auth/auth.types";
 import { categoryMapper } from "../../category.mapper";
+import { UpdateCategoryResult } from "../../contracts/updateCategory.contract";
 
 //  TODO: IMPLEMENT CHANGE POSITION
 // TODO: IF NOTHING CHANGES DON'T INTERACT WITH DB
@@ -40,38 +41,59 @@ const toUpdateCategoryCommand = (
 });
 
 /**
- * Updates an existing category’s name and/or group assignment.
+ * Updates a category using either a rename or move operation.
  *
- * This function performs all required validation and authorization checks
- * before persisting changes:
+ * This use case acts as a command dispatcher that routes the update request
+ * into one of two domain operations:
  *
- * - Ensures the category exists and belongs to the given user.
- * - Prevents modification of protected categories.
- * - If a new category group is provided:
- *   - Verifies the user owns the target group.
- *   - Prevents moving the category into a protected group.
- * - If a new name is provided:
- *   - Ensures the name is unique within the target group.
+ * 1. Rename operation
+ *    - Updates only the category name
+ *    - Does not affect ordering or sibling categories
  *
- * If neither `name` nor `categoryGroupId` is provided, the function
- * exits early without performing any database interaction.
+ * 2. Move operation
+ *    - Moves a category within the same group or across groups
+ *    - Updates the category's position
+ *    - May trigger reordering of sibling categories within affected groups
  *
- * All operations are executed within a single database transaction to
- * guarantee consistency.
+ * Only one operation is allowed per request:
+ * - If `name` is provided, the request is treated as a rename operation
+ * - If `position` is provided, the request is treated as a move operation
+ * - Mixing both or providing neither is invalid and will result in an error
  *
- * @param payload - Raw edit payload containing user identifier, category identifier,
- * and optional updated fields (name and/or categoryGroupId).
+ * All operations are executed inside a single database transaction to ensure
+ * consistency across category ordering and group constraints.
  *
- * @throws {CategoryNotFoundError} If the category does not exist or does not belong to the user.
- * @throws {Error} If the category or target group is protected, if the user does not own
- * the specified group, or if the new name is not unique within the group.
+ * Domain rules enforced:
+ * - Category must exist and belong to the user
+ * - Target category group (if provided) must be valid and modifiable
+ * - Protected categories and groups cannot be modified
+ * - Move operations may affect multiple sibling categories due to reordering rules
  *
- * @returns A promise that resolves when the category has been successfully updated.
+ * Side effects:
+ * - Rename: updates only the target category
+ * - Move: updates the target category and returns all affected categories whose
+ *   positions or group assignments changed as a result of reordering
+ *
+ * @param payload - Raw update payload containing:
+ * - `userId`: authenticated user identifier
+ * - `categoryId`: category to update
+ * - `name?`: new category name (rename operation)
+ * - `categoryGroupId?`: target group (move operation)
+ * - `position?`: target position (move operation)
+ *
+ * @throws {Error} If no valid operation is provided (neither rename nor move)
+ * @throws {CategoryNotFoundError} If the category does not exist or does not belong to the user
+ * @throws {CategoryGroupAccessError} If the target group is not accessible or is protected
+ * @throws {CategoryValidationError} If rename violates uniqueness constraints within a group
+ *
+ * @returns A promise resolving to an `UpdateCategoryResult` containing:
+ * - `updatedCategory`: the primary updated category
+ * - `affectedCategories`: categories impacted by reordering (move operations only)
  */
 
 export const updateCategory = async (
   payload: UpdateCategoryPayload
-): Promise<DomainCategory> => {
+): Promise<UpdateCategoryResult> => {
   const { categoryId, userId, categoryGroupId, name, position } =
     toUpdateCategoryCommand(payload);
 
@@ -90,29 +112,37 @@ export const updateCategory = async (
       );
     }
 
+    // RENAME
     if (name !== undefined) {
       category = await categoryService.categories.renameCategory(
         tx,
         category.id,
         name
       );
+
+      return {
+        updatedCategory: category,
+        affectedCategories: [],
+      };
     }
 
+    // MOVE
     if (position !== undefined) {
-      const fromCategory = category;
-      const fromGroupId = fromCategory.categoryGroupId;
-      const toGroupId = categoryGroupId ?? fromGroupId;
+      const toGroupId = categoryGroupId ?? category.categoryGroupId;
 
-      category = await categoryService.categories.moveCategory({
+      const result = await categoryService.categories.moveCategory({
         tx,
         userId,
         categoryId: category.id,
-        originalGroupId: fromCategory.categoryGroupId,
+        originalGroupId: category.categoryGroupId,
         newGroupId: toGroupId,
-        fromPosition: fromCategory.position,
+        fromPosition: category.position,
         toPosition: position,
       });
+
+      return result;
     }
-    return category;
+
+    throw new Error("No update operation specified");
   });
 };

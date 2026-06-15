@@ -74,6 +74,39 @@ export const getUserCategoryByName = async (
 
 /**
  */
+export const getUserCategoryById = async (
+  cookie: string,
+  id: string
+): Promise<CategoryDto | undefined> => {
+  const userCategories = await getUserCategories(cookie);
+
+  // TODO:(lewis 2026-06-15 12:43) is this returning userId?
+
+  return Object.values(userCategories).find((c) => c.id === id);
+};
+
+/**
+ */
+export async function getUserCategoryByIdOrThrow(cookie: string, id: string) {
+  const category = await getUserCategoryById(cookie, id);
+  if (!category) throw new Error(`Category ${id} not found`);
+  return category;
+}
+
+/**
+ */
+export async function getUserCategoriesByCategoryGroupId(
+  cookie: string,
+  categoryGroupId: string
+) {
+  const allCategories = await getUserCategories(cookie);
+  return Object.values(allCategories).filter(
+    (c) => c.categoryGroupId === categoryGroupId
+  );
+}
+
+/**
+ */
 export const getMonthsByCategoryId = async (
   cookie: string,
   categoryId: string

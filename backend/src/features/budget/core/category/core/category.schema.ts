@@ -45,29 +45,39 @@ export type CreateCategoryData = CreateCategoryPayload & { position: number };
  *   - must be 50 characters or fewer
  * - `categoryGroupId`, when provided, must be a valid UUID
  */
-export const updateCategorySchema = z.object({
-  userId: z.string().uuid(),
-  categoryId: z.string().uuid(),
-  position: z.number().optional(),
-  categoryGroupId: z.string().uuid().optional(),
-  name: z
-    .string()
-    .trim()
-    .min(1, { message: "Name cannot be empty" })
-    .max(50, {
-      message: "Name must be less than 50 characters",
-    })
-    .optional(),
-});
-// TODO:(lewis 2026-05-18 15:15) prevent sending pos/ catgroup id and name at same time
-// .refine(
-//   ({ name, categoryGroupId }) =>
-//     name !== undefined || categoryGroupId !== undefined,
-//   {
-//     message: "Either name or categoryGroupId must be provided",
-//     path: ["name"],
-//   }
-// );
+export const updateCategorySchema = z
+  .object({
+    userId: z.string().uuid(),
+    categoryId: z.string().uuid(),
+    position: z.number().min(0).optional(),
+    categoryGroupId: z.string().uuid().optional(),
+    name: z
+      .string()
+      .trim()
+      .min(1, { message: "Name cannot be empty" })
+      .max(50, {
+        message: "Name must be less than 50 characters",
+      })
+      .optional(),
+  })
+  .superRefine((data, ctx) => {
+    const hasName = data.name !== undefined;
+    const hasCategoryGroupId = data.categoryGroupId !== undefined;
+    const hasPosition = data.position !== undefined;
+
+    const isRenameOnly = hasName && !hasCategoryGroupId && !hasPosition;
+
+    const isMoveComplete = hasCategoryGroupId && hasPosition && !hasName;
+
+    const isValid = isRenameOnly || isMoveComplete;
+
+    if (!isValid) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Provide either (name only) OR (categoryGroupId + position)",
+      });
+    }
+  });
 
 /**
  * Payload used when updating a category.

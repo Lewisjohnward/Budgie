@@ -9,6 +9,7 @@ export const errorHandler: ErrorRequestHandler = (
   res: Response,
   next: NextFunction
 ) => {
+  console.log("err:", err);
   if (err instanceof ZodError) {
     res.status(400).json({
       message: err.errors[0]?.message || "Malformed data",

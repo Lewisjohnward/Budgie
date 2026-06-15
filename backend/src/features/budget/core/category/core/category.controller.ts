@@ -32,8 +32,8 @@ export const createCategory = async (
 ) => {
   try {
     const payload = createCategorySchema.parse({
-      userId: req.user!._id,
       ...req.body,
+      userId: req.user!._id,
     });
     const result = await categoryUseCase.createCategory(payload);
 
@@ -60,7 +60,7 @@ export const updateCategory = async (
 
     const updatedCategory = await categoryUseCase.updateCategory(payload);
 
-    const dto = categoryMapper.toCategoryDto(updatedCategory);
+    const dto = categoryMapper.toUpdateCategoryDto(updatedCategory);
 
     res.status(200).json(dto);
   } catch (error) {

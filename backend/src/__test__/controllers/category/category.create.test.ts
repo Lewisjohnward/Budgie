@@ -1,6 +1,6 @@
 import {
-  getUserCategoryByName,
   getMonthsByCategoryId,
+  getUserCategoryById,
 } from "../../utils/appSnapshot";
 import { registerUser, login, register } from "../../utils/auth";
 import { createCategoryGroup } from "../../utils/category-group/categoryGroup.create";
@@ -12,7 +12,7 @@ import { createGroupWithCategory } from "../../utils/scenarios/createGroupWithCa
 
 describe("Category", () => {
   let cookie: string;
-  let testCategoryGroupId: string;
+  let categoryGroupId: string;
 
   beforeEach(async () => {
     await registerUser();
@@ -21,7 +21,7 @@ describe("Category", () => {
     const categoryGroup = await createCategoryGroup(cookie, {
       name: "test-group",
     });
-    testCategoryGroupId = categoryGroup.id;
+    categoryGroupId = categoryGroup.id;
   });
   describe("Create", () => {
     describe("Error Cases", () => {
@@ -63,13 +63,13 @@ describe("Category", () => {
         // Create a test category
         await createCategoryRaw(cookie, {
           name: "test-category",
-          categoryGroupId: testCategoryGroupId,
+          categoryGroupId: categoryGroupId,
         });
 
         // Create another category with the same name
         const res = await createCategoryRaw(cookie, {
           name: "test-category",
-          categoryGroupId: testCategoryGroupId,
+          categoryGroupId: categoryGroupId,
         });
         expect(res.status).toBe(409);
       });
@@ -79,39 +79,36 @@ describe("Category", () => {
         // Create category
         const res = await createCategoryRaw(cookie, {
           name: "test-category",
-          categoryGroupId: testCategoryGroupId,
+          categoryGroupId: categoryGroupId,
         });
 
         expect(res.status).toBe(201);
       });
       it("Should create and persist category", async () => {
-        await createCategory(cookie, {
+        const { id } = await createCategory(cookie, {
           name: "test-category",
-          categoryGroupId: testCategoryGroupId,
+          categoryGroupId: categoryGroupId,
         });
 
-        const createdCategory = await getUserCategoryByName(
-          cookie,
-          "test-category"
-        );
+        const category = await getUserCategoryById(cookie, id);
 
-        expect(createdCategory).toBeDefined();
+        expect(category).toBeDefined();
 
-        expect(createdCategory).toMatchObject({
+        expect(category).toMatchObject({
           name: "test-category",
-          categoryGroupId: testCategoryGroupId,
+          categoryGroupId: categoryGroupId,
         });
       });
       it("Should return created entities", async () => {
         // Create category
         const { body: dto } = await createCategoryRaw(cookie, {
           name: "test-category",
-          categoryGroupId: testCategoryGroupId,
+          categoryGroupId: categoryGroupId,
         });
 
         expect(dto.created.category).toMatchObject({
           name: "test-category",
-          categoryGroupId: testCategoryGroupId,
+          categoryGroupId: categoryGroupId,
         });
         expect(dto.created.category.id).toBeDefined();
 
@@ -121,12 +118,12 @@ describe("Category", () => {
       it("Should assign the next available position", async () => {
         const categoryA = await createCategory(cookie, {
           name: "category-1",
-          categoryGroupId: testCategoryGroupId,
+          categoryGroupId: categoryGroupId,
         });
 
         const categoryB = await createCategory(cookie, {
           name: "category-2",
-          categoryGroupId: testCategoryGroupId,
+          categoryGroupId: categoryGroupId,
         });
 
         expect(categoryA.position).toBe(0);
@@ -135,7 +132,7 @@ describe("Category", () => {
       it("Should trim whitespace", async () => {
         const { body: dto } = await createCategoryRaw(cookie, {
           name: "   test-category   ",
-          categoryGroupId: testCategoryGroupId,
+          categoryGroupId: categoryGroupId,
         });
 
         expect(dto.created.category.name).toBe("test-category");
@@ -145,7 +142,7 @@ describe("Category", () => {
           it("Should create new months for category initialised to 0", async () => {
             const { body: dto } = await createCategoryRaw(cookie, {
               name: "test-category",
-              categoryGroupId: testCategoryGroupId,
+              categoryGroupId: categoryGroupId,
             });
 
             const createdMonths = await getMonthsByCategoryId(
@@ -168,7 +165,7 @@ describe("Category", () => {
             // Create first category to establish baseline months
             const { body: first } = await createCategoryRaw(cookie, {
               name: "category-1",
-              categoryGroupId: testCategoryGroupId,
+              categoryGroupId: categoryGroupId,
             });
 
             const baselineMonths = await getMonthsByCategoryId(
@@ -181,7 +178,7 @@ describe("Category", () => {
             // Create second category
             const { body: second } = await createCategoryRaw(cookie, {
               name: "category-2",
-              categoryGroupId: testCategoryGroupId,
+              categoryGroupId: categoryGroupId,
             });
 
             const newCategoryMonths = await getMonthsByCategoryId(
