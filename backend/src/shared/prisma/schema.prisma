@@ -78,9 +78,7 @@ model Category {
   payees          Payee[]       @relation("PayeeDefaultCategory")
 
 
-// this needs testing
-    @@unique([userId, name])
-    // @@unique([userId, position])
+  @@unique([categoryGroupId, name])
 }
 
 model Month {
