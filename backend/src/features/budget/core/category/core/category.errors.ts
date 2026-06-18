@@ -6,6 +6,7 @@ export class UnableToFindProtectedCategoriesInDBError extends HttpError {
   }
 }
 
+/** Error thrown when attempting to create or rename a category to a name that already exists within the target group. */
 export class DuplicateCategoryNameError extends HttpError {
   constructor() {
     super("A category with this name already exists in the group.", 409);
