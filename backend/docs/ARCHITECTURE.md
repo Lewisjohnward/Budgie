@@ -278,6 +278,69 @@ All dates are returned as ISO 8601 strings (date-time format)
 
 ### Category API
 
+**Create Category**
+
+- **Endpoint:** `POST /budget/categories`
+- **Auth Required:** The user must be logged in.
+- **Description:** Creates a new budget category inside an existing category group owned by the user, dynamically calculating its sorting position, and automatically initialising accompanying zero-value budget timeline months.
+
+- **Behavior:**
+  - Extracts the user identity from the authenticated session.
+  - Validates that the targeted categoryGroupId exists in the database and explicitly belongs to the authenticated user identity context
+  - Payload Sanitisation: Automatically trims leading and trailing whitespace from the name field before ingestion or unique checks.
+  - Uniqueness Guard: Rejects processing if a category with the same normalised name already exists within that specific category group. Note that identical names are allowed if they are created in separate category groups.
+  - Position Management: Calculates the next available placement integer within the target group (sequential zero-indexed calculation: Count of existing categories inside group).
+  - Side-Effect (Months Generation): Checks the user's account for pre-existing system categories (or existing user categories). It extracts their active budget timeline month strings, maps them sequentially, and persists a matching array of zero-value budget tracking balances (activity: 0, assigned: 0, available: 0) for the new category to maintain month synchronisation.
+- **Request body example:**
+
+```json
+{
+  "name": "string",
+  "categoryGroupId": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d"
+}
+```
+
+- **Response:**
+  - 201 Created — Returns a normalised entity payload wrapper detailing the finalised category configuration alongside its newly provisioned structural dependencies
+
+- **Response body example:**
+
+```json
+{
+  "created": {
+    "category": {
+      "id": "3f2c1d8e-9b6a-4f1d-8c2e-7a1d9c5b0e4f",
+      "name": "test-category",
+      "categoryGroupId": "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
+      "position": 0
+    },
+    "months": {
+      "m_2026_06": {
+        "id": "m_idx_101",
+        "categoryId": "3f2c1d8e-9b6a-4f1d-8c2e-7a1d9c5b0e4f",
+        "month": "2026-06",
+        "activity": 0,
+        "assigned": 0,
+        "available": 0
+      },
+      "m_2026_07": {
+        "id": "m_idx_102",
+        "categoryId": "3f2c1d8e-9b6a-4f1d-8c2e-7a1d9c5b0e4f",
+        "month": "2026-07",
+        "activity": 0,
+        "assigned": 0,
+        "available": 0
+      }
+    }
+  }
+}
+```
+
+- **Error Responses:**
+  - 401 Unauthorised - Returned when the request is missing a valid JWT token or the token is invalid/expired.
+  - 404 Not Found — Returned if the referenced categoryGroupId does not match an entity in the database, or if it belongs to a completely different user account namespace.
+  - 409 Conflict — Returned if a category name collision occurs within the boundaries of the target category group.
+
 ### Category Groups API
 
 **Get Category Groups**
