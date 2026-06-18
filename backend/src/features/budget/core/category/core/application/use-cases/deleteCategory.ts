@@ -1,6 +1,9 @@
 import { prisma } from "../../../../../../../shared/prisma/client";
 import { categoryRepository } from "../../../../../../../shared/repository/categoryRepositoryImpl";
-import { InheritingCategoryIdNotProvidedError } from "../../category.errors";
+import {
+  CategoryCannotInheritItselfError,
+  InheritingCategoryIdNotProvidedError,
+} from "../../category.errors";
 import { type DeleteCategoryPayload } from "../../category.schema";
 import { categoryService } from "../../category.service";
 import {
@@ -79,6 +82,10 @@ export const deleteCategory = async (
 ): Promise<DeleteCategoryResult> => {
   const { userId, categoryId, inheritingCategoryId } =
     toDeleteCategoryCommand(payload);
+
+  if (categoryId === inheritingCategoryId) {
+    throw new CategoryCannotInheritItselfError();
+  }
 
   return prisma.$transaction(async (tx) => {
     const category = await categoryService.categories.getModifiableCategory(
