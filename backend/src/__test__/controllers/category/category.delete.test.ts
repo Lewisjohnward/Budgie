@@ -58,6 +58,16 @@ describe("Category", () => {
         expect(res.status).toBe(404);
       });
 
+      it("Should return 422 if inheriting category is category being deleted", async () => {
+        await createTransactionForCategory(cookie, categoryId);
+
+        // Delete category using unowned category group
+        const res = await deleteCategoryRaw(cookie, categoryId, {
+          inheritingCategoryId: categoryId,
+        });
+        expect(res.status).toBe(422);
+      });
+
       it("Should return 403 when inheriting category is a system category", async () => {
         // Get a system category group
         const uncategorisedCategory = await getUncategorisedCategory(cookie);

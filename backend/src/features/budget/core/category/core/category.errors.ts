@@ -34,6 +34,16 @@ export class InheritingCategoryIdNotProvidedError extends HttpError {
   }
 }
 
+/** Error thrown when inheriting category is original category*/
+export class CategoryCannotInheritItselfError extends HttpError {
+  constructor() {
+    super(
+      "A category cannot inherit its own transactions during deletion.",
+      422
+    );
+  }
+}
+
 export class MonthNotFoundError extends HttpError {
   constructor() {
     super("Month not found", 404);
