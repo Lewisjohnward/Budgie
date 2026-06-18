@@ -81,6 +81,92 @@ paths:
 
         "500":
           description: Server error
+  /budget/categories:
+    post:
+      summary: Create category
+      description: >
+        Creates a new budget category inside an existing category group owned by the user, dynamically 
+        calculating its sorting position, and automatically initialising accompanying zero-value 
+        budget timeline months derived from existing system or user category milestones.
+      operationId: createCategory
+      tags:
+        - Categories
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, categoryGroupId]
+              properties:
+                name:
+                  type: string
+                  description: The name of the category (leading and trailing whitespace will be trimmed).
+                  example: "Groceries"
+                categoryGroupId:
+                  type: string
+                  description: Target parent Category Group UUID.
+                  example: "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d"
+
+      responses:
+        "201":
+          description: Successfully created category and tracking months
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [created]
+                properties:
+                  created:
+                    type: object
+                    required: [category, months]
+                    properties:
+                      category:
+                        $ref: "#/components/schemas/Category"
+                      months:
+                        type: object
+                        description: Key-value map of newly generated budget tracking records keyed by an arbitrary tracking sequence identifier.
+                        additionalProperties:
+                          $ref: "#/components/schemas/Month"
+              examples:
+                success:
+                  value:
+                    created:
+                      category:
+                        id: "3f2c1d8e-9b6a-4f1d-8c2e-7a1d9c5b0e4f"
+                        name: "Groceries"
+                        categoryGroupId: "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d"
+                        position: 0
+                      months:
+                        m_2026_06:
+                          id: "m_idx_101"
+                          categoryId: "3f2c1d8e-9b6a-4f1d-8c2e-7a1d9c5b0e4f"
+                          month: "2026-06"
+                          activity: 0
+                          assigned: 0
+                          available: 0
+                        m_2026_07:
+                          id: "m_idx_102"
+                          categoryId: "3f2c1d8e-9b6a-4f1d-8c2e-7a1d9c5b0e4f"
+                          month: "2026-07"
+                          activity: 0
+                          assigned: 0
+                          available: 0
+
+        "401":
+          description: Unauthorised (missing or expired session token)
+
+        "404":
+          description: Category group not found or unowned by user context
+
+        "409":
+          description: Conflict (a category with this normalised name already exists within this category group)
+
+        "500":
+          description: Server error
 
   components:
     securitySchemes:
@@ -172,205 +258,205 @@ paths:
 
         monthKeys:
           - "2025-12"
-      required:
-        - categoryGroups
-        - categories
-        - months
-        - accounts
-        - transactions
-        - payees
-        - memosByMonth
-        - monthKeys
-      properties:
-        categoryGroups:
-          type: object
-          required: [user, inflow, uncategorised]
-          properties:
-            user:
-              type: object
-              additionalProperties:
+        required:
+          - categoryGroups
+          - categories
+          - months
+          - accounts
+          - transactions
+          - payees
+          - memosByMonth
+          - monthKeys
+        properties:
+          categoryGroups:
+            type: object
+            required: [user, inflow, uncategorised]
+            properties:
+              user:
+                type: object
+                additionalProperties:
+                  $ref: "#/components/schemas/CategoryGroup"
+              inflow:
                 $ref: "#/components/schemas/CategoryGroup"
-            inflow:
-              $ref: "#/components/schemas/CategoryGroup"
-            uncategorised:
-              $ref: "#/components/schemas/CategoryGroup"
+              uncategorised:
+                $ref: "#/components/schemas/CategoryGroup"
 
-        categories:
-          type: object
-          required: [user, rta, uncategorised]
-          properties:
-            user:
-              type: object
-              additionalProperties:
+          categories:
+            type: object
+            required: [user, rta, uncategorised]
+            properties:
+              user:
+                type: object
+                additionalProperties:
+                  $ref: "#/components/schemas/Category"
+              rta:
                 $ref: "#/components/schemas/Category"
-            rta:
-              $ref: "#/components/schemas/Category"
-            uncategorised:
-              $ref: "#/components/schemas/Category"
+              uncategorised:
+                $ref: "#/components/schemas/Category"
 
-        months:
-          type: object
-          additionalProperties:
-            $ref: "#/components/schemas/Month"
+          months:
+            type: object
+            additionalProperties:
+              $ref: "#/components/schemas/Month"
 
-        accounts:
-          type: object
-          additionalProperties:
-            $ref: "#/components/schemas/Account"
+          accounts:
+            type: object
+            additionalProperties:
+              $ref: "#/components/schemas/Account"
 
-        transactions:
-          type: object
-          additionalProperties:
-            $ref: "#/components/schemas/Transaction"
+          transactions:
+            type: object
+            additionalProperties:
+              $ref: "#/components/schemas/Transaction"
 
-        payees:
-          type: object
-          additionalProperties:
-            $ref: "#/components/schemas/Payee"
+          payees:
+            type: object
+            additionalProperties:
+              $ref: "#/components/schemas/Payee"
 
-        memosByMonth:
-          type: object
-          description: Map of MonthKey (YYYY-MM) → Memo (1:1 invariant)
-          additionalProperties:
-            $ref: "#/components/schemas/Memo"
+          memosByMonth:
+            type: object
+            description: Map of MonthKey (YYYY-MM) → Memo (1:1 invariant)
+            additionalProperties:
+              $ref: "#/components/schemas/Memo"
 
-        monthKeys:
-          type: array
-          items:
+          monthKeys:
+            type: array
+            items:
+              type: string
+
+      CategoryGroup:
+        type: object
+        required: [id, name, position]
+        properties:
+          id:
+            type: string
+          name:
+            type: string
+          position:
+            type: number
+
+      Category:
+        type: object
+        required: [id, name, position, categoryGroupId]
+        properties:
+          id:
+            type: string
+          name:
+            type: string
+          position:
+            type: number
+          categoryGroupId:
             type: string
 
-    CategoryGroup:
-      type: object
-      required: [id, name, position]
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        position:
-          type: number
+      Month:
+        type: object
+        required: [id, categoryId, month, activity, assigned, available]
+        properties:
+          id:
+            type: string
+          categoryId:
+            type: string
+          month:
+            type: string
+          activity:
+            type: number
+          assigned:
+            type: number
+          available:
+            type: number
 
-    Category:
-      type: object
-      required: [id, name, position, categoryGroupId]
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        position:
-          type: number
-        categoryGroupId:
-          type: string
+      Account:
+        type: object
+        required: [id, name, position, open, type, deletable, balance]
+        properties:
+          id:
+            type: string
+          name:
+            type: string
+          position:
+            type: number
+          open:
+            type: boolean
+          type:
+            enum: [BANK, CREDIT_CARD]
+          deletable:
+            type: boolean
+          balance:
+            type: number
 
-    Month:
-      type: object
-      required: [id, categoryId, month, activity, assigned, available]
-      properties:
-        id:
-          type: string
-        categoryId:
-          type: string
-        month:
-          type: string
-        activity:
-          type: number
-        assigned:
-          type: number
-        available:
-          type: number
+      Transaction:
+        type: object
+        required: [id, accountId, date, memo, inflow, outflow]
+        properties:
+          id:
+            type: string
+          accountId:
+            type: string
+          categoryId:
+            type: string
+            nullable: true
+          payeeId:
+            type: string
+            nullable: true
+          date:
+            type: string
+            format: date-time
+          memo:
+            type: string
+          inflow:
+            type: number
+          outflow:
+            type: number
 
-    Account:
-      type: object
-      required: [id, name, position, open, type, deletable, balance]
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        position:
-          type: number
-        open:
-          type: boolean
-        type:
-          enum: [BANK, CREDIT_CARD]
-        deletable:
-          type: boolean
-        balance:
-          type: number
+      Payee:
+        type: object
+        required:
+          - id
+          - name
+          - origin
+          - defaultCategoryId
+          - includeInPayeeList
+          - automaticallyCategorisePayee
+        properties:
+          id:
+            type: string
+          name:
+            type: string
+          origin:
+            enum: [SYSTEM, USER]
+          defaultCategoryId:
+            type: string
+            nullable: true
+          includeInPayeeList:
+            type: boolean
+          automaticallyCategorisePayee:
+            type: boolean
 
-    Transaction:
-      type: object
-      required: [id, accountId, date, memo, inflow, outflow]
-      properties:
-        id:
-          type: string
-        accountId:
-          type: string
-        categoryId:
-          type: string
-          nullable: true
-        payeeId:
-          type: string
-          nullable: true
-        date:
-          type: string
-          format: date-time
-        memo:
-          type: string
-        inflow:
-          type: number
-        outflow:
-          type: number
+      Memo:
+        type: object
+        required: [id, month, content]
+        properties:
+          id:
+            type: string
+          month:
+            type: string
+            description: MonthKey in YYYY-MM format
+            example: "2025-12"
+          content:
+            type: string
 
-    Payee:
-      type: object
-      required:
-        - id
-        - name
-        - origin
-        - defaultCategoryId
-        - includeInPayeeList
-        - automaticallyCategorisePayee
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        origin:
-          enum: [SYSTEM, USER]
-        defaultCategoryId:
-          type: string
-          nullable: true
-        includeInPayeeList:
-          type: boolean
-        automaticallyCategorisePayee:
-          type: boolean
+      UpdatedMemo:
+        type: object
+        required: [id, month, content]
+        properties:
+          id:
+            type: string
 
-    Memo:
-      type: object
-      required: [id, month, content]
-      properties:
-        id:
-          type: string
-        month:
-          type: string
-          description: MonthKey in YYYY-MM format
-          example: "2025-12"
-        content:
-          type: string
+          month:
+            type: string
+            description: MonthKey in YYYY-MM format
+            example: "2025-12"
 
-    UpdatedMemo:
-      type: object
-      required: [id, month, content]
-      properties:
-        id:
-          type: string
-
-        month:
-          type: string
-          description: MonthKey in YYYY-MM format
-          example: "2025-12"
-
-        content:
-          type: string
+          content:
+            type: string
