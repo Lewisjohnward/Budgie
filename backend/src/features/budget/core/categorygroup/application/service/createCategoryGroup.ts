@@ -1,11 +1,11 @@
 import { Prisma } from "@prisma/client";
 import { categoryGroupRepository } from "../../../../../../shared/repository/categoryGroupRepositoryImpl";
-import { UserId } from "../../../../../user/auth/auth.types";
+import { type UserId } from "../../../../../user/auth/auth.types";
 import { categoryGroupMapper } from "../../categorygroup.mapper";
 import { categoryGroupService } from "../../categoryGroup.service";
 import {
-  CreateCategoryGroupData,
-  DomainUserCategoryGroup,
+  type CreateCategoryGroupData,
+  type DomainUserCategoryGroup,
 } from "../../categoryGroup.types";
 import { isUniqueViolation } from "../../../../../../shared/prisma/utils/isUniqueViolation";
 import { CategoryGroupNameConflictError } from "../../categoryGroup.errors";

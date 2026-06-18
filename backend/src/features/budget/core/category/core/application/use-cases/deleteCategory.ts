@@ -1,18 +1,20 @@
 import { prisma } from "../../../../../../../shared/prisma/client";
 import { categoryRepository } from "../../../../../../../shared/repository/categoryRepositoryImpl";
-import {
-  CategoryNotFoundError,
-  InheritingCategoryIdNotProvidedError,
-} from "../../category.errors";
+import { InheritingCategoryIdNotProvidedError } from "../../category.errors";
 import { type DeleteCategoryPayload } from "../../category.schema";
 import { categoryService } from "../../category.service";
-import { asCategoryId, type CategoryId } from "../../category.types";
+import {
+  asCategoryId,
+  DomainMonth,
+  type CategoryId,
+} from "../../category.types";
 import { transactionService } from "../../../../transaction/transaction.service";
 import { asUserId, type UserId } from "../../../../../../user/auth/auth.types";
-import { DeleteCategoryResult } from "../../category.contract";
+import { type DeleteCategoryResult } from "../../category.contract";
 import { transactionRepository } from "../../../../../../../shared/repository/transactionRepositoryImpl";
 import { OperationMode } from "../../../../../../../shared/enums/operation-mode";
-import { DomainNormalTransaction } from "../../../../transaction/transaction.types";
+import { type DomainNormalTransaction } from "../../../../transaction/transaction.types";
+import { categoryMapper } from "../../category.mapper";
 
 export type DeleteCategoryCommand = Omit<
   DeleteCategoryPayload,
@@ -78,7 +80,7 @@ export const deleteCategory = async (
   const { userId, categoryId, inheritingCategoryId } =
     toDeleteCategoryCommand(payload);
 
-  return await prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx) => {
     const category = await categoryService.categories.getModifiableCategory(
       tx,
       userId,
@@ -95,34 +97,19 @@ export const deleteCategory = async (
       userId
     );
 
-    if (transactions.length === 0) {
-      await categoryRepository.deleteMonthsByCategoryId(tx, category.id);
+    const deletedMonths = await categoryService.months.getMonthsForCategories(
+      tx,
+      [categoryId]
+    );
 
-      await categoryRepository.deleteCategory(tx, category.id);
+    let updatedTransactions: DomainNormalTransaction[] = [];
+    let updatedMonths: DomainMonth[] = [];
 
-      const months = await categoryService.rta.calculateMonthsAvailable(
-        tx,
-        userId,
-        rtaCategoryId
-      );
-
-      const deletedMonths =
-        await categoryService.months.getAllMonthsForCategories(
-          tx,
-          userId,
-          rtaCategoryId
-        );
-
-      return {
-        deletedCategory: category,
-        deletedMonths,
-        updatedMonths: months,
-        updatedTransactions: [],
-      };
-    } else {
+    if (transactions.length > 0) {
       if (!inheritingCategoryId) {
         throw new InheritingCategoryIdNotProvidedError();
       }
+
       const inheritingCategory =
         await categoryService.categories.getModifiableCategory(
           tx,
@@ -130,51 +117,62 @@ export const deleteCategory = async (
           inheritingCategoryId
         );
 
-      // update categoryId of transactions
-      // TODO:(lewis 2026-06-12 11:06) this shouldnt be calling a repository from here
       await transactionRepository.bulkUpdateCategoryId(
         tx,
         transactions.map((t) => t.id),
         inheritingCategory.id
       );
 
-      const updatedTransactions: DomainNormalTransaction[] = transactions.map(
-        (tx) => ({
-          ...tx,
-          categoryId: inheritingCategory.id,
-        })
-      );
+      updatedTransactions = transactions.map((transaction) => ({
+        ...transaction,
+        categoryId: inheritingCategory.id,
+      }));
 
-      const updatedMonths =
+      updatedMonths =
         await categoryService.months.recalculateCategoryMonthsForTransactions(
           tx,
           updatedTransactions,
           OperationMode.Add
         );
-      const updatedRtaMonths =
-        await categoryService.rta.calculateMonthsAvailable(
-          tx,
-          userId,
-          rtaCategoryId
-        );
-
-      const deletedMonths =
-        await categoryService.months.getAllMonthsForCategories(
-          tx,
-          userId,
-          rtaCategoryId
-        );
-
-      await categoryRepository.deleteMonthsByCategoryId(tx, categoryId);
-
-      await categoryRepository.deleteCategory(tx, categoryId);
-
-      return {
-        deletedCategory: category,
-        deletedMonths,
-        updatedMonths: [...updatedMonths, ...updatedRtaMonths],
-        updatedTransactions: updatedTransactions,
-      };
     }
+
+    await categoryRepository.deleteMonthsByCategoryId(tx, category.id);
+
+    await categoryRepository.shiftCategoriesAfterDelete(
+      tx,
+      userId,
+      category.categoryGroupId,
+      category.position
+    );
+
+    await categoryRepository.deleteCategory(tx, category.id);
+
+    const updatedRtaMonths = await categoryService.rta.calculateMonthsAvailable(
+      tx,
+      userId,
+      rtaCategoryId
+    );
+
+    const updatedCategories = (
+      await tx.category.findMany({
+        where: {
+          userId,
+          categoryGroupId: category.categoryGroupId,
+        },
+        orderBy: {
+          position: "asc",
+        },
+      })
+    ).map(categoryMapper.toDomainCategory);
+
+    return {
+      deletedCategory: category,
+      deletedMonths,
+      updatedCategories,
+      updatedMonths: [...updatedMonths, ...updatedRtaMonths],
+      updatedTransactions,
+    };
   });
 };
+
+// categoryService.transactions.reassignCategory(...)

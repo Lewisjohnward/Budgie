@@ -77,34 +77,6 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
       }),
       providesTags: ["Categories"],
     }),
-    editMonth: builder.mutation<UpdatedMonthsById, UpdateMonthsPayload>({
-      query: (assigned) => ({
-        url: "budget/category/months",
-        method: "PATCH",
-        body: assigned,
-      }),
-
-      transformResponse: (response: unknown) => {
-        return updatedMonthsByIdSchema.parse(response);
-      },
-      async onQueryStarted(_, { dispatch, queryFulfilled }) {
-        const { data } = await queryFulfilled;
-        console.log("data:", data);
-
-        dispatch(
-          budgetSnapshotSlice.util.updateQueryData(
-            "getBudgetSnapshot",
-            undefined,
-            (draft) => {
-              for (const [id, month] of Object.entries(data)) {
-                if (!month) continue;
-                draft.months[id as MonthId] = month;
-              }
-            }
-          )
-        );
-      },
-    }),
   }),
 });
 
@@ -117,6 +89,5 @@ export const {
   useDeleteTransactionMutation,
   useEditTransactionMutation,
   useGetCategoriesQuery,
-  useEditMonthMutation,
   useDuplicateTransactionsMutation,
 } = budgetApiSlice;

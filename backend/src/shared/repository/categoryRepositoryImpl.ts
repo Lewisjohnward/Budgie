@@ -326,4 +326,26 @@ export const categoryRepository: CategoryRepository = {
 
     await tx.$executeRawUnsafe(sql);
   },
+
+  shiftCategoriesAfterDelete: async (
+    tx: Prisma.TransactionClient,
+    userId: UserId,
+    categoryGroupId: string,
+    deletedPosition: number
+  ) => {
+    await tx.category.updateMany({
+      where: {
+        userId,
+        categoryGroupId,
+        position: {
+          gt: deletedPosition,
+        },
+      },
+      data: {
+        position: {
+          decrement: 1,
+        },
+      },
+    });
+  },
 };

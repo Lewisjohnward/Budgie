@@ -97,7 +97,6 @@ export function Categories({
   }>({ id: null, type: null });
 
   const [draftView, setDraftView] = useState(view.categoriesByGroup);
-  console.log("draftView:", draftView);
   const [updatedCategory, setUpdatedCategory] =
     useState<UpdatedCategory | null>(null);
   const [updatedCategoryGroup, setUpdatedCategoryGroup] =

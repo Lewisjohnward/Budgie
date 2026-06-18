@@ -14,6 +14,7 @@ import { type DomainCategory, type DomainMonth } from "../category.types";
 export type DeleteCategoryResult = {
   deletedCategory: DomainCategory;
   deletedMonths: DomainMonth[];
+  updatedCategories: DomainCategory[];
   updatedMonths: DomainMonth[];
   updatedTransactions: DomainNormalTransaction[];
 };

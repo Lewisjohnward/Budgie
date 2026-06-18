@@ -10,7 +10,6 @@ import { getProtectedCategoryGroups } from "../../utils/categoryGroup";
 import { createGroupWithCategory } from "../../utils/scenarios/createGroupWithCategory";
 import { createTransactionForCategory } from "../../utils/scenarios/createTransactionForCategory";
 import {
-  addTransactionLegacy,
   createTransaction,
   getTransactionIds,
   getTransactionsForAccountId,

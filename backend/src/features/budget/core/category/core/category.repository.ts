@@ -136,6 +136,13 @@ export interface CategoryRepository {
     userId: UserId
   ): Promise<Date>;
 
+  shiftCategoriesAfterDelete(
+    tx: Prisma.TransactionClient,
+    userId: UserId,
+    categoryGroupId: string,
+    deletedPosition: number
+  ): Promise<void>;
+
   getAllMonthsForCategories(
     tx: Prisma.TransactionClient,
     userId: UserId,

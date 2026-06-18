@@ -119,6 +119,12 @@ export function useAllocationIndexes({
 
     // Init from categories
     for (const categoryId of Object.keys(userCategories) as CategoryId[]) {
+      console.log("categoryId:", categoryId);
+      console.log(
+        "currentUserCategoryMonthMap[categoryId].available:",
+        currentUserCategoryMonthMap[categoryId].available
+      );
+      console.log("currentUserCategoryMonthMap", currentUserCategoryMonthMap);
       metrics[categoryId] = {
         name: userCategories[categoryId].name,
         transactionCount: 0,

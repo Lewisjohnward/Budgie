@@ -4,7 +4,7 @@ import monthRoutes from "./months/month.routes";
 
 const router = Router();
 
-router.use("/", categoryRoutes);
 router.use("/months", monthRoutes);
+router.use("/", categoryRoutes);
 
 export default router;
