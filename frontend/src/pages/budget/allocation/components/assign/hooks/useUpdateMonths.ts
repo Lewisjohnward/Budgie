@@ -1,14 +1,13 @@
-import { useEditMonthMutation } from "@/core/api/budgetApiSlice";
-import { MonthsToUpdate } from "../types/assignTypes";
+import { type MonthsToUpdate } from "../types/assignTypes";
+import { useAllocateToMonthsMutation } from "@/core/api/budget/category/categoryApiSlice";
 
 export const useUpdateMonths = () => {
-  const [editMonth] = useEditMonthMutation();
+  const [allocateToMonths] = useAllocateToMonthsMutation();
 
   const updateMonths = async (monthsToUpdate: MonthsToUpdate[]) => {
     if (!monthsToUpdate || monthsToUpdate.length === 0) return;
 
-    console.log("monthsToUpdate:", monthsToUpdate);
-    await editMonth({
+    await allocateToMonths({
       assignments: monthsToUpdate.map((m) => ({
         ...m,
         assigned: m.assigned,

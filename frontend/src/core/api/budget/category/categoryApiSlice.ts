@@ -1,6 +1,7 @@
 import {
   CategoryGroupId,
   CategoryId,
+  MonthId,
 } from "@/pages/budget/allocation/types/types";
 import { apiSlice } from "../../apiSlice";
 import { budgetSnapshotSlice } from "../budgetSnapshotSlice";
@@ -9,6 +10,11 @@ import {
   MonthBranded,
   TransactionBranded,
 } from "@/core/types/NormalizedData";
+import {
+  UpdatedMonthsById,
+  updatedMonthsByIdSchema,
+} from "@/core/schemas/editMonthSchema";
+import { UpdateMonthsPayload } from "@/pages/budget/allocation/components/assign/types/assignTypes";
 
 const CATEGORY_ENDPOINT_URL = "budget/categories";
 
@@ -39,16 +45,30 @@ type CreateCategoryDto = {
     months: Record<string, MonthBranded>;
   };
 };
-// Response to update category
-type UpdateCategoryDto = CategoryBranded;
-// Response to update category
-// Response to delete category
-type DeleteCategoryDto = {
-  deleted: {
-    categoryId: CategoryId;
-  };
 
+// Response to update category
+export type UpdateCategoryDto = {
   updated: {
+    category: CategoryBranded;
+    categories: CategoryPositionPatch[];
+  };
+};
+
+// Patch for category when repositioning
+export type CategoryPositionPatch = {
+  id: string;
+  position: number;
+  categoryGroupId: string;
+};
+
+// Response to delete category
+export type DeleteCategoryDto = {
+  deleted: {
+    category: CategoryBranded;
+    months: Record<string, MonthBranded>;
+  };
+  updated: {
+    categories: Record<string, CategoryBranded>;
     transactions: Record<string, TransactionBranded>;
     months: Record<string, MonthBranded>;
   };
@@ -84,8 +104,6 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
               undefined,
               (draft) => {
                 const { category, months } = data.created;
-
-                draft.categories.user[category.id] = category;
 
                 draft.categories.user[category.id] = category;
 
@@ -178,34 +196,27 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
       },
     }),
     deleteCategory: builder.mutation<DeleteCategoryDto, DeleteCategoryInput>({
-      query: ({ categoryId, inheritingCategoryId }) => {
-        return {
-          url: `${CATEGORY_ENDPOINT_URL}/${categoryId}`,
-          method: "DELETE",
-          body: inheritingCategoryId,
-        };
-      },
+      query: ({ categoryId, inheritingCategoryId }) => ({
+        url: `${CATEGORY_ENDPOINT_URL}/${categoryId}`,
+        method: "DELETE",
+        body: inheritingCategoryId ? { inheritingCategoryId } : undefined,
+      }),
+
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         const patchResult = dispatch(
           budgetSnapshotSlice.util.updateQueryData(
             "getBudgetSnapshot",
             undefined,
             (draft) => {
-              // Find months belonging to category
-              const monthIds = Object.values(draft.months)
-                .filter((m) => m.categoryId === arg.categoryId)
-                .map((m) => m.id);
-
-              // Delete category
+              // Optimistically remove category
               delete draft.categories.user[arg.categoryId];
 
-              // Delete months
-              for (const id of monthIds) {
-                delete draft.months[id];
+              // Optimistically remove months belonging to category
+              for (const month of Object.values(draft.months)) {
+                if (month.categoryId === arg.categoryId) {
+                  delete draft.months[month.id];
+                }
               }
-
-              // NO-OP optimistic placeholder is optional here
-              // because we don't yet know server-generated IDs
             }
           )
         );
@@ -218,14 +229,33 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
               "getBudgetSnapshot",
               undefined,
               (draft) => {
-                const { category, months } = data.created;
+                // Deleted
 
-                draft.categories.user[category.id] = category;
+                // Category
+                delete draft.categories.user[data.deleted.category.id];
 
-                draft.categories.user[category.id] = category;
+                // Months
+                for (const month of Object.values(data.deleted.months)) {
+                  delete draft.months[month.id];
+                }
 
-                for (const month of Object.values(months)) {
+                // Updated
+
+                // Categories
+                for (const category of Object.values(data.updated.categories)) {
+                  draft.categories.user[category.id] = category;
+                }
+
+                // Months
+                for (const month of Object.values(data.updated.months)) {
                   draft.months[month.id] = month;
+                }
+
+                // Transactions
+                for (const transaction of Object.values(
+                  data.updated.transactions
+                )) {
+                  draft.transactions[transaction.id] = transaction;
                 }
               }
             )
@@ -235,11 +265,35 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
         }
       },
     }),
+    allocateToMonths: builder.mutation<UpdatedMonthsById, UpdateMonthsPayload>({
+      query: (assigned) => ({
+        url: `${CATEGORY_ENDPOINT_URL}/months`,
+        method: "PATCH",
+        body: assigned,
+      }),
+
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        const { data } = await queryFulfilled;
+
+        dispatch(
+          budgetSnapshotSlice.util.updateQueryData(
+            "getBudgetSnapshot",
+            undefined,
+            (draft) => {
+              for (const [id, month] of Object.entries(data)) {
+                if (!month) continue;
+                draft.months[id as MonthId] = month;
+              }
+            }
+          )
+        );
+      },
+    }),
   }),
 });
-
 export const {
   useCreateCategoryMutation,
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
+  useAllocateToMonthsMutation,
 } = categoryApiSlice;

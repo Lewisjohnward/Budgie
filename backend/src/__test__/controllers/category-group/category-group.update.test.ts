@@ -1,15 +1,17 @@
 import { getCategoryGroups } from "../../utils/appSnapshot";
 import { registerUser, login } from "../../utils/auth";
 import {
+  createCategoryGroupRaw,
+  createCategoryGroup,
+} from "../../utils/category-group/categoryGroup.create";
+import {
   updateCategoryGroupRaw,
   getProtectedCategoryGroups,
   getTestCategoryGroup,
-  createCategoryGroupRaw,
   getCategoryGroupByNameOrThrow,
-  createCategoryGroup,
   updateCategoryGroup,
-  createTestCategoryGroups,
 } from "../../utils/categoryGroup";
+import { createTestCategoryGroups } from "../../utils/scenarios/createTestCategoryGroups";
 
 describe("Category group", () => {
   let cookie: string;

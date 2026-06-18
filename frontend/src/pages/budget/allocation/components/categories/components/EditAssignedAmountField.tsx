@@ -4,6 +4,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MonthSchema } from "@/core/types/MonthSchema";
 import { MonthId } from "../../../types/types";
+import { useAllocateToMonthsMutation } from "@/core/api/budget/category/categoryApiSlice";
 
 type AssignedAmountFieldProps = {
   assigned: number;
@@ -32,7 +33,7 @@ export const AssignedAmountField = forwardRef<
   HTMLInputElement,
   AssignedAmountFieldProps
 >(({ assigned, monthId }, ref) => {
-  const [editMonth] = useEditMonthMutation();
+  const [allocateToMonths] = useAllocateToMonthsMutation();
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [isFocused, setIsFocused] = useState(false);
@@ -56,7 +57,7 @@ export const AssignedAmountField = forwardRef<
 
     if (next === prev) return;
 
-    editMonth({
+    allocateToMonths({
       assignments: [
         {
           monthId,

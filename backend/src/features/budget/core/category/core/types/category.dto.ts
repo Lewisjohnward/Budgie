@@ -47,6 +47,7 @@ export type DeleteCategoryDto = {
     months: Record<string, MonthDto>;
   };
   updated: {
+    categories: Record<string, CategoryDto>;
     transactions: Record<string, TransactionNormalDto>;
     months: Record<string, MonthDto>;
   };

@@ -3,14 +3,23 @@ import { CategoryGroupId } from "./categoryGroup.types";
 
 export const createCategoryGroupSchema = z.object({
   userId: z.string().uuid(),
-  name: z.string().min(1),
+  name: z.string().trim().min(1, { message: "Name cannot be empty" }).max(50, {
+    message: "Name must be less than 50 characters",
+  }),
 });
 
 export const updateCategoryGroupSchema = z
   .object({
     userId: z.string().uuid(),
     categoryGroupId: z.string().uuid(),
-    name: z.string().min(1).optional(),
+    name: z
+      .string()
+      .trim()
+      .min(1, { message: "Name cannot be empty" })
+      .max(50, {
+        message: "Name must be less than 50 characters",
+      })
+      .optional(),
     position: z.number().int().nonnegative().optional(),
   })
   .superRefine((data, ctx) => {

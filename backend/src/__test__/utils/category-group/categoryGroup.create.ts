@@ -1,5 +1,4 @@
 import request from "supertest";
-
 import app from "../../../app";
 import { type CreateCategoryGroupPayload } from "../../../features/budget/core/categorygroup/categorygroup.schema";
 import { type CreateCategoryGroupDto } from "../../../features/budget/core/categorygroup/categoryGroup.types";

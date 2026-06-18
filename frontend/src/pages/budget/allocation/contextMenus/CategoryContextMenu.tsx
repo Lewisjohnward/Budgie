@@ -73,7 +73,7 @@ export function CategoryContextMenu({
 
   const handleDelete = (categoryId: string) => {
     console.log("categoryId:", categoryId);
-    // deleteCategory({ categoryId });
+    deleteCategory({ categoryId });
   };
 
   const openContextMenu = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {

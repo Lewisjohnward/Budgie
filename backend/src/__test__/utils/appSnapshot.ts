@@ -1,11 +1,11 @@
 import request from "supertest";
 import app from "../../app";
 import { type BudgetHydrationDto } from "../../features/budget/queries/hydration/hydration.types";
-import { CategoryDto } from "../../features/budget/core/category/core/types/category.dto";
-import { MonthDto } from "../../features/budget/core/category/core/category.types";
+import { type CategoryDto } from "../../features/budget/core/category/core/types/category.dto";
+import { type MonthDto } from "../../features/budget/core/category/core/category.types";
 import {
-  CategoryGroupUserDto,
-  CategoryGroupSystemDto,
+  type CategoryGroupUserDto,
+  type CategoryGroupSystemDto,
 } from "../../features/budget/core/categorygroup/categoryGroup.types";
 
 const SNAPSHOT_ENDPOINT_URL = "/budget/snapshot";
@@ -62,6 +62,7 @@ export const getMonths = async (
 };
 
 /**
+ * Finds a user category by its exact name.
  */
 export const getUserCategoryByName = async (
   cookie: string,
@@ -73,39 +74,43 @@ export const getUserCategoryByName = async (
 };
 
 /**
+ * Finds a user category by its unique ID.
  */
 export const getUserCategoryById = async (
   cookie: string,
   id: string
 ): Promise<CategoryDto | undefined> => {
   const userCategories = await getUserCategories(cookie);
-
-  // TODO:(lewis 2026-06-15 12:43) is this returning userId?
-
   return Object.values(userCategories).find((c) => c.id === id);
 };
 
 /**
+ * Fetches a user category by its unique ID, or throws an error if it does not exist.
  */
-export async function getUserCategoryByIdOrThrow(cookie: string, id: string) {
+export const getUserCategoryByIdOrThrow = async (
+  cookie: string,
+  id: string
+) => {
   const category = await getUserCategoryById(cookie, id);
   if (!category) throw new Error(`Category ${id} not found`);
   return category;
-}
+};
 
 /**
+ * Filters and returns all user categories belonging to a specific category group.
  */
-export async function getUserCategoriesByCategoryGroupId(
+export const getUserCategoriesByCategoryGroupId = async (
   cookie: string,
   categoryGroupId: string
-) {
+) => {
   const allCategories = await getUserCategories(cookie);
   return Object.values(allCategories).filter(
     (c) => c.categoryGroupId === categoryGroupId
   );
-}
+};
 
 /**
+ * Fetches all historical month records associated with a specific category ID.
  */
 export const getMonthsByCategoryId = async (
   cookie: string,
@@ -117,6 +122,7 @@ export const getMonthsByCategoryId = async (
 };
 
 /**
+ * Fetches the categorized group map slices (user, inflow, uncategorised) from the snapshot.
  */
 export const getCategoryGroups = async (
   cookie: string
@@ -131,13 +137,45 @@ export const getCategoryGroups = async (
 };
 
 /**
+ * Fetches a user category group by its ID, or throws an error if it does not exist.
+ */
+export const getUserCategoryGroupByIdOrThrow = async (
+  cookie: string,
+  categoryGroupId: string
+): Promise<CategoryGroupUserDto> => {
+  const categoryGroups = await getCategoryGroups(cookie);
+
+  const categoryGroup = categoryGroups.user[categoryGroupId];
+
+  if (!categoryGroup)
+    throw new Error(`CategoryGroup ${categoryGroupId} not found`);
+
+  return categoryGroup;
+};
+
+/**
+ * Finds a user category group by its exact name.
+ */
+export const getUserCategoryGroupByName = async (
+  cookie: string,
+  name: string
+): Promise<CategoryGroupUserDto | undefined> => {
+  const categoryGroups = await getCategoryGroups(cookie);
+
+  const categoryGroup = Object.values(categoryGroups.user).find(
+    (g) => g.name === name
+  );
+
+  return categoryGroup;
+};
+
+/**
  * Gets inflow category group
  */
 export const getInflowCategoryGroup = async (
   cookie: string
 ): Promise<CategoryGroupSystemDto> => {
   const categoryGroups = await getCategoryGroups(cookie);
-  console.log("categoryGroups:", categoryGroups);
 
   return categoryGroups.inflow;
 };

@@ -21,6 +21,7 @@ import { type DeleteCategoryDto } from "../types/category.dto";
  * @returns A DTO containing the entities that were deleted and updated as a
  * result of the operation.
  */
+
 export const toDeleteCategoryDto = (
   result: DeleteCategoryResult
 ): DeleteCategoryDto => {
@@ -40,12 +41,17 @@ export const toDeleteCategoryDto = (
       ])
     );
 
+  const updatedCategories = Object.fromEntries(
+    result.updatedCategories.map((c) => [c.id, categoryMapper.toCategoryDto(c)])
+  );
+
   return {
     deleted: {
       category: categoryMapper.toCategoryDto(result.deletedCategory),
       months: deletedMonths,
     },
     updated: {
+      categories: updatedCategories,
       months: updatedMonths,
       transactions: updatedTransactions,
     },
