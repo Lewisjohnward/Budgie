@@ -32,6 +32,10 @@ export interface CategoryRepository {
     userId: UserId
   ): Promise<string[]>;
 
+  /**
+   * Retrieves the maximum sort position index currently assigned to any category within a specific group.
+   * Used for determining insertion ordering when appending new entries.
+   */
   getMaxCategoryPositionInGroup(
     tx: Prisma.TransactionClient,
     categoryGroupId: CategoryGroupId
@@ -62,6 +66,9 @@ export interface CategoryRepository {
 
   // ──────────────── Category Mutation ────────────────
 
+  /**
+   * Persists a new category record directly into the database.
+   */
   createCategory(
     tx: Prisma.TransactionClient,
     categoryData: CreateCategoryData

@@ -25,6 +25,9 @@ export const getCategories = async (
   }
 };
 
+/**
+ * Creates a new category
+ */
 export const createCategory = async (
   req: Request,
   res: Response,

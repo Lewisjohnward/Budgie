@@ -25,6 +25,13 @@ export const toCreateCategoryCommand = (
   categoryGroupId: asCategoryGroupId(p.categoryGroupId),
 });
 
+/**
+ * Orchestrates the creation of a budget category inside an ACID database transaction.
+ * Validates ownership, calculates sequential ordering, and seeds corresponding budget months.
+ * * @throws {ResourceNotFoundError} If the parent category group does not exist.
+ * @throws {ForbiddenError} If the user does not have permission to modify the target category group.
+ * @throws {DuplicateCategoryNameError} If a category with the same name already exists in the group.
+ */
 export const createCategory = async (
   payload: CreateCategoryPayload
 ): Promise<CreateCategoryResult> => {
