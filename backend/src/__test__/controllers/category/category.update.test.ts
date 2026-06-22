@@ -208,6 +208,20 @@ describe("Category", () => {
 
           expect(positions).toEqual([...positions].sort((a, b) => a - b));
         });
+        it("Should correctly reposition category into a group without categories", async () => {
+          // Create recieving category group with no categories
+          const categoryGroup = await createCategoryGroup(cookie, {
+            name: "recieving-group",
+          });
+
+          // Reposition category into other group
+          const res = await updateCategoryRaw(cookie, categoryId, {
+            categoryGroupId: categoryGroup.id,
+            position: 0,
+          });
+
+          expect(res.status).toBe(200);
+        });
         it("Should correctly reposition category into different group", async () => {
           const { category: otherCategory, categoryGroup: otherCategoryGroup } =
             await createGroupWithCategory(cookie);
