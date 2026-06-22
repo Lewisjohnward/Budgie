@@ -21,6 +21,7 @@ export type MoveCategoryResult = {
   updatedCategory: DomainCategory;
   affectedCategories: DomainCategory[];
 };
+
 /**
  * Handles all category repositioning logic:
  * - reorder within same group
@@ -43,7 +44,7 @@ export const moveCategory = async ({
     },
   });
 
-  if (toPosition < 0 || toPosition >= targetGroupSize) {
+  if (toPosition < 0 || toPosition > targetGroupSize) {
     throw new InvalidCategoryPositionError();
   }
 
