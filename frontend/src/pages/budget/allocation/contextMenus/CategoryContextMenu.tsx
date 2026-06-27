@@ -91,7 +91,7 @@ export function CategoryContextMenu({
     reset();
   };
 
-  const { value: open, toggle } = useToggle(false);
+  const { value: deleteCategoryModalOpen, toggle } = useToggle(false);
 
   const handleDelete = (categoryId: string) => {
     // Check category is deletable (has no transactions or assigned)
@@ -122,9 +122,8 @@ export function CategoryContextMenu({
     setContextOpen(false);
   };
 
-  const acceptDelete = (inheritingCategoryId: string) => {
-    console.log("test", { categoryId: category.id, inheritingCategoryId });
-    // deleteCategory({ categoryId: category.id, inheritingCategoryId });
+  const acceptDelete = (inheritingCategoryId?: string) => {
+    deleteCategory({ categoryId: category.id, inheritingCategoryId });
   };
 
   const cancelDeleteModal = () => {
@@ -134,7 +133,7 @@ export function CategoryContextMenu({
   return (
     <div onContextMenu={openContextMenu}>
       <DeleteCategoryDialog
-        open={open}
+        open={deleteCategoryModalOpen}
         toggle={toggle}
         state={deleteState}
         accept={acceptDelete}

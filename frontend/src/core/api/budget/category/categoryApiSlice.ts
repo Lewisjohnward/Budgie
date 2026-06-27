@@ -35,7 +35,7 @@ type UpdateCategoryInput = {
 // Input to update category
 type DeleteCategoryInput = {
   categoryId: CategoryId;
-  inheritingCategoryId: CategoryId;
+  inheritingCategoryId?: CategoryId;
 };
 
 // Response to create category
