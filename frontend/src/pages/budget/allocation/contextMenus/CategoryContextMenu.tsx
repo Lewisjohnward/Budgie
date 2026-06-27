@@ -21,7 +21,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ReactNode, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { asCategoryId } from "../types/types";
+import { asCategoryId, CategoryId } from "../types/types";
+import { useToggle } from "../components/assign/hooks";
+import { CategoryDeleteState } from "../utils/getCategoryDeleteState";
+import {
+  ExcludeTarget,
+  CategorySelectOptions,
+} from "../hooks/useAllocation/useAllocation";
+import { DeleteCategoryDialog } from "../dialogs/deleteCategoryDialog/DeleteCategoryDialog";
+import { DeleteState } from "./CategoryGroupContextMenu";
 
 const CategoryContextSchema = z.object({
   name: z.string().min(1, { message: "Category requires a name" }),
@@ -30,16 +38,28 @@ const CategoryContextSchema = z.object({
 
 export type CategoryContextType = z.infer<typeof CategoryContextSchema>;
 
-export function CategoryContextMenu({
-  category,
-  children,
-}: {
-  category: Category;
+type CategoryContextMenuProps = {
   children: ReactNode;
-}) {
+  // TODO:(lewis 2026-06-24 10:37) this type is a smell
+  category: Category;
+  getCategoryDeleteState: (categoryId: CategoryId) => CategoryDeleteState;
+  getCategorySelectOptions: (exclude?: ExcludeTarget) => CategorySelectOptions;
+};
+
+export function CategoryContextMenu({
+  children,
+  category,
+  getCategoryDeleteState,
+  getCategorySelectOptions,
+}: CategoryContextMenuProps) {
   const [contextOpen, setContextOpen] = useState(false);
   const [updateCategory] = useUpdateCategoryMutation();
   const [deleteCategory] = useDeleteCategoryMutation();
+
+  const [selectOptions, setSelectOptions] =
+    useState<CategorySelectOptions | null>(null);
+  const [hasAssigned, setHasAssigned] = useState<boolean>(false);
+  const [deleteState, setDeleteState] = useState<DeleteState | null>(null);
 
   const form = useForm<CategoryContextType>({
     defaultValues: {
@@ -71,9 +91,26 @@ export function CategoryContextMenu({
     reset();
   };
 
+  const { value: open, toggle } = useToggle(false);
+
   const handleDelete = (categoryId: string) => {
-    console.log("categoryId:", categoryId);
-    deleteCategory({ categoryId });
+    // Check category is deletable (has no transactions or assigned)
+    const state = getCategoryDeleteState(category.id);
+    if (state.canDelete) deleteCategory({ categoryId });
+    toggle();
+    setContextOpen(false);
+
+    const selectionOptions = getCategorySelectOptions({
+      type: "category",
+      id: category.id,
+    });
+    setSelectOptions(selectionOptions);
+    setDeleteState({
+      type: "category",
+      hasAssigned: state.hasAssigned,
+      transactionCount: state.transactionCount,
+      name: category.name,
+    });
   };
 
   const openContextMenu = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -85,8 +122,25 @@ export function CategoryContextMenu({
     setContextOpen(false);
   };
 
+  const acceptDelete = (inheritingCategoryId: string) => {
+    console.log("test", { categoryId: category.id, inheritingCategoryId });
+    // deleteCategory({ categoryId: category.id, inheritingCategoryId });
+  };
+
+  const cancelDeleteModal = () => {
+    toggle();
+  };
+
   return (
     <div onContextMenu={openContextMenu}>
+      <DeleteCategoryDialog
+        open={open}
+        toggle={toggle}
+        state={deleteState}
+        accept={acceptDelete}
+        cancel={cancelDeleteModal}
+        selectOptions={selectOptions}
+      />
       <Popover open={contextOpen} onOpenChange={handleOpen}>
         <PopoverTrigger className="w-full text-left">{children}</PopoverTrigger>
         <PopoverContent

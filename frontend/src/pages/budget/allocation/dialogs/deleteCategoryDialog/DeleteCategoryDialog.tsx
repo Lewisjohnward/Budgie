@@ -1,0 +1,364 @@
+import { formatCurrency } from "@/utils/formatCurrency";
+import { ChevronDown } from "lucide-react";
+import { useRef, useState, useEffect, useMemo } from "react";
+import { DeleteState } from "../../contextMenus/CategoryGroupContextMenu";
+import { CategorySelectOptions } from "../../hooks/useAllocation/useAllocation";
+import { Button } from "@/core/components/uiLibrary/button";
+import { Dialog, DialogContent } from "@/core/components/uiLibrary/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/core/components/uiLibrary/popover";
+import { PopoverPortal } from "@radix-ui/react-popover";
+
+export function DeleteCategoryDialog({
+  open,
+  toggle,
+  state,
+  accept,
+  cancel,
+  selectOptions,
+}: {
+  open: boolean;
+  toggle: () => void;
+  state: DeleteState | null;
+  accept: (inheritingCategoryId: string) => void;
+  cancel: () => void;
+  selectOptions: CategorySelectOptions | null;
+}) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [shadowInput, setShadowInput] = useState("");
+  const [input, setInput] = useState("");
+  const [visuallySelectedCategoryId, setVisuallySelectedCategoryId] =
+    useState("");
+  const [selectedInheritingCategoryId, setSelectedInheritingCategoryId] =
+    useState("");
+  const [popoverOpen, setPopoverOpen] = useState(false);
+
+  const selectedRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    selectedRef.current?.scrollIntoView({
+      block: "nearest",
+    });
+  }, [visuallySelectedCategoryId]);
+
+  const normalised = input.toLowerCase().trim();
+
+  const filteredOptions = useMemo(() => {
+    if (!selectOptions) return;
+
+    if (!normalised) return selectOptions;
+    // If user has already selected a category return all
+    if (selectedInheritingCategoryId) return selectOptions;
+
+    return selectOptions
+      .map((group) => {
+        const groupMatches = group.name.toLowerCase().includes(normalised);
+
+        const filteredCategories = group.categories.filter((c) =>
+          c.name.toLowerCase().includes(normalised)
+        );
+
+        if (groupMatches) {
+          return {
+            ...group,
+            categories: group.categories,
+          };
+        }
+
+        if (filteredCategories.length > 0) {
+          return {
+            ...group,
+            categories: filteredCategories,
+          };
+        }
+
+        return null;
+      })
+      .filter(Boolean);
+  }, [input, selectOptions]);
+
+  useEffect(() => {
+    console.log("hello");
+    if (selectOptions === null) return;
+    if (filteredOptions.length === 0) return;
+    if (selectedInheritingCategoryId) return;
+    console.log("hello from useEffect");
+    const group = filteredOptions[0];
+    const category = filteredOptions[0].categories[0];
+    setVisuallySelectedCategoryId(category.id);
+    setShadowInput(`${group.name}: ${category.name}`);
+  }, [input, selectOptions]);
+
+  const hasMatches = useMemo(() => {
+    if (!filteredOptions) return false;
+    return filteredOptions.some((g) => g.categories.length > 0);
+  }, [filteredOptions]);
+
+  const flatMap = filteredOptions?.flatMap((group) =>
+    group.categories.map((category) => ({
+      ...category,
+      groupName: group.name,
+    }))
+  );
+
+  if (!state || !selectOptions) return;
+
+  const isGroup = state.type === "categoryGroup";
+
+  return (
+    <Dialog open={open} onOpenChange={cancel}>
+      <DialogContent
+        // onInteractOutside={(e) => e.preventDefault()}
+        className="
+            fixed
+            w-[500px]
+            py-4
+          px-0
+            bg-white
+          gap-2
+          "
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <div className="px-4 font-semibold text-lg mb-2">
+          {isGroup ? "Delete Category Group" : "Delete Category"}
+        </div>
+        <hr />
+
+        {/* Breakdown section */}
+        {state.transactionCount > 0 && (
+          <>
+            <div className="px-4 pt-2 overflow-hidden">
+              {isGroup ? (
+                <p>
+                  All <span className="font-bold">[{state.categoryCount}]</span>{" "}
+                  categories in the group{" "}
+                  <span className="font-bold">{state.name}</span> will be
+                  reassigned to the selected category.
+                </p>
+              ) : (
+                <p>
+                  Before you can delete the category{" "}
+                  <span className="font-bold">{state.name}</span>, you'll need
+                  to reassign your past activity to a new category
+                </p>
+              )}
+            </div>
+
+            <div className="px-4 space-y-2">
+              <p className="font-bold">Select category</p>
+              <Popover open={popoverOpen}>
+                <PopoverTrigger className="w-full" asChild data-popover-trigger>
+                  <div
+                    className="flex items-center p-1 pr-2 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 rounded-sm overflow-hidden"
+                    onClick={(e) => {
+                      if (popoverOpen) {
+                        // Already open - ignore
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return;
+                      }
+
+                      if (visuallySelectedCategoryId) {
+                        requestAnimationFrame(() => {
+                          inputRef.current?.select();
+                        });
+                      }
+
+                      (() => setPopoverOpen(true))();
+                    }}
+                    // onBlur={handleBlur}
+                    onKeyDown={(e) => {
+                      if (
+                        selectedInheritingCategoryId &&
+                        (e.key === "Backspace" ||
+                          e.key === "Delete" ||
+                          e.key.length === 1)
+                      ) {
+                        setSelectedInheritingCategoryId("");
+                        setVisuallySelectedCategoryId("");
+                        setInput("");
+                      }
+
+                      if (!popoverOpen) setPopoverOpen(true);
+
+                      if (!flatMap || flatMap.length === 0) return;
+
+                      const pos = flatMap.findIndex(
+                        (cat) => cat.id === visuallySelectedCategoryId
+                      );
+
+                      const currentIndex = pos === -1 ? 0 : pos;
+
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        const option = flatMap[currentIndex];
+
+                        if (!option) return;
+
+                        setInput(`${option.groupName}: ${option.name}`);
+                        setPopoverOpen(false);
+                        setSelectedInheritingCategoryId(
+                          visuallySelectedCategoryId
+                        );
+                        setVisuallySelectedCategoryId(
+                          visuallySelectedCategoryId
+                        );
+
+                        requestAnimationFrame(() => {
+                          inputRef.current?.focus();
+                        });
+                        return;
+                      }
+
+                      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+                        e.preventDefault();
+                        (() => setPopoverOpen(true))();
+
+                        let nextIndex;
+
+                        if (e.key === "ArrowDown") {
+                          nextIndex = (currentIndex + 1) % flatMap.length;
+                        } else {
+                          nextIndex =
+                            (currentIndex - 1 + flatMap.length) %
+                            flatMap.length;
+                        }
+
+                        setVisuallySelectedCategoryId(flatMap[nextIndex].id);
+                      }
+                    }}
+                  >
+                    <input
+                      className="px-2 w-full rounded-sm text-ellipsis focus:outline-none focus:ring-0"
+                      value={input}
+                      onChange={(e) => {
+                        setInput(e.target.value);
+                        if (flatMap.length === 0) return;
+                        console.log("flat map", flatMap[0].id);
+                        console.log("filtered options", filteredOptions);
+                        setVisuallySelectedCategoryId(flatMap[0].id);
+                      }}
+                      ref={inputRef}
+                      onBlur={() => setPopoverOpen(false)}
+                    />
+                    <ChevronDown className="size-4 text-sky-950" />
+                  </div>
+                </PopoverTrigger>
+                <PopoverPortal>
+                  <PopoverContent
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                    className="w-[475px] h-[500px] overflow-scroll rounded-sm shadow-md animate-none"
+                    side={"bottom"}
+                    onWheelCapture={(e) => {
+                      // Prevents onScroll from being cancelled higher up the tree
+                      e.stopPropagation();
+                    }}
+                  >
+                    <div className="p-2">
+                      <p className="text-lg font-bold">Plan categories</p>
+                    </div>
+                    <hr />
+                    <div className="p-2">
+                      <ul>
+                        {filteredOptions.map((group) => {
+                          return (
+                            <li>
+                              <div className="py-1">
+                                <p className="pl-2 font-bold text-sm">
+                                  {group.name}:
+                                </p>
+                                <div className="space-y-[1px]">
+                                  {group.categories.map((c) => {
+                                    const isSelected =
+                                      c.id === visuallySelectedCategoryId;
+                                    return (
+                                      <div
+                                        role="option"
+                                        ref={isSelected ? selectedRef : null}
+                                        aria-selected={isSelected}
+                                        className={`px-4 py-1 flex justify-between cursor-pointer transition-colors
+    ${isSelected ? "bg-stone-200/60" : "hover:bg-stone-200/60"}
+  `}
+                                        onClick={() => {
+                                          setInput(`${group.name}: ${c.name}`);
+                                          setShadowInput(
+                                            `${group.name}: ${c.name}`
+                                          );
+                                          setVisuallySelectedCategoryId(c.id);
+                                          setSelectedInheritingCategoryId(c.id);
+                                          setPopoverOpen(false);
+                                        }}
+                                      >
+                                        <p>{c.name}</p>
+                                        <MoneyText value={c.available} />
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  </PopoverContent>
+                </PopoverPortal>
+              </Popover>
+            </div>
+
+            <div className="px-4">
+              <p className="font-bold">
+                Here's what will be reassigned to the new category:
+              </p>
+              <ul>
+                <li>
+                  All transactions <strong>[{state.transactionCount}]</strong>
+                </li>
+                <li>All assigned amounts</li>
+                <li>Any remaining available amount</li>
+              </ul>
+            </div>
+          </>
+        )}
+        {state.hasAssigned && state.transactionCount === 0 && (
+          <div className="px-4 pt-2 space-y-4">
+            <p>
+              There is money currently assigned to{" "}
+              <span className="font-bold">test</span>.
+            </p>{" "}
+            <p>
+              When you delete this category group, all assigned amounts will be
+              moved to <span className="font-bold">Ready to Assign.</span>
+            </p>
+          </div>
+        )}
+        <div className="flex justify-end gap-2 px-4">
+          <Button className="bg-sky-900 text-md" onClick={cancel}>
+            Cancel
+          </Button>
+          <Button
+            className="bg-red-400/40 text-md text-red-500"
+            onClick={() => accept(selectedInheritingCategoryId)}
+            disabled={selectedInheritingCategoryId === ""}
+          >
+            Delete
+          </Button>
+        </div>
+
+        {/* Footer note */}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function MoneyText({ value }: { value: number }) {
+  const textColor =
+    value < 0 ? "text-red-400" : value > 0 ? "text-green-600" : "text-black ";
+  return (
+    <p className={`${textColor} `}>
+      {formatCurrency(value, { showNegative: true })}
+    </p>
+  );
+}

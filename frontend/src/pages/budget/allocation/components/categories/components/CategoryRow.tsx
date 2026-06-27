@@ -14,17 +14,29 @@ import {
 import { CategorySelectionState } from "../../../hooks/useAllocation/useCategorySelection";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { CategoryId } from "../../../types/types";
+import { CategoryDeleteState } from "../../../utils/getCategoryDeleteState";
+import {
+  ExcludeTarget,
+  CategorySelectOptions,
+} from "../../../hooks/useAllocation/useAllocation";
+
+type CategoryRowProps = {
+  category: CategoryBranded;
+  month: MonthBranded;
+  // TODO:(lewis 2026-05-15 15:06) i dont like neither the name or the type, i think it should be categorySelector
+  categorySelection: CategorySelectionState;
+  getCategoryDeleteState: (categoryId: CategoryId) => CategoryDeleteState;
+  getCategorySelectOptions: (exclude?: ExcludeTarget) => CategorySelectOptions;
+};
 
 export function CategoryRow({
   category,
   month,
   categorySelection,
-}: {
-  category: CategoryBranded;
-  month: MonthBranded;
-  // TODO:(lewis 2026-05-15 15:06) i dont like neither the name or the type, i think it should be categorySelector
-  categorySelection: CategorySelectionState;
-}) {
+  getCategoryDeleteState,
+  getCategorySelectOptions,
+}: CategoryRowProps) {
   const { activity, available, assigned } = month;
 
   const {
@@ -60,7 +72,11 @@ export function CategoryRow({
   const values = calculateBarColors({ activity, available, assigned });
 
   return (
-    <CategoryContextMenu category={category}>
+    <CategoryContextMenu
+      category={category}
+      getCategoryDeleteState={getCategoryDeleteState}
+      getCategorySelectOptions={getCategorySelectOptions}
+    >
       <div
         onClick={handleRowClick}
         className={`${isRowSelected ? "bg-gray-100" : "bg-white"} cursor-pointer`}

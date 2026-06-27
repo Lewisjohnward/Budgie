@@ -1,0 +1,2 @@
+need to filter out category groups with no categories
+need to implement input filter
