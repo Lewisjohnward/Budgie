@@ -42,16 +42,16 @@ type CategoriesProps = {
   expandCategoryGroups: ExpandableCategoryGroupsState;
   categorySelector: CategorySelectionState;
   deleteState: {
-    getCategoryDeleteState: (categoryId: CategoryId) => {
-      hasAssigned: boolean;
-      transactionCount: number;
-      canDelete: boolean;
-    };
+    getCategoryDeleteState: (categoryId: CategoryId) => CategoryDeleteState;
     getCategoryGroupDeleteState: (
       categoryGroupId: CategoryGroupId
     ) => CategoryGroupDeleteState;
   };
-  selectors: any;
+  selectors: {
+    getCategorySelectOptions: (
+      exclude?: ExcludeTarget
+    ) => CategorySelectOptions;
+  };
 };
 
 export function Categories({
@@ -206,7 +206,7 @@ export function Categories({
                   getCategoryGroupDeleteState={
                     deleteState.getCategoryGroupDeleteState
                   }
-                  selectors={selectors}
+                  getCategorySelectOptions={selectors.getCategorySelectOptions}
                 >
                   <div className="group">
                     <CategoryGridRow id={group.id} className="bg-stone-200">
@@ -234,6 +234,12 @@ export function Categories({
                     {rows.map((row) => {
                       return (
                         <CategoryRow
+                          getCategoryDeleteState={
+                            deleteState.getCategoryDeleteState
+                          }
+                          getCategorySelectOptions={
+                            selectors.getCategorySelectOptions
+                          }
                           key={row.category.id}
                           category={row.category}
                           month={row.month}
@@ -340,6 +346,11 @@ import { cn } from "@/core/lib/utils";
 import { useUpdateCategoryGroupMutation } from "@/core/api/budget/categoryGroup/CategoryGroupApiSlice";
 import { CategoryGroupDeleteState } from "../../utils/getCategoryGroupDeleteState";
 import { useUpdateCategoryMutation } from "@/core/api/budget/category/categoryApiSlice";
+import { CategoryDeleteState } from "../../utils/getCategoryDeleteState";
+import {
+  CategorySelectOptions,
+  ExcludeTarget,
+} from "../../hooks/useAllocation/useAllocation";
 
 type Props = {
   groupId: string;

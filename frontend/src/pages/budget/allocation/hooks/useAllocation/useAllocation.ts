@@ -10,7 +10,6 @@ import {
   CategoryId,
   CategoryMonthMap,
   MonthId,
-  TransactionId,
 } from "../../types/types";
 import {
   assembleCategoryGroupViews,
@@ -25,7 +24,6 @@ import {
   CategoryGroupBranded,
   CategoryBranded,
   MonthBranded,
-  TransactionBranded,
 } from "@/core/types/NormalizedData";
 import { useMonthInitialiser } from "./useMonthInitialiser";
 import { useAutoAssignViewModel } from "./useAutoAssign";
@@ -41,6 +39,20 @@ export type RtaInformation = {
   totalAssignedFuture: number;
   available: number;
 };
+
+export type ExcludeTarget =
+  | { type: "categoryGroup"; id: CategoryGroupId }
+  | { type: "category"; id: CategoryId };
+
+export type CategorySelectOptions = {
+  id: CategoryGroupId;
+  name: string;
+  categories: {
+    id: CategoryId;
+    name: string;
+    available: number;
+  }[];
+}[];
 
 export function useAllocation() {
   const dispatch = useAppDispatch();
@@ -192,14 +204,9 @@ export function useAllocation() {
     [engine.computed.categoryMetricsById]
   );
 
-  type ExcludeTarget =
-    | { type: "categoryGroup"; id: CategoryGroupId }
-    | { type: "category"; id: CategoryId };
-
   // Used to select inheriting category
   const getCategorySelectOptions = useCallback(
-    (exclude?: ExcludeTarget) => {
-      console.log("hello world");
+    (exclude?: ExcludeTarget): CategorySelectOptions => {
       const groups = Object.values(engine.entities.categoryGroups.user);
 
       return groups
@@ -210,19 +217,11 @@ export function useAllocation() {
             return g.id !== exclude.id;
           }
 
-          if (exclude.type === "category") {
-            // only exclude groups that contain this category
-            const categoryGroupId =
-              engine.entities.categories.user[exclude.id]?.categoryGroupId;
-
-            return g.id !== categoryGroupId;
-          }
-
           return true;
         })
         .map((group) => ({
-          groupId: group.id,
-          groupName: group.name,
+          id: group.id,
+          name: group.name,
           categories: (categoryIdsByGroupId[group.id] ?? [])
             .filter((id) => {
               if (!exclude || exclude.type === "categoryGroup") return true;
@@ -236,7 +235,7 @@ export function useAllocation() {
               return {
                 id,
                 name: cat.name,
-                available: m?.available ?? 0,
+                available: m.available,
               };
             }),
         }));
@@ -252,7 +251,7 @@ export function useAllocation() {
   /*
    * misc
    */
-  //  SIDE EFFECT: reset selection on mount (kept explicit)
+  //  SIDE EFFECT: reset category selection on mount (kept explicit)
   useEffect(() => {
     categorySelector.clear();
     // TODO:(lewis 2026-05-07 08:42) is this dependence correct?

@@ -1,12 +1,20 @@
 export function formatCurrency(
   value: number,
-  { showPlus = false }: { showPlus?: boolean } = {}
+  {
+    showPlus = false,
+    showNegative = true,
+  }: { showPlus?: boolean; showNegative?: boolean } = {}
 ): string {
-  const isNegative = value < 0;
   const absValue = Math.abs(value).toFixed(2);
   const formattedValue = `£${absValue}`;
 
-  if (isNegative) return `-${formattedValue}`;
-  if (showPlus) return `+${formattedValue}`;
+  if (value < 0) {
+    return showNegative ? `-${formattedValue}` : formattedValue;
+  }
+
+  if (value > 0) {
+    return showPlus ? `+${formattedValue}` : formattedValue;
+  }
+
   return formattedValue;
 }
