@@ -23,7 +23,7 @@ export function DeleteCategoryDialog({
   open: boolean;
   toggle: () => void;
   state: DeleteState | null;
-  accept: (inheritingCategoryId: string) => void;
+  accept: (inheritingCategoryId?: string) => void;
   cancel: () => void;
   selectOptions: CategorySelectOptions | null;
 }) {
@@ -80,12 +80,11 @@ export function DeleteCategoryDialog({
   }, [input, selectOptions]);
 
   useEffect(() => {
-    console.log("hello");
     if (selectOptions === null) return;
     if (filteredOptions.length === 0) return;
     if (selectedInheritingCategoryId) return;
-    console.log("hello from useEffect");
     const group = filteredOptions[0];
+    if (group?.categories.length === 0) return;
     const category = filteredOptions[0].categories[0];
     setVisuallySelectedCategoryId(category.id);
     setShadowInput(`${group.name}: ${category.name}`);
@@ -107,10 +106,24 @@ export function DeleteCategoryDialog({
 
   const isGroup = state.type === "categoryGroup";
 
+  const categoryHasTransactions = state.transactionCount > 0;
+  const categoryHasAssigned = state.hasAssigned;
+
+  const inheritingCategoryView = categoryHasTransactions;
+  const reassignAssignedView = !categoryHasTransactions && categoryHasAssigned;
+
+  const isAcceptDisabled = inheritingCategoryView
+    ? selectedInheritingCategoryId === ""
+    : false;
+
+  const handleAcceptDelete = () => {
+    accept(inheritingCategoryView ? selectedInheritingCategoryId : undefined);
+  };
+
   return (
     <Dialog open={open} onOpenChange={cancel}>
       <DialogContent
-        // onInteractOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
         className="
             fixed
             w-[500px]
@@ -127,7 +140,7 @@ export function DeleteCategoryDialog({
         <hr />
 
         {/* Breakdown section */}
-        {state.transactionCount > 0 && (
+        {inheritingCategoryView && (
           <>
             <div className="px-4 pt-2 overflow-hidden">
               {isGroup ? (
@@ -236,8 +249,6 @@ export function DeleteCategoryDialog({
                       onChange={(e) => {
                         setInput(e.target.value);
                         if (flatMap.length === 0) return;
-                        console.log("flat map", flatMap[0].id);
-                        console.log("filtered options", filteredOptions);
                         setVisuallySelectedCategoryId(flatMap[0].id);
                       }}
                       ref={inputRef}
@@ -249,7 +260,7 @@ export function DeleteCategoryDialog({
                 <PopoverPortal>
                   <PopoverContent
                     onOpenAutoFocus={(e) => e.preventDefault()}
-                    className="w-[475px] h-[500px] overflow-scroll rounded-sm shadow-md animate-none"
+                    className="w-[475px] rounded-sm shadow-md animate-none"
                     side={"bottom"}
                     onWheelCapture={(e) => {
                       // Prevents onScroll from being cancelled higher up the tree
@@ -260,7 +271,7 @@ export function DeleteCategoryDialog({
                       <p className="text-lg font-bold">Plan categories</p>
                     </div>
                     <hr />
-                    <div className="p-2">
+                    <div className="p-2 h-[400px] overflow-scroll">
                       <ul>
                         {filteredOptions.map((group) => {
                           return (
@@ -322,7 +333,7 @@ export function DeleteCategoryDialog({
             </div>
           </>
         )}
-        {state.hasAssigned && state.transactionCount === 0 && (
+        {reassignAssignedView && (
           <div className="px-4 pt-2 space-y-4">
             <p>
               There is money currently assigned to{" "}
@@ -340,8 +351,8 @@ export function DeleteCategoryDialog({
           </Button>
           <Button
             className="bg-red-400/40 text-md text-red-500"
-            onClick={() => accept(selectedInheritingCategoryId)}
-            disabled={selectedInheritingCategoryId === ""}
+            onClick={handleAcceptDelete}
+            disabled={isAcceptDisabled}
           >
             Delete
           </Button>
