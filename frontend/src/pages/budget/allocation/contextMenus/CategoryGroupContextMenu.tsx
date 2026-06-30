@@ -1,7 +1,4 @@
-import {
-  useDeleteCategoryGroupMutation,
-  useUpdateCategoryGroupMutation,
-} from "@/core/api/budget/categoryGroup/CategoryGroupApiSlice";
+import { useUpdateCategoryGroupMutation } from "@/core/api/budget/categoryGroup/CategoryGroupApiSlice";
 import { Button } from "@/core/components/uiLibrary/button";
 import {
   Form,
@@ -20,15 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ReactNode, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useToggle } from "../components/assign/hooks";
 import { CategoryGroupWithMetrics } from "../utils/assembleCategoryGroupViews";
-import { CategoryGroupId } from "../types/types";
-import { CategoryGroupDeleteState } from "../utils/getCategoryGroupDeleteState";
-import {
-  CategorySelectOptions,
-  ExcludeTarget,
-} from "../hooks/useAllocation/useAllocation";
-import { DeleteCategoryDialog } from "../dialogs/deleteCategoryDialog/DeleteCategoryDialog";
 
 const CategoryGroupContextSchema = z.object({
   name: z.string().min(1, { message: "Category requires a name" }),
@@ -38,32 +27,25 @@ export type CategoryGroupContextType = z.infer<
   typeof CategoryGroupContextSchema
 >;
 
-export type DeleteState = {
-  type: "category" | "categoryGroup";
-  name: string;
-  categoryCount?: number;
-  hasAssigned: boolean;
-  transactionCount: number;
-};
-
 type CategoryGroupContextMenuProps = {
   children: ReactNode;
   categoryGroup: CategoryGroupWithMetrics;
-  getCategorySelectOptions: (exclude?: ExcludeTarget) => CategorySelectOptions;
-  getCategoryGroupDeleteState: (
-    categoryGroupId: CategoryGroupId
-  ) => CategoryGroupDeleteState;
+  deleteCategoryGroup: (categoryGroup: CategoryGroupWithMetrics) => void;
 };
 
 export function CategoryGroupContextMenu({
   children,
   categoryGroup,
-  getCategoryGroupDeleteState,
-  getCategorySelectOptions,
+  deleteCategoryGroup,
 }: CategoryGroupContextMenuProps) {
   const [contextOpen, setContextOpen] = useState(false);
   const [updateCategoryGroup] = useUpdateCategoryGroupMutation();
-  const [deleteCategoryGroup] = useDeleteCategoryGroupMutation();
+
+  const closeContextMenu = () => setContextOpen(false);
+  const openContextMenu = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    e.preventDefault();
+    setContextOpen(true);
+  };
 
   const form = useForm<CategoryGroupContextType>({
     defaultValues: {
@@ -92,62 +74,14 @@ export function CategoryGroupContextMenu({
     closeContextMenu();
     reset();
   };
-  const [deleteState, setDeleteState] = useState<DeleteState | null>(null);
-  const [selectOptions, setSelectOptions] =
-    useState<CategorySelectOptions | null>(null);
-  const [hasAssigned, setHasAssigned] = useState<boolean>(false);
 
-  const { value: open, toggle } = useToggle(false);
   const handleDelete = () => {
-    const state = getCategoryGroupDeleteState(categoryGroup.id);
-
-    if (state.canDelete)
-      deleteCategoryGroup({ categoryGroupId: categoryGroup.id });
-    toggle();
-    setContextOpen(false);
-    const selectionOptions = getCategorySelectOptions({
-      type: "categoryGroup",
-      id: categoryGroup.id,
-    });
-    setSelectOptions(selectionOptions);
-
-    setDeleteState({
-      type: "categoryGroup",
-      hasAssigned: state.hasAssigned,
-      transactionCount: state.transactionCount,
-      categoryCount: state.categoryCount,
-      name: categoryGroup.name,
-    });
-  };
-
-  const acceptDelete = () => {
-    deleteCategoryGroup({ categoryGroupId: categoryGroup.id });
-  };
-
-  const openContextMenu = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    e.preventDefault();
-    setContextOpen(true);
-  };
-
-  const closeContextMenu = () => {
-    setContextOpen(false);
-  };
-
-  const cancelDeleteModal = () => {
-    toggle();
+    deleteCategoryGroup(categoryGroup);
+    closeContextMenu();
   };
 
   return (
     <div onContextMenu={openContextMenu}>
-      <DeleteCategoryDialog
-        open={open}
-        toggle={toggle}
-        state={deleteState}
-        accept={acceptDelete}
-        cancel={cancelDeleteModal}
-        selectOptions={selectOptions}
-      />
-
       <Popover open={contextOpen} onOpenChange={handleOpen}>
         <PopoverTrigger className="w-full text-left cursor-auto">
           {children}

@@ -19,22 +19,23 @@ import {
   CategoryBranded,
   CategoryGroupBranded,
 } from "@/core/types/NormalizedData";
+import { DeleteCategoryArgs } from "../../components/categories/Categories";
+
+type DeleteCategoryDialogProps = {
+  open: boolean;
+  state: DeleteState | null;
+  accept: (args: DeleteCategoryArgs) => void;
+  cancel: () => void;
+  selectOptions: CategorySelectOptions | null;
+};
 
 export function DeleteCategoryDialog({
   open,
-  toggle,
   state,
   accept,
   cancel,
   selectOptions,
-}: {
-  open: boolean;
-  toggle: () => void;
-  state: DeleteState | null;
-  accept: (inheritingCategoryId?: string) => void;
-  cancel: () => void;
-  selectOptions: CategorySelectOptions | null;
-}) {
+}: DeleteCategoryDialogProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [input, setInput] = useState("");
   const [visuallySelectedCategoryId, setVisuallySelectedCategoryId] =
@@ -209,7 +210,12 @@ export function DeleteCategoryDialog({
     : false;
 
   const handleAcceptDelete = () => {
-    accept(inheritingCategoryView ? selectedInheritingCategoryId : undefined);
+    accept({
+      categoryId: state.id,
+      inheritingCategoryId: inheritingCategoryView
+        ? selectedInheritingCategoryId
+        : undefined,
+    });
   };
 
   return (

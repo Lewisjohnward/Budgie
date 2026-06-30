@@ -1,5 +1,8 @@
 import { AddCategoryGroupPopover } from "../../popovers/AddCategoryGroupPopover";
-import { CategoryGroupContextMenu } from "../../contextMenus/CategoryGroupContextMenu";
+import {
+  CategoryGroupContextMenu,
+  DeleteState,
+} from "../../contextMenus/CategoryGroupContextMenu";
 import {
   CategoryGridRow,
   CategoryTableHeader,
@@ -54,12 +57,17 @@ type CategoriesProps = {
   };
 };
 
+export type DeleteCategoryArgs = {
+  categoryId: CategoryId;
+  inheritingCategoryId?: CategoryId;
+};
+
 export function Categories({
   currency,
   view,
   expandCategoryGroups,
-  deleteState,
-  selectors,
+  deleteState: { getCategoryDeleteState, getCategoryGroupDeleteState },
+  selectors: { getCategorySelectOptions },
   categorySelector,
 }: CategoriesProps) {
   const { uncategorisedRow, categoriesByGroup } = view;
@@ -110,13 +118,85 @@ export function Categories({
 
   const isDraggingCategoryGroups = active.type === "group";
 
+  //======
+  // Delete dialog
+  //======
+  const [deleteCategory] = useDeleteCategoryMutation();
+  const [deleteCategoryGroup] = useDeleteCategoryGroupMutation();
+
+  const [selectOptions, setSelectOptions] =
+    useState<CategorySelectOptions | null>(null);
+  const [deleteState, setDeleteState] = useState<DeleteState | null>(null);
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  // Called by context menu when deleting to open modal
+  const openDeleteModal = () => setDeleteModalOpen(true);
+  // When the user cancels the deletion in the modal
+  const closeDeleteModal = () => setDeleteModalOpen(false);
+
+  const handleDeleteCategory = (category: CategoryBranded) => {
+    // Check category is deletable (has no transactions or assigned)
+    const state = getCategoryDeleteState(category.id);
+    // If deletable then just delete
+    if (state.canDelete) deleteCategory({ categoryId: category.id });
+    // Open the delete dialog
+    openDeleteModal();
+
+    const selectionOptions = getCategorySelectOptions({
+      type: "category",
+      id: category.id,
+    });
+    setSelectOptions(selectionOptions);
+    setDeleteState({
+      type: "category",
+      id: state.categoryId,
+      hasAssigned: state.hasAssigned,
+      transactionCount: state.transactionCount,
+      name: category.name,
+    });
+  };
+
+  // When the user accepts the deletion in the modal
+  const acceptDeleteCategory = ({
+    categoryId,
+    inheritingCategoryId,
+  }: DeleteCategoryArgs) => {
+    if (inheritingCategoryId) {
+      deleteCategory({ categoryId, inheritingCategoryId });
+    } else {
+      deleteCategory({ categoryId });
+    }
+  };
+
+  const handleDeleteCategoryGroup = (
+    categoryGroup: CategoryGroupWithMetrics
+  ) => {
+    const state = getCategoryGroupDeleteState(categoryGroup.id);
+
+    if (state.canDelete)
+      deleteCategoryGroup({ categoryGroupId: categoryGroup.id });
+    openDeleteModal();
+    const selectionOptions = getCategorySelectOptions({
+      type: "categoryGroup",
+      id: categoryGroup.id,
+    });
+    setSelectOptions(selectionOptions);
+
+    setDeleteState({
+      type: "categoryGroup",
+      hasAssigned: state.hasAssigned,
+      transactionCount: state.transactionCount,
+      categoryCount: state.categoryCount,
+      name: categoryGroup.name,
+    });
+  };
+
   return (
     <div className="bg-stone-100">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={(event) => {
-          console.log("drag start!!");
           setActive({
             id: event.active.id,
             type: event.active.data.current?.type ?? null,
@@ -129,10 +209,7 @@ export function Categories({
           if (!over) return;
           const overId = over.id;
 
-          console.log("active:", active);
           if (active.data.current?.type === "group") {
-            console.log("moving group");
-
             const { view, updatedGroup } = moveGroups(
               draftView,
               activeId,
@@ -203,10 +280,7 @@ export function Categories({
               <div key={group.id}>
                 <CategoryGroupContextMenu
                   categoryGroup={group}
-                  getCategoryGroupDeleteState={
-                    deleteState.getCategoryGroupDeleteState
-                  }
-                  getCategorySelectOptions={selectors.getCategorySelectOptions}
+                  deleteCategoryGroup={handleDeleteCategoryGroup}
                 >
                   <div className="group">
                     <CategoryGridRow id={group.id} className="bg-stone-200">
@@ -233,19 +307,18 @@ export function Categories({
                   >
                     {rows.map((row) => {
                       return (
-                        <CategoryRow
-                          getCategoryDeleteState={
-                            deleteState.getCategoryDeleteState
-                          }
-                          getCategorySelectOptions={
-                            selectors.getCategorySelectOptions
-                          }
-                          key={row.category.id}
+                        <CategoryContextMenu
                           category={row.category}
-                          month={row.month}
-                          // TODO:(lewis 2026-05-15 15:05) this should be categorySelector
-                          categorySelection={categorySelector}
-                        />
+                          deleteCategory={handleDeleteCategory}
+                        >
+                          <CategoryRow
+                            key={row.category.id}
+                            category={row.category}
+                            month={row.month}
+                            // TODO:(lewis 2026-05-15 15:05) this should be categorySelector
+                            categorySelection={categorySelector}
+                          />
+                        </CategoryContextMenu>
                       );
                     })}
                   </SortableContext>
@@ -260,6 +333,13 @@ export function Categories({
           })}
         </SortableContext>
       </DndContext>
+      <DeleteCategoryDialog
+        open={deleteModalOpen}
+        state={deleteState}
+        accept={acceptDeleteCategory}
+        cancel={closeDeleteModal}
+        selectOptions={selectOptions}
+      />
     </div>
   );
 }
@@ -343,14 +423,24 @@ function moveItem(
 
 import { useDroppable } from "@dnd-kit/core";
 import { cn } from "@/core/lib/utils";
-import { useUpdateCategoryGroupMutation } from "@/core/api/budget/categoryGroup/CategoryGroupApiSlice";
+import {
+  useDeleteCategoryGroupMutation,
+  useUpdateCategoryGroupMutation,
+} from "@/core/api/budget/categoryGroup/CategoryGroupApiSlice";
 import { CategoryGroupDeleteState } from "../../utils/getCategoryGroupDeleteState";
-import { useUpdateCategoryMutation } from "@/core/api/budget/category/categoryApiSlice";
+import {
+  useDeleteCategoryMutation,
+  useUpdateCategoryMutation,
+} from "@/core/api/budget/category/categoryApiSlice";
 import { CategoryDeleteState } from "../../utils/getCategoryDeleteState";
 import {
   CategorySelectOptions,
   ExcludeTarget,
 } from "../../hooks/useAllocation/useAllocation";
+import { CategoryContextMenu } from "../../contextMenus/CategoryContextMenu";
+import { CategoryBranded } from "@/core/types/NormalizedData";
+import { DeleteCategoryDialog } from "../../dialogs/deleteCategoryDialog/DeleteCategoryDialog";
+import { CategoryGroupWithMetrics } from "../../utils/assembleCategoryGroupViews";
 
 type Props = {
   groupId: string;
