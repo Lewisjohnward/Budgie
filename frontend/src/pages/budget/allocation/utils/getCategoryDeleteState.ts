@@ -9,6 +9,7 @@ type GetCategoryDeleteStateParams = {
 
 // Output
 export type CategoryDeleteState = {
+  categoryId: CategoryId;
   hasAssigned: boolean;
   transactionCount: number;
   canDelete: boolean;
@@ -20,6 +21,7 @@ export function getCategoryDeleteState({
   const m = metrics[categoryId];
 
   return {
+    categoryId: categoryId,
     hasAssigned: m?.hasAssigned ?? false,
     transactionCount: m?.transactionCount ?? 0,
     canDelete: !(m?.hasAssigned || (m?.transactionCount ?? 0) > 0),

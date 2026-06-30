@@ -1,14 +1,16 @@
 import { CategoryMetricsById } from "../hooks/useAllocation/useAllocationIndexes";
-import { CategoryId } from "../types/types";
+import { CategoryGroupId, CategoryId } from "../types/types";
 
 // Input
 type GetCategoryGroupDeleteStatusParams = {
+  categoryGroupId: CategoryGroupId;
   categoryIdsInGroup: CategoryId[];
   metrics: CategoryMetricsById;
 };
 
 // Output
 export type CategoryGroupDeleteState = {
+  categoryGroupId: CategoryGroupId;
   categoryCount: number;
   hasAssigned: boolean;
   transactionCount: number;
@@ -16,6 +18,7 @@ export type CategoryGroupDeleteState = {
 };
 
 export function getCategoryGroupDeleteState({
+  categoryGroupId,
   categoryIdsInGroup,
   metrics,
 }: GetCategoryGroupDeleteStatusParams): CategoryGroupDeleteState {
@@ -34,16 +37,10 @@ export function getCategoryGroupDeleteState({
   }
 
   return {
+    categoryGroupId: categoryGroupId,
     categoryCount: categoryIdsInGroup.length,
     hasAssigned,
     transactionCount,
     canDelete: !(hasAssigned || transactionCount > 0),
   };
 }
-// groups: {
-//   name: string;
-//   categories: {
-//     name: string;
-//     available: number;
-//   }[];
-// }[];
