@@ -1,8 +1,8 @@
 import { CategoryBranded } from "@/core/types/NormalizedData";
 import {
-  CategoryContextMenu,
-  CategoryContextType,
-} from "@/pages/budget/allocation/contextMenus/CategoryContextMenu";
+  ContextMenu,
+  NameType,
+} from "@/pages/budget/allocation/contextMenus/ContextMenu";
 import { CategoryBreakdownView } from "@/pages/budget/allocation/hooks/useAllocation/useCategoryBreakdown";
 import { zodResolver } from "@hookform/resolvers/zod";
 import clsx from "clsx";
@@ -45,9 +45,9 @@ export function SelectedCategories({
         )}
       </div>
       {displayEditButton && (
-        <CategoryContextMenu category={{ name: "hello", id: "temp" }}>
+        <ContextMenu category={{ name: "hello", id: "temp" }}>
           <Pencil className="w-4 h-4 stroke-gray-500" />
-        </CategoryContextMenu>
+        </ContextMenu>
       )}
     </div>
   );

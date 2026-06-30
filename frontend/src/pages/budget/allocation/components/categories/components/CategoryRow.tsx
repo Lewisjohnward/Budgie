@@ -1,7 +1,7 @@
 import { CategoryBranded, MonthBranded } from "@/core/types/NormalizedData";
 import { useRef } from "react";
 import { calculateBarColors } from "../../../utils/calculateBarColors";
-import { CategoryContextMenu } from "../../../contextMenus/CategoryContextMenu";
+import { ContextMenu } from "../../../contextMenus/ContextMenu";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
 import {
   EmptyCell,
