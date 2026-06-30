@@ -1,7 +1,6 @@
 import { formatCurrency } from "@/utils/formatCurrency";
 import { ChevronDown } from "lucide-react";
 import { useRef, useState, useEffect, useMemo } from "react";
-import { DeleteState } from "../../contextMenus/CategoryGroupContextMenu";
 import { CategorySelectOptions } from "../../hooks/useAllocation/useAllocation";
 import { Button } from "@/core/components/uiLibrary/button";
 import {
@@ -19,23 +18,41 @@ import {
   CategoryBranded,
   CategoryGroupBranded,
 } from "@/core/types/NormalizedData";
-import { DeleteCategoryArgs } from "../../components/categories/Categories";
+import { CategoryGroupId, CategoryId } from "../../types/types";
+import { DeleteArgs } from "./useDeleteDialog";
 
-type DeleteCategoryDialogProps = {
+export type DeleteState =
+  | {
+      type: "category";
+      categoryId: CategoryId;
+      name: string;
+      hasAssigned: boolean;
+      transactionCount: number;
+    }
+  | {
+      type: "categoryGroup";
+      categoryGroupId: CategoryGroupId;
+      name: string;
+      hasAssigned: boolean;
+      transactionCount: number;
+      categoryCount: number;
+    };
+
+type DeleteDialogProps = {
   open: boolean;
   state: DeleteState | null;
-  accept: (args: DeleteCategoryArgs) => void;
+  accept: (args: DeleteArgs) => void;
   cancel: () => void;
   selectOptions: CategorySelectOptions | null;
 };
 
-export function DeleteCategoryDialog({
+export function DeleteDialog({
   open,
   state,
   accept,
   cancel,
   selectOptions,
-}: DeleteCategoryDialogProps) {
+}: DeleteDialogProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [input, setInput] = useState("");
   const [visuallySelectedCategoryId, setVisuallySelectedCategoryId] =

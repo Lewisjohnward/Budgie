@@ -198,6 +198,7 @@ export function useAllocation() {
   const getCategoryGroupDeleteState = useCallback(
     (categoryGroupId: CategoryGroupId) =>
       resolveCategoryGroupDeleteState({
+        categoryGroupId,
         categoryIdsInGroup: categoryIdsByGroupId[categoryGroupId] ?? [],
         metrics: engine.computed.categoryMetricsById,
       }),

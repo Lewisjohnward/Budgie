@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { DeleteCategoryDialog } from "./DeleteCategoryDialog";
+import { DeleteDialog } from "./DeleteDialog";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { CategoryGroupId, CategoryId } from "../../types/types";
 import userEvent from "@testing-library/user-event";
@@ -65,7 +65,7 @@ const defaultProps = {
 };
 
 // 1. Extract the prop type directly from your dialog component
-type DeleteCategoryDialogProps = ComponentProps<typeof DeleteCategoryDialog>;
+type DeleteCategoryDialogProps = ComponentProps<typeof DeleteDialog>;
 
 // 2. Define the types for the wrapper parameters
 interface StatefulDialogWrapperProps {
@@ -91,7 +91,7 @@ function StatefulDialogWrapper({
     cancel: () => setIsOpen(false),
   } as DeleteCategoryDialogProps;
 
-  return <DeleteCategoryDialog {...combinedProps} />;
+  return <DeleteDialog {...combinedProps} />;
 }
 
 // 3. Update the render helper signature

@@ -1,4 +1,3 @@
-import { useUpdateCategoryGroupMutation } from "@/core/api/budget/categoryGroup/CategoryGroupApiSlice";
 import { Button } from "@/core/components/uiLibrary/button";
 import {
   Form,
@@ -17,75 +16,69 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ReactNode, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { CategoryGroupWithMetrics } from "../utils/assembleCategoryGroupViews";
 
-const CategoryGroupContextSchema = z.object({
+const NameSchema = z.object({
   name: z.string().min(1, { message: "Category requires a name" }),
 });
 
-export type CategoryGroupContextType = z.infer<
-  typeof CategoryGroupContextSchema
->;
+export type NameType = z.infer<typeof NameSchema>;
 
-type CategoryGroupContextMenuProps = {
+type ContextMenuProps = {
   children: ReactNode;
-  categoryGroup: CategoryGroupWithMetrics;
-  deleteCategoryGroup: (categoryGroup: CategoryGroupWithMetrics) => void;
+  name: string;
+  onRename: (name: string) => void;
+  onDelete: () => void;
 };
 
-export function CategoryGroupContextMenu({
+export function ContextMenu({
   children,
-  categoryGroup,
-  deleteCategoryGroup,
-}: CategoryGroupContextMenuProps) {
-  const [contextOpen, setContextOpen] = useState(false);
-  const [updateCategoryGroup] = useUpdateCategoryGroupMutation();
+  name,
+  onRename,
+  onDelete,
+}: ContextMenuProps) {
+  const [contextMenuOpen, setContextMenuOpen] = useState(false);
 
-  const closeContextMenu = () => setContextOpen(false);
+  const closeContextMenu = () => setContextMenuOpen(false);
   const openContextMenu = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     e.preventDefault();
-    setContextOpen(true);
+    setContextMenuOpen(true);
   };
 
-  const form = useForm<CategoryGroupContextType>({
+  const form = useForm<NameType>({
     defaultValues: {
-      name: categoryGroup.name,
+      name,
     },
-    resolver: zodResolver(CategoryGroupContextSchema),
+    resolver: zodResolver(NameSchema),
   });
 
   const { reset, control, handleSubmit } = form;
 
   useEffect(() => {
     reset({
-      name: categoryGroup.name,
+      name,
     });
-  }, [categoryGroup.name, categoryGroup.id]);
+  }, [name]);
 
-  const handleOpen = (open: boolean) => {
-    if (!open) reset();
-  };
-
-  const onSubmit = (updatedCategoryGroup: CategoryGroupContextType) => {
-    updateCategoryGroup({
-      categoryGroupId: categoryGroup.id,
-      name: updatedCategoryGroup.name,
-    });
+  const onSubmit = (name: NameType) => {
+    onRename(name.name);
     closeContextMenu();
     reset();
   };
 
+  const handleOpenChange = (open: boolean) => {
+    // If context is closed reset input
+    if (!open) reset();
+  };
+
   const handleDelete = () => {
-    deleteCategoryGroup(categoryGroup);
+    onDelete();
     closeContextMenu();
   };
 
   return (
     <div onContextMenu={openContextMenu}>
-      <Popover open={contextOpen} onOpenChange={handleOpen}>
-        <PopoverTrigger className="w-full text-left cursor-auto">
-          {children}
-        </PopoverTrigger>
+      <Popover open={contextMenuOpen} onOpenChange={handleOpenChange}>
+        <PopoverTrigger className="w-full text-left">{children}</PopoverTrigger>
         <PopoverContent
           onPointerDownOutside={closeContextMenu}
           className="w-96 px-4 py-2 space-y-2"
