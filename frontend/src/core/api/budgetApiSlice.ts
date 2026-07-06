@@ -3,13 +3,6 @@ import { NormalizedData } from "../types/NormalizedData";
 import { DuplicateTransactions } from "../types/TransactionSchema";
 import { apiSlice } from "./apiSlice";
 import { AllocationData } from "../types/Allocation";
-import { UpdateMonthsPayload } from "@/pages/budget/allocation/components/assign/types/assignTypes";
-import { MonthId } from "@/pages/budget/allocation/types/types";
-import {
-  UpdatedMonthsById,
-  updatedMonthsByIdSchema,
-} from "../schemas/editMonthSchema";
-import { budgetSnapshotSlice } from "./budget/budgetSnapshotSlice";
 
 // TODO:(lewis 2026-04-17 11:14) this file can be split up like user slice and auth slice
 export const budgetApiSlice = apiSlice.injectEndpoints({
@@ -81,7 +74,6 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
 });
 
 export const {
-  useGetDataQuery,
   useGetAccountsQuery,
   useAddAccountMutation,
   useDeleteAccountMutation,
