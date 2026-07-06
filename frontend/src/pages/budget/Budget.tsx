@@ -11,14 +11,13 @@ import { useGetBudgetSnapshotQuery } from "@/core/api/budget/budgetSnapshotSlice
 export default function BudgetPage() {
   const {
     isLoading: isLoadingAccounts,
-    isError: isErrorAccounts,
     isUninitialized: isUninitializedAccounts,
   } = useGetAccountsQuery();
   const {
     isLoading: isLoadingCategories,
-    isError: isErrorCategories,
     isUninitialized: isUninitializedCategories,
   } = useGetCategoriesQuery();
+
   const {
     isLoading: isLoadingAppSnapshot,
     isError: isErrorAppSnapshot,
@@ -36,7 +35,11 @@ export default function BudgetPage() {
     return <div className="h-screen bg-blue-400">...Getting data</div>;
   }
 
-  if (isErrorAccounts || isErrorCategories || isErrorAppSnapshot) {
+  if (
+    // isErrorAccounts
+    //   || isErrorCategories ||
+    isErrorAppSnapshot
+  ) {
     return <div className="h-screen bg-red-400">Error getting data</div>;
   }
 

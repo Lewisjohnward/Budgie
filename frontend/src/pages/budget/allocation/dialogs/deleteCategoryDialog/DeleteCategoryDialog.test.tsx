@@ -64,10 +64,8 @@ const defaultProps = {
   selectOptions: defaultSelectOptions,
 };
 
-// 1. Extract the prop type directly from your dialog component
 type DeleteCategoryDialogProps = ComponentProps<typeof DeleteDialog>;
 
-// 2. Define the types for the wrapper parameters
 interface StatefulDialogWrapperProps {
   defaultProps: Partial<DeleteCategoryDialogProps>;
   overrideProps?: Partial<DeleteCategoryDialogProps>;
@@ -79,22 +77,22 @@ function StatefulDialogWrapper({
   overrideProps,
   mocks,
 }: StatefulDialogWrapperProps) {
-  const [isOpen, setIsOpen] = useState(true);
+  const [open, setOpen] = useState(true);
 
-  // Combine props and explicitly tell TypeScript it matches the full type requirements
-  const combinedProps = {
+  const props = {
     ...defaultProps,
     ...overrideProps,
-    ...mocks,
-    open: isOpen,
-    toggle: () => setIsOpen(!isOpen),
-    cancel: () => setIsOpen(false),
+    open,
+    accept: mocks.accept,
+    cancel: () => {
+      mocks.cancel();
+      setOpen(false);
+    },
   } as DeleteCategoryDialogProps;
 
-  return <DeleteDialog {...combinedProps} />;
+  return <DeleteDialog {...props} />;
 }
 
-// 3. Update the render helper signature
 function renderDeleteDialog(
   overrideProps: Partial<DeleteCategoryDialogProps> = {},
   mocks = createMocks()
@@ -210,16 +208,19 @@ describe("DeleteCategoryDialog", () => {
 
       expect(mocks.accept).toHaveBeenCalledTimes(1);
       // assert that accept was called with the correct ID
-      expect(mocks.accept).toHaveBeenCalledWith("2");
+      expect(mocks.accept).toHaveBeenCalledWith({
+        type: "category",
+        inheritingCategoryId: "2",
+      });
     });
   });
 
   describe("category", () => {
-    describe("category has transactions", () => {
+    describe("has transactions", () => {
       // ---------------------------
       // POPOVER BEHAVIOUR
       // ---------------------------
-      describe("category reassign popover", () => {
+      describe("reassign popover", () => {
         it("opens popover when input is clicked", () => {
           renderDeleteDialog();
           openPopover();
@@ -240,17 +241,90 @@ describe("DeleteCategoryDialog", () => {
             screen.getByRole("option", { name: /groceries/i })
           ).toHaveAttribute("aria-selected", "true");
         });
-        it("on blur input closes popover", async () => {
+        it("only selects the category at the top on blur of input when it is not empty", async () => {
+          const user = userEvent.setup();
+
           renderDeleteDialog();
           openPopover();
 
           const input = screen.getByRole("textbox");
 
-          // ensure popover is open
-          expect(screen.getByText(/plan categories/i)).toBeInTheDocument();
+          const dialog = screen.getByRole("dialog", {
+            name: /delete category/i,
+          });
+          await user.click(dialog);
 
-          // trigger blur (simulate user leaving input)
-          fireEvent.blur(input);
+          await waitFor(() => {
+            expect(input).toHaveValue("");
+          });
+        });
+        it("clears input on blur if all categories filtered", async () => {
+          const user = userEvent.setup();
+
+          renderDeleteDialog();
+          openPopover();
+
+          const input = screen.getByRole("textbox");
+
+          await user.type(input, "non-existent-category");
+
+          const dialog = screen.getByRole("dialog", {
+            name: /delete category/i,
+          });
+          await user.click(dialog);
+
+          await waitFor(() => {
+            expect(input).toHaveValue("");
+          });
+        });
+        it("selects the category at the top on blur of input", async () => {
+          const user = userEvent.setup();
+
+          renderDeleteDialog();
+          openPopover();
+
+          const input = screen.getByRole("textbox");
+
+          await user.type(input, "dining");
+
+          const dialog = screen.getByRole("dialog", {
+            name: /delete category/i,
+          });
+          await user.click(dialog);
+
+          await waitFor(() => {
+            expect(input).toHaveValue("Leisure: Dining Out");
+          });
+        });
+        it("closes modal when pressing escape key", async () => {
+          const user = userEvent.setup();
+          renderDeleteDialog();
+          openPopover();
+
+          const dialog = screen.getByRole("dialog", {
+            name: /delete category/i,
+          });
+          const input = screen.getByRole("textbox");
+          await user.type(input, "dining");
+          await user.keyboard("{Escape}");
+
+          expect(dialog).not.toBeInTheDocument();
+        });
+
+        it("closes popover when focus leaves input", async () => {
+          const user = userEvent.setup();
+
+          renderDeleteDialog();
+          openPopover();
+
+          const input = screen.getByRole("textbox");
+
+          await user.click(input);
+
+          const dialog = screen.getByRole("dialog", {
+            name: /delete category/i,
+          });
+          await user.click(dialog);
 
           await waitFor(() => {
             expect(
@@ -477,12 +551,13 @@ describe("DeleteCategoryDialog", () => {
         });
       });
     });
-    describe("category has no transactions but money assigned", () => {
-      it("displays reassign view and enables immediate deletion when category has assigned amounts but no transactions", async () => {
+    describe("has assigned", () => {
+      it("displays reassign view", async () => {
         const user = userEvent.setup();
         const { mocks } = renderDeleteDialog({
           state: {
             type: "category",
+            categoryId: "1" as CategoryId,
             name: "Food",
             transactionCount: 0,
             hasAssigned: true,
@@ -503,7 +578,10 @@ describe("DeleteCategoryDialog", () => {
         expect(deleteButton).not.toBeDisabled();
 
         await user.click(deleteButton);
-        expect(mocks.accept).toHaveBeenCalledWith(undefined);
+        expect(mocks.accept).toHaveBeenCalledWith({
+          type: "category",
+          categoryId: "1",
+        });
       });
     });
   });

@@ -121,6 +121,13 @@ export function DeleteDialog({
     }))
   );
 
+  const closeDialog = () => {
+    setInput("");
+    setSelectedInheritingCategoryId("");
+    cancel();
+  };
+
+  // Handles selecting category from popover
   const handleSelect = (
     group: CategoryGroupBranded,
     category: CategoryBranded
@@ -153,6 +160,10 @@ export function DeleteDialog({
 
   // Input box keyDown handler
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>): void => {
+    if (e.key === "Escape") {
+      closeDialog();
+    }
+
     if (
       selectedInheritingCategoryId &&
       (e.key === "Backspace" || e.key === "Delete" || e.key.length === 1)
@@ -227,16 +238,30 @@ export function DeleteDialog({
     : false;
 
   const handleAcceptDelete = () => {
-    accept({
-      categoryId: state.id,
-      inheritingCategoryId: inheritingCategoryView
-        ? selectedInheritingCategoryId
-        : undefined,
-    });
+    if (!state) return;
+
+    const args: DeleteArgs =
+      state.type === "category"
+        ? {
+            type: "category",
+            categoryId: state.categoryId,
+            ...(inheritingCategoryView && selectedInheritingCategoryId
+              ? {
+                  inheritingCategoryId:
+                    selectedInheritingCategoryId as CategoryId,
+                }
+              : {}),
+          }
+        : {
+            type: "categoryGroup",
+            categoryGroupId: state.categoryGroupId,
+          };
+
+    accept(args);
   };
 
   return (
-    <Dialog open={open} onOpenChange={cancel}>
+    <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent
         onInteractOutside={(e) => e.preventDefault()}
         className="fixed w-[500px] py-4 px-0 bg-white"
@@ -270,19 +295,53 @@ export function DeleteDialog({
 
             <div className="px-4 space-y-2">
               <p className="font-bold">Select category</p>
-              <Popover open={popoverOpen}>
+              <Popover
+                open={popoverOpen}
+                onOpenChange={(open) => {
+                  // When the popover closes (due to loss of focus)
+                  // select the category at the top if there is input
+                  // otherwise do nothing
+                  if (!open) {
+                    setPopoverOpen(open);
+                    if (!selectedInheritingCategoryId) {
+                      if (input === "") return;
+                      if (!flatMap || flatMap.length === 0) {
+                        setInput("");
+                        return;
+                      }
+                      const pos = flatMap.findIndex(
+                        (cat) => cat.id === visuallySelectedCategoryId
+                      );
+                      const currentIndex = pos === -1 ? 0 : pos;
+                      const option = flatMap[currentIndex];
+
+                      if (!option) {
+                        setInput("");
+                        return;
+                      }
+                      setInput(`${option.groupName}: ${option.name}`);
+                      setPopoverOpen(false);
+                      setSelectedInheritingCategoryId(
+                        visuallySelectedCategoryId
+                      );
+                      setVisuallySelectedCategoryId(visuallySelectedCategoryId);
+                    }
+                  }
+                }}
+              >
                 <PopoverTrigger className="w-full" asChild data-popover-trigger>
                   <div
                     className="flex items-center p-1 pr-2 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 rounded-sm overflow-hidden"
                     onClick={handleClick}
-                    onKeyDown={handleKeyDown}
+                    // onKeyDown={handleKeyDown}
                   >
                     <input
                       className="px-2 w-full rounded-sm text-ellipsis focus:outline-none focus:ring-0"
                       value={input}
                       onChange={handleOnChange}
                       ref={inputRef}
-                      onBlur={() => setPopoverOpen(false)}
+                      onKeyDown={handleKeyDown}
+                      // onBlur={() => setPopoverOpen(false)}
                     />
                     <ChevronDown className="size-4 text-sky-950" />
                   </div>
@@ -292,6 +351,7 @@ export function DeleteDialog({
                     onOpenAutoFocus={(e) => e.preventDefault()}
                     className="w-[475px] rounded-sm shadow-md animate-none"
                     side={"bottom"}
+                    onClick={() => console.log(" clicking on the popover")}
                     onWheelCapture={(e) => {
                       // Prevents onScroll from being cancelled higher up the tree (Radix)
                       e.stopPropagation();
@@ -364,6 +424,17 @@ export function DeleteDialog({
             {isGroup ? (
               <div className="px-4 pt-2 space-y-4">
                 <p>
+                  There is money currently assigned to one or more categories{" "}
+                  <span className="font-bold">{state.name}</span>.
+                </p>{" "}
+                <p>
+                  When you delete this category, all assigned amounts will be
+                  moved to <span className="font-bold">Ready to Assign.</span>
+                </p>
+              </div>
+            ) : (
+              <div className="px-4 pt-2 space-y-4">
+                <p>
                   There is money currently assigned to{" "}
                   <span className="font-bold">{state.name}</span>.
                 </p>{" "}
@@ -373,22 +444,11 @@ export function DeleteDialog({
                   <span className="font-bold">Ready to Assign.</span>
                 </p>
               </div>
-            ) : (
-              <div className="px-4 pt-2 space-y-4">
-                <p>
-                  There is money currently assigned to one or more categoriesuu{" "}
-                  <span className="font-bold">{state.name}</span>.
-                </p>{" "}
-                <p>
-                  When you delete this category, all assigned amounts will be
-                  moved to <span className="font-bold">Ready to Assign.</span>
-                </p>
-              </div>
             )}
           </>
         )}
         <div className="flex justify-end gap-2 px-4">
-          <Button className="bg-sky-900 text-md" onClick={cancel}>
+          <Button className="bg-sky-900 text-md" onClick={closeDialog}>
             Cancel
           </Button>
           <Button

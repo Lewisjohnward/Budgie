@@ -119,6 +119,7 @@ export function Categories({
   const [deleteCategory] = useDeleteCategoryMutation();
   const [deleteCategoryGroup] = useDeleteCategoryGroupMutation();
 
+  // Called when user confirms delete
   const handleDelete = (args: DeleteArgs) => {
     if (args.type === "category") {
       deleteCategory(args);
@@ -134,6 +135,7 @@ export function Categories({
     getSelectOptions: getCategorySelectOptions,
   });
 
+  // Called when user starts delete flow from category context menu
   const handleDeleteCategory = (category: CategoryBranded) => {
     const state = getCategoryDeleteState(category.id);
 
@@ -151,6 +153,7 @@ export function Categories({
     });
   };
 
+  // Called when user starts delete flow from group context menu
   const handleDeleteCategoryGroup = (
     categoryGroup: CategoryGroupWithMetrics
   ) => {

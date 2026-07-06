@@ -76,7 +76,7 @@ export function CategoryRow({
       {...attributes}
       {...listeners}
     >
-      <CategoryGridRow>
+      <CategoryGridRow aria-label={`${category.name} category`}>
         <EmptyCell />
         <div className="flex items-center min-w-0 gap-4">
           <Checkbox

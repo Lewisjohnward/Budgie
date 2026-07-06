@@ -17,7 +17,7 @@ export function useHasUnallocatedTransactions(account: Account) {
   const { data } = useGetAccountsQuery();
 
   return useMemo(() => {
-    return account.transactionIds.some(
+    return account.transactionIds?.some(
       (transactionId) => !data?.transactions?.[transactionId]?.categoryId
     );
   }, [account.transactionIds, data?.transactions]);
