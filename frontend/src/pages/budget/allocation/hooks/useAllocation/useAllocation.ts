@@ -205,7 +205,11 @@ export function useAllocation() {
     [engine.computed.categoryMetricsById]
   );
 
-  // Used to select inheriting category
+  /**
+   * Builds the category selector data grouped by category group.
+   * Optionally excludes a category or category group from the returned options.
+   * Used when selecting a destination category for reassignment.
+   */
   const getCategorySelectOptions = useCallback(
     (exclude?: ExcludeTarget): CategorySelectOptions => {
       const groups = Object.values(engine.entities.categoryGroups.user);

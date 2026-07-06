@@ -50,7 +50,9 @@ export function AddCategoryGroupPopover({ children }: { children: ReactNode }) {
   return (
     <div className="px-2 py-1 border-b border-r border-b-gray-200 border-r-gray-200">
       <Popover open={displayPopover} modal={true}>
-        <PopoverTrigger onClick={togglePopover}>{children}</PopoverTrigger>
+        <PopoverTrigger onClick={togglePopover} asChild>
+          {children}
+        </PopoverTrigger>
         <PopoverPortal>
           <PopoverContent
             onPointerDownOutside={close}

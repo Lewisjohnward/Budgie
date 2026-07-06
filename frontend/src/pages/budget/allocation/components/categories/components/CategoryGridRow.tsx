@@ -8,24 +8,30 @@ type Props = {
   children: ReactNode;
   className?: string;
   id?: CategoryGroupId;
+  "aria-label"?: string;
 };
 
-export function CategoryGridRow({ children, className, id }: Props) {
+export function CategoryGridRow({
+  children,
+  className,
+  id,
+  "aria-label": ariaLabel,
+}: Props) {
   const sortable = id
     ? useSortable({
-      id,
-      data: {
-        type: "group",
-      },
-    })
+        id,
+        data: {
+          type: "group",
+        },
+      })
     : null;
 
   const style = sortable
     ? {
-      transform: CSS.Transform.toString(sortable.transform),
-      transition: sortable.transition,
-      opacity: sortable.isDragging ? 0.4 : 1,
-    }
+        transform: CSS.Transform.toString(sortable.transform),
+        transition: sortable.transition,
+        opacity: sortable.isDragging ? 0.4 : 1,
+      }
     : undefined;
   return (
     <div
@@ -37,6 +43,8 @@ export function CategoryGridRow({ children, className, id }: Props) {
         className
       )}
       style={style}
+      role="row"
+      aria-label={ariaLabel}
     >
       {children}
     </div>
