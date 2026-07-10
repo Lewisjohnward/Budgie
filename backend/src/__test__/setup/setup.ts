@@ -8,10 +8,10 @@ module.exports = async () => {
 
   const schemaPath = path.resolve(
     __dirname,
-    "../../shared/prisma/schema.prisma",
+    "../../shared/prisma/schema.prisma"
   );
   execSync(
-    `npx prisma db push --force-reset --accept-data-loss --schema=${schemaPath}`,
+    `npx prisma db push --force-reset --accept-data-loss --schema=${schemaPath}`
   );
 
   await prisma.$disconnect();

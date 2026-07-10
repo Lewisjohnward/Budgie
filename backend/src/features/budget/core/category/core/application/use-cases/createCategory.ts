@@ -1,6 +1,5 @@
 import { prisma } from "../../../../../../../shared/prisma/client";
 import { asUserId, type UserId } from "../../../../../../user/auth/auth.types";
-import { categoryGroupService } from "../../../../categorygroup/categoryGroup.service";
 import {
   asCategoryGroupId,
   type CategoryGroupId,
@@ -36,39 +35,9 @@ export const createCategory = async (
   payload: CreateCategoryPayload
 ): Promise<CreateCategoryResult> => {
   return await prisma.$transaction(async (tx) => {
-    const { userId, categoryGroupId, name } = toCreateCategoryCommand(payload);
-
-    await categoryGroupService.getModifiableCategoryGroup(
+    return categoryService.categories.createCategoryWithMonths(
       tx,
-      userId,
-      categoryGroupId
+      toCreateCategoryCommand(payload)
     );
-
-    const nextPosition =
-      await categoryService.categories.getNextCategoryPosition(
-        tx,
-        categoryGroupId
-      );
-
-    const createdCategory = await categoryService.categories.createCategory(
-      tx,
-      {
-        userId,
-        name,
-        categoryGroupId,
-        position: nextPosition,
-      }
-    );
-
-    const createdMonths = await categoryService.months.createMonthsForCategory(
-      tx,
-      userId,
-      createdCategory.id
-    );
-
-    return {
-      createdCategory,
-      createdMonths,
-    };
   });
 };

@@ -1,11 +1,7 @@
 import { prisma } from "../../../../shared/prisma/client";
-import { categoryService } from "../../../budget/core/category/core/category.service";
-import { memoService } from "../../../budget/core/memo/memo.service";
-import { payeeService } from "../../../budget/core/payee/payee.service";
+import { type RegisterResult } from "../auth.contract";
 import { type RegisterPayload } from "../auth.schema";
 import { authService } from "../auth.service";
-import { type AuthTokens } from "../auth.types";
-import { generatePassword, generateSalt } from "../utils/password";
 import { generateAccessToken, generateRefreshToken } from "../utils/tokens";
 
 /**
@@ -16,27 +12,9 @@ import { generateAccessToken, generateRefreshToken } from "../utils/tokens";
  */
 export const register = async (
   payload: RegisterPayload
-): Promise<AuthTokens> => {
-  const { password, email } = payload;
-
-  await authService.userExistsByEmail(email);
-
-  const salt = await generateSalt();
-
-  const passwordHash = await generatePassword(password, salt);
-
+): Promise<RegisterResult> => {
   const user = await prisma.$transaction(async (tx) => {
-    const user = await authService.createUser(tx, {
-      email,
-      password: passwordHash,
-      salt,
-    });
-
-    await categoryService.categories.initialiseCategories(tx, user.id);
-    await memoService.initialiseMemos(tx, user.id);
-    await payeeService.initialiseSystemPayees(tx, user.id);
-
-    return user;
+    return await authService.provisionUser(tx, payload);
   });
 
   const accessToken = generateAccessToken({
@@ -51,5 +29,10 @@ export const register = async (
 
   await authService.updateRefreshToken(user.id, refreshToken);
 
-  return { accessToken, refreshToken };
+  return {
+    tokens: {
+      accessToken,
+      refreshToken,
+    },
+  };
 };

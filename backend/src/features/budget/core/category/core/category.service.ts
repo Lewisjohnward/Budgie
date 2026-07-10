@@ -23,6 +23,7 @@ import { getCategoryIdsByCategoryGroupId } from "./application/services/getCateg
 import { getModifiableCategory } from "./application/services/getModifiableCategory";
 import { renameCategory } from "./application/services/renameCategory";
 import { moveCategory } from "./application/services/moveCategory";
+import { createCategoryWithMonths } from "./application/services/createCategoryWithMonths";
 
 export const categoryService = {
   rta: {
@@ -45,6 +46,7 @@ export const categoryService = {
   },
   categories: {
     createCategory,
+    createCategoryWithMonths,
     getCategory,
     getCategories,
     getUncategorisedCategoryId,

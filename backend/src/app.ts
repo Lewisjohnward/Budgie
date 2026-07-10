@@ -12,6 +12,7 @@ import { errorHandler } from "./shared/middleWare/errorHandler";
 
 import budgetRoutes from "./features/budget/budget.router";
 import userRoutes from "./features/user/user.router";
+import { testRoutes } from "./features/test/test.router";
 
 // export const StartServer = async () => {
 if (!process.env.PAYLOAD_SECRET) {
@@ -29,12 +30,25 @@ if (process.env.NODE_ENV !== "test") {
   app.use(morgan(":date[web]"));
   app.use(morgan("dev"));
 }
+
+console.log({
+  NODE_ENV: process.env.NODE_ENV,
+  ENABLE_TEST_ROUTES: process.env.ENABLE_TEST_ROUTES,
+});
+
+if (
+  process.env.ENABLE_TEST_ROUTES === "true" &&
+  process.env.NODE_ENV !== "production"
+) {
+  app.use("/__test__", testRoutes);
+}
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://localhost:5174"],
     credentials: true,
     methods: ["GET", "POST", "OPTIONS", "DELETE", "PATCH"], // Allow GET, POST, and OPTIONS
-  }),
+  })
 );
 app.use(helmet());
 
