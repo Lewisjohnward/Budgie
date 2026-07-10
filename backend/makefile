@@ -7,6 +7,12 @@ DB_PASSWORD=mypassword
 DB_PORT=5432
 TEST_DB_PORT=5433
 
+E2E_DB_CONTAINER_NAME=budgie_e2e_db
+E2E_DB_NAME=budgie_e2e_db
+E2E_DB_PORT=5434
+
+E2E_DATABASE_URL=postgresql://$(DB_USER):$(DB_PASSWORD)@localhost:$(E2E_DB_PORT)/$(E2E_DB_NAME)
+
 INTEGRATION_TEST_DB_NAME=budgie_test_db
 PRISMA_SCHEMA_PATH=src/shared/prisma/schema.prisma
 
@@ -100,11 +106,26 @@ run-integration-test-db:
 		-e POSTGRES_DB=$(INTEGRATION_TEST_DB_NAME) \
 		-p $(TEST_DB_PORT):5432 \
 		-d postgres
+	
 
 stop-integration-test-db:
 	@echo "Stopping and removing $(INTEGRATION_TEST_DB_NAME) container..."
 	-docker container stop $(INTEGRATION_TEST_DB_NAME)
 	-docker container rm $(INTEGRATION_TEST_DB_NAME)
+
+run-e2e-db:
+	@echo "Starting E2E database container..."
+	docker run --name $(E2E_DB_CONTAINER_NAME) \
+		-e POSTGRES_USER=$(DB_USER) \
+		-e POSTGRES_PASSWORD=$(DB_PASSWORD) \
+		-e POSTGRES_DB=$(E2E_DB_NAME) \
+		-p $(E2E_DB_PORT):5432 \
+		-d postgres
+
+reset-e2e-db:
+	@echo "Resetting E2E database..."
+	DATABASE_URL=$(E2E_DATABASE_URL) \
+	npx prisma db push --force-reset --accept-data-loss --schema=$(PRISMA_SCHEMA_PATH)
 
 
 # Backup & Restore

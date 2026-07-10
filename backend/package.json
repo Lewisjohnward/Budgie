@@ -4,7 +4,8 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn src/index.ts",
+    "dev": "PORT=8000 ts-node-dev --respawn src/index.ts",
+    "e2e:server": "PORT=8001 DATABASE_URL=postgresql://myuser:mypassword@localhost:5434/budgie_e2e_db ENABLE_TEST_ROUTES=true NODE_ENV=test ts-node src/index.ts",
     "start": "node dist/index.js",
     "build": "tsc",
     "test": "jest -i",

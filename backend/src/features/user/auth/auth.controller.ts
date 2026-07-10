@@ -24,11 +24,11 @@ export const register = async (
   try {
     const payload = registerSchema.parse(req.body);
 
-    const { accessToken, refreshToken } = await authUseCase.register(payload);
+    const { tokens } = await authUseCase.register(payload);
 
-    setRefreshTokenCookie(res, refreshToken);
+    setRefreshTokenCookie(res, tokens.refreshToken);
 
-    res.status(200).json(accessToken);
+    res.status(200).json(tokens.accessToken);
   } catch (error) {
     next(error);
   }
