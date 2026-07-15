@@ -1,10 +1,14 @@
-import { getUserCategoriesByCategoryGroupId } from "../../utils/appSnapshot";
-import { registerUser, login, register } from "../../utils/auth";
-import { getUncategorisedCategory } from "../../utils/category";
-import { createCategory } from "../../utils/category/category.create";
-import { deleteCategoryRaw } from "../../utils/category/category.delete";
-import { createGroupWithCategory } from "../../utils/scenarios/createGroupWithCategory";
-import { createTransactionForCategory } from "../../utils/scenarios/createTransactionForCategory";
+import { getUserCategoriesByCategoryGroupId } from "../../../utils/appSnapshot";
+import { registerUser, login, register } from "../../../utils/auth";
+import { getUncategorisedCategory } from "../../../utils/category";
+import { createCategory } from "../../../utils/category/category.create";
+import { deleteCategoryRaw } from "../../../utils/category/category.delete";
+import { createGroupWithCategory } from "../../../utils/scenarios/createGroupWithCategory";
+import { createTransactionForCategory } from "../../../utils/scenarios/createTransactionForCategory";
+import path from "node:path";
+import jestOpenAPI from "jest-openapi";
+
+jestOpenAPI(path.resolve(__dirname, "../../../../docs/api/openapi.yml"));
 
 describe("Category", () => {
   let cookie: string;
@@ -20,6 +24,11 @@ describe("Category", () => {
     categoryGroupId = categoryGroup.id;
   });
   describe("Delete", () => {
+    it("delete category conforms to OpenAPI contract", async () => {
+      const res = await deleteCategoryRaw(cookie, categoryId);
+
+      expect(res).toSatisfyApiSpec();
+    });
     describe("Error Cases", () => {
       it("Should return 401 on unauthenticated requests ", async () => {
         const res = await deleteCategoryRaw("invalid-cookie", "invalid-id");
@@ -37,6 +46,13 @@ describe("Category", () => {
 
         // Delete category using unowned category group
         const res = await deleteCategoryRaw(cookie, otherUserCategory.id);
+        expect(res.status).toBe(404);
+      });
+      it("Should return 404 if category doesn't exist", async () => {
+        const res = await deleteCategoryRaw(
+          cookie,
+          "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d"
+        );
         expect(res.status).toBe(404);
       });
 
@@ -58,6 +74,15 @@ describe("Category", () => {
         expect(res.status).toBe(404);
       });
 
+      it("Should return 404 if inheriting category doesn't exist", async () => {
+        await createTransactionForCategory(cookie, categoryId);
+
+        // Delete category using unowned category group
+        const res = await deleteCategoryRaw(cookie, categoryId, {
+          inheritingCategoryId: "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d",
+        });
+        expect(res.status).toBe(404);
+      });
       it("Should return 422 if inheriting category is category being deleted", async () => {
         await createTransactionForCategory(cookie, categoryId);
 

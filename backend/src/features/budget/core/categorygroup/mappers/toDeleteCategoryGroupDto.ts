@@ -15,28 +15,12 @@ import { DeleteCategoryGroupDto } from "../categoryGroup.types";
  */
 export const toDeleteCategoryGroupDto = (
   result: DeleteCategoryGroupResult
-): DeleteCategoryGroupDto => {
+): unknown => {
   return {
     deleted: {
       categoryGroupId: result.deletedCategoryGroupId,
     },
     updated: {
-      transactions: Object.fromEntries(
-        result.updatedTransactions.map((tx) => [
-          tx.id,
-          {
-            type: tx.type,
-            id: tx.id,
-            accountId: tx.accountId,
-            categoryId: tx.categoryId,
-            payeeId: tx.payeeId ?? null,
-            date: tx.date.toISOString(),
-            memo: tx.memo,
-            inflow: tx.inflow.toNumber(),
-            outflow: tx.outflow.toNumber(),
-          },
-        ])
-      ),
       months: Object.fromEntries(
         result.updatedMonths.map((month) => [
           month.id,

@@ -45,7 +45,7 @@ export const createAccount = async (
   for (let i = 0; i < 5; i++) {
     try {
       await prisma.$transaction(async (tx) => {
-        accountService.createAndInitialiseAccount(
+        await accountService.createAndInitialiseAccount(
           tx,
           toCreateAccountCommand(payload)
         );

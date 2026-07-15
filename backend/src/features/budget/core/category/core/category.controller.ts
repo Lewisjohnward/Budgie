@@ -71,6 +71,9 @@ export const updateCategory = async (
   }
 };
 
+/**
+ * Deletes a category
+ */
 export const deleteCategory = async (
   req: Request,
   res: Response,

@@ -87,7 +87,7 @@ export const deleteCategory = async (
     throw new CategoryCannotInheritItselfError();
   }
 
-  return prisma.$transaction(async (tx) => {
+  return await prisma.$transaction(async (tx) => {
     const category = await categoryService.categories.getModifiableCategory(
       tx,
       userId,
