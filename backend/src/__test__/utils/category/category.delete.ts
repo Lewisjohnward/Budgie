@@ -22,13 +22,8 @@ export const deleteCategoryRaw = async (
   categoryId: string,
   payload?: DeleteCategoryPayloadTest
 ): Promise<DeleteCategoryResponse> => {
-  const res = await request(app)
+  return await request(app)
     .delete(`${CATEGORIES_ENDPOINT_URL}/${categoryId}`)
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload);
-
-  return {
-    body: res.body as DeleteCategoryDto,
-    status: res.status,
-  };
 };

@@ -2,7 +2,7 @@ import { type Prisma } from "@prisma/client";
 import { transactionService } from "../../../transaction/transaction.service";
 import { accountService } from "../../account.service";
 import { type CreateAccountCommand } from "../use-cases/createAccount";
-import { DomainAccount } from "../../account.types";
+import { type DomainAccount } from "../../account.types";
 
 export const createAndInitialiseAccount = async (
   tx: Prisma.TransactionClient,
