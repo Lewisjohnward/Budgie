@@ -26,6 +26,7 @@ import {
   setupUser,
   assertCategoryRemoved,
   pressEscape,
+  expectCategoryAmounts,
 } from "./helpers";
 
 setupTestServer();
@@ -176,10 +177,10 @@ describe("delete", () => {
       await pressDeleteButton();
 
       await waitFor(() => {
-        const rentCategory = screen.getByRole("row", {
-          name: /rent category/i,
+        expectCategoryAmounts("Rent", {
+          activity: "-£20.00",
+          available: "-£20.00",
         });
-        expect(within(rentCategory).getByText(/-20\.00/)).toBeInTheDocument();
       });
     });
 

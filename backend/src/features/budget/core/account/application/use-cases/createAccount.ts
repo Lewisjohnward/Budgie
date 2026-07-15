@@ -5,7 +5,7 @@ import { asUserId, type UserId } from "../../../../../user/auth/auth.types";
 import { accountService } from "../../account.service";
 import { DuplicateAccountNameError } from "../../account.errors";
 
-type CreateAccountCommand = Omit<AddAccountPayload, "userId"> & {
+export type CreateAccountCommand = Omit<AddAccountPayload, "userId"> & {
   userId: UserId;
 };
 
@@ -42,25 +42,13 @@ const toCreateAccountCommand = (
 export const createAccount = async (
   payload: AddAccountPayload
 ): Promise<void> => {
-  const { userId, balance } = toCreateAccountCommand(payload);
-
   for (let i = 0; i < 5; i++) {
     try {
       await prisma.$transaction(async (tx) => {
-        const hasOpeningBalance = !balance.isZero();
-
-        const createdAccount = await accountService.createAccount(tx, payload);
-
-        if (hasOpeningBalance) {
-          await transactionService.createOpeningBalanceTransaction(
-            tx,
-            userId,
-            createdAccount.id,
-            balance
-          );
-
-          await accountService.refreshDeletableStatus(tx, [createdAccount.id]);
-        }
+        accountService.createAndInitialiseAccount(
+          tx,
+          toCreateAccountCommand(payload)
+        );
       });
 
       return;

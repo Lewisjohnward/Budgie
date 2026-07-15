@@ -1,4 +1,4 @@
-import { waitFor } from "@testing-library/react";
+import { waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { screen } from "@testing-library/react";
 
@@ -132,3 +132,32 @@ export function assertDeleteButtonEnabled() {
 export async function assertPopoverVisible() {
   expect(await screen.findByText(/plan categories/i)).toBeInTheDocument();
 }
+
+//-----
+// assert over category row values
+//-----
+export const expectCategoryAmounts = (
+  category: string,
+  amounts: {
+    activity?: string | RegExp;
+    available?: string | RegExp;
+  }
+): void => {
+  const row = screen.getByRole("row", {
+    name: `${category} category`,
+  });
+
+  const rowQueries = within(row);
+
+  if (amounts.activity !== undefined) {
+    expect(
+      rowQueries.getByRole("gridcell", { name: "activity" })
+    ).toHaveTextContent(amounts.activity);
+  }
+
+  if (amounts.available !== undefined) {
+    expect(
+      rowQueries.getByRole("gridcell", { name: "available" })
+    ).toHaveTextContent(amounts.available);
+  }
+};

@@ -7,8 +7,11 @@ import { adjustAccountBalance } from "./application/services/adjustAccountBalanc
 import { updateAccountName } from "./application/services/updateAccountName";
 import { getNextPosition } from "./application/services/getNextPosition";
 import { getAccounts } from "./application/services/getAccounts";
+import { createAndInitialiseAccount } from "./application/services/createAndInitialiseAccount";
 
 export const accountService = {
+  createAndInitialiseAccount,
+
   createAccount,
   getAccount,
   getAccounts,

@@ -20,6 +20,7 @@ import {
   ExcludeTarget,
   CategorySelectOptions,
 } from "../../../hooks/useAllocation/useAllocation";
+import { formatCurrency } from "@/utils/formatCurrency";
 
 type CategoryRowProps = {
   category: CategoryBranded;
@@ -113,10 +114,10 @@ export function CategoryRow({
           assigned={month.assigned}
           monthId={month.id}
         />
-        <CategoryCell>
-          {currency} {month.activity.toFixed(2)}
+        <CategoryCell ariaLabel="activity">
+          {formatCurrency(month.activity)}
         </CategoryCell>
-        <CategoryCell>
+        <CategoryCell ariaLabel="available">
           <Available value={month.available} />
         </CategoryCell>
       </CategoryGridRow>

@@ -1,7 +1,6 @@
-import { Request, Response, NextFunction } from "express";
-import { prisma } from "../../shared/prisma/client";
-import { seedDeleteCategoryBase } from "./scenarios/seedDeleteCategoryBase";
-import { seedLogin } from "./scenarios/auth/login";
+import { type Request, type Response, type NextFunction } from "express";
+import { scenarios } from "./test.scenarios";
+import { prisma } from "../shared/prisma/client";
 
 export const reset = async (
   _req: Request,
@@ -29,11 +28,6 @@ export const reset = async (
     next(error);
   }
 };
-
-const scenarios = {
-  login: seedLogin,
-  "delete-category-base": seedDeleteCategoryBase,
-} as const;
 
 export const seed = async (req: Request, res: Response, next: NextFunction) => {
   try {
