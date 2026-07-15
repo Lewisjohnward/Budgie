@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npx playwright test --config=playwright.config.ts"
+    "test": "npx playwright test --config=playwright.config.ts",
+    "test:debug": "playwright test --config=playwright.config.ts --debug"
   },
   "keywords": [],
   "author": "",

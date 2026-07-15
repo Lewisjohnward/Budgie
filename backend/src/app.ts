@@ -12,7 +12,7 @@ import { errorHandler } from "./shared/middleWare/errorHandler";
 
 import budgetRoutes from "./features/budget/budget.router";
 import userRoutes from "./features/user/user.router";
-import { testRoutes } from "./features/test/test.router";
+import { testRoutes } from "./e2e/test.router";
 
 // export const StartServer = async () => {
 if (!process.env.PAYLOAD_SECRET) {
