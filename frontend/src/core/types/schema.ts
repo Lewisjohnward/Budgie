@@ -24,6 +24,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/budget/memo/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Edit memo
+         * @description Edit memo for the authenticated user.
+         */
+        patch: operations["editMemo"];
+        trace?: never;
+    };
+    "/budget/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create category
+         * @description Creates a new budget category inside an existing category group owned by the user, dynamically  calculating its sorting position, and automatically initialising accompanying zero-value  budget timeline months derived from existing system or user category milestones.
+         */
+        post: operations["createCategory"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/budget/categories/{categoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete category
+         * @description Deletes a  category reassigning transactions and assigned money
+         */
+        delete: operations["deleteCategory"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -58,18 +118,17 @@ export interface components {
          *             "categoryGroupId": "cg_1"
          *           }
          *         },
-         *         "rta": {
-         *           "id": "rta",
-         *           "name": "Ready to Assign",
-         *           "position": 0,
-         *           "categoryGroupId": "cg_1"
-         *         },
-         *         "uncategorised": {
-         *           "id": "uncategorised",
-         *           "name": "Uncategorised",
-         *           "position": 999,
-         *           "categoryGroupId": "cg_1"
-         *         }
+         *         "rta": null,
+         *         "id": "rta",
+         *         "name": "Ready to Assign",
+         *         "position": 0,
+         *         "categoryGroupId": "cg_1"
+         *       },
+         *       "uncategorised": {
+         *         "id": "uncategorised",
+         *         "name": "Uncategorised",
+         *         "position": 999,
+         *         "categoryGroupId": "cg_1"
          *       },
          *       "months": {
          *         "month_1": {
@@ -153,7 +212,7 @@ export interface components {
             payees: {
                 [key: string]: components["schemas"]["Payee"];
             };
-            /** @description Map of monthKey → memo (1:1 invariant) */
+            /** @description Map of MonthKey (YYYY-MM) → Memo (1:1 invariant) */
             memosByMonth: {
                 [key: string]: components["schemas"]["Memo"];
             };
@@ -210,8 +269,44 @@ export interface components {
         };
         Memo: {
             id: string;
+            /**
+             * @description MonthKey in YYYY-MM format
+             * @example 2025-12
+             */
             month: string;
             content: string;
+        };
+        UpdatedMemo: {
+            id: string;
+            /**
+             * @description MonthKey in YYYY-MM format
+             * @example 2025-12
+             */
+            month: string;
+            content: string;
+        };
+        DeleteCategoryDto: {
+            deleted: {
+                category: components["schemas"]["Category"];
+                /** @description Deleted months keyed by month id. */
+                months: {
+                    [key: string]: components["schemas"]["Month"];
+                };
+            };
+            updated: {
+                /** @description Updated categories keyed by category id. */
+                categories: {
+                    [key: string]: components["schemas"]["Category"];
+                };
+                /** @description Updated transactions keyed by transaction id. */
+                transactions: {
+                    [key: string]: components["schemas"]["Transaction"];
+                };
+                /** @description Updated months keyed by month id. */
+                months: {
+                    [key: string]: components["schemas"]["Month"];
+                };
+            };
         };
     };
     responses: never;
@@ -249,6 +344,196 @@ export interface operations {
             };
             /** @description Server error */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    editMemo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    content: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Successfully updated memo */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UpdatedMemo"];
+                };
+            };
+            /** @description Bad request (invalid input or malformed payload) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Memo not found or owned by user */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description The name of the category (leading and trailing whitespace will be trimmed).
+                     * @example Groceries
+                     */
+                    name: string;
+                    /**
+                     * @description Target parent Category Group UUID.
+                     * @example 8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d
+                     */
+                    categoryGroupId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Successfully created category and tracking months */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        created: {
+                            category: components["schemas"]["Category"];
+                            /** @description Key-value map of newly generated budget tracking records keyed by an arbitrary tracking sequence identifier. */
+                            months: {
+                                [key: string]: components["schemas"]["Month"];
+                            };
+                        };
+                    };
+                };
+            };
+            /** @description Unauthorised (missing or expired session token) */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Category group not found or unowned by user context */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Conflict (a category with this normalised name already exists within this category group) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description The id of the category.
+                     * @example 8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d
+                     */
+                    categoryId: string;
+                    /**
+                     * @description The category that will inherit the transactions assigned to the deleted category.
+                     * @example 8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d
+                     */
+                    inheritingCategoryId?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Category deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteCategoryDto"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Category not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Invalid category deletion request */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

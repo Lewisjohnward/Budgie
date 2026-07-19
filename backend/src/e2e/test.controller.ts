@@ -1,5 +1,5 @@
 import { type Request, type Response, type NextFunction } from "express";
-import { scenarios } from "./test.scenarios";
+import { seeds } from "./test.seeds";
 import { prisma } from "../shared/prisma/client";
 
 export const reset = async (
@@ -31,22 +31,22 @@ export const reset = async (
 
 export const seed = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { scenario } = req.params;
-    const seedScenario = scenarios[scenario as keyof typeof scenarios];
+    const seedName = req.params.seedName;
+    const seedFn = seeds[seedName as keyof typeof seeds];
 
-    if (!seedScenario) {
+    if (!seedFn) {
       res.status(404).json({
-        message: `Unknown test scenario: ${scenario}`,
+        message: `Unknown seed: ${seedName}`,
       });
       return;
     }
 
     const credentials = await prisma.$transaction(async (tx) => {
-      return await seedScenario(tx);
+      return await seedFn(tx);
     });
 
     res.json({
-      message: `Seeded '${scenario}'`,
+      message: `Seeded '${seedName}'`,
       credentials,
     });
   } catch (error) {

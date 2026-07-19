@@ -122,6 +122,9 @@ export type MonthBranded = {
 export type AccountBranded = {
   id: AccountId;
   name: string;
+  position: number;
+  open: boolean;
+  deletable: boolean;
   type: "BANK" | "CREDIT_CARD";
   balance: number;
 };

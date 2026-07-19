@@ -92,6 +92,7 @@ export function ContextMenu({
                   <FormItem>
                     <FormControl>
                       <Input
+                        aria-label="Rename category group"
                         className="focus-visible:ring-sky-700 shadow-none"
                         placeholder="New category name"
                         autoComplete="off"

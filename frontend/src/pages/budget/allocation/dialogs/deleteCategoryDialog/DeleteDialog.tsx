@@ -23,20 +23,20 @@ import { DeleteArgs } from "./useDeleteDialog";
 
 export type DeleteState =
   | {
-      type: "category";
-      categoryId: CategoryId;
-      name: string;
-      hasAssigned: boolean;
-      transactionCount: number;
-    }
+    type: "category";
+    categoryId: CategoryId;
+    name: string;
+    hasAssigned: boolean;
+    transactionCount: number;
+  }
   | {
-      type: "categoryGroup";
-      categoryGroupId: CategoryGroupId;
-      name: string;
-      hasAssigned: boolean;
-      transactionCount: number;
-      categoryCount: number;
-    };
+    type: "categoryGroup";
+    categoryGroupId: CategoryGroupId;
+    name: string;
+    hasAssigned: boolean;
+    transactionCount: number;
+    categoryCount: number;
+  };
 
 type DeleteDialogProps = {
   open: boolean;
@@ -239,23 +239,30 @@ export function DeleteDialog({
 
   const handleAcceptDelete = () => {
     if (!state) return;
+    console.log("debug-44", selectedInheritingCategoryId);
 
     const args: DeleteArgs =
       state.type === "category"
         ? {
-            type: "category",
-            categoryId: state.categoryId,
-            ...(inheritingCategoryView && selectedInheritingCategoryId
-              ? {
-                  inheritingCategoryId:
-                    selectedInheritingCategoryId as CategoryId,
-                }
-              : {}),
-          }
+          type: "category",
+          categoryId: state.categoryId,
+          ...(inheritingCategoryView && selectedInheritingCategoryId
+            ? {
+              inheritingCategoryId:
+                selectedInheritingCategoryId as CategoryId,
+            }
+            : {}),
+        }
         : {
-            type: "categoryGroup",
-            categoryGroupId: state.categoryGroupId,
-          };
+          type: "categoryGroup",
+          categoryGroupId: state.categoryGroupId,
+          ...(inheritingCategoryView && selectedInheritingCategoryId
+            ? {
+              inheritingCategoryId:
+                selectedInheritingCategoryId as CategoryId,
+            }
+            : {}),
+        };
 
     accept(args);
   };
@@ -333,7 +340,7 @@ export function DeleteDialog({
                   <div
                     className="flex items-center p-1 pr-2 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 rounded-sm overflow-hidden"
                     onClick={handleClick}
-                    // onKeyDown={handleKeyDown}
+                  // onKeyDown={handleKeyDown}
                   >
                     <input
                       className="px-2 w-full rounded-sm text-ellipsis focus:outline-none focus:ring-0"
@@ -341,7 +348,7 @@ export function DeleteDialog({
                       onChange={handleOnChange}
                       ref={inputRef}
                       onKeyDown={handleKeyDown}
-                      // onBlur={() => setPopoverOpen(false)}
+                    // onBlur={() => setPopoverOpen(false)}
                     />
                     <ChevronDown className="size-4 text-sky-950" />
                   </div>
