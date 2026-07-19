@@ -1,6 +1,7 @@
 import {
   asCategoryGroupId,
   CategoryGroupId,
+  CategoryId,
   MonthId,
 } from "@/pages/budget/allocation/types/types";
 import { apiSlice } from "../../apiSlice";
@@ -28,6 +29,7 @@ type UpdatedCategoryGroupInput = {
 // Input to delete category group
 type DeleteCategoryGroupInput = {
   categoryGroupId: CategoryGroupId;
+  inheritingCategoryId?: CategoryId;
 };
 
 // Response to create category group
@@ -163,9 +165,10 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
       DeleteCategoryGroupDto,
       DeleteCategoryGroupInput
     >({
-      query: ({ categoryGroupId }) => ({
+      query: ({ categoryGroupId, inheritingCategoryId }) => ({
         url: `${CATEGORY_GROUP_ENDPOINT_URL}/${categoryGroupId}`,
         method: "DELETE",
+        body: inheritingCategoryId ? { inheritingCategoryId } : undefined,
       }),
 
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {

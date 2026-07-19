@@ -1,13 +1,13 @@
 import { test, expect } from "@playwright/test";
 import { resetDatabase } from "../../../helpers/setup";
-import { seedScenario, type TestCredentials } from "../../../helpers/seed";
+import { seed, type TestCredentials } from "../../../helpers/seed";
 
 test.beforeEach(async () => {
   await resetDatabase();
 });
 
-test("user can login", async ({ page, request }) => {
-  const credentials = await seedScenario<TestCredentials>(request, "login");
+test("can login", async ({ page, request }) => {
+  const credentials = await seed<TestCredentials>(request, "login");
 
   await page.goto("/user/login");
 

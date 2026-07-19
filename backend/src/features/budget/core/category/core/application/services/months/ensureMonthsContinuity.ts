@@ -24,11 +24,13 @@ export const ensureMonthsContinuity = async (
   userId: UserId
 ) => {
   const currentMonth = roundToStartOfMonth(new Date());
+  console.log("currentMonth:", currentMonth);
 
   const mostRecentMonths = await categoryService.months.getMostRecentMonths(
     prisma,
     userId
   );
+  console.log("mostRecentMonths:", mostRecentMonths);
 
   const monthsUpToDate = mostRecentMonths[0].month >= currentMonth;
 

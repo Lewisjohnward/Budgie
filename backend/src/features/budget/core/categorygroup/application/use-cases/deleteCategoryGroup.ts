@@ -104,6 +104,7 @@ export const deleteCategoryGroup = async (
   const { userId, categoryGroupId, inheritingCategoryId } =
     toDeleteCategoryGroupCommand(payload);
 
+  console.log("inheritingCategoryId:", inheritingCategoryId);
   return await prisma.$transaction(async (tx) => {
     // Get the category group to be deleted
     const categoryGroup = await categoryGroupService.getModifiableCategoryGroup(

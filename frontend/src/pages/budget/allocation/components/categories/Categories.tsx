@@ -126,6 +126,7 @@ export function Categories({
     }
 
     if (args.type === "categoryGroup") {
+      console.log("args:", args);
       deleteCategoryGroup(args);
     }
   };
@@ -272,7 +273,11 @@ export function Categories({
                   onDelete={() => handleDeleteCategoryGroup(group)}
                 >
                   <div className="group">
-                    <CategoryGridRow id={group.id} className="bg-stone-200">
+                    <CategoryGridRow
+                      aria-label={`${group.name} category group`}
+                      id={group.id}
+                      className="bg-stone-200"
+                    >
                       <CategoryGroupRow
                         open={open}
                         categoryGroup={group}

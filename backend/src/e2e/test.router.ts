@@ -4,6 +4,6 @@ import { reset, seed } from "./test.controller";
 const router = Router();
 
 router.post("/reset", reset);
-router.post("/seed/:scenario", seed);
+router.post("/seed/:seedName", seed);
 
 export { router as testRoutes };

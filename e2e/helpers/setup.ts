@@ -1,6 +1,6 @@
 import { type APIRequestContext, type Page, request } from "@playwright/test";
 import { login } from "./auth";
-import { seedScenario, type TestCredentials } from "./seed";
+import { seed, type TestCredentials } from "./seed";
 
 const API_URL = "http://localhost:8001";
 
@@ -19,8 +19,8 @@ export const resetDatabase = async (): Promise<void> => {
 export const setupScenario = async (
   page: Page,
   request: APIRequestContext,
-  scenario: string
+  seedName: string
 ): Promise<void> => {
-  const credentials = await seedScenario<TestCredentials>(request, scenario);
+  const credentials = await seed<TestCredentials>(request, seedName);
   await login(page, credentials);
 };

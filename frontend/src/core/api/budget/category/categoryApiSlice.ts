@@ -10,11 +10,10 @@ import {
   MonthBranded,
   TransactionBranded,
 } from "@/core/types/NormalizedData";
-import {
-  UpdatedMonthsById,
-  updatedMonthsByIdSchema,
-} from "@/core/schemas/editMonthSchema";
+import { UpdatedMonthsById } from "@/core/schemas/editMonthSchema";
 import { UpdateMonthsPayload } from "@/pages/budget/allocation/components/assign/types/assignTypes";
+import { DeleteCategoryDto } from "@/core/types/exported-types";
+import { toDeleteCategoryResult } from "@/core/mappers/toDeleteCategoryResult";
 
 const CATEGORY_ENDPOINT_URL = "budget/categories";
 
@@ -62,7 +61,7 @@ export type CategoryPositionPatch = {
 };
 
 // Response to delete category
-export type DeleteCategoryDto = {
+export type DeleteCategoryResult = {
   deleted: {
     category: CategoryBranded;
     months: Record<string, MonthBranded>;
@@ -195,76 +194,83 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
         }
       },
     }),
-    deleteCategory: builder.mutation<DeleteCategoryDto, DeleteCategoryInput>({
-      query: ({ categoryId, inheritingCategoryId }) => ({
-        url: `${CATEGORY_ENDPOINT_URL}/${categoryId}`,
-        method: "DELETE",
-        body: inheritingCategoryId ? { inheritingCategoryId } : undefined,
-      }),
+    deleteCategory: builder.mutation<DeleteCategoryResult, DeleteCategoryInput>(
+      {
+        query: ({ categoryId, inheritingCategoryId }) => ({
+          url: `${CATEGORY_ENDPOINT_URL}/${categoryId}`,
+          method: "DELETE",
+          body: inheritingCategoryId ? { inheritingCategoryId } : undefined,
+        }),
 
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          budgetSnapshotSlice.util.updateQueryData(
-            "getBudgetSnapshot",
-            undefined,
-            (draft) => {
-              // Optimistically remove category
-              delete draft.categories.user[arg.categoryId];
+        transformResponse: (dto: DeleteCategoryDto) =>
+          toDeleteCategoryResult(dto),
 
-              // Optimistically remove months belonging to category
-              for (const month of Object.values(draft.months)) {
-                if (month.categoryId === arg.categoryId) {
-                  delete draft.months[month.id];
-                }
-              }
-            }
-          )
-        );
-
-        try {
-          const { data } = await queryFulfilled;
-
-          dispatch(
+        async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+          const patchResult = dispatch(
             budgetSnapshotSlice.util.updateQueryData(
               "getBudgetSnapshot",
               undefined,
               (draft) => {
-                // Deleted
+                // Optimistically remove category
+                delete draft.categories.user[arg.categoryId];
 
-                // Category
-                delete draft.categories.user[data.deleted.category.id];
-
-                // Months
-                for (const month of Object.values(data.deleted.months)) {
-                  delete draft.months[month.id];
-                }
-
-                // Updated
-
-                // Categories
-                for (const category of Object.values(data.updated.categories)) {
-                  draft.categories.user[category.id] = category;
-                }
-
-                // Months
-                for (const month of Object.values(data.updated.months)) {
-                  draft.months[month.id] = month;
-                }
-
-                // Transactions
-                for (const transaction of Object.values(
-                  data.updated.transactions
-                )) {
-                  draft.transactions[transaction.id] = transaction;
+                // Optimistically remove months belonging to category
+                for (const month of Object.values(draft.months)) {
+                  if (month.categoryId === arg.categoryId) {
+                    delete draft.months[month.id];
+                  }
                 }
               }
             )
           );
-        } catch {
-          patchResult.undo();
-        }
-      },
-    }),
+
+          try {
+            const { data } = await queryFulfilled;
+
+            dispatch(
+              budgetSnapshotSlice.util.updateQueryData(
+                "getBudgetSnapshot",
+                undefined,
+                (draft) => {
+                  // Deleted
+
+                  // Category
+                  delete draft.categories.user[data.deleted.category.id];
+
+                  // Months
+                  for (const month of Object.values(data.deleted.months)) {
+                    delete draft.months[month.id];
+                  }
+
+                  // Updated
+
+                  // Categories
+                  for (const category of Object.values(
+                    data.updated.categories
+                  )) {
+                    draft.categories.user[category.id] = category;
+                  }
+
+                  // Months
+                  for (const month of Object.values(data.updated.months)) {
+                    draft.months[month.id] = month;
+                  }
+
+                  // Transactions
+                  for (const transaction of Object.values(
+                    data.updated.transactions
+                  )) {
+                    draft.transactions[transaction.id] = transaction;
+                  }
+                }
+              )
+            );
+          } catch {
+            patchResult.undo();
+          }
+        },
+      }
+    ),
     allocateToMonths: builder.mutation<UpdatedMonthsById, UpdateMonthsPayload>({
       query: (assigned) => ({
         url: `${CATEGORY_ENDPOINT_URL}/months`,
