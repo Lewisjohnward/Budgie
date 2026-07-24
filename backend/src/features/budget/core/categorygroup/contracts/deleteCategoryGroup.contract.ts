@@ -1,6 +1,9 @@
-import { type DomainMonth } from "../../category/core/category.types";
+import {
+  DomainCategory,
+  type DomainMonth,
+} from "../../category/core/category.types";
 import { type DomainNormalTransaction } from "../../transaction/transaction.types";
-import { type CategoryGroupId } from "../categoryGroup.types";
+import { DomainUserCategoryGroup } from "../categoryGroup.types";
 
 /**
  * Represents the full domain-level result of a category group deletion operation.
@@ -18,9 +21,10 @@ import { type CategoryGroupId } from "../categoryGroup.types";
  * - Used to ensure frontend state consistency after a destructive action
  */
 export type DeleteCategoryGroupResult = {
-  deletedCategoryGroupId: CategoryGroupId;
-  // TODO:(lewis 2026-06-12 10:53) shouldn-t this also have deletedMonths?
-
+  deletedCategoryGroup: DomainUserCategoryGroup;
+  deletedCategories: DomainCategory[];
+  deletedMonths: DomainMonth[];
+  updatedCategoryGroups: DomainUserCategoryGroup[];
   updatedTransactions: DomainNormalTransaction[];
   updatedMonths: DomainMonth[];
 };

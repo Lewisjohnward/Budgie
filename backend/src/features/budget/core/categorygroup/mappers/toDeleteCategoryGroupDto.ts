@@ -1,5 +1,5 @@
-import { DeleteCategoryGroupResult } from "../categoryGroup.contract";
-import { DeleteCategoryGroupDto } from "../categoryGroup.types";
+import { type DeleteCategoryGroupResult } from "../categoryGroup.contract";
+import { type DeleteCategoryGroupDto } from "../categoryGroup.types";
 
 /**
  * Converts the domain-level delete category group result into a JSON-safe DTO
@@ -13,14 +13,74 @@ import { DeleteCategoryGroupDto } from "../categoryGroup.types";
  * @param result - Domain result returned from the delete category group use case
  * @returns A serialized DTO ready to be sent in an HTTP response
  */
+
 export const toDeleteCategoryGroupDto = (
   result: DeleteCategoryGroupResult
-): unknown => {
+): DeleteCategoryGroupDto => {
   return {
     deleted: {
-      categoryGroupId: result.deletedCategoryGroupId,
+      categoryGroup: {
+        id: result.deletedCategoryGroup.id,
+        name: result.deletedCategoryGroup.name,
+        position: result.deletedCategoryGroup.position,
+      },
+
+      categories: Object.fromEntries(
+        result.deletedCategories.map((category) => [
+          category.id,
+          {
+            id: category.id,
+            name: category.name,
+            categoryGroupId: category.categoryGroupId,
+            position: category.position,
+          },
+        ])
+      ),
+
+      months: Object.fromEntries(
+        result.deletedMonths.map((month) => [
+          month.id,
+          {
+            id: month.id,
+            categoryId: month.categoryId,
+            month: month.month.toISOString(),
+            activity: month.activity.toNumber?.() ?? month.activity,
+            assigned: month.assigned.toNumber?.() ?? month.assigned,
+            available: month.available.toNumber?.() ?? month.available,
+          },
+        ])
+      ),
     },
+
     updated: {
+      categoryGroups: Object.fromEntries(
+        result.updatedCategoryGroups.map((group) => [
+          group.id as string,
+          {
+            id: group.id as string,
+            name: group.name,
+            position: group.position,
+            source: group.source,
+          },
+        ])
+      ),
+      transactions: Object.fromEntries(
+        result.updatedTransactions.map((transaction) => [
+          transaction.id,
+          {
+            type: transaction.type,
+            id: transaction.id,
+            accountId: transaction.accountId,
+            categoryId: transaction.categoryId,
+            payeeId: transaction.payeeId as string,
+            inflow: transaction.inflow.toNumber(),
+            outflow: transaction.outflow.toNumber(),
+            date: transaction.date.toISOString(),
+            memo: transaction.memo,
+          },
+        ])
+      ),
+
       months: Object.fromEntries(
         result.updatedMonths.map((month) => [
           month.id,

@@ -15,3 +15,5 @@ export type ApiTransaction = components["schemas"]["Transaction"];
 export type ApiMonthKey = string;
 
 export type DeleteCategoryDto = components["schemas"]["DeleteCategoryDto"];
+
+export type DeleteCategoryGroupDto = components["schemas"]["DeleteCategoryDto"];

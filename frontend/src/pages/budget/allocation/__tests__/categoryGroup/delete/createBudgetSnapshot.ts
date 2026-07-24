@@ -32,6 +32,7 @@ const memo1 = "memo_1";
 
 const acc1 = "acc_1";
 const tx1 = "tx_1";
+const tx2 = "tx_2";
 const monthKey = defaultMonth;
 
 export const baseSnapshot: ApiBudgetSnapshot = {
@@ -67,16 +68,8 @@ export const baseSnapshot: ApiBudgetSnapshot = {
   },
 
   monthKeys: [monthKey],
-  accounts: {
-    // [acc1]: createAccount(acc1),
-  },
-  transactions: {
-    // [tx1]: createTransaction({
-    //   id: tx1,
-    //   accountId: acc1,
-    //   categoryId: groceriesCategory,
-    // }),
-  },
+  accounts: {},
+  transactions: {},
   payees: {},
   memosByMonth: {
     [monthKey]: createMemo(memo1),
@@ -227,14 +220,14 @@ export const withTransactionSnapshot = createSnapshot({
     [groceries_month_1]: {
       ...baseSnapshot.months[groceries_month_1],
       assigned: 10,
-      activity: -20,
-      available: -10,
+      activity: -25,
+      available: -25,
     },
     [rent_month_1]: createMonth(rent_month_1, rentCategoryId),
   },
   accounts: {
     ...baseSnapshot.accounts,
-    [acc1]: createAccount(acc1, { balance: -10 }),
+    [acc1]: createAccount(acc1, { balance: -25 }),
   },
   transactions: {
     ...baseSnapshot.transactions,
@@ -242,7 +235,13 @@ export const withTransactionSnapshot = createSnapshot({
       id: tx1,
       accountId: acc1,
       categoryId: groceriesCategoryId,
-      outflow: 10,
+      outflow: 20,
+    }),
+    [tx2]: createTransaction({
+      id: tx2,
+      accountId: acc1,
+      categoryId: groceriesCategoryId,
+      outflow: 5,
     }),
   },
 });
