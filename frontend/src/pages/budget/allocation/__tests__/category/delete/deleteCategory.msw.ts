@@ -142,6 +142,7 @@ function deleteCategory(
       months: monthsForCategory,
     },
     updated: {
+      // TODO:(lewis 2026-07-23 15:12) this is not needed
       categories: updatedCategories,
       transactions: updatedTransactions,
       months: updatedMonths as Record<string, MonthBranded>,

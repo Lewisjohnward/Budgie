@@ -214,6 +214,60 @@ paths:
 
         "422":
           description: Invalid category deletion request
+  /budget/category-groups/{categoryGroupId}:
+    delete:
+      summary: Delete category group
+      description: >
+        Deletes a category group. Transactions are reassigned to the inheriting
+        category when one is provided. Assigned money is redistributed according
+        to the category group deletion rules.
+      operationId: deleteCategoryGroup
+      tags:
+        - CategoryGroups
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - in: path
+          name: categoryGroupId
+          required: false
+          schema:
+            type: string
+          description: The ID of the category group to delete.
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                inheritingCategoryId:
+                  type: string
+                  description: >
+                    The category that will inherit transactions from categories within the
+                    deleted category group.
+                  example: "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d"
+
+      responses:
+        "200":
+          description: Category group deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteCategoryGroupDto"
+
+        "401":
+          description: Unauthorized
+
+        "403":
+          description: Forbidden
+
+        "404":
+          description: Category group not found
+
+        "422":
+          description: Invalid category group deletion request
 
 components:
   securitySchemes:
@@ -542,6 +596,59 @@ components:
               description: Updated categories keyed by category id.
               additionalProperties:
                 $ref: "#/components/schemas/Category"
+
+            transactions:
+              type: object
+              description: Updated transactions keyed by transaction id.
+              additionalProperties:
+                $ref: "#/components/schemas/Transaction"
+
+            months:
+              type: object
+              description: Updated months keyed by month id.
+              additionalProperties:
+                $ref: "#/components/schemas/Month"
+
+    DeleteCategoryGroupDto:
+      type: object
+      required:
+        - deleted
+        - updated
+      properties:
+        deleted:
+          type: object
+          required:
+            - categoryGroup
+            - categories
+            - months
+          properties:
+            categoryGroup:
+              $ref: "#/components/schemas/CategoryGroup"
+
+            categories:
+              type: object
+              description: Deleted categories.
+              additionalProperties:
+                $ref: "#/components/schemas/Category"
+
+            months:
+              type: object
+              description: Deleted months keyed by month id.
+              additionalProperties:
+                $ref: "#/components/schemas/Month"
+
+        updated:
+          type: object
+          required:
+            - categoryGroups
+            - transactions
+            - months
+          properties:
+            categories:
+              type: object
+              description: Updated category groups keyed by category group id.
+              additionalProperties:
+                $ref: "#/components/schemas/CategoryGroup"
 
             transactions:
               type: object

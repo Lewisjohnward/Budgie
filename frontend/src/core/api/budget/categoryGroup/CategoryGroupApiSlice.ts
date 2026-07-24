@@ -3,10 +3,12 @@ import {
   CategoryGroupId,
   CategoryId,
   MonthId,
+  TransactionId,
 } from "@/pages/budget/allocation/types/types";
 import { apiSlice } from "../../apiSlice";
 import { budgetSnapshotSlice } from "../budgetSnapshotSlice";
 import {
+  CategoryBranded,
   CategoryGroupBranded,
   MonthBranded,
   TransactionBranded,
@@ -39,13 +41,15 @@ type UpdateCategoryGroupDto = CategoryGroupBranded;
 // Response to delete category group
 type DeleteCategoryGroupDto = {
   deleted: {
-    // TODO:(lewis 2026-06-05 18:15) shouldn't this also have delete categoryIds and monthIds ?
-    categoryGroupId: CategoryGroupId;
+    categoryGroup: CategoryGroupBranded;
+    categories: Record<CategoryId, CategoryBranded>;
+    months: Record<MonthId, MonthBranded>;
   };
 
   updated: {
-    transactions: Record<string, TransactionBranded>;
-    months: Record<string, MonthBranded>;
+    categoryGroups: Record<CategoryGroupId, CategoryGroupBranded>;
+    transactions: Record<TransactionId, TransactionBranded>;
+    months: Record<MonthId, MonthBranded>;
   };
 };
 
@@ -178,6 +182,7 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
             "getBudgetSnapshot",
             undefined,
             (draft) => {
+              // TODO:(lewis 2026-07-23 15:05) this doesnt recalculate rta or avaiable etc, is that problematic? should i just remove?
               const group = draft.categoryGroups.user[arg.categoryGroupId];
               if (!group) return;
 
@@ -229,6 +234,26 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
               "getBudgetSnapshot",
               undefined,
               (draft) => {
+                // TODO:(lewis 2026-07-23 15:26) these need improving can use Object.keys
+                if (data.deleted?.categoryGroup) {
+                  const { id } = data.deleted.categoryGroup;
+                  delete draft.categoryGroups.user[id];
+                }
+                for (const id of Object.keys(
+                  data.deleted.categories
+                ) as CategoryId[]) {
+                  delete draft.categories.user[id];
+                }
+                if (data.deleted?.months) {
+                  for (const m of Object.values(data.deleted.months)) {
+                    delete draft.months[m.id];
+                  }
+                }
+                if (data.updated?.categoryGroups) {
+                  for (const cg of Object.values(data.updated.categoryGroups)) {
+                    draft.categoryGroups.user[cg.id] = cg;
+                  }
+                }
                 if (data.updated?.transactions) {
                   for (const tx of Object.values(data.updated.transactions)) {
                     draft.transactions[tx.id] = tx;

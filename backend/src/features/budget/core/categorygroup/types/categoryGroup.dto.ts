@@ -1,5 +1,11 @@
-import { type MonthDto } from "../../category/core/category.types";
+import {
+  DomainCategory,
+  DomainMonth,
+  type MonthDto,
+} from "../../category/core/category.types";
+import { CategoryDto } from "../../category/core/types/category.dto";
 import { type TransactionNormalDto } from "../../transaction/transaction.types";
+import { DomainCategoryGroup } from "./categoryGroup.domain";
 
 /**
  * Represents a month DTO and a mapping of category IDs to arrays of month DTOs
@@ -47,10 +53,13 @@ export type CategoryGroupSystemMap = Record<string, CategoryGroupSystemDto>;
  */
 export type DeleteCategoryGroupDto = {
   deleted: {
-    categoryGroupId: string;
+    categoryGroup: CategoryGroupUserDto;
+    categories: Record<string, CategoryDto>;
+    months: Record<string, MonthDto>;
   };
 
   updated: {
+    categoryGroups: Record<string, CategoryGroupUserDto>;
     transactions: Record<string, TransactionNormalDto>;
     months: Record<string, MonthDto>;
   };

@@ -9,10 +9,6 @@ export function setupUser() {
   return user;
 }
 
-export async function pressEscape() {
-  await user.keyboard("{Escape}");
-}
-
 // presses the delete button on a category context menu for given category
 export async function deleteCategoryFromContextMenu(name: string) {
   const category = await screen.findByText(name);
@@ -32,14 +28,6 @@ export async function openDeleteDialog(name: string) {
   expect(
     await screen.findByText(/reassign your past activity/i)
   ).toBeInTheDocument();
-}
-
-// selects the category to inherit
-export async function selectCategoryToInherit(name: string) {
-  const input = await focusInput();
-
-  await user.type(input, name);
-  await user.keyboard("{Enter}");
 }
 
 export async function assertDialogOpen() {

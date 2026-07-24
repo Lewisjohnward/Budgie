@@ -6,11 +6,13 @@ import { asUserId, type UserId } from "../../../../../user/auth/auth.types";
 import { categoryService } from "../../../category/core/category.service";
 import {
   asCategoryId,
+  DomainCategory,
   DomainMonth,
   type CategoryId,
 } from "../../../category/core/category.types";
 import { transactionService } from "../../../transaction/transaction.service";
 import { type DomainNormalTransaction } from "../../../transaction/transaction.types";
+import { CategoryGroupSource } from "../../categoryGroup.constants";
 import { type DeleteCategoryGroupResult } from "../../categoryGroup.contract";
 import {
   InheritingCategoryBelongsToDeletedGroupError,
@@ -20,6 +22,7 @@ import { type DeleteCategoryGroupPayload } from "../../categorygroup.schema";
 import { categoryGroupService } from "../../categoryGroup.service";
 import {
   asCategoryGroupId,
+  DomainUserCategoryGroup,
   type CategoryGroupId,
 } from "../../categoryGroup.types";
 
@@ -104,7 +107,6 @@ export const deleteCategoryGroup = async (
   const { userId, categoryGroupId, inheritingCategoryId } =
     toDeleteCategoryGroupCommand(payload);
 
-  console.log("inheritingCategoryId:", inheritingCategoryId);
   return await prisma.$transaction(async (tx) => {
     // Get the category group to be deleted
     const categoryGroup = await categoryGroupService.getModifiableCategoryGroup(
@@ -114,11 +116,25 @@ export const deleteCategoryGroup = async (
     );
 
     // Get categories belonging to the categoryGroup
-    const categoryIds =
-      await categoryService.categories.getCategoryIdsByCategoryGroupId(
-        tx,
-        categoryGroup.id
-      );
+    // const categoryIds =
+    //   await categoryService.categories.getCategoryIdsByCategoryGroupId(
+    //     tx,
+    //     categoryGroup.id
+    //   );
+
+    const categories = (await tx.category.findMany({
+      where: { categoryGroupId: categoryGroup.id },
+    })) as DomainCategory[];
+
+    const categoryIds = categories.map((c) => c.id as CategoryId);
+
+    const months = (await tx.month.findMany({
+      where: {
+        categoryId: {
+          in: categoryIds,
+        },
+      },
+    })) as DomainMonth[];
 
     // Get transactions that belong to categories
     const transactions = await transactionService.getTransactionsByCategoryIds(
@@ -188,9 +204,36 @@ export const deleteCategoryGroup = async (
       rtaCategoryId
     );
 
-    return {
-      deletedCategoryGroupId: categoryGroup.id,
+    const categoryGroups = await tx.categoryGroup.findMany({
+      where: {
+        userId,
+        source: CategoryGroupSource.USER,
+      },
+      orderBy: {
+        position: "asc",
+      },
+    });
 
+    const updatedCategoryGroups: DomainUserCategoryGroup[] = categoryGroups.map(
+      (group): DomainUserCategoryGroup => {
+        if (group.position === null) {
+          throw new Error("User category group must have a position");
+        }
+
+        return {
+          name: group.name,
+          id: asCategoryGroupId(group.id),
+          source: CategoryGroupSource.USER,
+          position: group.position,
+        };
+      }
+    );
+
+    return {
+      deletedCategoryGroup: categoryGroup,
+      deletedCategories: categories,
+      deletedMonths: months,
+      updatedCategoryGroups: updatedCategoryGroups,
       updatedTransactions,
       updatedMonths: [...updatedCategoryMonths, ...updatedRtaMonths],
     };
