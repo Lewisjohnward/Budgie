@@ -1,5 +1,4 @@
 import { Brand } from "../../../../../../shared/types/brand";
-import { type UserId } from "../../../../../user/auth/auth.types";
 import type { CategoryGroupId } from "../../../categorygroup/categoryGroup.types";
 
 /**
@@ -21,10 +20,19 @@ export const asMonthId = (id: string) => id as MonthId;
  * Category aggregate root.
  */
 
-export type DomainCategory = {
+export type DomainUserCategory = {
   id: CategoryId;
-  userId: UserId;
   categoryGroupId: CategoryGroupId;
   name: string;
   position: number;
+};
+
+/**
+ * Category aggregate root.
+ */
+
+export type DomainSystemCategory = {
+  id: CategoryId;
+  categoryGroupId: CategoryGroupId;
+  name: string;
 };

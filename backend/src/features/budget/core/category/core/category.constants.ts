@@ -5,3 +5,5 @@ export const PROTECTED_CATEGORY_NAMES = [
   UNCATEGORISED_CATEGORY,
   RTA_CATEGORY,
 ] as const;
+
+export type ProtectedCategoryName = (typeof PROTECTED_CATEGORY_NAMES)[number];

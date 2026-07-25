@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { categoryRepository } from "../../../../../../../shared/repository/categoryRepositoryImpl";
 import { categoryMapper } from "../../category.mapper";
-import { DomainCategory, type CategoryId } from "../../category.types";
+import { type DomainUserCategory, type CategoryId } from "../../category.types";
 import { type CategoryGroupId } from "../../../../categorygroup/categoryGroup.types";
 import { type UserId } from "../../../../../../user/auth/auth.types";
 import { InvalidCategoryPositionError } from "../../category.errors";
@@ -16,10 +16,9 @@ type MoveCategoryInput = {
   toPosition: number;
 };
 
-// TODO:(lewis 2026-06-15 14:29) rename this , chatgpt wrote it because we had been talking about results
 export type MoveCategoryResult = {
-  updatedCategory: DomainCategory;
-  affectedCategories: DomainCategory[];
+  updatedCategory: DomainUserCategory;
+  affectedCategories: DomainUserCategory[];
 };
 
 /**
@@ -93,9 +92,9 @@ export const moveCategory = async ({
     });
 
     return {
-      updatedCategory: categoryMapper.toDomainCategory(updated),
+      updatedCategory: categoryMapper.toDomainUserCategory(updated),
       affectedCategories: affectedCategories.map(
-        categoryMapper.toDomainCategory
+        categoryMapper.toDomainUserCategory
       ),
     };
   }
@@ -141,7 +140,9 @@ export const moveCategory = async ({
   });
 
   return {
-    updatedCategory: categoryMapper.toDomainCategory(updated),
-    affectedCategories: affectedCategories.map(categoryMapper.toDomainCategory),
+    updatedCategory: categoryMapper.toDomainUserCategory(updated),
+    affectedCategories: affectedCategories.map(
+      categoryMapper.toDomainUserCategory
+    ),
   };
 };

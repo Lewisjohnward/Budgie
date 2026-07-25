@@ -28,7 +28,6 @@ export const toDomainSystemCategoryGroup = (
   return {
     id: asCategoryGroupId(row.id),
     name: row.name,
-    position: row.position,
     source: CategoryGroupSource.SYSTEM,
   };
 };

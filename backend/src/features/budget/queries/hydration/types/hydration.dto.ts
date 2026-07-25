@@ -1,6 +1,9 @@
 import { type AccountDto } from "../../../core/account/account.types";
 import { type MonthDto } from "../../../core/category/core/category.types";
-import { type CategoryDto } from "../../../core/category/core/types/category.dto";
+import {
+  CategorySystemDto,
+  CategoryUserDto,
+} from "../../../core/category/core/types/category.dto";
 import {
   type CategoryGroupSystemDto,
   type CategoryGroupUserDto,
@@ -16,9 +19,9 @@ export type BudgetHydrationDto = {
     uncategorised: CategoryGroupSystemDto;
   };
   categories: {
-    user: Record<string, CategoryDto>;
-    rta: CategoryDto;
-    uncategorised: CategoryDto;
+    user: Record<string, CategoryUserDto>;
+    rta: CategorySystemDto;
+    uncategorised: CategorySystemDto;
   };
   months: Record<string, MonthDto>;
   accounts: Record<string, AccountDto>;
