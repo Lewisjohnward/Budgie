@@ -1,13 +1,19 @@
-import { TransactionNormalDto } from "../../../transaction/transaction.types";
+import { type TransactionNormalDto } from "../../../transaction/transaction.types";
 import { type MonthDto } from "./month.dto";
 
 /** Represents a category DTO */
 
-export type CategoryDto = {
+export type CategoryUserDto = {
   id: string;
   categoryGroupId: string;
   name: string;
   position: number;
+};
+
+export type CategorySystemDto = {
+  id: string;
+  categoryGroupId: string;
+  name: string;
 };
 
 /**
@@ -24,7 +30,7 @@ export type CategoryDto = {
  */
 export type CreateCategoryDto = {
   created: {
-    category: CategoryDto;
+    category: CategoryUserDto;
     months: Record<string, MonthDto>;
   };
 };
@@ -43,11 +49,11 @@ export type CreateCategoryDto = {
  */
 export type DeleteCategoryDto = {
   deleted: {
-    category: CategoryDto;
+    category: CategoryUserDto;
     months: Record<string, MonthDto>;
   };
   updated: {
-    categories: Record<string, CategoryDto>;
+    categories: Record<string, CategoryUserDto>;
     transactions: Record<string, TransactionNormalDto>;
     months: Record<string, MonthDto>;
   };

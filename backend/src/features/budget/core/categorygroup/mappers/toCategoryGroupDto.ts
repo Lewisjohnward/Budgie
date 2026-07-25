@@ -32,6 +32,5 @@ export const toCategoryGroupSystemDto = (
   return {
     id: categoryGroup.id,
     name: categoryGroup.name,
-    position: null,
   };
 };

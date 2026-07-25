@@ -170,7 +170,7 @@ export const deleteCategory = async (
           position: "asc",
         },
       })
-    ).map(categoryMapper.toDomainCategory);
+    ).map(categoryMapper.toDomainUserCategory);
 
     return {
       deletedCategory: category,

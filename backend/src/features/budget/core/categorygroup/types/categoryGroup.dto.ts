@@ -1,11 +1,6 @@
-import {
-  DomainCategory,
-  DomainMonth,
-  type MonthDto,
-} from "../../category/core/category.types";
+import { type MonthDto } from "../../category/core/category.types";
 import { CategoryDto } from "../../category/core/types/category.dto";
 import { type TransactionNormalDto } from "../../transaction/transaction.types";
-import { DomainCategoryGroup } from "./categoryGroup.domain";
 
 /**
  * Represents a month DTO and a mapping of category IDs to arrays of month DTOs
@@ -13,7 +8,6 @@ import { DomainCategoryGroup } from "./categoryGroup.domain";
 export type CategoryGroupSystemDto = {
   id: string;
   name: string;
-  position: null;
 };
 
 export type CategoryGroupUserDto = {

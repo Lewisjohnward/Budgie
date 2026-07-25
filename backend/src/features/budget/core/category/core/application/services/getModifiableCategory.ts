@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { type UserId } from "../../../../../../user/auth/auth.types";
-import { type CategoryId, type DomainCategory } from "../../category.types";
+import { type CategoryId, type DomainUserCategory } from "../../category.types";
 import { categoryRepository } from "../../../../../../../shared/repository/categoryRepositoryImpl";
 import {
   CategoryNotFoundError,
@@ -27,13 +27,13 @@ import { categoryMapper } from "../../category.mapper";
  * @throws {ModifyingAProtectedCategoryError}
  * Thrown when attempting to access a protected category.
  *
- * @returns A domain representation of the category if it is modifiable.
+ * @returns A domain representation of the user category if it is modifiable.
  */
 export const getModifiableCategory = async (
   tx: Prisma.TransactionClient,
   userId: UserId,
   categoryId: CategoryId
-): Promise<DomainCategory> => {
+): Promise<DomainUserCategory> => {
   const row = await categoryRepository.getCategory(tx, userId, categoryId);
 
   if (!row) {
@@ -45,5 +45,5 @@ export const getModifiableCategory = async (
     throw new ModifyingAProtectedCategoryError();
   }
 
-  return categoryMapper.toDomainCategory(row);
+  return categoryMapper.toDomainUserCategory(row);
 };

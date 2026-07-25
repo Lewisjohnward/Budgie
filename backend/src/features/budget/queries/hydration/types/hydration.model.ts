@@ -5,10 +5,11 @@ import {
   type DomainAccount,
 } from "../../../core/account/account.types";
 import {
-  type DomainCategory,
   type DomainMonth,
   type CategoryId,
   type MonthId,
+  type DomainUserCategory,
+  type DomainSystemCategory,
 } from "../../../core/category/core/category.types";
 import {
   type DomainSystemCategoryGroup,
@@ -47,9 +48,9 @@ export type BudgetHydrationModel = {
     uncategorised: DomainSystemCategoryGroup;
   };
   categories: {
-    user: Record<CategoryId, DomainCategory>;
-    rta: DomainCategory;
-    uncategorised: DomainCategory;
+    user: Record<CategoryId, DomainUserCategory>;
+    rta: DomainSystemCategory;
+    uncategorised: DomainSystemCategory;
   };
   months: Record<MonthId, DomainMonth>;
   accounts: Record<AccountId, DomainAccount>;

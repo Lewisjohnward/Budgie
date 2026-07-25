@@ -3,7 +3,7 @@ import { categoryRepository } from "../../../../../../../shared/repository/categ
 import { DuplicateCategoryNameError } from "../../category.errors";
 import { categoryMapper } from "../../category.mapper";
 import { type CreateCategoryData } from "../../category.schema";
-import { type DomainCategory } from "../../category.types";
+import { type DomainUserCategory } from "../../category.types";
 
 /**
  * Creates a new category and maps the persisted record to a domain entity.
@@ -21,19 +21,19 @@ import { type DomainCategory } from "../../category.types";
  * within an active transaction
  * @param categoryData - Data required to create the category in the database
  *
- * @returns A fully mapped `DomainCategory` representing the newly created category
+ * @returns A fully mapped `DomainUserCategory` representing the newly created user category
  */
 export const createCategory = async (
   tx: Prisma.TransactionClient,
   categoryData: CreateCategoryData
-): Promise<DomainCategory> => {
+): Promise<DomainUserCategory> => {
   try {
     const rawCategory = await categoryRepository.createCategory(
       tx,
       categoryData
     );
 
-    return categoryMapper.toDomainCategory(rawCategory);
+    return categoryMapper.toDomainUserCategory(rawCategory);
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&

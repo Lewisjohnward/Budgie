@@ -17,13 +17,14 @@ import { getUncategorisedCategoryId } from "./application/services/getUncategori
 import { createCategory } from "./application/services/createCategory";
 import { ensureUserOwnsCategories } from "./application/services/ensureUserOwnsCategories";
 import { getMonthsForCategories } from "./application/services/months/getMonthsForCategories";
-import { getCategories } from "./application/services/getCategories";
 import { getMonths } from "./application/services/months/getMonths";
 import { getCategoryIdsByCategoryGroupId } from "./application/services/getCategoryIdsByCategoryGroupId";
 import { getModifiableCategory } from "./application/services/getModifiableCategory";
 import { renameCategory } from "./application/services/renameCategory";
 import { moveCategory } from "./application/services/moveCategory";
 import { createCategoryWithMonths } from "./application/services/createCategoryWithMonths";
+import { getUserCategories } from "./application/services/getUserCategories";
+import { getSystemCategories } from "./application/services/getSystemCategories";
 
 export const categoryService = {
   rta: {
@@ -48,7 +49,8 @@ export const categoryService = {
     createCategory,
     createCategoryWithMonths,
     getCategory,
-    getCategories,
+    getUserCategories,
+    getSystemCategories,
     getUncategorisedCategoryId,
     getCategoryIdsByCategoryGroupId,
     renameCategory,

@@ -33,26 +33,38 @@ export const getHydrationData = async (
     fetchRange
   );
   const categoryGroupsPromise = categoryGroupService.getCategoryGroups(userId);
-  const categoriesPromise = categoryService.categories.getCategories(userId);
+  const userCategoriesPromise =
+    categoryService.categories.getUserCategories(userId);
+  const systemCategoriesPromise =
+    categoryService.categories.getSystemCategories(userId);
   const monthsPromise = categoryService.months.getMonths(userId, fetchRange);
   const memosPromise = memoService.getMemos(userId);
   const payeesPromise = payeeService.getPayees(userId);
 
-  const [categoryGroups, categories, months, transactions, memos, payees] =
-    await Promise.all([
-      categoryGroupsPromise,
-      categoriesPromise,
-      monthsPromise,
-      transactionsPromise,
-      memosPromise,
-      payeesPromise,
-    ]);
+  const [
+    categoryGroups,
+    userCategories,
+    systemCategories,
+    months,
+    transactions,
+    memos,
+    payees,
+  ] = await Promise.all([
+    categoryGroupsPromise,
+    userCategoriesPromise,
+    systemCategoriesPromise,
+    monthsPromise,
+    transactionsPromise,
+    memosPromise,
+    payeesPromise,
+  ]);
 
   const range = getMonthRange(memos);
 
   return {
     categoryGroups,
-    categories,
+    userCategories,
+    systemCategories,
     months,
     accounts,
     transactions,

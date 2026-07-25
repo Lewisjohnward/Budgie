@@ -1,7 +1,7 @@
 import { CategoryNotFoundError } from "../../category.errors";
 import { categoryRepository } from "../../../../../../../shared/repository/categoryRepositoryImpl";
 import { Prisma } from "@prisma/client";
-import { type CategoryId, type DomainCategory } from "../../category.types";
+import { type CategoryId, type DomainUserCategory } from "../../category.types";
 import { categoryMapper } from "../../category.mapper";
 import { type UserId } from "../../../../../../user/auth/auth.types";
 
@@ -19,7 +19,7 @@ import { type UserId } from "../../../../../../user/auth/auth.types";
  * @param userId - Identifier of the user who owns the category
  * @param categoryId - Identifier of the category to retrieve
  *
- * @returns A fully mapped `DomainCategory` instance
+ * @returns A fully mapped `DomainUserCategory` instance
  *
  * @throws {CategoryNotFoundError} Thrown when the category does not exist
  * or does not belong to the specified user
@@ -29,7 +29,7 @@ export const getCategory = async (
   tx: Prisma.TransactionClient,
   userId: UserId,
   categoryId: CategoryId
-): Promise<DomainCategory> => {
+): Promise<DomainUserCategory> => {
   const rawCategory = await categoryRepository.getCategory(
     tx,
     userId,
@@ -40,5 +40,5 @@ export const getCategory = async (
     throw new CategoryNotFoundError();
   }
 
-  return categoryMapper.toDomainCategory(rawCategory);
+  return categoryMapper.toDomainUserCategory(rawCategory);
 };

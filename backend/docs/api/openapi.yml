@@ -128,7 +128,7 @@ paths:
                         $ref: "#/components/schemas/Category"
                       months:
                         type: object
-                        description: Key-value map of newly generated budget tracking records keyed by an arbitrary tracking sequence identifier.
+                        description: Newly created months keyed by month id.
                         additionalProperties:
                           $ref: "#/components/schemas/Month"
               examples:
@@ -171,25 +171,28 @@ paths:
     delete:
       summary: Delete category
       description: >
-        Deletes a  category reassigning transactions and assigned money
+        Deletes a category reassigning transactions and assigned money
       operationId: deleteCategory
       tags:
         - Categories
       security:
         - bearerAuth: []
 
+      parameters:
+        - in: path
+          name: categoryId
+          required: true
+          schema:
+            type: string
+          description: The ID of the category to delete.
+
       requestBody:
-        required: true
+        required: false
         content:
           application/json:
             schema:
               type: object
-              required: [categoryId]
               properties:
-                categoryId:
-                  type: string
-                  description: The id of the category.
-                  example: "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d"
                 inheritingCategoryId:
                   type: string
                   description: The category that will inherit the transactions assigned to the deleted category.
@@ -218,9 +221,9 @@ paths:
     delete:
       summary: Delete category group
       description: >
-        Deletes a category group. Transactions are reassigned to the inheriting
-        category when one is provided. Assigned money is redistributed according
-        to the category group deletion rules.
+        Deletes a category group. If the group contains transactions,
+        an inheriting category must be provided and transactions will be reassigned.
+        Remaining assigned funds from deleted categories are returned to Ready to Assign.
       operationId: deleteCategoryGroup
       tags:
         - CategoryGroups
@@ -230,13 +233,13 @@ paths:
       parameters:
         - in: path
           name: categoryGroupId
-          required: false
+          required: true
           schema:
             type: string
           description: The ID of the category group to delete.
 
       requestBody:
-        required: true
+        required: false
         content:
           application/json:
             schema:
@@ -288,11 +291,9 @@ components:
           inflow:
             id: "inflow"
             name: "Inflow"
-            position: 0
           uncategorised:
             id: "uncategorised"
             name: "Uncategorised"
-            position: 999
 
         categories:
           user:
@@ -302,15 +303,15 @@ components:
               position: 1
               categoryGroupId: "cg_1"
           rta:
-          id: "rta"
-          name: "Ready to Assign"
-          position: 0
-          categoryGroupId: "cg_1"
-        uncategorised:
-          id: "uncategorised"
-          name: "Uncategorised"
-          position: 999
-          categoryGroupId: "cg_1"
+            id: "rta"
+            name: "Ready to Assign"
+            position: 0
+            categoryGroupId: "cg_1"
+          uncategorised:
+            id: "uncategorised"
+            name: "Uncategorised"
+            position: 999
+            categoryGroupId: "cg_1"
 
         months:
           "month_1":
@@ -327,7 +328,7 @@ components:
             name: "Checking"
             position: 1
             open: true
-            type: "checking"
+            type: "BANK"
             deletable: true
             balance: 1000
 
@@ -377,11 +378,11 @@ components:
             user:
               type: object
               additionalProperties:
-                $ref: "#/components/schemas/CategoryGroup"
+                $ref: "#/components/schemas/CategoryGroupUser"
             inflow:
-              $ref: "#/components/schemas/CategoryGroup"
+              $ref: "#/components/schemas/CategoryGroupSystem"
             uncategorised:
-              $ref: "#/components/schemas/CategoryGroup"
+              $ref: "#/components/schemas/CategoryGroupSystem"
 
         categories:
           type: object
@@ -427,7 +428,7 @@ components:
           items:
             type: string
 
-    CategoryGroup:
+    CategoryGroupUser:
       type: object
       required: [id, name, position]
       properties:
@@ -437,6 +438,15 @@ components:
           type: string
         position:
           type: number
+
+    CategoryGroupSystem:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
 
     Category:
       type: object
@@ -623,7 +633,7 @@ components:
             - months
           properties:
             categoryGroup:
-              $ref: "#/components/schemas/CategoryGroup"
+              $ref: "#/components/schemas/CategoryGroupUser"
 
             categories:
               type: object
@@ -644,11 +654,13 @@ components:
             - transactions
             - months
           properties:
-            categories:
+            categoryGroups:
               type: object
-              description: Updated category groups keyed by category group id.
+              description: >
+                Updated user category groups after deletion.
+                Returned in their canonical position order.
               additionalProperties:
-                $ref: "#/components/schemas/CategoryGroup"
+                $ref: "#/components/schemas/CategoryGroupUser"
 
             transactions:
               type: object

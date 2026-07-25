@@ -1,9 +1,10 @@
 import { type DomainAccount } from "../../../core/account/account.types";
 import {
-  type DomainCategory,
+  type DomainSystemCategory,
+  type DomainUserCategory,
   type DomainMonth,
 } from "../../../core/category/core/category.types";
-import { CategoryGroupsBySource } from "../../../core/categorygroup/application/service/getCategoryGroups";
+import { type CategoryGroupsBySource } from "../../../core/categorygroup/application/service/getCategoryGroups";
 import { type DomainMemo } from "../../../core/memo/memo.types";
 import { type DomainPayee } from "../../../core/payee/payee.types";
 import { type DomainTransaction } from "../../../core/transaction/transaction.types";
@@ -17,7 +18,8 @@ import { type DomainTransaction } from "../../../core/transaction/transaction.ty
  */
 export type HydrationRawData = {
   categoryGroups: CategoryGroupsBySource;
-  categories: DomainCategory[];
+  userCategories: DomainUserCategory[];
+  systemCategories: DomainSystemCategory[];
   months: DomainMonth[];
   accounts: DomainAccount[];
   transactions: DomainTransaction[];
