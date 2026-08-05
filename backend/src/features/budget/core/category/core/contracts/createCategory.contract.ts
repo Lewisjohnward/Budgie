@@ -1,4 +1,4 @@
-import { type DomainCategory, type DomainMonth } from "../category.types";
+import { type DomainUserCategory, type DomainMonth } from "../category.types";
 
 /**
  * Domain result of the category creation use case.
@@ -16,7 +16,7 @@ import { type DomainCategory, type DomainMonth } from "../category.types";
  * - It ensures UI state can be updated deterministically after creation
  */
 export type CreateCategoryResult = {
-  createdCategory: DomainCategory;
+  createdCategory: DomainUserCategory;
 
   createdMonths: DomainMonth[];
 };

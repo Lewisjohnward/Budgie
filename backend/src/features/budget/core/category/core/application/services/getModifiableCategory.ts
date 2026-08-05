@@ -6,8 +6,8 @@ import {
   CategoryNotFoundError,
   ModifyingAProtectedCategoryError,
 } from "../../category.errors";
-import { PROTECTED_CATEGORY_NAMES } from "../../category.constants";
 import { categoryMapper } from "../../category.mapper";
+import { SYSTEM_CATEGORY_NAMES } from "../../category.constants";
 
 /**
  * Retrieves a category that can be safely modified by a user.
@@ -40,8 +40,9 @@ export const getModifiableCategory = async (
     throw new CategoryNotFoundError();
   }
 
-  // TODO:(lewis 2026-05-28 13:11) need to create origin: system | user in category table
-  if ((PROTECTED_CATEGORY_NAMES as readonly string[]).includes(row.name)) {
+  // TODO:(lewis 2026-05-28 13:11) replace name-based system category detection
+  // once Category has origin/systemCategoryType fields
+  if (Object.values(SYSTEM_CATEGORY_NAMES).some((name) => name === row.name)) {
     throw new ModifyingAProtectedCategoryError();
   }
 

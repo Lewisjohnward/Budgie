@@ -113,7 +113,7 @@ export type CategoryPositionPatch = {
  */
 export type UpdateCategoryDto = {
   updated: {
-    category: CategoryDto;
+    category: CategoryUserDto;
     categories: CategoryPositionPatch[];
   };
 };

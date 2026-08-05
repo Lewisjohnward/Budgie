@@ -1,26 +1,43 @@
-import { type DomainSystemCategory } from "../../category.types";
+import { type SystemCategories } from "../../category.types";
 import { categoryMapper } from "../../category.mapper";
 import { type UserId } from "../../../../../../user/auth/auth.types";
 import { categoryRepository } from "../../../../../../../shared/repository/categoryRepositoryImpl";
-import {
-  PROTECTED_CATEGORY_NAMES,
-  ProtectedCategoryName,
-} from "../../category.constants";
+import { SYSTEM_CATEGORY_NAMES } from "../../category.constants";
 
-// TODO:(lewis 2026-07-25 11:18) smell: this is just covering up the fact the db has position Int for category
+// TODO:(lewis 2026-07-25 11:18) smell: this is just covering up the fact the db has position Int for category and the schema doesnt have type sys
+
+// enum CategoryOrigin {
+//   USER
+//   SYSTEM
+// }
+//
+// model Category {
+//   id        String @id
+//   name      String
+//   origin    CategoryOrigin
+// }
+// enum SystemCategoryType {
+//   RTA
+//   UNCATEGORISED
+// }
+
 export const getSystemCategories = async (
   userId: UserId
-): Promise<DomainSystemCategory[]> => {
-  const rawCategories = await categoryRepository.getCategories(userId);
+): Promise<SystemCategories> => {
+  const categories = await categoryRepository.getCategories(userId);
 
-  const systemCategories = rawCategories
-    .filter((category) =>
-      PROTECTED_CATEGORY_NAMES.includes(category.name as ProtectedCategoryName)
-    )
-    .map(categoryMapper.toDomainSystemCategory);
+  const rta = categories.find((c) => c.name === SYSTEM_CATEGORY_NAMES.RTA);
 
-  if (systemCategories.length !== 2) {
+  const uncategorised = categories.find(
+    (c) => c.name === SYSTEM_CATEGORY_NAMES.UNCATEGORISED
+  );
+
+  if (!rta || !uncategorised) {
     throw new Error("Missing system categories");
   }
-  return systemCategories;
+
+  return {
+    rta: categoryMapper.toDomainSystemCategory(rta),
+    uncategorised: categoryMapper.toDomainSystemCategory(uncategorised),
+  };
 };

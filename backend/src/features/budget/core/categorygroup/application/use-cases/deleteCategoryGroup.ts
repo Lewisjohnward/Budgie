@@ -6,9 +6,9 @@ import { asUserId, type UserId } from "../../../../../user/auth/auth.types";
 import { categoryService } from "../../../category/core/category.service";
 import {
   asCategoryId,
-  DomainCategory,
-  DomainMonth,
+  type DomainMonth,
   type CategoryId,
+  type DomainUserCategory,
 } from "../../../category/core/category.types";
 import { transactionService } from "../../../transaction/transaction.service";
 import { type DomainNormalTransaction } from "../../../transaction/transaction.types";
@@ -22,7 +22,7 @@ import { type DeleteCategoryGroupPayload } from "../../categorygroup.schema";
 import { categoryGroupService } from "../../categoryGroup.service";
 import {
   asCategoryGroupId,
-  DomainUserCategoryGroup,
+  type DomainUserCategoryGroup,
   type CategoryGroupId,
 } from "../../categoryGroup.types";
 
@@ -124,7 +124,7 @@ export const deleteCategoryGroup = async (
 
     const categories = (await tx.category.findMany({
       where: { categoryGroupId: categoryGroup.id },
-    })) as DomainCategory[];
+    })) as unknown as DomainUserCategory[];
 
     const categoryIds = categories.map((c) => c.id as CategoryId);
 

@@ -42,12 +42,15 @@ export const toDeleteCategoryDto = (
     );
 
   const updatedCategories = Object.fromEntries(
-    result.updatedCategories.map((c) => [c.id, categoryMapper.toCategoryDto(c)])
+    result.updatedCategories.map((c) => [
+      c.id,
+      categoryMapper.toCategoryUserDto(c),
+    ])
   );
 
   return {
     deleted: {
-      category: categoryMapper.toCategoryDto(result.deletedCategory),
+      category: categoryMapper.toCategoryUserDto(result.deletedCategory),
       months: deletedMonths,
     },
     updated: {

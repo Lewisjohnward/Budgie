@@ -242,7 +242,7 @@ describe("Category group", () => {
         // DTO assertions
         // ----------------------------
 
-        expect(body.deleted.categoryGroupId).toBe(categoryGroupA.id);
+        expect(body.deleted.categoryGroup.id).toBe(categoryGroupA.id);
 
         expect(body.updated.transactions).toBeDefined();
         expect(Object.keys(body.updated.transactions).length).toBe(2);

@@ -1,5 +1,5 @@
 import {
-  DomainCategory,
+  type DomainUserCategory,
   type DomainMonth,
 } from "../../category/core/category.types";
 import { type DomainNormalTransaction } from "../../transaction/transaction.types";
@@ -22,7 +22,7 @@ import { DomainUserCategoryGroup } from "../categoryGroup.types";
  */
 export type DeleteCategoryGroupResult = {
   deletedCategoryGroup: DomainUserCategoryGroup;
-  deletedCategories: DomainCategory[];
+  deletedCategories: DomainUserCategory[];
   deletedMonths: DomainMonth[];
   updatedCategoryGroups: DomainUserCategoryGroup[];
   updatedTransactions: DomainNormalTransaction[];

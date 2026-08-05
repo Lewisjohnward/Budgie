@@ -336,7 +336,7 @@ describe("Transaction Single Edit", () => {
     describe("Success", () => {
       it("Should update date correctly", async () => {
         const account1 = await createAccountAndFetch(cookie, 0);
-        const date = new Date(2025, 6, 15, 1, 0, 0).toISOString();
+        const date = new Date(2026, 6, 15, 1, 0, 0).toISOString();
 
         const transactionPayload: TestInsertTransactionInputWithoutUserId = {
           accountId: account1.id,
@@ -2361,7 +2361,7 @@ describe("Transaction Single Edit", () => {
       });
 
       // June 2025
-      const newDate = new Date(2025, 5, 10, 12, 0, 0).toISOString();
+      const newDate = new Date(2026, 5, 10, 12, 0, 0).toISOString();
 
       const editPayload: EditSingleTransactionInput = {
         // new account

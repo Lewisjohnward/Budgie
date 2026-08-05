@@ -1,5 +1,4 @@
 import { Prisma } from "@prisma/client";
-import { PROTECTED_CATEGORY_NAMES } from "../../features/budget/core/category/core/category.constants";
 import { CategoryRepository } from "../../features/budget/core/category/core/category.repository";
 import {
   type db,
@@ -9,6 +8,7 @@ import { NoPastMonthsFoundError } from "../../features/budget/core/category/core
 import { type UserId } from "../../features/user/auth/auth.types";
 import { prisma } from "../prisma/client";
 import { CategoryGroupId } from "../../features/budget/core/categorygroup/categoryGroup.types";
+import { SYSTEM_CATEGORY_NAMES } from "../../features/budget/core/category/core/category.constants";
 
 export const categoryRepository: CategoryRepository = {
   // ──────────────── Category Retrieval ────────────────
@@ -61,7 +61,12 @@ export const categoryRepository: CategoryRepository = {
 
   getProtectedCategoryIds: async (tx, userId) => {
     const protectedCategories = await tx.category.findMany({
-      where: { userId, name: { in: [...PROTECTED_CATEGORY_NAMES] } },
+      where: {
+        userId,
+        name: {
+          in: [SYSTEM_CATEGORY_NAMES.RTA, SYSTEM_CATEGORY_NAMES.UNCATEGORISED],
+        },
+      },
       select: {
         id: true,
       },

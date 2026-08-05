@@ -461,7 +461,7 @@ describe("Transaction Create", () => {
         const transaction: TestInsertTransactionInputWithoutUserId = {
           accountId: userAccount.id,
           inflow: "10",
-          date: new Date(2025, 6, 15, 1, 0, 0).toISOString(),
+          date: new Date(2026, 6, 15, 1, 0, 0).toISOString(),
         };
 
         await addTransactionLegacy(cookie, transaction, 200);
@@ -470,7 +470,7 @@ describe("Transaction Create", () => {
           accountId: userAccount.id,
           outflow: "10",
           transferAccountId: unownedAccount.id,
-          date: new Date(2025, 6, 15, 1, 0, 0).toISOString(),
+          date: new Date(2026, 6, 15, 1, 0, 0).toISOString(),
         };
 
         await addTransactionLegacy(cookie, transferTransaction, 404);
@@ -486,7 +486,7 @@ describe("Transaction Create", () => {
           accountId: account1.id,
           outflow: "10",
           transferAccountId: account2.id,
-          date: new Date(2025, 6, 15, 1, 0, 0).toISOString(),
+          date: new Date(2026, 6, 15, 1, 0, 0).toISOString(),
         };
 
         await addTransactionLegacy(cookie, transferTransaction, 200);
