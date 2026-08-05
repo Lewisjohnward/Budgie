@@ -22,7 +22,6 @@ export const getMostRecentMonths = async (
   userId: UserId
 ): Promise<DomainMonth[]> => {
   const months = await categoryRepository.getMostRecentMonths(tx, userId);
-  console.log("months:", months);
 
   return months.map(categoryMapper.toDomainMonth);
 };

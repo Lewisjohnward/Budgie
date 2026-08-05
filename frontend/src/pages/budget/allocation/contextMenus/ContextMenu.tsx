@@ -12,6 +12,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/core/components/uiLibrary/popover";
+import { cn } from "@/core/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ReactNode, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -25,18 +26,21 @@ export type NameType = z.infer<typeof NameSchema>;
 
 type ContextMenuProps = {
   children: ReactNode;
-  name: string;
+  initialName: string;
+  validate: (name: string) => boolean;
   onRename: (name: string) => void;
   onDelete: () => void;
 };
 
 export function ContextMenu({
   children,
-  name,
+  initialName,
+  validate,
   onRename,
   onDelete,
 }: ContextMenuProps) {
   const [contextMenuOpen, setContextMenuOpen] = useState(false);
+  // const [isValidName, setIsValidName] = useState(true);
 
   const closeContextMenu = () => setContextMenuOpen(false);
   const openContextMenu = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -46,18 +50,20 @@ export function ContextMenu({
 
   const form = useForm<NameType>({
     defaultValues: {
-      name,
+      name: initialName,
     },
     resolver: zodResolver(NameSchema),
   });
 
-  const { reset, control, handleSubmit } = form;
+  const { reset, control, handleSubmit, watch } = form;
+  const name = watch("name");
+  const isValidName = validate(name);
 
   useEffect(() => {
     reset({
-      name,
+      name: initialName,
     });
-  }, [name]);
+  }, [initialName]);
 
   const onSubmit = (name: NameType) => {
     onRename(name.name);
@@ -85,24 +91,38 @@ export function ContextMenu({
         >
           <Form {...form}>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input
-                        aria-label="Rename category group"
-                        className="focus-visible:ring-sky-700 shadow-none"
-                        placeholder="New category name"
-                        autoComplete="off"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage className="text-center" />
-                  </FormItem>
+              <div>
+                <FormField
+                  control={control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          aria-label="Rename category group"
+                          className={cn(
+                            "focus-visible:ring-sky-700 shadow-none rounded-[2px]",
+                            !isValidName &&
+                            "border-red-200 rounded-bl-none rounded-br-none"
+                          )}
+                          placeholder="New category name"
+                          autoComplete="off"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-center" />
+                    </FormItem>
+                  )}
+                />
+
+                {!isValidName && (
+                  <div className="bg-red-300 border-red-300 rounded-b-[2px] px-2 py-1">
+                    <p className="text-sm text-black">
+                      A group with this name already exists
+                    </p>
+                  </div>
                 )}
-              />
+              </div>
               <div className="flex justify-between">
                 <div className="space-x-2">
                   <Button

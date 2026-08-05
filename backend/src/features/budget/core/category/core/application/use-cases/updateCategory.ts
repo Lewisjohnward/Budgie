@@ -2,18 +2,13 @@ import { type UpdateCategoryPayload } from "../../category.schema";
 import { prisma } from "../../../../../../../shared/prisma/client";
 import { categoryGroupService } from "../../../../categorygroup/categoryGroup.service";
 import { categoryService } from "../../category.service";
-import {
-  asCategoryId,
-  type DomainCategory,
-  type CategoryId,
-} from "../../category.types";
+import { asCategoryId, type CategoryId } from "../../category.types";
 import {
   asCategoryGroupId,
   type CategoryGroupId,
 } from "../../../../categorygroup/categoryGroup.types";
 import { asUserId, type UserId } from "../../../../../../user/auth/auth.types";
-import { categoryMapper } from "../../category.mapper";
-import { UpdateCategoryResult } from "../../contracts/updateCategory.contract";
+import { type UpdateCategoryResult } from "../../contracts/updateCategory.contract";
 
 //  TODO: IMPLEMENT CHANGE POSITION
 // TODO: IF NOTHING CHANGES DON'T INTERACT WITH DB

@@ -24,7 +24,7 @@ export const toCreateCategoryDto = (
 
   return {
     created: {
-      category: categoryMapper.toCategoryDto(result.createdCategory),
+      category: categoryMapper.toCategoryUserDto(result.createdCategory),
       months,
     },
   };

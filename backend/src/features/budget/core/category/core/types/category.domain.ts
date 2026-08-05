@@ -17,7 +17,7 @@ export const asCategoryId = (id: string) => id as CategoryId;
 export const asMonthId = (id: string) => id as MonthId;
 
 /**
- * Category aggregate root.
+ * User category aggregate root.
  */
 
 export type DomainUserCategory = {
@@ -28,11 +28,16 @@ export type DomainUserCategory = {
 };
 
 /**
- * Category aggregate root.
+ * System category aggregate root.
  */
 
 export type DomainSystemCategory = {
   id: CategoryId;
   categoryGroupId: CategoryGroupId;
   name: string;
+};
+
+export type SystemCategories = {
+  rta: DomainSystemCategory;
+  uncategorised: DomainSystemCategory;
 };

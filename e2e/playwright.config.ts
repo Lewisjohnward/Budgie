@@ -3,7 +3,7 @@ import { defineConfig } from "@playwright/test";
 export default defineConfig({
   workers: 1,
 
-  reporter: [["./test-reporter.ts"]],
+  // reporter: [["./test-reporter.ts"]],
 
   use: {
     baseURL: "http://localhost:5174",

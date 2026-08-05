@@ -33,13 +33,15 @@ export const toBudgetHydrationDto = (
     user: Object.fromEntries(
       Object.entries(model.categories.user).map(([id, category]) => [
         id,
-        categoryMapper.toCategoryDto(category),
+        categoryMapper.toCategoryUserDto(category),
       ])
     ),
 
-    rta: categoryMapper.toCategoryDto(model.categories.rta),
+    rta: categoryMapper.toCategorySystemDto(model.categories.rta),
 
-    uncategorised: categoryMapper.toCategoryDto(model.categories.uncategorised),
+    uncategorised: categoryMapper.toCategorySystemDto(
+      model.categories.uncategorised
+    ),
   },
 
   months: Object.fromEntries(

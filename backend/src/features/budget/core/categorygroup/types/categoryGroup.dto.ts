@@ -1,5 +1,5 @@
 import { type MonthDto } from "../../category/core/category.types";
-import { CategoryDto } from "../../category/core/types/category.dto";
+import { CategoryUserDto } from "../../category/core/types/category.dto";
 import { type TransactionNormalDto } from "../../transaction/transaction.types";
 
 /**
@@ -48,7 +48,7 @@ export type CategoryGroupSystemMap = Record<string, CategoryGroupSystemDto>;
 export type DeleteCategoryGroupDto = {
   deleted: {
     categoryGroup: CategoryGroupUserDto;
-    categories: Record<string, CategoryDto>;
+    categories: Record<string, CategoryUserDto>;
     months: Record<string, MonthDto>;
   };
 

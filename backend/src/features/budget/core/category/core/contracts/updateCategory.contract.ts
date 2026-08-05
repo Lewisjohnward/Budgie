@@ -1,4 +1,4 @@
-import { type DomainCategory } from "../category.types";
+import { type DomainUserCategory } from "../category.types";
 
 /**
  * Domain result of the category update use case.
@@ -11,7 +11,7 @@ export type UpdateCategoryResult = {
   /**
    * The category that was directly updated (renamed or moved).
    */
-  updatedCategory: DomainCategory;
+  updatedCategory: DomainUserCategory;
 
   /**
    * Categories that were indirectly affected by the update,
@@ -20,5 +20,5 @@ export type UpdateCategoryResult = {
    * This may include multiple categories whose positions or
    * group assignments were adjusted as a side effect of the operation.
    */
-  affectedCategories: DomainCategory[];
+  affectedCategories: DomainUserCategory[];
 };

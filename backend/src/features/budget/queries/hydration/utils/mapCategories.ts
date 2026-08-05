@@ -1,4 +1,3 @@
-import { extractSystemCategories } from "../../../core/category/core/utils/extractSytemCategories";
 import { asCategoryGroupId } from "../../../core/categorygroup/categoryGroup.types";
 import { type HydrationContext } from "./normaliseHydrationData";
 
@@ -20,8 +19,7 @@ import { type HydrationContext } from "./normaliseHydrationData";
  * @returns void (mutates hydration state in place)
  */
 export const mapCategories = (ctx: HydrationContext): void => {
-  const categoriesSplit = extractSystemCategories(ctx.input.categories);
-  for (const category of categoriesSplit.user) {
+  for (const category of ctx.input.userCategories) {
     const { id } = category;
 
     ctx.state.categories.user[id] = {
@@ -32,25 +30,7 @@ export const mapCategories = (ctx: HydrationContext): void => {
     };
   }
 
-  const rta = categoriesSplit.system["RTA"];
-  if (rta) {
-    const { id } = rta;
+  ctx.state.categories.rta = ctx.input.systemCategories.rta;
 
-    ctx.state.categories.rta = {
-      id,
-      name: rta.name,
-      categoryGroupId: asCategoryGroupId(rta.categoryGroupId),
-    };
-  }
-
-  const unc = categoriesSplit.system["UNCATEGORISED"];
-  if (unc) {
-    const { id } = unc;
-
-    ctx.state.categories.uncategorised = {
-      id,
-      name: unc.name,
-      categoryGroupId: asCategoryGroupId(unc.categoryGroupId),
-    };
-  }
+  ctx.state.categories.uncategorised = ctx.input.systemCategories.uncategorised;
 };

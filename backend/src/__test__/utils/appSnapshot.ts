@@ -1,12 +1,12 @@
 import request from "supertest";
 import app from "../../app";
 import { type BudgetHydrationDto } from "../../features/budget/queries/hydration/hydration.types";
-import { type CategoryDto } from "../../features/budget/core/category/core/types/category.dto";
 import { type MonthDto } from "../../features/budget/core/category/core/category.types";
 import {
   type CategoryGroupUserDto,
   type CategoryGroupSystemDto,
 } from "../../features/budget/core/categorygroup/categoryGroup.types";
+import { type CategoryUserDto } from "../../features/budget/core/category/core/types/category.dto";
 
 const SNAPSHOT_ENDPOINT_URL = "/budget/snapshot";
 
@@ -44,7 +44,7 @@ export const getAppSnapshot = async (
  */
 export const getUserCategories = async (
   cookie: string
-): Promise<Record<string, CategoryDto>> => {
+): Promise<Record<string, CategoryUserDto>> => {
   const snapshot = await getAppSnapshot(cookie);
 
   return snapshot.categories.user;
@@ -67,7 +67,7 @@ export const getMonths = async (
 export const getUserCategoryByName = async (
   cookie: string,
   name: string
-): Promise<CategoryDto | undefined> => {
+): Promise<CategoryUserDto | undefined> => {
   const userCategories = await getUserCategories(cookie);
 
   return Object.values(userCategories).find((c) => c.name === name);
@@ -79,7 +79,7 @@ export const getUserCategoryByName = async (
 export const getUserCategoryById = async (
   cookie: string,
   id: string
-): Promise<CategoryDto | undefined> => {
+): Promise<CategoryUserDto | undefined> => {
   const userCategories = await getUserCategories(cookie);
   return Object.values(userCategories).find((c) => c.id === id);
 };

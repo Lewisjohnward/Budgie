@@ -87,9 +87,13 @@ describe("Category group", () => {
           }
         );
 
-        const res = await updateCategoryGroupRaw(cookie, otherUserGroup.id, {
-          name: "NOT_ALLOWED",
-        });
+        const res = await updateCategoryGroupRaw(
+          cookie,
+          otherUserGroup.created.categoryGroup.id,
+          {
+            name: "NOT_ALLOWED",
+          }
+        );
 
         expect(res.statusCode).toBe(404);
       });

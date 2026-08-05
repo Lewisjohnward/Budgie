@@ -175,6 +175,14 @@ export function Categories({
     });
   };
 
+  const canRenameCategoryGroup = (name: string): boolean => {
+    return Math.random() < 0.5;
+  };
+
+  const canRenameCategory = (name: string): boolean => {
+    return Math.random() < 0.5;
+  };
+
   return (
     <div className="bg-stone-100">
       <DndContext
@@ -255,6 +263,7 @@ export function Categories({
           ) : null}
         </DragOverlay>
 
+        {/* category group rows */}
         <SortableContext
           items={draftView.map((g) => g.group.id)}
           strategy={verticalListSortingStrategy}
@@ -263,7 +272,8 @@ export function Categories({
             return (
               <div key={group.id}>
                 <ContextMenu
-                  name={group.name}
+                  initialName={group.name}
+                  validate={(name) => canRenameCategoryGroup(name)}
                   onRename={(name) =>
                     updateCategoryGroup({
                       categoryGroupId: group.id,
@@ -299,10 +309,12 @@ export function Categories({
                     items={rows.map((r) => r.category.id)}
                     strategy={verticalListSortingStrategy}
                   >
+                    {/* category rows */}
                     {rows.map((row) => {
                       return (
                         <ContextMenu
-                          name={row.category.name}
+                          initialName={row.category.name}
+                          validate={(name) => canRenameCategory(name)}
                           onRename={(name) =>
                             updateCategory({
                               categoryId: row.category.id,

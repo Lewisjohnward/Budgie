@@ -2,7 +2,7 @@ import { type Prisma } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
 import { categoryService } from "../../features/budget/core/category/core/category.service";
 import {
-  type DomainCategory,
+  type DomainUserCategory,
   type DomainMonth,
   type MonthId,
 } from "../../features/budget/core/category/core/category.types";
@@ -15,7 +15,7 @@ import {
 import { type UserId } from "../../features/user/auth/auth.types";
 
 type CreatedCategory = {
-  category: DomainCategory;
+  category: DomainUserCategory;
   months: DomainMonth[];
 };
 

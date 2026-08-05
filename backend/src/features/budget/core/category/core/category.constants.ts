@@ -1,9 +1,7 @@
-export const RTA_CATEGORY = "Ready to Assign";
-export const UNCATEGORISED_CATEGORY = "Uncategorised Transactions";
+export const SYSTEM_CATEGORY_NAMES = {
+  RTA: "Ready to Assign",
+  UNCATEGORISED: "Uncategorised Transactions",
+} as const;
 
-export const PROTECTED_CATEGORY_NAMES = [
-  UNCATEGORISED_CATEGORY,
-  RTA_CATEGORY,
-] as const;
-
-export type ProtectedCategoryName = (typeof PROTECTED_CATEGORY_NAMES)[number];
+export type SystemCategoryName =
+  (typeof SYSTEM_CATEGORY_NAMES)[keyof typeof SYSTEM_CATEGORY_NAMES];

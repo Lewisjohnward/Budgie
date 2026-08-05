@@ -39,7 +39,6 @@ export const mapCategoryGroups = (ctx: HydrationContext): void => {
     ctx.state.categoryGroups.inflow = {
       id: inflow.id,
       name: inflow.name,
-      position: inflow.position,
       source: inflow.source,
     };
   }
@@ -49,7 +48,6 @@ export const mapCategoryGroups = (ctx: HydrationContext): void => {
     ctx.state.categoryGroups.uncategorised = {
       id: unc.id,
       name: unc.name,
-      position: unc.position,
       source: unc.source,
     };
   }

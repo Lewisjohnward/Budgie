@@ -22,11 +22,16 @@ type CreateCategoryGroupInput = {
 };
 
 // Input to update category group
-type UpdatedCategoryGroupInput = {
+export type UpdateCategoryGroupInput = {
   categoryGroupId: CategoryGroupId;
   name?: string;
   position?: number;
 };
+
+export type UpdateCategoryGroupBody = Omit<
+  UpdateCategoryGroupInput,
+  "categoryGroupId"
+>;
 
 // Input to delete category group
 type DeleteCategoryGroupInput = {
@@ -37,7 +42,7 @@ type DeleteCategoryGroupInput = {
 // Response to create category group
 type CreateCategoryGroupDto = CategoryGroupBranded;
 // Response to update category group
-type UpdateCategoryGroupDto = CategoryGroupBranded;
+export type UpdateCategoryGroupDto = CategoryGroupBranded;
 // Response to delete category group
 type DeleteCategoryGroupDto = {
   deleted: {
@@ -108,7 +113,7 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
     }),
     updateCategoryGroup: builder.mutation<
       UpdateCategoryGroupDto,
-      UpdatedCategoryGroupInput
+      UpdateCategoryGroupInput
     >({
       query: ({ name, position, categoryGroupId }) => ({
         url: `${CATEGORY_GROUP_ENDPOINT_URL}/${categoryGroupId}`,

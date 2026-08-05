@@ -1,9 +1,6 @@
 import { categoryRepository } from "../../../../../../../shared/repository/categoryRepositoryImpl";
 import { type UserId } from "../../../../../../user/auth/auth.types";
-import {
-  PROTECTED_CATEGORY_NAMES,
-  ProtectedCategoryName,
-} from "../../category.constants";
+import { SYSTEM_CATEGORY_NAMES } from "../../category.constants";
 import { categoryMapper } from "../../category.mapper";
 import { type DomainUserCategory } from "../../category.types";
 
@@ -14,8 +11,11 @@ export const getUserCategories = async (
   const rawCategories = await categoryRepository.getCategories(userId);
 
   return rawCategories
-    .filter((category) =>
-      PROTECTED_CATEGORY_NAMES.includes(category.name as ProtectedCategoryName)
+    .filter(
+      (category) =>
+        !Object.values(SYSTEM_CATEGORY_NAMES).some(
+          (name) => name === category.name
+        )
     )
     .map(categoryMapper.toDomainUserCategory);
 };

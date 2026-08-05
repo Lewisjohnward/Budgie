@@ -1,5 +1,5 @@
 import { type DomainNormalTransaction } from "../../../transaction/transaction.types";
-import { type DomainCategory, type DomainMonth } from "../category.types";
+import { type DomainUserCategory, type DomainMonth } from "../category.types";
 
 /**
  * Domain result of the category deletion use case.
@@ -12,10 +12,10 @@ import { type DomainCategory, type DomainMonth } from "../category.types";
  * - Any months of the inheriting category that were updated
  */
 export type DeleteCategoryResult = {
-  deletedCategory: DomainCategory;
+  deletedCategory: DomainUserCategory;
   deletedMonths: DomainMonth[];
   // categories are needed for new positions
-  updatedCategories: DomainCategory[];
+  updatedCategories: DomainUserCategory[];
   updatedMonths: DomainMonth[];
   updatedTransactions: DomainNormalTransaction[];
 };

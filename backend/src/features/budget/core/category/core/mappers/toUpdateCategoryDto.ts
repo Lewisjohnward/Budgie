@@ -23,7 +23,7 @@ export function toUpdateCategoryDto(
 
   return {
     updated: {
-      category: categoryMapper.toCategoryDto(result.updatedCategory),
+      category: categoryMapper.toCategoryUserDto(result.updatedCategory),
       categories: patches,
     },
   };
