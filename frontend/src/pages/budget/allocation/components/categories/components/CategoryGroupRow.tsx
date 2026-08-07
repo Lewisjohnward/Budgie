@@ -8,6 +8,7 @@ import { toCheckboxState } from "../../../utils/toCheckboxState";
 import { SelectionState } from "../../../hooks/useAllocation/useCategorySelection";
 
 interface CategoryGroupRowProps {
+  onContextMenu?: React.MouseEventHandler<HTMLDivElement>;
   categoryGroup: {
     id: CategoryGroupId;
     name: string;
@@ -23,6 +24,7 @@ interface CategoryGroupRowProps {
 }
 
 export function CategoryGroupRow({
+  onContextMenu,
   categoryGroup,
   currency,
   onExpandClick,
@@ -31,15 +33,18 @@ export function CategoryGroupRow({
   onGroupClick,
 }: CategoryGroupRowProps) {
   return (
-    <>
+    <div className="flex items-center gap-4 min-w-0">
       <ExpandButton open={open} onClick={onExpandClick} />
-      <div className="flex min-w-0 items-center gap-4">
+      <div className="flex">
         <Checkbox
           className="[&_svg]:h-3 [&_svg]:w-3 size-3 rounded-[2px] shadow-none"
           checked={toCheckboxState(selectionState)}
           onClick={() => onGroupClick(categoryGroup.id)}
         />
-        <p className={`${darkBlueText} font-bold truncate`}>
+        <p
+          onContextMenu={onContextMenu}
+          className={`${darkBlueText} font-bold truncate cursor-pointer`}
+        >
           {categoryGroup.name}
         </p>
         <AddCategoryPopover id={categoryGroup.id}>
@@ -59,6 +64,6 @@ export function CategoryGroupRow({
           {currency} {categoryGroup.available.toFixed(2)}
         </span>
       </CategoryCell>
-    </>
+    </div>
   );
 }

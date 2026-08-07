@@ -23,6 +23,7 @@ import {
 import { formatCurrency } from "@/utils/formatCurrency";
 
 type CategoryRowProps = {
+  onContextMenu?: React.MouseEventHandler<HTMLDivElement>;
   category: CategoryBranded;
   month: MonthBranded;
   // TODO:(lewis 2026-05-15 15:06) i dont like neither the name or the type, i think it should be categorySelector
@@ -30,6 +31,7 @@ type CategoryRowProps = {
 };
 
 export function CategoryRow({
+  onContextMenu,
   category,
   month,
   categorySelection,
@@ -70,6 +72,7 @@ export function CategoryRow({
 
   return (
     <div
+      onContextMenu={onContextMenu}
       onClick={handleRowClick}
       className={`${isRowSelected ? "bg-gray-100" : "bg-white"} cursor-pointer`}
       ref={setNodeRef}

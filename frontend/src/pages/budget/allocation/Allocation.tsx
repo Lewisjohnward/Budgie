@@ -19,6 +19,7 @@ export default function Allocation() {
     monthSelectorViewModel,
     selectors,
     categoriesSelector,
+    validators,
   } = useAllocation();
 
   return (
@@ -39,6 +40,7 @@ export default function Allocation() {
           categorySelector={categorySelector}
           deleteState={deleteState}
           selectors={selectors}
+          validators={validators}
         />
       }
       sidebar={
