@@ -50,11 +50,24 @@ type CategoriesProps = {
       exclude?: ExcludeTarget
     ) => CategorySelectOptions;
   };
+  validators: {
+    canRename: (target: ContextTarget, name: string) => boolean;
+  };
 };
 
 export type DeleteCategoryArgs = {
   categoryId: CategoryId;
   inheritingCategoryId?: CategoryId;
+};
+
+export type DeleteCategoryTarget = {
+  id: CategoryId;
+  name: string;
+};
+
+export type DeleteCategoryGroupTarget = {
+  id: CategoryGroupId;
+  name: string;
 };
 
 export function Categories({
@@ -63,6 +76,7 @@ export function Categories({
   expandCategoryGroups,
   deleteState: { getCategoryDeleteState, getCategoryGroupDeleteState },
   selectors: { getCategorySelectOptions },
+  validators: { canRename },
   categorySelector,
 }: CategoriesProps) {
   const { uncategorisedRow, categoriesByGroup } = view;
@@ -126,7 +140,6 @@ export function Categories({
     }
 
     if (args.type === "categoryGroup") {
-      console.log("args:", args);
       deleteCategoryGroup(args);
     }
   };
@@ -136,51 +149,79 @@ export function Categories({
     getSelectOptions: getCategorySelectOptions,
   });
 
+  const handleDeleteTemp = (target: ContextTarget) => {
+    if (target.type === "category") {
+      handleDeleteCategory(target);
+    }
+
+    if (target.type === "categoryGroup") {
+      handleDeleteCategoryGroup(target);
+    }
+  };
+
   // Called when user starts delete flow from category context menu
-  const handleDeleteCategory = (category: CategoryBranded) => {
-    const state = getCategoryDeleteState(category.id);
+  const handleDeleteCategory = (target: DeleteCategoryTarget) => {
+    const state = getCategoryDeleteState(target.id);
 
     if (state.canDelete) {
-      deleteCategory({ categoryId: category.id });
+      deleteCategory({ categoryId: target.id });
       return;
     }
 
     deleteDialog.openDialog({
       type: "category",
       categoryId: state.categoryId,
-      name: category.name,
+      name: target.name,
       hasAssigned: state.hasAssigned,
       transactionCount: state.transactionCount,
     });
   };
 
   // Called when user starts delete flow from group context menu
-  const handleDeleteCategoryGroup = (
-    categoryGroup: CategoryGroupWithMetrics
-  ) => {
-    const state = getCategoryGroupDeleteState(categoryGroup.id);
+  const handleDeleteCategoryGroup = (target: DeleteCategoryGroupTarget) => {
+    const state = getCategoryGroupDeleteState(target.id);
 
     if (state.canDelete) {
-      deleteCategoryGroup({ categoryGroupId: categoryGroup.id });
+      deleteCategoryGroup({ categoryGroupId: target.id });
       return;
     }
 
     deleteDialog.openDialog({
       type: "categoryGroup",
       categoryGroupId: state.categoryGroupId,
-      name: categoryGroup.name,
+      name: target.name,
       hasAssigned: state.hasAssigned,
       transactionCount: state.transactionCount,
       categoryCount: state.categoryCount,
     });
   };
 
-  const canRenameCategoryGroup = (name: string): boolean => {
-    return Math.random() < 0.5;
+  const [contextMenuTarget, setContextMenuTarget] =
+    useState<ContextTarget | null>(null);
+
+  const [contextMenuPosition, setContextMenuPosition] = useState({
+    x: 0,
+    y: 0,
+  });
+
+  const handleContextMenu = (e: React.MouseEvent, target: ContextTarget) => {
+    e.preventDefault();
+
+    setContextMenuTarget(target);
+
+    setContextMenuPosition({
+      x: e.clientX,
+      y: e.clientY,
+    });
   };
 
-  const canRenameCategory = (name: string): boolean => {
-    return Math.random() < 0.5;
+  const handleRename = (target: ContextTarget, name: string) => {
+    if (target.type === "category") {
+      updateCategory({ categoryId: target.id, name: name });
+    }
+    if (target.type === "categoryGroup") {
+      updateCategoryGroup({ categoryGroupId: target.id, name: name });
+    }
   };
 
   return (
@@ -271,39 +312,33 @@ export function Categories({
           {draftView.map(({ group, rows, open }) => {
             return (
               <div key={group.id}>
-                <ContextMenu
-                  initialName={group.name}
-                  validate={(name) => canRenameCategoryGroup(name)}
-                  onRename={(name) =>
-                    updateCategoryGroup({
-                      categoryGroupId: group.id,
-                      name,
-                    })
-                  }
-                  onDelete={() => handleDeleteCategoryGroup(group)}
-                >
-                  <div className="group">
-                    <CategoryGridRow
-                      aria-label={`${group.name} category group`}
-                      id={group.id}
-                      className="bg-stone-200"
-                    >
-                      <CategoryGroupRow
-                        open={open}
-                        categoryGroup={group}
-                        currency={currency}
-                        onExpandClick={() => {
-                          expandCategoryGroups.expandCategoryGroup(group.id);
-                        }}
-                        selectionState={categorySelector.getCategoryGroupSelectionState(
-                          group.id
-                        )}
-                        onGroupClick={categorySelector.onCategoryGroupClick}
-                      />
-                    </CategoryGridRow>
-                  </div>
-                </ContextMenu>
-
+                <div className="group">
+                  <CategoryGridRow
+                    aria-label={`${group.name} category group`}
+                    id={group.id}
+                    className="bg-stone-200"
+                  >
+                    <CategoryGroupRow
+                      onContextMenu={(e) =>
+                        handleContextMenu(e, {
+                          type: "categoryGroup",
+                          id: group.id,
+                          name: group.name,
+                        })
+                      }
+                      open={open}
+                      categoryGroup={group}
+                      currency={currency}
+                      onExpandClick={() => {
+                        expandCategoryGroups.expandCategoryGroup(group.id);
+                      }}
+                      selectionState={categorySelector.getCategoryGroupSelectionState(
+                        group.id
+                      )}
+                      onGroupClick={categorySelector.onCategoryGroupClick}
+                    />
+                  </CategoryGridRow>
+                </div>
                 {open && !isDraggingCategoryGroups && (
                   <SortableContext
                     items={rows.map((r) => r.category.id)}
@@ -312,25 +347,21 @@ export function Categories({
                     {/* category rows */}
                     {rows.map((row) => {
                       return (
-                        <ContextMenu
-                          initialName={row.category.name}
-                          validate={(name) => canRenameCategory(name)}
-                          onRename={(name) =>
-                            updateCategory({
-                              categoryId: row.category.id,
-                              name,
+                        <CategoryRow
+                          onContextMenu={(e) =>
+                            handleContextMenu(e, {
+                              type: "category",
+                              id: row.category.id,
+                              name: row.category.name,
+                              categoryGroupId: row.category.categoryGroupId,
                             })
                           }
-                          onDelete={() => handleDeleteCategory(row.category)}
-                        >
-                          <CategoryRow
-                            key={row.category.id}
-                            category={row.category}
-                            month={row.month}
-                            // TODO:(lewis 2026-05-15 15:05) this should be categorySelector
-                            categorySelection={categorySelector}
-                          />
-                        </ContextMenu>
+                          key={row.category.id}
+                          category={row.category}
+                          month={row.month}
+                          // TODO:(lewis 2026-05-15 15:05) this should be categorySelector
+                          categorySelection={categorySelector}
+                        />
                       );
                     })}
                   </SortableContext>
@@ -351,6 +382,15 @@ export function Categories({
         selectOptions={deleteDialog.selectOptions}
         accept={deleteDialog.accept}
         cancel={deleteDialog.cancel}
+      />
+      <ContextMenu
+        open={!!contextMenuTarget}
+        item={contextMenuTarget}
+        position={contextMenuPosition}
+        canRename={canRename}
+        onRename={handleRename}
+        onDelete={handleDeleteTemp}
+        onClose={() => setContextMenuTarget(null)}
       />
     </div>
   );
@@ -448,11 +488,10 @@ import { CategoryDeleteState } from "../../utils/getCategoryDeleteState";
 import {
   CategorySelectOptions,
   ExcludeTarget,
+  ContextTarget,
 } from "../../hooks/useAllocation/useAllocation";
 import { ContextMenu } from "../../contextMenus/ContextMenu";
-import { CategoryBranded } from "@/core/types/NormalizedData";
 import { DeleteDialog } from "../../dialogs/deleteCategoryDialog/DeleteDialog";
-import { CategoryGroupWithMetrics } from "../../utils/assembleCategoryGroupViews";
 import {
   DeleteArgs,
   useDeleteDialog,

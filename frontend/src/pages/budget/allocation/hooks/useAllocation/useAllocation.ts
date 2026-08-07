@@ -54,6 +54,19 @@ export type CategorySelectOptions = {
   }[];
 }[];
 
+export type CategoryActionTarget =
+  | {
+      type: "categoryGroup";
+      id: CategoryGroupId;
+      name: string;
+    }
+  | {
+      type: "category";
+      id: CategoryId;
+      name: string;
+      categoryGroupId: CategoryGroupId;
+    };
+
 export function useAllocation() {
   const dispatch = useAppDispatch();
 
@@ -254,6 +267,31 @@ export function useAllocation() {
   );
 
   /*
+   * Used by context menu to confirm no name collisions
+   */
+  const canRename = useCallback(
+    (item: CategoryActionTarget, newName: string) => {
+      const trimmedName = newName.trim().toLowerCase();
+
+      if (item.type === "categoryGroup") {
+        return !Object.values(engine.entities.categoryGroups.user).some(
+          (group) =>
+            group.id !== item.id &&
+            group.name.trim().toLowerCase() === trimmedName
+        );
+      }
+
+      return !Object.values(engine.entities.categories.user).some(
+        (category) =>
+          category.id !== item.id &&
+          category.categoryGroupId === item.categoryGroupId &&
+          category.name.trim().toLowerCase() === trimmedName
+      );
+    },
+    [engine.entities.categoryGroups.user, engine.entities.categories.user]
+  );
+
+  /*
    * misc
    */
   //  SIDE EFFECT: reset category selection on mount (kept explicit)
@@ -302,6 +340,10 @@ export function useAllocation() {
 
     selectors: {
       getCategorySelectOptions,
+    },
+
+    validators: {
+      canRename,
     },
 
     monthSelectorViewModel,
