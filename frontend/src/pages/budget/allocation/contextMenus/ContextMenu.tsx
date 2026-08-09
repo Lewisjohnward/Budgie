@@ -12,7 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { ContextTarget } from "../hooks/useAllocation/useAllocation";
+import { CategoryActionTarget } from "../hooks/useAllocation/useAllocation";
 
 const NameSchema = z.object({
   name: z.string().min(1, { message: "Category requires a name" }),
@@ -22,14 +22,14 @@ export type NameType = z.infer<typeof NameSchema>;
 
 type ContextMenuProps = {
   open: boolean;
-  item: ContextTarget | null;
+  item: CategoryActionTarget | null;
   position: {
     x: number;
     y: number;
   };
-  canRename: (target: ContextTarget, name: string) => boolean;
-  onRename: (target: ContextTarget, name: string) => void;
-  onDelete: (target: ContextTarget) => void;
+  canRename: (target: CategoryActionTarget, name: string) => boolean;
+  onRename: (target: CategoryActionTarget, name: string) => void;
+  onDelete: (target: CategoryActionTarget) => void;
   onClose: () => void;
 };
 
