@@ -22,7 +22,7 @@ export type NameType = z.infer<typeof NameSchema>;
 
 type ContextMenuProps = {
   open: boolean;
-  item: CategoryActionTarget | null;
+  target: CategoryActionTarget | null;
   position: {
     x: number;
     y: number;
@@ -35,14 +35,19 @@ type ContextMenuProps = {
 
 export function ContextMenu({
   open,
-  item,
+  target,
   position,
   canRename,
   onRename,
   onDelete,
   onClose,
 }: ContextMenuProps) {
-  const initialName = item?.name ?? "";
+  const initialName = target?.name ?? "";
+
+  const duplicateMessage =
+    target?.type === "category"
+      ? "A category with this name already exists"
+      : "A group with this name already exists";
 
   const form = useForm<NameType>({
     defaultValues: {
@@ -53,7 +58,7 @@ export function ContextMenu({
 
   const { reset, control, handleSubmit, watch } = form;
   const name = watch("name");
-  const isValidName = item ? canRename(item, name) : false;
+  const isValidName = target ? canRename(target, name) : false;
 
   useEffect(() => {
     reset({
@@ -62,42 +67,30 @@ export function ContextMenu({
   }, [initialName]);
 
   const onSubmit = (name: NameType) => {
-    if (!isValidName || item === null) return;
-    onRename(item, name.name);
+    if (!isValidName || target === null) return;
+    onRename(target, name.name);
     onClose();
     reset();
   };
 
   const handleDelete = () => {
-    if (item === null) return;
-    onDelete(item);
+    if (target === null) return;
+    onDelete(target);
     onClose();
   };
 
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Handle pointer down outside
+  // Handle escape
   useEffect(() => {
     if (!open) return;
 
     const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target as Node;
-
-      if (menuRef.current && !menuRef.current.contains(target)) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         onClose();
       }
     };
-
-    document.addEventListener("pointerdown", handlePointerDown);
-
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown);
-    };
-  }, [open, onClose]);
-
-  // Handle escape
-  useEffect(() => {
-    if (!open) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -105,9 +98,11 @@ export function ContextMenu({
       }
     };
 
+    document.addEventListener("pointerdown", handlePointerDown);
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [open, onClose]);
@@ -139,7 +134,7 @@ export function ContextMenu({
                       className={cn(
                         "focus-visible:ring-sky-700 shadow-none rounded-[2px]",
                         !isValidName &&
-                          "border-red-200 rounded-bl-none rounded-br-none"
+                        "border-red-200 rounded-bl-none rounded-br-none"
                       )}
                       placeholder="New category name"
                       autoComplete="off"
@@ -153,9 +148,7 @@ export function ContextMenu({
 
             {!isValidName && (
               <div className="bg-red-300 border-red-300 rounded-b-[2px] px-2 py-1">
-                <p className="text-sm text-black">
-                  A group with this name already exists
-                </p>
+                <p className="text-sm text-black">{duplicateMessage}</p>
               </div>
             )}
           </div>
