@@ -144,15 +144,15 @@ export function Categories({
                     aria-label={`${group.name} category group`}
                     id={group.id}
                     className="bg-stone-200"
+                    onContextMenu={(e) =>
+                      contextMenu.open(e, {
+                        type: "categoryGroup",
+                        id: group.id,
+                        name: group.name,
+                      })
+                    }
                   >
                     <CategoryGroupRow
-                      onContextMenu={(e) =>
-                        contextMenu.open(e, {
-                          type: "categoryGroup",
-                          id: group.id,
-                          name: group.name,
-                        })
-                      }
                       open={open}
                       categoryGroup={group}
                       currency={currency}
@@ -212,7 +212,7 @@ export function Categories({
       />
       <ContextMenu
         open={!!contextMenu.target}
-        item={contextMenu.target}
+        target={contextMenu.target}
         position={contextMenu.position}
         canRename={canRename}
         onRename={categoryActions.renameTarget}

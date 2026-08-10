@@ -9,6 +9,7 @@ type Props = {
   className?: string;
   id?: CategoryGroupId;
   "aria-label"?: string;
+  onContextMenu?: React.MouseEventHandler;
 };
 
 export function CategoryGridRow({
@@ -16,22 +17,23 @@ export function CategoryGridRow({
   className,
   id,
   "aria-label": ariaLabel,
+  onContextMenu,
 }: Props) {
   const sortable = id
     ? useSortable({
-        id,
-        data: {
-          type: "group",
-        },
-      })
+      id,
+      data: {
+        type: "group",
+      },
+    })
     : null;
 
   const style = sortable
     ? {
-        transform: CSS.Transform.toString(sortable.transform),
-        transition: sortable.transition,
-        opacity: sortable.isDragging ? 0.4 : 1,
-      }
+      transform: CSS.Transform.toString(sortable.transform),
+      transition: sortable.transition,
+      opacity: sortable.isDragging ? 0.4 : 1,
+    }
     : undefined;
   return (
     <div
@@ -45,6 +47,7 @@ export function CategoryGridRow({
       style={style}
       role="row"
       aria-label={ariaLabel}
+      onContextMenu={onContextMenu}
     >
       {children}
     </div>
