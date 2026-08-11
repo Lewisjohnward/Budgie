@@ -4,13 +4,15 @@ import { setupTestServer } from "./renameCategoryGroup.msw";
 import { setSnapshot } from "./renameCategoryGroup.state";
 import { setupUser } from "../../helpers/user";
 import {
-  assertCategoryGroupNotVisible,
+  assertCategoryGroupRemoved,
   assertCategoryGroupVisible,
-  pressAcceptButton,
-  pressCancelButton,
-  pressEnter,
+} from "../../helpers/allocation.helpers";
+import {
   renameCategoryGroup,
-} from "./renameCategoryGroup.helpers";
+  pressAcceptButton,
+} from "../../helpers/contextMenu.helpers";
+import { pressCancelButton } from "../../helpers/deleteDialog.helpers";
+import { pressEnter } from "../../helpers/global.helpers";
 
 setupTestServer();
 
@@ -28,7 +30,7 @@ describe("category group", () => {
 
       await renameCategoryGroup(ORIGINAL_NAME, NEW_NAME);
       await pressEnter();
-      await assertCategoryGroupNotVisible(ORIGINAL_NAME);
+      await assertCategoryGroupRemoved(ORIGINAL_NAME);
       await assertCategoryGroupVisible(NEW_NAME);
     });
     it("renames a category group when clicking OK", async () => {
@@ -37,7 +39,7 @@ describe("category group", () => {
 
       await renameCategoryGroup(ORIGINAL_NAME, NEW_NAME);
       await pressAcceptButton();
-      await assertCategoryGroupNotVisible(ORIGINAL_NAME);
+      await assertCategoryGroupRemoved(ORIGINAL_NAME);
       await assertCategoryGroupVisible(NEW_NAME);
     });
     it("does not rename when cancelled", async () => {
@@ -45,7 +47,7 @@ describe("category group", () => {
       await pressCancelButton();
 
       await assertCategoryGroupVisible("Important");
-      await assertCategoryGroupNotVisible("Holiday");
+      await assertCategoryGroupRemoved("Holiday");
     });
     it("displays category group name already exists message", async () => {
       expect(true).toBe(false);
