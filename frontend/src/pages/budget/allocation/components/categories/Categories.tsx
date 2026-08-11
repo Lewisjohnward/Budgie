@@ -210,15 +210,18 @@ export function Categories({
         accept={categoryActions.deleteDialog.accept}
         cancel={categoryActions.deleteDialog.cancel}
       />
-      <ContextMenu
-        open={!!contextMenu.target}
-        target={contextMenu.target}
-        position={contextMenu.position}
-        canRename={canRename}
-        onRename={categoryActions.renameTarget}
-        onDelete={categoryActions.handleRequestDelete}
-        onClose={contextMenu.close}
-      />
+      {contextMenu.target && (
+        <ContextMenu
+          target={contextMenu.target}
+          position={contextMenu.menuPosition}
+          menuRef={contextMenu.menuRef}
+          overlayRef={contextMenu.overlayRef}
+          canRename={canRename}
+          onRename={categoryActions.renameTarget}
+          onDelete={categoryActions.handleRequestDelete}
+          onClose={contextMenu.close}
+        />
+      )}
     </div>
   );
 }
