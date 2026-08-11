@@ -1,4 +1,32 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
+
+export async function assertReadyToAssign(amount: string) {
+  const button = await screen.findByRole("button", {
+    name: /ready to assign/i,
+  });
+
+  expect(button).toHaveTextContent(amount);
+}
+
+export async function assertCategoryRemoved(name: string) {
+  await waitFor(() => {
+    expect(screen.queryByText(name)).not.toBeInTheDocument();
+  });
+}
+
+export async function assertCategoryGroupRemoved(name: string) {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await waitFor(() => {
+    expect(screen.queryByText(name)).not.toBeInTheDocument();
+  });
+}
+
+export async function assertCategoryGroupVisible(name: string) {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  await waitFor(() => {
+    expect(screen.queryByText(name)).toBeInTheDocument();
+  });
+}
 
 export const expectCategoryAmounts = (
   category: string,

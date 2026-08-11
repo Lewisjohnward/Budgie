@@ -6,15 +6,29 @@ import {
   withTransactionSnapshot,
 } from "./createBudgetSnapshot";
 import { setupTestServer } from "./deleteCategory.msw";
+import { setSnapshot } from "./state";
+import {
+  assertAssignView,
+  assertDeleteButtonDisabled,
+  assertDeleteButtonEnabled,
+  assertDialogOpen,
+  assertInputValue,
+  assertNumberOfTransactions,
+  assertPopoverVisible,
+  focusInput,
+  pressCancelButton,
+  pressCloseButton,
+  pressDeleteButton,
+  selectCategoryToInherit,
+} from "../../helpers/deleteDialog.helpers";
+import { pressEscape } from "../../helpers/global.helpers";
+import { setupUser } from "../../helpers/user";
+import { deleteCategoryFromContextMenu } from "../../helpers/contextMenu.helpers";
 import {
   assertCategoryRemoved,
   assertReadyToAssign,
-  deleteCategoryFromContextMenu,
   expectCategoryAmounts,
-  openDeleteDialog,
-  setupUser,
-} from "./helpers";
-import { setSnapshot } from "./state";
+} from "../../helpers/allocation.helpers";
 
 setupTestServer();
 
@@ -39,6 +53,7 @@ describe("category", () => {
       beforeEach(() => {
         setSnapshot(structuredClone(baseSnapshot));
         renderAllocationPage();
+        setupUser();
       });
       it("deletes the category", async () => {
         await deleteCategoryFromContextMenu("Groceries");
@@ -51,6 +66,7 @@ describe("category", () => {
       beforeEach(() => {
         setSnapshot(structuredClone(withAssignedSnapshot));
         renderAllocationPage();
+        setupUser();
       });
       it("displays assigned view", async () => {
         await deleteCategoryFromContextMenu("Groceries");
@@ -77,6 +93,7 @@ describe("category", () => {
       beforeEach(() => {
         setSnapshot(structuredClone(withTransactionSnapshot));
         renderAllocationPage();
+        setupUser();
       });
 
       it("dialog opens from context menu", async () => {
@@ -92,68 +109,68 @@ describe("category", () => {
       });
 
       it("input is empty when opening dialog", async () => {
-        await openDeleteDialog("Groceries");
+        await deleteCategoryFromContextMenu("Groceries");
         assertInputValue("");
       });
 
       it("category selector popover is visible when focussing input", async () => {
-        await openDeleteDialog("Groceries");
+        await deleteCategoryFromContextMenu("Groceries");
         await focusInput();
 
         await assertPopoverVisible();
       });
 
       it("selects the top category when pressing enter", async () => {
-        await openDeleteDialog("Groceries");
+        await deleteCategoryFromContextMenu("Groceries");
         await selectCategoryToInherit("Rent");
 
         assertInputValue("Important: Rent");
       });
 
       it("resets selected inheriting category after closing with escape", async () => {
-        await openDeleteDialog("Groceries");
+        await deleteCategoryFromContextMenu("Groceries");
         await selectCategoryToInherit("Rent");
 
         await pressEscape();
 
-        await openDeleteDialog("Groceries");
+        await deleteCategoryFromContextMenu("Groceries");
         assertInputValue("");
       });
 
       it("resets selected inheriting category after closing with cancel button", async () => {
-        await openDeleteDialog("Groceries");
+        await deleteCategoryFromContextMenu("Groceries");
         await selectCategoryToInherit("Rent");
 
         await pressCancelButton();
 
-        await openDeleteDialog("Groceries");
+        await deleteCategoryFromContextMenu("Groceries");
         assertInputValue("");
       });
 
       it("resets selected inheriting category after closing with x button", async () => {
-        await openDeleteDialog("Groceries");
+        await deleteCategoryFromContextMenu("Groceries");
         await selectCategoryToInherit("Rent");
 
         await pressCloseButton();
-        await openDeleteDialog("Groceries");
+        await deleteCategoryFromContextMenu("Groceries");
 
         assertInputValue("");
       });
 
       it("delete button is initially disabled", async () => {
-        await openDeleteDialog("Groceries");
+        await deleteCategoryFromContextMenu("Groceries");
         assertDeleteButtonDisabled();
       });
 
       it("delete button is enabled when category is selected", async () => {
-        await openDeleteDialog("Groceries");
+        await deleteCategoryFromContextMenu("Groceries");
         await selectCategoryToInherit("Rent");
 
         assertDeleteButtonEnabled();
       });
 
       it("deleting removes category", async () => {
-        await openDeleteDialog("Groceries");
+        await deleteCategoryFromContextMenu("Groceries");
         await selectCategoryToInherit("Rent");
         await pressDeleteButton();
 
@@ -161,7 +178,7 @@ describe("category", () => {
       });
 
       it("reassigns transactions to inheriting category", async () => {
-        await openDeleteDialog("Groceries");
+        await deleteCategoryFromContextMenu("Groceries");
         await selectCategoryToInherit("Rent");
         await pressDeleteButton();
 
@@ -174,7 +191,7 @@ describe("category", () => {
       });
 
       it("Ready to Assign updated", async () => {
-        await openDeleteDialog("Groceries");
+        await deleteCategoryFromContextMenu("Groceries");
         await selectCategoryToInherit("Rent");
         await pressDeleteButton();
 
