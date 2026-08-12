@@ -1,15 +1,12 @@
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { getSnapshot } from "./renameCategoryGroup.state";
-import { renameCategoryGroupResult } from "./renameCategoryGroup.utils";
-import { UpdateCategoryGroupInput } from "@/core/api/budget/categoryGroup/CategoryGroupApiSlice";
+import { getSnapshot } from "./renameCategory.state";
+import { renameCategoryResult } from "./renameCategory.utils";
+import { UpdateCategoryInput } from "@/core/api/budget/category/categoryApiSlice";
 
-export type UpdateCategoryGroupBody = Omit<
-  UpdateCategoryGroupInput,
-  "categoryGroupId"
->;
+export type UpdateCategoryBody = Omit<UpdateCategoryInput, "categoryGroupId">;
 
-const API_URL = import.meta.env.VITE_API_URL;
+export const API_URL = import.meta.env.VITE_API_URL;
 
 export const handlers = [
   http.get(`${API_URL}/budget/snapshot`, () => {
@@ -25,17 +22,17 @@ export const handlers = [
   }),
 
   http.patch(
-    `${API_URL}/budget/category-groups/:id`,
+    `${API_URL}/budget/categories/:id`,
     async ({ params, request }) => {
-      const categoryGroupId = params.id;
+      const categoryId = params.id;
 
-      if (typeof categoryGroupId !== "string") {
+      if (typeof categoryId !== "string") {
         throw new Error("id is not a string");
       }
 
       const body = (await request
         .json()
-        .catch(() => ({}))) as UpdateCategoryGroupBody;
+        .catch(() => ({}))) as UpdateCategoryBody;
 
       if (body.position) {
         throw new Error("MSW handler only supports renaming");
@@ -47,11 +44,7 @@ export const handlers = [
 
       const snapshot = getSnapshot();
 
-      const result = renameCategoryGroupResult(
-        snapshot,
-        categoryGroupId,
-        body.name
-      );
+      const result = renameCategoryResult(snapshot, categoryId, body.name);
 
       return HttpResponse.json(result);
     }
@@ -74,30 +67,28 @@ export const setupTestServer = () => {
   });
 };
 
-export const mockRenameCategoryGroupFailure = () => {
+export const mockRenameCategoryFailure = () => {
   server.use(
-    http.patch(`${API_URL}/budget/category-groups/:id`, () => {
-      return new HttpResponse(null, {
-        status: 500,
-      });
+    http.patch(`${API_URL}/budget/categories/:id`, () => {
+      return new HttpResponse(null, { status: 500 });
     })
   );
 };
 
-export const mockRenameCategoryGroupResponse = (
+export const mockRenameCategoryResponse = (
   transformName: (name: string) => string
 ) => {
   server.use(
     http.patch(
-      `${API_URL}/budget/category-groups/:id`,
+      `${API_URL}/budget/categories/:id`,
       async ({ params, request }) => {
-        const categoryGroupId = params.id;
+        const categoryId = params.id;
 
-        if (typeof categoryGroupId !== "string") {
+        if (typeof categoryId !== "string") {
           throw new Error("id is not a string");
         }
 
-        const body = (await request.json()) as UpdateCategoryGroupBody;
+        const body = (await request.json()) as UpdateCategoryBody;
 
         if (!body.name) {
           throw new Error("MSW handler requires body.name");
@@ -105,9 +96,9 @@ export const mockRenameCategoryGroupResponse = (
 
         const snapshot = getSnapshot();
 
-        const result = renameCategoryGroupResult(
+        const result = renameCategoryResult(
           snapshot,
-          categoryGroupId,
+          categoryId,
           transformName(body.name)
         );
 

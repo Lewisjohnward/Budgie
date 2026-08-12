@@ -44,10 +44,32 @@ export async function renameCategoryGroup(categoryGroup: string, name: string) {
   await getUser().keyboard(name);
 }
 
-export async function getInput() {
-  return screen.findByRole("textbox", {
-    name: /rename category group/i,
+export async function openContextMenuForCategory(name: string) {
+  const categoryGroup = await screen.findByText(name);
+
+  await getUser().pointer({
+    target: categoryGroup,
+    keys: "[MouseRight]",
   });
+
+  await screen.findByRole("textbox", {
+    name: /rename category/i,
+  });
+}
+
+export async function renameCategory(category: string, name: string) {
+  await openContextMenuForCategory(category);
+
+  await getUser().keyboard("{Control>}a{/Control}");
+  await getUser().keyboard(name);
+}
+
+export async function getInput() {
+  return screen.findByRole("textbox", { name: /rename category group/i });
+}
+
+export async function assertInputHasText(text: string) {
+  expect(await getInput()).toHaveValue(text);
 }
 
 export async function pressAcceptButton() {
@@ -57,4 +79,20 @@ export async function pressAcceptButton() {
 export async function pressCancelButton() {
   const closeButton = screen.getByRole("button", { name: /cancel/i });
   await getUser().click(closeButton);
+}
+
+export function assertDuplicateCategoryGroupNameMessageVisible() {
+  expect(
+    screen.queryByText("A group with this name already exists")
+  ).toBeInTheDocument();
+}
+
+export function assertDuplicateCategoryNameMessageVisible() {
+  expect(
+    screen.queryByText("A category with this name already exists")
+  ).toBeInTheDocument();
+}
+
+export function assertAcceptButtonDisabled() {
+  expect(screen.getByRole("button", { name: /ok/i })).toBeDisabled();
 }
