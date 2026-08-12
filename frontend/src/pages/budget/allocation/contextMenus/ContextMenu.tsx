@@ -48,6 +48,9 @@ export function ContextMenu({
       ? "A category with this name already exists"
       : "A group with this name already exists";
 
+  const renameLabel =
+    target.type === "category" ? "Rename category" : "Rename category group";
+
   const form = useForm<NameType>({
     defaultValues: {
       name: target.name,
@@ -115,13 +118,13 @@ export function ContextMenu({
                   <FormItem>
                     <FormControl>
                       <Input
-                        aria-label="Rename category group"
+                        aria-label={renameLabel}
                         className={cn(
                           "focus-visible:ring-sky-700 shadow-none rounded-[2px]",
                           !canRenameTarget &&
-                          "border-red-200 rounded-bl-none rounded-br-none"
+                            "border-red-200 rounded-bl-none rounded-br-none"
                         )}
-                        placeholder="New category name"
+                        placeholder={renameLabel}
                         autoFocus
                         autoComplete="off"
                         {...field}

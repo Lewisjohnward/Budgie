@@ -14,15 +14,19 @@ export async function assertCategoryRemoved(name: string) {
   });
 }
 
+export async function assertCategoryVisible(name: string) {
+  await waitFor(() => {
+    expect(screen.queryByText(name)).toBeInTheDocument();
+  });
+}
+
 export async function assertCategoryGroupRemoved(name: string) {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
   await waitFor(() => {
     expect(screen.queryByText(name)).not.toBeInTheDocument();
   });
 }
 
 export async function assertCategoryGroupVisible(name: string) {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
   await waitFor(() => {
     expect(screen.queryByText(name)).toBeInTheDocument();
   });

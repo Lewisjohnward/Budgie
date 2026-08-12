@@ -28,11 +28,6 @@ export type UpdateCategoryGroupInput = {
   position?: number;
 };
 
-export type UpdateCategoryGroupBody = Omit<
-  UpdateCategoryGroupInput,
-  "categoryGroupId"
->;
-
 // Input to delete category group
 type DeleteCategoryGroupInput = {
   categoryGroupId: CategoryGroupId;

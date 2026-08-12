@@ -13,7 +13,6 @@ export function renameCategoryGroupResult(
   ] as CategoryGroupBranded;
 
   categoryGroup.name = name;
-  console.log("dbg - categoryGroup:", categoryGroup);
 
   return categoryGroup;
 }

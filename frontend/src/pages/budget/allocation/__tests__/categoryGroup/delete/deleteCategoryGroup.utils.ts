@@ -1,5 +1,5 @@
 import {
-  DeleteCategoryGroupDto,
+  type DeleteCategoryGroupDto,
   type ApiBudgetSnapshot,
 } from "@/core/types/exported-types";
 import {

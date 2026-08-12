@@ -24,7 +24,7 @@ type CreateCategoryInput = {
 };
 
 // Input to update category
-type UpdateCategoryInput = {
+export type UpdateCategoryInput = {
   categoryId: CategoryId;
   name?: string;
   categoryGroupId?: CategoryGroupId;
@@ -130,7 +130,6 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
             "getBudgetSnapshot",
             undefined,
             (draft) => {
-              // TODO:(lewis 2026-06-05 04:35) this can be optimised with short curcuits
               const categories = draft.categories.user;
 
               const moved = categories[arg.categoryId];
@@ -138,46 +137,60 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
 
               const fromGroup = moved.categoryGroupId;
               const toGroup = arg.categoryGroupId ?? fromGroup;
-
               const toPos = arg.position ?? moved.position;
 
-              // Group categories into arrays
-              const groups: Record<string, CategoryBranded[]> = {};
+              // Only perform the repositioning logic when the category
+              // is actually being moved.
+              if (
+                arg.position !== undefined ||
+                arg.categoryGroupId !== undefined
+              ) {
+                // Group categories into arrays
+                const groups: Record<string, CategoryBranded[]> = {};
 
-              Object.values(categories).forEach((c) => {
-                const g = c.categoryGroupId;
-                if (!groups[g]) groups[g] = [];
-                groups[g].push(c);
-              });
+                Object.values(categories).forEach((category) => {
+                  const group = category.categoryGroupId;
 
-              // Sort each group by position
-              Object.values(groups).forEach((group) => {
-                group.sort((a, b) => a.position - b.position);
-              });
+                  if (!groups[group]) {
+                    groups[group] = [];
+                  }
 
-              // Remove from old group
-              const fromList = groups[fromGroup];
-              const [removed] = fromList.splice(
-                fromList.findIndex((c) => c.id === moved.id),
-                1
-              );
-
-              // Insert into new group
-              // need ?? [] because list is undefined if it has not categories in a group
-              const toList = groups[toGroup] ?? [];
-              groups[toGroup] = toList;
-
-              toList.splice(toPos, 0, removed);
-
-              // Normalise all groups
-              Object.values(groups).forEach((group) => {
-                group.forEach((c, index) => {
-                  c.position = index;
-                  c.categoryGroupId = groups[toGroup].includes(c)
-                    ? toGroup
-                    : c.categoryGroupId;
+                  groups[group].push(category);
                 });
-              });
+
+                // Sort each group by position
+                Object.values(groups).forEach((group) => {
+                  group.sort((a, b) => a.position - b.position);
+                });
+
+                // Remove from old group
+                const fromList = groups[fromGroup];
+
+                const index = fromList.findIndex(
+                  (category) => category.id === moved.id
+                );
+
+                if (index !== -1) {
+                  const [removed] = fromList.splice(index, 1);
+
+                  // Insert into new group
+                  const toList = groups[toGroup] ?? [];
+                  groups[toGroup] = toList;
+
+                  toList.splice(toPos, 0, removed);
+
+                  // Normalise all groups
+                  Object.values(groups).forEach((group) => {
+                    group.forEach((category, index) => {
+                      category.position = index;
+
+                      if (group === toList) {
+                        category.categoryGroupId = toGroup;
+                      }
+                    });
+                  });
+                }
+              }
 
               // Optimistically update name
               if (arg.name !== undefined) {
@@ -188,7 +201,31 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
         );
 
         try {
-          await queryFulfilled;
+          const { data } = await queryFulfilled;
+
+          dispatch(
+            budgetSnapshotSlice.util.updateQueryData(
+              "getBudgetSnapshot",
+              undefined,
+              (draft) => {
+                const { category, categories } = data.updated;
+
+                // Apply the authoritative category returned by the server.
+                draft.categories.user[category.id] = category;
+
+                // Apply any position/category-group changes returned
+                // by the server.
+                for (const categoryPatch of categories) {
+                  const existing = draft.categories.user[categoryPatch.id];
+
+                  if (!existing) continue;
+
+                  existing.position = categoryPatch.position;
+                  existing.categoryGroupId = categoryPatch.categoryGroupId;
+                }
+              }
+            )
+          );
         } catch {
           patchResult.undo();
         }
