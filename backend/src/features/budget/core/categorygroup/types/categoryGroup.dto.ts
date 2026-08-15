@@ -67,3 +67,56 @@ export type CreateCategoryGroupDto = {
     categoryGroup: CategoryGroupUserDto;
   };
 };
+
+/**
+ * Represents a minimal state update for a category group affected by a repositioning operation.
+ *
+ * This structure is used as part of a patch-based state reconciliation model, where only
+ * the fields affected by ordering changes are returned instead of full category entities.
+ *
+ * A category group position patch is emitted when a category group is:
+ * - shifted due to reordering of sibling categories
+ *
+ * It only includes fields required to correctly reconstruct ordering state on the client.
+ *
+ * Fields:
+ * - `id`: Unique identifier of the category
+ * - `position`: New zero-based position within its category group
+ */
+export type CategoryGroupPositionPatch = {
+  id: string;
+  position: number;
+};
+
+/**
+ * DTO returned after a category group update operation.
+ *
+ * This DTO follows a patch-based state reconciliation model rather than
+ * returning a full snapshot of the domain state.
+ *
+ * It is designed for efficient frontend updates where only affected entities
+ * are transmitted, reducing payload size and avoiding redundant data transfer.
+ *
+ * Supported operations:
+ * - Rename category group (updates only the target category group)
+ * - Move category groups
+ *
+ * Structure:
+ * - `updated.categoryGroup`:
+ *   The primary category group that was directly modified by the operation.
+ *
+ * - `updated.categories`:
+ *   A list of category position patches representing all category groups affected
+ *   by ordering changes. Each patch includes only:
+ *   - `id`
+ *   - `position`
+ *
+ * The frontend is responsible for merging these patches into its local state
+ * rather than replacing the entire category collection.
+ */
+export type UpdateCategoryGroupDto = {
+  updated: {
+    categoryGroup: CategoryGroupUserDto;
+    categoryGroups: CategoryGroupPositionPatch[];
+  };
+};
