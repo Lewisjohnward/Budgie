@@ -68,7 +68,7 @@ export const updateCategoryGroup = async (
 
     const result = await categoryGroupUseCase.updateCategoryGroup(payload);
 
-    const dto = categoryGroupMapper.toCategoryGroupUserDto(result);
+    const dto = categoryGroupMapper.toUpdateCategoryGroupDto(result);
 
     res.status(200).json(dto);
   } catch (error) {

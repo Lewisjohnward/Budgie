@@ -4,9 +4,9 @@ import { type UpdateCategoryGroupPayload } from "../../categorygroup.schema";
 import { categoryGroupService } from "../../categoryGroup.service";
 import {
   asCategoryGroupId,
-  type DomainUserCategoryGroup,
   type CategoryGroupId,
 } from "../../categoryGroup.types";
+import { type UpdateCategoryGroupResult } from "../../contracts/updateCategoryGroup.contract";
 
 export type UpdateCategoryGroupCommand = Omit<
   UpdateCategoryGroupPayload,
@@ -34,11 +34,11 @@ export const toUpdateCategoryGroupCommand = (
  */
 export const updateCategoryGroup = async (
   payload: UpdateCategoryGroupPayload
-): Promise<DomainUserCategoryGroup> => {
+): Promise<UpdateCategoryGroupResult> => {
   const { userId, categoryGroupId, name, position } =
     toUpdateCategoryGroupCommand(payload);
 
-  return await prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx) => {
     let categoryGroup = await categoryGroupService.getModifiableCategoryGroup(
       tx,
       userId,
@@ -46,7 +46,7 @@ export const updateCategoryGroup = async (
     );
 
     if (position !== undefined) {
-      categoryGroup = await categoryGroupService.repositionCategoryGroup(
+      return categoryGroupService.repositionCategoryGroup(
         tx,
         userId,
         categoryGroup,
@@ -60,7 +60,11 @@ export const updateCategoryGroup = async (
         categoryGroupId,
         name
       );
+      return {
+        updatedCategoryGroup: categoryGroup,
+        affectedCategoryGroups: [],
+      };
     }
-    return categoryGroup;
+    throw new Error("Need to either update position or name");
   });
 };
