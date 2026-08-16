@@ -1,0 +1,20 @@
+Account:
+  type: object
+  required: [id, name, position, open, type, deletable, balance]
+  properties:
+    id:
+      type: string
+    name:
+      type: string
+    position:
+      type: integer
+      minimum: 0
+    open:
+      type: boolean
+    type:
+      type: string
+      enum: [BANK, CREDIT_CARD]
+    deletable:
+      type: boolean
+    balance:
+      type: number

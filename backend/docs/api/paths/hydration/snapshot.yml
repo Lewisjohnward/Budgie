@@ -1,0 +1,22 @@
+get:
+  summary: Get full budget snapshot
+  description: >
+    Fetches a snapshot containing pre-indexed entities for frontend consumption for the authenticated user.
+  operationId: getBudgetSnapshot
+  tags:
+    - Hydration
+  security:
+    - bearerAuth: []
+  responses:
+    "200":
+      description: Successfully retrieved snapshot
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/hydration/budgetSnapshot.yml#/BudgetSnapshot"
+
+    "401":
+      description: Unauthorized
+
+    "500":
+      description: Server error

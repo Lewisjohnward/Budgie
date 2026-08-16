@@ -1,276 +1,26 @@
 openapi: 3.0.3
 info:
-  title: Budget Hydration API
+  title: Budgie API
   version: 1.0.0
 
 paths:
+  # Hydration
   /budget/snapshot:
-    get:
-      summary: Get full budget snapshot
-      description: >
-        Fetches a snapshot containing pre-indexed entities for frontend consumption for the authenticated user.
-      operationId: getBudgetSnapshot
-      tags:
-        - Hydration
-      security:
-        - bearerAuth: []
-      responses:
-        "200":
-          description: Successfully retrieved snapshot
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BudgetSnapshot"
+    $ref: "./paths/hydration/snapshot.yml"
 
-        "401":
-          description: Unauthorized
-
-        "500":
-          description: Server error
+  # Memos
   /budget/memo/{id}:
-    patch:
-      summary: Edit memo
-      description: >
-        Edit memo for the authenticated user.
-      operationId: editMemo
-      tags:
-        - Hydration
-      security:
-        - bearerAuth: []
+    $ref: "./paths/memos/modify.yml"
 
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [content]
-              properties:
-                content:
-                  type: string
-
-      responses:
-        "200":
-          description: Successfully updated memo
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UpdatedMemo"
-              examples:
-                success:
-                  value:
-                    id: "memo_123"
-                    month: "2025-12"
-                    content: "25/12 Jesus's bday"
-
-        "401":
-          description: Unauthorized
-
-        "400":
-          description: Bad request (invalid input or malformed payload)
-
-        "404":
-          description: Memo not found or owned by user
-
-        "500":
-          description: Server error
+  # Categories
   /budget/categories:
-    post:
-      summary: Create category
-      description: >
-        Creates a new budget category inside an existing category group owned by the user, dynamically 
-        calculating its sorting position, and automatically initialising accompanying zero-value 
-        budget timeline months derived from existing system or user category milestones.
-      operationId: createCategory
-      tags:
-        - Categories
-      security:
-        - bearerAuth: []
-
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [name, categoryGroupId]
-              properties:
-                name:
-                  type: string
-                  description: The name of the category (leading and trailing whitespace will be trimmed).
-                  example: "Groceries"
-                categoryGroupId:
-                  type: string
-                  description: Target parent Category Group UUID.
-                  example: "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d"
-
-      responses:
-        "201":
-          description: Successfully created category and tracking months
-          content:
-            application/json:
-              schema:
-                type: object
-                required: [created]
-                properties:
-                  created:
-                    type: object
-                    required: [category, months]
-                    properties:
-                      category:
-                        $ref: "#/components/schemas/Category"
-                      months:
-                        type: object
-                        description: Newly created months keyed by month id.
-                        additionalProperties:
-                          $ref: "#/components/schemas/Month"
-              examples:
-                success:
-                  value:
-                    created:
-                      category:
-                        id: "3f2c1d8e-9b6a-4f1d-8c2e-7a1d9c5b0e4f"
-                        name: "Groceries"
-                        categoryGroupId: "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d"
-                        position: 0
-                      months:
-                        m_2026_06:
-                          id: "m_idx_101"
-                          categoryId: "3f2c1d8e-9b6a-4f1d-8c2e-7a1d9c5b0e4f"
-                          month: "2026-06"
-                          activity: 0
-                          assigned: 0
-                          available: 0
-                        m_2026_07:
-                          id: "m_idx_102"
-                          categoryId: "3f2c1d8e-9b6a-4f1d-8c2e-7a1d9c5b0e4f"
-                          month: "2026-07"
-                          activity: 0
-                          assigned: 0
-                          available: 0
-
-        "401":
-          description: Unauthorised (missing or expired session token)
-
-        "404":
-          description: Category group not found or unowned by user context
-
-        "409":
-          description: Conflict (a category with this normalised name already exists within this category group)
-
-        "500":
-          description: Server error
+    $ref: "./paths/categories/create.yml"
   /budget/categories/{categoryId}:
-    delete:
-      summary: Delete category
-      description: >
-        Deletes a category reassigning transactions and assigned money
-      operationId: deleteCategory
-      tags:
-        - Categories
-      security:
-        - bearerAuth: []
+    $ref: "./paths/categories/modify.yml"
 
-      parameters:
-        - in: path
-          name: categoryId
-          required: true
-          schema:
-            type: string
-          description: The ID of the category to delete.
-
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                inheritingCategoryId:
-                  type: string
-                  description: The category that will inherit the transactions assigned to the deleted category.
-                  example: "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d"
-
-      responses:
-        "200":
-          description: Category deleted
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DeleteCategoryDto"
-
-        "401":
-          description: Unauthorized
-
-        "403":
-          description: Forbidden
-
-        "404":
-          description: Category not found
-
-        "422":
-          description: Invalid category deletion request
+  # Category groups
   /budget/category-groups/{categoryGroupId}:
-    delete:
-      summary: Delete category group
-      description: >
-        Deletes a category group. If the group contains transactions,
-        an inheriting category must be provided and transactions will be reassigned.
-        Remaining assigned funds from deleted categories are returned to Ready to Assign.
-      operationId: deleteCategoryGroup
-      tags:
-        - CategoryGroups
-      security:
-        - bearerAuth: []
-
-      parameters:
-        - in: path
-          name: categoryGroupId
-          required: true
-          schema:
-            type: string
-          description: The ID of the category group to delete.
-
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                inheritingCategoryId:
-                  type: string
-                  description: >
-                    The category that will inherit transactions from categories within the
-                    deleted category group.
-                  example: "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d"
-
-      responses:
-        "200":
-          description: Category group deleted
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DeleteCategoryGroupDto"
-
-        "401":
-          description: Unauthorized
-
-        "403":
-          description: Forbidden
-
-        "404":
-          description: Category group not found
-
-        "422":
-          description: Invalid category group deletion request
+    $ref: "./paths/categoryGroups/modify.yml"
 
 components:
   securitySchemes:
@@ -279,397 +29,62 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
-    BudgetSnapshot:
-      type: object
-      example:
-        categoryGroups:
-          user:
-            "cg_1":
-              id: "cg_1"
-              name: "Food"
-              position: 1
-          inflow:
-            id: "inflow"
-            name: "Inflow"
-          uncategorised:
-            id: "uncategorised"
-            name: "Uncategorised"
-
-        categories:
-          user:
-            "cat_1":
-              id: "cat_1"
-              name: "Groceries"
-              position: 1
-              categoryGroupId: "cg_1"
-          rta:
-            id: "rta"
-            name: "Ready to Assign"
-            position: 0
-            categoryGroupId: "cg_1"
-          uncategorised:
-            id: "uncategorised"
-            name: "Uncategorised"
-            position: 999
-            categoryGroupId: "cg_1"
-
-        months:
-          "month_1":
-            id: "month_1"
-            categoryId: "cat_1"
-            month: "2025-12"
-            activity: 100
-            assigned: 200
-            available: 100
-
-        accounts:
-          "acc_1":
-            id: "acc_1"
-            name: "Checking"
-            position: 1
-            open: true
-            type: "BANK"
-            deletable: true
-            balance: 1000
-
-        transactions:
-          "tx_1":
-            id: "tx_1"
-            accountId: "acc_1"
-            categoryId: "cat_1"
-            payeeId: "pay_1"
-            date: "2025-12-13T00:00:00.000Z"
-            memo: "Tesco"
-            inflow: 0
-            outflow: 12.34
-
-        payees:
-          "pay_1":
-            id: "pay_1"
-            name: "Tesco"
-            origin: "USER"
-            defaultCategoryId: "cat_1"
-            includeInPayeeList: true
-            automaticallyCategorisePayee: true
-
-        memosByMonth:
-          "2025-12":
-            id: "memo_1"
-            month: "2025-12"
-            content: "Holiday budget"
-
-        monthKeys:
-          - "2025-12"
-
-      required:
-        - categoryGroups
-        - categories
-        - months
-        - accounts
-        - transactions
-        - payees
-        - memosByMonth
-        - monthKeys
-      properties:
-        categoryGroups:
-          type: object
-          required: [user, inflow, uncategorised]
-          properties:
-            user:
-              type: object
-              additionalProperties:
-                $ref: "#/components/schemas/CategoryGroupUser"
-            inflow:
-              $ref: "#/components/schemas/CategoryGroupSystem"
-            uncategorised:
-              $ref: "#/components/schemas/CategoryGroupSystem"
-
-        categories:
-          type: object
-          required: [user, rta, uncategorised]
-          properties:
-            user:
-              type: object
-              additionalProperties:
-                $ref: "#/components/schemas/Category"
-            rta:
-              $ref: "#/components/schemas/Category"
-            uncategorised:
-              $ref: "#/components/schemas/Category"
-
-        months:
-          type: object
-          additionalProperties:
-            $ref: "#/components/schemas/Month"
-
-        accounts:
-          type: object
-          additionalProperties:
-            $ref: "#/components/schemas/Account"
-
-        transactions:
-          type: object
-          additionalProperties:
-            $ref: "#/components/schemas/Transaction"
-
-        payees:
-          type: object
-          additionalProperties:
-            $ref: "#/components/schemas/Payee"
-
-        memosByMonth:
-          type: object
-          description: Map of MonthKey (YYYY-MM) → Memo (1:1 invariant)
-          additionalProperties:
-            $ref: "#/components/schemas/Memo"
-
-        monthKeys:
-          type: array
-          items:
-            type: string
-
+    # Entities
+    CategoryUser:
+      $ref: "./schemas/entities/category.yml#/CategoryUser"
+    CategorySystem:
+      $ref: "./schemas/entities/category.yml#/CategorySystem"
     CategoryGroupUser:
-      type: object
-      required: [id, name, position]
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        position:
-          type: number
-
+      $ref: "./schemas/entities/categoryGroup.yml#/CategoryGroupUser"
     CategoryGroupSystem:
-      type: object
-      required: [id, name]
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-
-    Category:
-      type: object
-      required: [id, name, position, categoryGroupId]
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        position:
-          type: number
-        categoryGroupId:
-          type: string
-
+      $ref: "./schemas/entities/categoryGroup.yml#/CategoryGroupSystem"
     Month:
-      type: object
-      required: [id, categoryId, month, activity, assigned, available]
-      properties:
-        id:
-          type: string
-        categoryId:
-          type: string
-        month:
-          type: string
-        activity:
-          type: number
-        assigned:
-          type: number
-        available:
-          type: number
-
+      $ref: "./schemas/entities/month.yml#/Month"
     Account:
-      type: object
-      required: [id, name, position, open, type, deletable, balance]
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        position:
-          type: number
-        open:
-          type: boolean
-        type:
-          enum: [BANK, CREDIT_CARD]
-        deletable:
-          type: boolean
-        balance:
-          type: number
-
+      $ref: "./schemas/entities/account.yml#/Account"
     Transaction:
-      type: object
-      required: [id, accountId, date, memo, inflow, outflow]
-      properties:
-        id:
-          type: string
-        accountId:
-          type: string
-        categoryId:
-          type: string
-          nullable: true
-        payeeId:
-          type: string
-          nullable: true
-        date:
-          type: string
-          format: date-time
-        memo:
-          type: string
-        inflow:
-          type: number
-        outflow:
-          type: number
-
+      $ref: "./schemas/entities/transaction.yml#/Transaction"
     Payee:
-      type: object
-      required:
-        - id
-        - name
-        - origin
-        - defaultCategoryId
-        - includeInPayeeList
-        - automaticallyCategorisePayee
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        origin:
-          enum: [SYSTEM, USER]
-        defaultCategoryId:
-          type: string
-          nullable: true
-        includeInPayeeList:
-          type: boolean
-        automaticallyCategorisePayee:
-          type: boolean
-
+      $ref: "./schemas/entities/payee.yml#/Payee"
     Memo:
-      type: object
-      required: [id, month, content]
-      properties:
-        id:
-          type: string
-        month:
-          type: string
-          description: MonthKey in YYYY-MM format
-          example: "2025-12"
-        content:
-          type: string
+      $ref: "./schemas/entities/memo.yml#/Memo"
 
-    UpdatedMemo:
-      type: object
-      required: [id, month, content]
-      properties:
-        id:
-          type: string
+    # Hydration
+    BudgetSnapshot:
+      $ref: "./schemas/hydration/budgetSnapshot.yml#/BudgetSnapshot"
 
-        month:
-          type: string
-          description: MonthKey in YYYY-MM format
-          example: "2025-12"
+    #----------
+    # Requests
+    #----------
 
-        content:
-          type: string
+    # Category requests
+    CreateCategoryRequest:
+      $ref: "./schemas/requests/categories/createCategory.yml#/CreateCategoryRequest"
+    UpdateCategoryRequest:
+      $ref: "./schemas/requests/categories/updateCategory.yml#/UpdateCategoryRequest"
+    DeleteCategoryRequest:
+      $ref: "./schemas/requests/categories/deleteCategory.yml#/DeleteCategoryRequest"
 
-    DeleteCategoryDto:
-      type: object
-      required:
-        - deleted
-        - updated
-      properties:
-        deleted:
-          type: object
-          required:
-            - category
-            - months
-          properties:
-            category:
-              $ref: "#/components/schemas/Category"
+    #----------
+    # Responses
+    #----------
 
-            months:
-              type: object
-              description: Deleted months keyed by month id.
-              additionalProperties:
-                $ref: "#/components/schemas/Month"
+    # Category responses
+    CreateCategoryResponse:
+      $ref: "./schemas/responses/categories/createCategory.yml#/CreateCategoryResponse"
+    UpdateCategoryResponse:
+      $ref: "./schemas/responses/categories/updateCategory.yml#/UpdateCategoryResponse"
+    DeleteCategoryResponse:
+      $ref: "./schemas/responses/categories/deleteCategory.yml#/DeleteCategoryResponse"
+    CategoryPositionPatch:
+      $ref: "./schemas/responses/categories/patches/categoryPositionPatch.yml#/CategoryPositionPatch"
 
-        updated:
-          type: object
-          required:
-            - categories
-            - transactions
-            - months
-          properties:
-            categories:
-              type: object
-              description: Updated categories keyed by category id.
-              additionalProperties:
-                $ref: "#/components/schemas/Category"
-
-            transactions:
-              type: object
-              description: Updated transactions keyed by transaction id.
-              additionalProperties:
-                $ref: "#/components/schemas/Transaction"
-
-            months:
-              type: object
-              description: Updated months keyed by month id.
-              additionalProperties:
-                $ref: "#/components/schemas/Month"
-
-    DeleteCategoryGroupDto:
-      type: object
-      required:
-        - deleted
-        - updated
-      properties:
-        deleted:
-          type: object
-          required:
-            - categoryGroup
-            - categories
-            - months
-          properties:
-            categoryGroup:
-              $ref: "#/components/schemas/CategoryGroupUser"
-
-            categories:
-              type: object
-              description: Deleted categories.
-              additionalProperties:
-                $ref: "#/components/schemas/Category"
-
-            months:
-              type: object
-              description: Deleted months keyed by month id.
-              additionalProperties:
-                $ref: "#/components/schemas/Month"
-
-        updated:
-          type: object
-          required:
-            - categoryGroups
-            - transactions
-            - months
-          properties:
-            categoryGroups:
-              type: object
-              description: >
-                Updated user category groups after deletion.
-                Returned in their canonical position order.
-              additionalProperties:
-                $ref: "#/components/schemas/CategoryGroupUser"
-
-            transactions:
-              type: object
-              description: Updated transactions keyed by transaction id.
-              additionalProperties:
-                $ref: "#/components/schemas/Transaction"
-
-            months:
-              type: object
-              description: Updated months keyed by month id.
-              additionalProperties:
-                $ref: "#/components/schemas/Month"
+    # Category Group responses
+    CreateCategoryGroupResponse:
+      $ref: "./schemas/responses/categoryGroups/createCategoryGroup.yml#/CreateCategoryGroupResponse"
+    UpdateCategoryGroupResponse:
+      $ref: "./schemas/responses/categoryGroups/updateCategoryGroup.yml#/UpdateCategoryGroupResponse"
+    DeleteCategoryGroupResponse:
+      $ref: "./schemas/responses/categoryGroups/deleteCategoryGroup.yml#/DeleteCategoryGroupResponse"
+    CategoryGroupPositionPatch:
+      $ref: "./schemas/responses/categoryGroups/patches/categoryGroupPositionPatch.yml#/CategoryGroupPositionPatch"

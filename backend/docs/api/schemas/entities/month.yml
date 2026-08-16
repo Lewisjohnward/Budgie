@@ -1,0 +1,21 @@
+Month:
+  type: object
+  required: [id, categoryId, month, activity, assigned, available]
+  properties:
+    id:
+      type: string
+
+    categoryId:
+      type: string
+
+    month:
+      $ref: "./monthKey.yml#/MonthKey"
+
+    activity:
+      type: number
+
+    assigned:
+      type: number
+
+    available:
+      type: number

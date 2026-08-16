@@ -1,0 +1,149 @@
+BudgetSnapshot:
+  type: object
+  description: >
+    Complete budget state required to hydrate the frontend.
+    Entities are indexed by ID for efficient lookup and state reconciliation.
+  example:
+    categoryGroups:
+      user:
+        "cg_1":
+          id: "cg_1"
+          name: "Food"
+          position: 1
+      inflow:
+        id: "inflow"
+        name: "Inflow"
+      uncategorised:
+        id: "uncategorised"
+        name: "Uncategorised"
+
+    categories:
+      user:
+        "cat_1":
+          id: "cat_1"
+          name: "Groceries"
+          position: 1
+          categoryGroupId: "cg_1"
+      rta:
+        id: "rta"
+        name: "Ready to Assign"
+        categoryGroupId: "cg_1"
+      uncategorised:
+        id: "uncategorised"
+        name: "Uncategorised"
+        categoryGroupId: "cg_1"
+
+    months:
+      "month_1":
+        id: "month_1"
+        categoryId: "cat_1"
+        month: "2025-12"
+        activity: 100
+        assigned: 200
+        available: 100
+
+    accounts:
+      "acc_1":
+        id: "acc_1"
+        name: "Checking"
+        position: 1
+        open: true
+        type: "BANK"
+        deletable: true
+        balance: 1000
+
+    transactions:
+      "tx_1":
+        id: "tx_1"
+        accountId: "acc_1"
+        categoryId: "cat_1"
+        payeeId: "pay_1"
+        date: "2025-12-13T00:00:00.000Z"
+        memo: "Tesco"
+        inflow: 0
+        outflow: 12.34
+
+    payees:
+      "pay_1":
+        id: "pay_1"
+        name: "Tesco"
+        origin: "USER"
+        defaultCategoryId: "cat_1"
+        includeInPayeeList: true
+        automaticallyCategorisePayee: true
+
+    memosByMonth:
+      "2025-12":
+        id: "memo_1"
+        month: "2025-12"
+        content: "Holiday budget"
+
+    monthKeys:
+      - "2025-12"
+
+  required:
+    - categoryGroups
+    - categories
+    - months
+    - accounts
+    - transactions
+    - payees
+    - memosByMonth
+    - monthKeys
+  properties:
+    categoryGroups:
+      type: object
+      required: [user, inflow, uncategorised]
+      properties:
+        user:
+          type: object
+          additionalProperties:
+            $ref: "../entities/categoryGroup.yml#/CategoryGroupUser"
+        inflow:
+          $ref: "../entities/categoryGroup.yml#/CategoryGroupSystem"
+        uncategorised:
+          $ref: "../entities/categoryGroup.yml#/CategoryGroupSystem"
+
+    categories:
+      type: object
+      required: [user, rta, uncategorised]
+      properties:
+        user:
+          type: object
+          additionalProperties:
+            $ref: "../entities/category.yml#/CategoryUser"
+        rta:
+          $ref: "../entities/category.yml#/CategorySystem"
+        uncategorised:
+          $ref: "../entities/category.yml#/CategorySystem"
+
+    months:
+      type: object
+      additionalProperties:
+        $ref: "../entities/month.yml#/Month"
+
+    accounts:
+      type: object
+      additionalProperties:
+        $ref: "../entities/account.yml#/Account"
+
+    transactions:
+      type: object
+      additionalProperties:
+        $ref: "../entities/transaction.yml#/Transaction"
+
+    payees:
+      type: object
+      additionalProperties:
+        $ref: "../entities/payee.yml#/Payee"
+
+    memosByMonth:
+      type: object
+      description: Map of MonthKey (YYYY-MM) → Memo (1:1 invariant)
+      additionalProperties:
+        $ref: "../entities/memo.yml#/Memo"
+
+    monthKeys:
+      type: array
+      items:
+        $ref: "../entities/monthKey.yml#/MonthKey"

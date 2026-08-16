@@ -1,0 +1,18 @@
+UpdateCategoryRequest:
+  type: object
+  description: >
+    Request to update a user category. Only the fields that need to be changed need to be provided.
+  properties:
+    name:
+      type: string
+      description: New name for the category.
+
+    categoryGroupId:
+      type: string
+      format: uuid
+      description: ID of the category group to move the category into.
+
+    position:
+      type: integer
+      minimum: 0
+      description: New zero-based position of the category within its group.

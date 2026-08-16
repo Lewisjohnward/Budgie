@@ -1,0 +1,82 @@
+Transaction:
+  oneOf:
+    - $ref: "#/TransactionNormal"
+    - $ref: "#/TransactionTransfer"
+  discriminator:
+    propertyName: type
+    mapping:
+      normal: "#/TransactionNormal"
+      transfer: "#/TransactionTransfer"
+
+TransactionNormal:
+  type: object
+  required:
+    - type
+    - id
+    - accountId
+    - categoryId
+    - payeeId
+    - date
+    - memo
+    - inflow
+    - outflow
+  properties:
+    type:
+      type: string
+      enum: [normal]
+    id:
+      type: string
+    accountId:
+      type: string
+    categoryId:
+      type: string
+    payeeId:
+      type: string
+      nullable: true
+    date:
+      type: string
+      format: date-time
+    memo:
+      type: string
+    inflow:
+      type: number
+    outflow:
+      type: number
+
+TransactionTransfer:
+  type: object
+  required:
+    - type
+    - id
+    - accountId
+    - payeeId
+    - date
+    - memo
+    - inflow
+    - outflow
+    - transferAccountId
+    - transferTransactionId
+  properties:
+    type:
+      type: string
+      enum: [transfer]
+    id:
+      type: string
+    accountId:
+      type: string
+    payeeId:
+      type: string
+      nullable: true
+    date:
+      type: string
+      format: date-time
+    memo:
+      type: string
+    inflow:
+      type: number
+    outflow:
+      type: number
+    transferAccountId:
+      type: string
+    transferTransactionId:
+      type: string

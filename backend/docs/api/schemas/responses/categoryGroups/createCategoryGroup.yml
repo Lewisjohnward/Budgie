@@ -1,0 +1,15 @@
+CreateCategoryGroupResponse:
+  type: object
+  description: >
+    Response returned after creating a user category group. Contains the
+    newly created category group.
+  required:
+    - created
+  properties:
+    created:
+      type: object
+      required:
+        - categoryGroup
+      properties:
+        categoryGroup:
+          $ref: "../../entities/categoryGroup.yml#/CategoryGroupUser"

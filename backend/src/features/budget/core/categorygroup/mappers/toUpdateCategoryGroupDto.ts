@@ -6,16 +6,16 @@ import { type UpdateCategoryGroupResult } from "../contracts/updateCategoryGroup
  *
  * Only position changes are included for affected category groups.
  */
-export const toUpdateCategoryGroupDto = {
-  toDto(result: UpdateCategoryGroupResult): UpdateCategoryGroupDto {
-    return {
-      updated: {
-        categoryGroup: result.updatedCategoryGroup,
-        categoryGroups: result.affectedCategoryGroups.map((categoryGroup) => ({
-          id: categoryGroup.id,
-          position: categoryGroup.position,
-        })),
-      },
-    };
-  },
+export const toUpdateCategoryGroupDto = (
+  result: UpdateCategoryGroupResult
+): UpdateCategoryGroupDto => {
+  return {
+    updated: {
+      categoryGroup: result.updatedCategoryGroup,
+      categoryGroups: result.affectedCategoryGroups.map((categoryGroup) => ({
+        id: categoryGroup.id,
+        position: categoryGroup.position,
+      })),
+    },
+  };
 };

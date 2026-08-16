@@ -1,0 +1,48 @@
+post:
+  summary: Create category
+  description: >
+    Creates a new budget category inside an existing category group owned by the user, dynamically 
+    calculating its sorting position, and automatically initialising accompanying zero-value 
+    budget timeline months derived from existing system or user category milestones.
+  operationId: createCategory
+  tags:
+    - Categories
+  security:
+    - bearerAuth: []
+
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required: [name, categoryGroupId]
+          properties:
+            name:
+              type: string
+              description: The name of the category (leading and trailing whitespace will be trimmed).
+              example: "Groceries"
+            categoryGroupId:
+              type: string
+              description: Target parent Category Group UUID.
+              example: "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d"
+
+  responses:
+    "201":
+      description: Successfully created category and tracking months
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/responses/categories/createCategory.yml#/CreateCategoryResponse"
+
+    "401":
+      description: Unauthorised (missing or expired session token)
+
+    "404":
+      description: Category group not found or unowned by user context
+
+    "409":
+      description: Conflict (a category with this normalised name already exists within this category group)
+
+    "500":
+      description: Server error

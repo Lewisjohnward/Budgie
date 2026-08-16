@@ -1,0 +1,12 @@
+DeleteCategoryRequest:
+  type: object
+  description: >
+    Request to delete a user category. If the category has transactions,
+    an inheriting category must be provided to receive those transactions.
+  properties:
+    inheritingCategoryId:
+      type: string
+      format: uuid
+      description: >
+        ID of the category that will inherit transactions from the deleted
+        category.

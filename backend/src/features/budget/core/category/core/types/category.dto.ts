@@ -53,7 +53,7 @@ export type DeleteCategoryDto = {
     months: Record<string, MonthDto>;
   };
   updated: {
-    categories: Record<string, CategoryUserDto>;
+    categories: CategoryPositionPatch[];
     transactions: Record<string, TransactionNormalDto>;
     months: Record<string, MonthDto>;
   };

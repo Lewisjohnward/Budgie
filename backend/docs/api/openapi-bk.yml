@@ -1,0 +1,11 @@
+openapi: 3.0.3
+info:
+  title: Budget Hydration API
+  version: 1.0.0
+
+paths:
+  /budget/category-groups/{categoryGroupId}:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

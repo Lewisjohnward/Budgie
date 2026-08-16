@@ -1,0 +1,18 @@
+CreateCategoryResponse:
+  type: object
+  description: >
+    Result of creating a user category, including the newly created category and its associated months.
+  required:
+    - created
+  properties:
+    created:
+      type: object
+      required: [category, months]
+      properties:
+        category:
+          $ref: "../../entities/category.yml#/CategoryUser"
+        months:
+          type: object
+          description: Newly created months keyed by month id.
+          additionalProperties:
+            $ref: "../../entities/month.yml#/Month"
