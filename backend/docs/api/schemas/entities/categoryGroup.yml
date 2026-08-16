@@ -1,0 +1,22 @@
+CategoryGroupUser:
+  type: object
+  required: [id, name, position]
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string
+    position:
+      type: integer
+      minimum: 0
+
+CategoryGroupSystem:
+  type: object
+  required: [id, name]
+  properties:
+    id:
+      type: string
+      format: uuid
+    name:
+      type: string

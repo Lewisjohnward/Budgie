@@ -3,7 +3,10 @@ import { type TransactionNormalDto } from "../../../transaction/transaction.type
 import { type DeleteCategoryResult } from "../category.contract";
 import { categoryMapper } from "../category.mapper";
 import { type MonthDto } from "../category.types";
-import { type DeleteCategoryDto } from "../types/category.dto";
+import {
+  CategoryPositionPatch,
+  type DeleteCategoryDto,
+} from "../types/category.dto";
 
 /**
  * Maps the domain result of a category deletion operation into a DTO suitable
@@ -41,11 +44,12 @@ export const toDeleteCategoryDto = (
       ])
     );
 
-  const updatedCategories = Object.fromEntries(
-    result.updatedCategories.map((c) => [
-      c.id,
-      categoryMapper.toCategoryUserDto(c),
-    ])
+  const patches: CategoryPositionPatch[] = result.updatedCategories.map(
+    (category) => ({
+      id: category.id,
+      position: category.position,
+      categoryGroupId: category.categoryGroupId,
+    })
   );
 
   return {
@@ -54,7 +58,7 @@ export const toDeleteCategoryDto = (
       months: deletedMonths,
     },
     updated: {
-      categories: updatedCategories,
+      categories: patches,
       months: updatedMonths,
       transactions: updatedTransactions,
     },

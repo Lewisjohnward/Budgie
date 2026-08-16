@@ -1,0 +1,31 @@
+UpdateCategoryResponse:
+  type: object
+  description: >
+    Response returned after updating a user category.
+
+    The response uses a patch-based state reconciliation model. The updated
+    category is returned in full, while any other categories affected by
+    reordering or moving the category are returned as position patches.
+  required:
+    - updated
+  properties:
+    updated:
+      type: object
+      required:
+        - category
+        - categories
+      properties:
+        category:
+          $ref: "../../entities/category.yml#/CategoryUser"
+
+        categories:
+          type: array
+          description: >
+            Partial updates for categories affected by the operation.
+            Each entry contains the category's ID, new position, and
+            category group ID.
+
+            This array is empty when no other categories are affected,
+            such as during a rename-only operation.
+          items:
+            $ref: "./patches/categoryPositionPatch.yml#/CategoryPositionPatch"

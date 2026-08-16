@@ -1,0 +1,52 @@
+DeleteCategoryResponse:
+  type: object
+  description: >
+    Response returned after deleting a user category. Includes the deleted
+    category and months, along with categories, transactions, and months
+    affected by the deletion.
+  required:
+    - deleted
+    - updated
+  properties:
+    deleted:
+      type: object
+      required:
+        - category
+        - months
+      properties:
+        category:
+          $ref: "../../entities/category.yml#/CategoryUser"
+
+        months:
+          type: object
+          description: Deleted months keyed by month id.
+          additionalProperties:
+            $ref: "../../entities/month.yml#/Month"
+
+    updated:
+      type: object
+      required:
+        - categories
+        - transactions
+        - months
+      properties:
+        categories:
+          type: array
+          description: >
+            Partial updates for categories affected by the operation.
+            Each entry contains the category's ID, new position, and
+            category group ID.
+          items:
+            $ref: "./patches/categoryPositionPatch.yml#/CategoryPositionPatch"
+
+        transactions:
+          type: object
+          description: Updated transactions keyed by transaction id.
+          additionalProperties:
+            $ref: "../../entities/transaction.yml#/Transaction"
+
+        months:
+          type: object
+          description: Updated months keyed by month id.
+          additionalProperties:
+            $ref: "../../entities/month.yml#/Month"

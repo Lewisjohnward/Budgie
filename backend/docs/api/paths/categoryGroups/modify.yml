@@ -1,0 +1,122 @@
+patch:
+  summary: Update a category group
+  description: >
+    Updates a user category group. The category group may be renamed or moved.
+
+    When a category group is moved or reordered, the response contains position
+    patches for all affected category groups so clients can reconcile their local
+    state without fetching the entire category group collection.
+
+    The category group returned in `updated.categoryGroup` represents the primary category group
+    modified by the operation. The `updated.categoryGroups` array contains patches
+    for category groups whose position or category group changed as a result of the operation.
+  operationId: updateCategoryGroup
+  tags:
+    - CategoryGroups
+  security:
+    - bearerAuth: []
+
+  parameters:
+    - in: path
+      name: categoryGroupId
+      required: true
+      schema:
+        type: string
+      description: The ID of the category group to update.
+      example: "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d"
+
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              description: The new name for the category group.
+              example: "Other"
+            position:
+              type: integer
+              description: >
+                The zero-based position of the category group.
+              minimum: 0
+              example: 2
+          minProperties: 1
+          additionalProperties: false
+
+  responses:
+    "200":
+      description: Category group updated
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/responses/categoryGroups/updateCategoryGroup.yml#/UpdateCategoryGroupResponse"
+
+    "401":
+      description: Unauthorized
+
+    "403":
+      description: Forbidden
+
+    "404":
+      description: Category group not found
+
+    "409":
+      description: A category group with the requested name already exists
+
+    "422":
+      description: Invalid category group update request
+
+delete:
+  summary: Delete a category group
+  description: >
+    Deletes a category group. If the group contains transactions,
+    an inheriting category must be provided and transactions will be reassigned.
+    Remaining assigned funds from deleted categories are returned to Ready to Assign.
+  operationId: deleteCategoryGroup
+  tags:
+    - CategoryGroups
+  security:
+    - bearerAuth: []
+
+  parameters:
+    - in: path
+      name: categoryGroupId
+      required: true
+      schema:
+        type: string
+      description: The ID of the category group to delete.
+
+  requestBody:
+    required: false
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            inheritingCategoryId:
+              type: string
+              description: >
+                The category that will inherit transactions from categories within the deleted category group.
+              example: "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d"
+
+  responses:
+    "200":
+      description: Category group deleted
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/responses/categoryGroups/deleteCategoryGroup.yml#/DeleteCategoryGroupResponse"
+
+    "401":
+      description: Unauthorized
+
+    "403":
+      description: Forbidden
+
+    "404":
+      description: Category group not found
+
+    "422":
+      description: Invalid category group deletion request

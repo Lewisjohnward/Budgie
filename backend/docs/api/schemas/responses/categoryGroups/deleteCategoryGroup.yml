@@ -1,0 +1,56 @@
+DeleteCategoryGroupResponse:
+  type: object
+  description: >
+    Response returned after deleting a category group. Contains the deleted
+    category group and related entities, together with the entities affected
+    by the deletion for incremental client-side state reconciliation.
+  required:
+    - deleted
+    - updated
+  properties:
+    deleted:
+      type: object
+      required:
+        - categoryGroup
+        - categories
+        - months
+      properties:
+        categoryGroup:
+          $ref: "../../entities/categoryGroup.yml#/CategoryGroupUser"
+
+        categories:
+          type: object
+          description: Deleted categories keyed by category id.
+          additionalProperties:
+            $ref: "../../entities/category.yml#/CategoryUser"
+
+        months:
+          type: object
+          description: Deleted months keyed by month id.
+          additionalProperties:
+            $ref: "../../entities/month.yml#/Month"
+    updated:
+      type: object
+      required:
+        - categoryGroups
+        - transactions
+        - months
+      properties:
+        categoryGroups:
+          type: array
+          description: >
+            Position patches for category groups affected by the deletion.
+          items:
+            $ref: "./patches/categoryGroupPositionPatch.yml#/CategoryGroupPositionPatch"
+
+        transactions:
+          type: object
+          description: Updated transactions keyed by transaction id.
+          additionalProperties:
+            $ref: "../../entities/transaction.yml#/TransactionNormal"
+
+        months:
+          type: object
+          description: Updated months keyed by month id.
+          additionalProperties:
+            $ref: "../../entities/month.yml#/Month"

@@ -1,0 +1,12 @@
+CategoryGroupPositionPatch:
+  type: object
+  required:
+    - id
+    - position
+  properties:
+    id:
+      type: string
+      format: uuid
+    position:
+      type: integer
+      minimum: 0

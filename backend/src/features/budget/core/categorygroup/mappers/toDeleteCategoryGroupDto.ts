@@ -53,17 +53,10 @@ export const toDeleteCategoryGroupDto = (
     },
 
     updated: {
-      categoryGroups: Object.fromEntries(
-        result.updatedCategoryGroups.map((group) => [
-          group.id as string,
-          {
-            id: group.id as string,
-            name: group.name,
-            position: group.position,
-            source: group.source,
-          },
-        ])
-      ),
+      categoryGroups: result.updatedCategoryGroups.map((group) => ({
+        id: group.id,
+        position: group.position,
+      })),
       transactions: Object.fromEntries(
         result.updatedTransactions.map((transaction) => [
           transaction.id,

@@ -1,0 +1,21 @@
+UpdateCategoryGroupResponse:
+  type: object
+  required:
+    - updated
+  properties:
+    updated:
+      type: object
+      required:
+        - categoryGroup
+        - categoryGroups
+      properties:
+        categoryGroup:
+          $ref: "../../entities/categoryGroup.yml#/CategoryGroupUser"
+        categoryGroups:
+          type: array
+          description: >
+            Position patches for category groups affected by the update.
+            The primary category group is returned separately in
+            `categoryGroup`.
+          items:
+            $ref: "./patches/categoryGroupPositionPatch.yml#/CategoryGroupPositionPatch"

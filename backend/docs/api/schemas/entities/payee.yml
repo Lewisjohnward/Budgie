@@ -1,0 +1,24 @@
+Payee:
+  type: object
+  required:
+    - id
+    - name
+    - origin
+    - defaultCategoryId
+    - includeInPayeeList
+    - automaticallyCategorisePayee
+  properties:
+    id:
+      type: string
+    name:
+      type: string
+    origin:
+      type: string
+      enum: [SYSTEM, USER]
+    defaultCategoryId:
+      type: string
+      nullable: true
+    includeInPayeeList:
+      type: boolean
+    automaticallyCategorisePayee:
+      type: boolean

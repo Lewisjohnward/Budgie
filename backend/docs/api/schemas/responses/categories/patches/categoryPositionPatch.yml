@@ -1,0 +1,28 @@
+CategoryPositionPatch:
+  type: object
+  description: >
+    Partial category state returned when a category reorder or
+    category-group change affects the category's position or group.
+  required:
+    - id
+    - position
+    - categoryGroupId
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Unique identifier of the affected category.
+      example: "category_123"
+
+    position:
+      type: integer
+      minimum: 0
+      description: >
+        The category's new zero-based position within its category group.
+      example: 2
+
+    categoryGroupId:
+      type: string
+      format: uuid
+      description: Unique identifier of the category's category group.
+      example: "category_group_123"

@@ -1,0 +1,10 @@
+Memo:
+  type: object
+  required: [id, month, content]
+  properties:
+    id:
+      type: string
+    month:
+      $ref: "./monthKey.yml#/MonthKey"
+    content:
+      type: string

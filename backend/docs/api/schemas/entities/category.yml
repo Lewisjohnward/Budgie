@@ -1,0 +1,56 @@
+CategoryUser:
+  type: object
+  description: User-created budget category.
+  required:
+    - id
+    - categoryGroupId
+    - name
+    - position
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Unique identifier of the category.
+      example: "category_123"
+
+    categoryGroupId:
+      type: string
+      format: uuid
+      description: Identifier of the category group containing this category.
+      example: "category_group_123"
+
+    name:
+      type: string
+      description: Name of the category.
+      example: "Groceries"
+
+    position:
+      type: integer
+      minimum: 0
+      description: Zero-based position of the category within its category group.
+      example: 0
+
+CategorySystem:
+  type: object
+  description: System-defined budget category.
+  required:
+    - id
+    - categoryGroupId
+    - name
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Unique identifier of the system category.
+      example: "category_rta"
+
+    categoryGroupId:
+      type: string
+      format: uuid
+      description: Identifier of the category group containing this category.
+      example: "category_group_rta"
+
+    name:
+      type: string
+      description: Name of the system category.
+      example: "Ready to Assign"

@@ -1,0 +1,16 @@
+CreateCategoryRequest:
+  type: object
+  description: >
+    Request to create a new user category.
+  required:
+    - name
+    - categoryGroupId
+  properties:
+    name:
+      type: string
+      description: Name of the category.
+
+    categoryGroupId:
+      type: string
+      format: uuid
+      description: ID of the category group the category belongs to.
