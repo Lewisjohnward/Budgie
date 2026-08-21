@@ -1,7 +1,9 @@
 import {
-  CategoryBranded,
+  CategoryUserBranded,
   MonthBranded,
-  CategoryGroupBranded,
+  CategoryGroupUserBranded,
+  CategorySystemBranded,
+  CategoryGroupSystemBranded,
 } from "@/core/types/NormalizedData";
 import { CategoryId, CategoryGroupId } from "../types/types";
 import { CategoryMetricsById } from "../hooks/useAllocation/useAllocationIndexes";
@@ -9,14 +11,14 @@ import { CategoryMetricsById } from "../hooks/useAllocation/useAllocationIndexes
 // Input
 type BuildCategoryViewModelParams = {
   categories: {
-    user: Record<CategoryId, CategoryBranded>;
-    rta: CategoryBranded;
-    uncategorised: CategoryBranded;
+    user: Record<CategoryId, CategoryUserBranded>;
+    rta: CategorySystemBranded;
+    uncategorised: CategorySystemBranded;
   };
   categoryGroups: {
-    user: Record<CategoryGroupId, CategoryGroupBranded>;
-    inflow: CategoryGroupBranded;
-    uncategorised: CategoryGroupBranded;
+    user: Record<CategoryGroupId, CategoryGroupUserBranded>;
+    inflow: CategoryGroupSystemBranded;
+    uncategorised: CategoryGroupSystemBranded;
   };
   currentCategoryMonthMap: Record<CategoryId, MonthBranded>;
   categoryMetricsById: CategoryMetricsById;
@@ -25,20 +27,20 @@ type BuildCategoryViewModelParams = {
 // Output
 type CategoryViewModel = {
   userCategoryGroupViews: CategoryGroupView[];
-  uncategorisedRow: CategoryViewRow;
-  rtaRow: CategoryViewRow;
+  uncategorisedRow: CategoryViewRow<CategorySystemBranded>;
+  rtaRow: CategoryViewRow<CategorySystemBranded>;
 };
 
-export type CategoryViewRow = {
-  category: CategoryBranded;
+export type CategoryViewRow<TCategory> = {
+  category: TCategory;
   transactionCount: number;
   hasAssigned: boolean;
   month: MonthBranded;
 };
 
 type CategoryGroupView = {
-  group: CategoryGroupBranded;
-  rows: CategoryViewRow[];
+  group: CategoryGroupUserBranded;
+  rows: CategoryViewRow<CategoryUserBranded>[];
 };
 
 export function buildCategoryViewModel({
@@ -103,25 +105,25 @@ export function buildCategoryViewModel({
   };
 }
 
-function buildCategoryViewRow(
-  category: CategoryBranded,
+function buildCategoryViewRow<
+  TCategory extends CategoryUserBranded | CategorySystemBranded,
+>(
+  category: TCategory,
   map: Record<CategoryId, MonthBranded>,
   categoryMetricsById: CategoryMetricsById
-): CategoryViewRow {
+): CategoryViewRow<TCategory> {
   const month = map[category.id];
 
   if (!month) {
     throw new Error(`Missing month for ${category.id}`);
   }
-  const metrics = categoryMetricsById[category.id];
 
-  const hasAssigned = metrics?.hasAssigned ?? false;
-  const transactionCount = metrics?.transactionCount ?? 0;
+  const metrics = categoryMetricsById[category.id];
 
   return {
     category,
     month,
-    transactionCount,
-    hasAssigned,
+    transactionCount: metrics?.transactionCount ?? 0,
+    hasAssigned: metrics?.hasAssigned ?? false,
   };
 }

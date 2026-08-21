@@ -1,62 +1,35 @@
 import {
   asCategoryGroupId,
-  CategoryGroupId,
-  CategoryId,
-  MonthId,
-  TransactionId,
+  asCategoryId,
+  asMonthId,
+  asTransactionId,
 } from "@/pages/budget/allocation/types/types";
 import { apiSlice } from "../../apiSlice";
 import { budgetSnapshotSlice } from "../budgetSnapshotSlice";
 import {
-  CategoryBranded,
-  CategoryGroupBranded,
-  MonthBranded,
-  TransactionBranded,
-} from "@/core/types/NormalizedData";
+  CreateCategoryGroupResponse,
+  DeleteCategoryGroupResponse,
+  UpdateCategoryGroupResponse,
+} from "@/core/types/exported-types";
+import { mapCategoryGroup } from "../mappers/categoryGroupMapper";
+import {
+  CreateCategoryGroupInput,
+  CreateCategoryGroupResult,
+  DeleteCategoryGroupInput,
+  DeleteCategoryGroupResult,
+  UpdateCategoryGroupInput,
+  UpdateCategoryGroupResult,
+} from "./types";
+import { mapCategory } from "../mappers/categoryMapper";
+import { mapMonth } from "../mappers/monthMapper";
+import { mapTransaction } from "../mappers/transactionMapper";
 
 const CATEGORY_GROUP_ENDPOINT_URL = "budget/category-groups";
-
-// Input to create category group
-type CreateCategoryGroupInput = {
-  name: string;
-};
-
-// Input to update category group
-export type UpdateCategoryGroupInput = {
-  categoryGroupId: CategoryGroupId;
-  name?: string;
-  position?: number;
-};
-
-// Input to delete category group
-type DeleteCategoryGroupInput = {
-  categoryGroupId: CategoryGroupId;
-  inheritingCategoryId?: CategoryId;
-};
-
-// Response to create category group
-type CreateCategoryGroupDto = CategoryGroupBranded;
-// Response to update category group
-export type UpdateCategoryGroupDto = CategoryGroupBranded;
-// Response to delete category group
-type DeleteCategoryGroupDto = {
-  deleted: {
-    categoryGroup: CategoryGroupBranded;
-    categories: Record<CategoryId, CategoryBranded>;
-    months: Record<MonthId, MonthBranded>;
-  };
-
-  updated: {
-    categoryGroups: Record<CategoryGroupId, CategoryGroupBranded>;
-    transactions: Record<TransactionId, TransactionBranded>;
-    months: Record<MonthId, MonthBranded>;
-  };
-};
 
 export const categoryGroupApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     createCategoryGroup: builder.mutation<
-      CreateCategoryGroupDto,
+      CreateCategoryGroupResult,
       CreateCategoryGroupInput
     >({
       query: (categoryGroup) => {
@@ -66,6 +39,13 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
           body: categoryGroup,
         };
       },
+      transformResponse: (
+        response: CreateCategoryGroupResponse
+      ): CreateCategoryGroupResult => ({
+        created: {
+          categoryGroup: mapCategoryGroup(response.created.categoryGroup),
+        },
+      }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         const tempId = asCategoryGroupId(crypto.randomUUID());
 
@@ -96,8 +76,11 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
               "getBudgetSnapshot",
               undefined,
               (draft) => {
+                const { categoryGroup } = data.created;
+
                 delete draft.categoryGroups.user[tempId];
-                draft.categoryGroups.user[data.id] = data;
+
+                draft.categoryGroups.user[categoryGroup.id] = categoryGroup;
               }
             )
           );
@@ -107,7 +90,7 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
       },
     }),
     updateCategoryGroup: builder.mutation<
-      UpdateCategoryGroupDto,
+      UpdateCategoryGroupResult,
       UpdateCategoryGroupInput
     >({
       query: ({ name, position, categoryGroupId }) => ({
@@ -115,7 +98,17 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
         method: "PATCH",
         body: { name, position },
       }),
-
+      transformResponse: (
+        response: UpdateCategoryGroupResponse
+      ): UpdateCategoryGroupResult => ({
+        updated: {
+          categoryGroup: mapCategoryGroup(response.updated.categoryGroup),
+          categoryGroups: response.updated.categoryGroups.map((p) => ({
+            ...p,
+            id: asCategoryGroupId(p.id),
+          })),
+        },
+      }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         const patchResult = dispatch(
           budgetSnapshotSlice.util.updateQueryData(
@@ -166,7 +159,7 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
       },
     }),
     deleteCategoryGroup: builder.mutation<
-      DeleteCategoryGroupDto,
+      DeleteCategoryGroupResult,
       DeleteCategoryGroupInput
     >({
       query: ({ categoryGroupId, inheritingCategoryId }) => ({
@@ -174,53 +167,93 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
         method: "DELETE",
         body: inheritingCategoryId ? { inheritingCategoryId } : undefined,
       }),
+      transformResponse: (
+        response: DeleteCategoryGroupResponse
+      ): DeleteCategoryGroupResult => ({
+        deleted: {
+          categoryGroup: mapCategoryGroup(response.deleted.categoryGroup),
 
+          categories: Object.fromEntries(
+            Object.entries(response.deleted.categories).map(
+              ([id, category]) => [asCategoryId(id), mapCategory(category)]
+            )
+          ),
+
+          months: Object.fromEntries(
+            Object.entries(response.deleted.months).map(([id, month]) => [
+              asMonthId(id),
+              mapMonth(month),
+            ])
+          ),
+        },
+
+        updated: {
+          categoryGroups: response.updated.categoryGroups.map((patch) => ({
+            id: asCategoryGroupId(patch.id),
+            position: patch.position,
+          })),
+
+          transactions: Object.fromEntries(
+            Object.entries(response.updated.transactions).map(
+              ([id, transaction]) => [
+                asTransactionId(id),
+                mapTransaction(transaction),
+              ]
+            )
+          ),
+
+          months: Object.fromEntries(
+            Object.entries(response.updated.months).map(([id, month]) => [
+              asMonthId(id),
+              mapMonth(month),
+            ])
+          ),
+        },
+      }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        // Optimistic update (remove + reorder)
         const patchResult = dispatch(
           budgetSnapshotSlice.util.updateQueryData(
             "getBudgetSnapshot",
             undefined,
             (draft) => {
-              // TODO:(lewis 2026-07-23 15:05) this doesnt recalculate rta or avaiable etc, is that problematic? should i just remove?
               const group = draft.categoryGroups.user[arg.categoryGroupId];
+
               if (!group) return;
 
-              // Find categories belonging to group
               const categoryIds = Object.values(draft.categories.user)
-                .filter((c) => c.categoryGroupId === arg.categoryGroupId)
-                .map((c) => c.id);
+                .filter(
+                  (category) => category.categoryGroupId === arg.categoryGroupId
+                )
+                .map((category) => category.id);
+
+              const categoryIdSet = new Set(categoryIds);
 
               // Delete categories
-              for (const id of categoryIds) {
-                delete draft.categories.user[id];
+              for (const categoryId of categoryIds) {
+                delete draft.categories.user[categoryId];
               }
 
-              // Delete months for those categories
-              const categorySet = new Set(categoryIds);
-
-              for (const [monthId, month] of Object.entries(draft.months) as [
-                MonthId,
-                MonthBranded,
-              ][]) {
-                if (categorySet.has(month.categoryId)) {
-                  delete draft.months[monthId];
+              // Delete category months
+              for (const month of Object.values(draft.months)) {
+                if (categoryIdSet.has(month.categoryId)) {
+                  delete draft.months[month.id];
                 }
               }
 
               // Delete category group
               delete draft.categoryGroups.user[arg.categoryGroupId];
 
-              // Reindex remaining groups
-              const reordered = Object.values(draft.categoryGroups.user)
-                .sort((a, b) => a.position - b.position)
-                .map((g, index) => {
-                  g.position = index;
-                  return g;
-                });
+              // Re-index remaining category groups
+              const groups = Object.values(draft.categoryGroups.user).sort(
+                (a, b) => a.position - b.position
+              );
+
+              groups.forEach((group, index) => {
+                group.position = index;
+              });
 
               draft.categoryGroups.user = Object.fromEntries(
-                reordered.map((g) => [g.id, g])
+                groups.map((group) => [group.id, group])
               );
             }
           )
@@ -228,44 +261,46 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
 
         try {
           const { data } = await queryFulfilled;
-          // Apply server-confirmed side effects
+
           dispatch(
             budgetSnapshotSlice.util.updateQueryData(
               "getBudgetSnapshot",
               undefined,
               (draft) => {
-                // TODO:(lewis 2026-07-23 15:26) these need improving can use Object.keys
-                if (data.deleted?.categoryGroup) {
-                  const { id } = data.deleted.categoryGroup;
-                  delete draft.categoryGroups.user[id];
-                }
-                for (const id of Object.keys(
-                  data.deleted.categories
-                ) as CategoryId[]) {
-                  delete draft.categories.user[id];
-                }
-                if (data.deleted?.months) {
-                  for (const m of Object.values(data.deleted.months)) {
-                    delete draft.months[m.id];
-                  }
-                }
-                if (data.updated?.categoryGroups) {
-                  for (const cg of Object.values(data.updated.categoryGroups)) {
-                    draft.categoryGroups.user[cg.id] = cg;
-                  }
-                }
-                if (data.updated?.transactions) {
-                  for (const tx of Object.values(data.updated.transactions)) {
-                    draft.transactions[tx.id] = tx;
-                  }
+                // Deleted categoryGroup
+                delete draft.categoryGroups.user[data.deleted.categoryGroup.id];
+
+                // Deleted categories
+                for (const category of Object.values(data.deleted.categories)) {
+                  delete draft.categories.user[category.id];
                 }
 
-                if (data.updated?.months) {
-                  for (const [id, month] of Object.entries(
-                    data.updated.months
-                  ) as [MonthId, MonthBranded][]) {
-                    draft.months[id] = month;
-                  }
+                // Updated transactions
+                for (const transaction of Object.values(
+                  data.updated.transactions
+                )) {
+                  draft.transactions[transaction.id] = transaction;
+                }
+
+                // Updated category groups
+                for (const patch of data.updated.categoryGroups) {
+                  const group = draft.categoryGroups.user[patch.id];
+
+                  if (!group) continue;
+
+                  group.position = patch.position;
+                }
+
+                // Updated transactions
+                for (const transaction of Object.values(
+                  data.updated.transactions
+                )) {
+                  draft.transactions[transaction.id] = transaction;
+                }
+
+                // Updated months
+                for (const month of Object.values(data.updated.months)) {
+                  draft.months[month.id] = month;
                 }
               }
             )

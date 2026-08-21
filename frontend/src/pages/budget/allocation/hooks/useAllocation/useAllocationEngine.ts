@@ -6,10 +6,12 @@ import {
 import { useBudgetSnapshot } from "./useCategories";
 import { useSelectedCategories } from "../../slices/selectedCategorySlice";
 import {
-  CategoryBranded,
-  CategoryGroupBranded,
+  CategoryUserBranded,
+  CategoryGroupUserBranded,
   MonthBranded,
   NoteBranded,
+  CategorySystemBranded,
+  CategoryGroupSystemBranded,
 } from "@/core/types/NormalizedData";
 import {
   CategoryGroupId,
@@ -23,14 +25,14 @@ import { useMemo } from "react";
 export type AllocationEngine = {
   entities: {
     categoryGroups: {
-      user: Record<CategoryGroupId, CategoryGroupBranded>;
-      inflow: CategoryGroupBranded;
-      uncategorised: CategoryGroupBranded;
+      user: Record<CategoryGroupId, CategoryGroupUserBranded>;
+      inflow: CategoryGroupSystemBranded;
+      uncategorised: CategoryGroupSystemBranded;
     };
     categories: {
-      user: Record<CategoryId, CategoryBranded>;
-      rta: CategoryBranded;
-      uncategorised: CategoryBranded;
+      user: Record<CategoryId, CategoryUserBranded>;
+      rta: CategorySystemBranded;
+      uncategorised: CategorySystemBranded;
     };
   };
 
@@ -58,7 +60,7 @@ export type AllocationEngine = {
   };
 
   selection: {
-    categories: CategoryBranded[];
+    categories: CategoryUserBranded[];
 
     ids: CategoryId[];
 

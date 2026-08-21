@@ -1,11 +1,14 @@
-import { asMonthId, asCategoryId, asTransactionId } from "@/pages/budget/allocation/types/types";
+import {
+  asMonthId,
+  asCategoryId,
+  asTransactionId,
+} from "@/pages/budget/allocation/types/types";
 import { DeleteCategoryResult } from "../api/budget/category/categoryApiSlice";
-import { DeleteCategoryDto } from "../types/exported-types";
+import { DeleteCategoryResponse } from "../types/exported-types";
 import { toCategory, toMonth, toTransaction } from "./entityMapper";
 
-
 export const toDeleteCategoryResult = (
-  raw: DeleteCategoryDto
+  raw: DeleteCategoryResponse
 ): DeleteCategoryResult => ({
   deleted: {
     category: toCategory(raw.deleted.category),

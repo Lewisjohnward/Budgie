@@ -2,12 +2,18 @@
 
 import { createSlice, PayloadAction } from "@reduxjs/toolkit/react";
 import { RootState } from "@/core/store/store";
-import { CategoryBranded } from "@/core/types/NormalizedData";
 import { useAppSelector } from "@/core/hooks/reduxHooks";
+import { CategoryId, CategoryGroupId } from "../types/types";
+
+export type SelectableCategory = {
+  id: CategoryId;
+  name: string;
+  categoryGroupId: CategoryGroupId;
+};
 
 export type SelectedCategoryState = {
-  previousSelected: CategoryBranded | null;
-  selected: CategoryBranded[];
+  previousSelected: SelectableCategory | null;
+  selected: SelectableCategory[];
 };
 
 const initialState: SelectedCategoryState = {
@@ -19,11 +25,11 @@ const categorySlice = createSlice({
   name: "selectedCategories",
   initialState,
   reducers: {
-    addCategories: (state, action: PayloadAction<CategoryBranded[]>) => {
+    addCategories: (state, action: PayloadAction<SelectableCategory[]>) => {
       state.selected.push(...action.payload);
       state.previousSelected = state.selected[state.selected.length - 1];
     },
-    removeCategories: (state, action: PayloadAction<CategoryBranded[]>) => {
+    removeCategories: (state, action: PayloadAction<SelectableCategory[]>) => {
       const idsToRemove = action.payload.map((cat) => cat.id);
       state.selected = state.selected.filter(
         (cat) => !idsToRemove.includes(cat.id)

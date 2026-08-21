@@ -1,11 +1,14 @@
 import {
-  CategoryBranded,
-  CategoryGroupBranded,
+  CategorySystemBranded,
+  CategoryUserBranded,
 } from "@/core/types/NormalizedData";
 import {
   ApiAccount,
   ApiBudgetSnapshot,
-  ApiCategory,
+  ApiCategoryGroupSystem,
+  ApiCategoryGroupUser,
+  ApiCategorySystem,
+  ApiCategoryUser,
   ApiMemo,
   ApiMonth,
   ApiTransaction,
@@ -36,7 +39,7 @@ const monthKey = defaultMonth;
 export const baseSnapshot: ApiBudgetSnapshot = {
   categories: {
     user: {
-      [groceriesCategoryId]: createCategory(
+      [groceriesCategoryId]: createUserCategory(
         groceriesCategoryId,
         importantCategoryGroupId,
         {
@@ -44,19 +47,22 @@ export const baseSnapshot: ApiBudgetSnapshot = {
         }
       ),
     },
-    rta: createCategory(rtaCategoryIdTest, inflowCategoryGroupId),
-    uncategorised: createCategory(uncatCategoryId, uncategoriesCategoryGroupId),
+    rta: createSystemCategory(rtaCategoryIdTest, inflowCategoryGroupId),
+    uncategorised: createSystemCategory(
+      uncatCategoryId,
+      uncategoriesCategoryGroupId
+    ),
   },
 
   categoryGroups: {
     user: {
-      [importantCategoryGroupId]: createCategoryGroup(
+      [importantCategoryGroupId]: createUserCategoryGroup(
         importantCategoryGroupId,
         { name: "Important" }
       ),
     },
-    inflow: createCategoryGroup(inflowCategoryGroupId),
-    uncategorised: createCategoryGroup(uncategoriesCategoryGroupId),
+    inflow: createSystemCategoryGroup(inflowCategoryGroupId),
+    uncategorised: createSystemCategoryGroup(uncategoriesCategoryGroupId),
   },
 
   months: {
@@ -89,10 +95,10 @@ export function createSnapshot(overrides?: Partial<ApiBudgetSnapshot>) {
   });
 }
 
-function createCategoryGroup(
+function createUserCategoryGroup(
   id: string,
-  overrides?: Partial<CategoryGroupBranded>
-): ApiBudgetSnapshot["categoryGroups"]["inflow"] {
+  overrides?: Partial<ApiCategoryGroupUser>
+): ApiCategoryGroupUser {
   return {
     id,
     name: "default",
@@ -101,16 +107,40 @@ function createCategoryGroup(
   };
 }
 
-function createCategory(
+function createSystemCategoryGroup(
+  id: string,
+  overrides?: Partial<ApiCategoryGroupSystem>
+): ApiCategoryGroupSystem {
+  return {
+    id,
+    name: "default",
+    ...overrides,
+  };
+}
+
+function createUserCategory(
   id: string,
   categoryGroupId: string,
-  overrides?: Partial<CategoryBranded>
-): ApiCategory {
+  overrides?: Partial<CategoryUserBranded>
+): ApiCategoryUser {
   return {
     id,
     name: "default",
     categoryGroupId,
     position: 0,
+    ...overrides,
+  };
+}
+
+function createSystemCategory(
+  id: string,
+  categoryGroupId: string,
+  overrides?: Partial<CategorySystemBranded>
+): ApiCategorySystem {
+  return {
+    id,
+    name: "default",
+    categoryGroupId,
     ...overrides,
   };
 }
@@ -156,13 +186,15 @@ function createAccount(
   };
 }
 
-type CreateTransactionOverrides = Partial<ApiTransaction> & {
+type CreateNormalTransactionOverrides = Partial<
+  Extract<ApiTransaction, { type: "normal" }>
+> & {
   id: string;
   accountId: string;
-  categoryId: string | null;
+  categoryId: string;
 };
 
-export function createTransaction({
+export function createNormalTransaction({
   id,
   accountId,
   categoryId,
@@ -171,8 +203,12 @@ export function createTransaction({
   outflow = 10,
   payeeId = null,
   memo = "",
-}: CreateTransactionOverrides): ApiTransaction {
+}: CreateNormalTransactionOverrides): Extract<
+  ApiTransaction,
+  { type: "normal" }
+> {
   return {
+    type: "normal",
     id,
     accountId,
     categoryId,
@@ -203,7 +239,7 @@ export const withTransactionSnapshot = createSnapshot({
     ...baseSnapshot.categories,
     user: {
       ...baseSnapshot.categories.user,
-      [rentCategoryId]: createCategory(
+      [rentCategoryId]: createUserCategory(
         rentCategoryId,
         importantCategoryGroupId,
         {
@@ -232,7 +268,7 @@ export const withTransactionSnapshot = createSnapshot({
   },
   transactions: {
     ...baseSnapshot.transactions,
-    [tx1]: createTransaction({
+    [tx1]: createNormalTransaction({
       id: tx1,
       accountId: acc1,
       categoryId: groceriesCategoryId,

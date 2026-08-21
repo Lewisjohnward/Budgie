@@ -21,8 +21,10 @@ import {
   CategoryViewRow,
 } from "../../utils/buildCategoryViewModel";
 import {
-  CategoryGroupBranded,
-  CategoryBranded,
+  CategoryGroupSystemBranded,
+  CategoryGroupUserBranded,
+  CategorySystemBranded,
+  CategoryUserBranded,
   MonthBranded,
 } from "@/core/types/NormalizedData";
 import { useMonthInitialiser } from "./useMonthInitialiser";
@@ -56,16 +58,16 @@ export type CategorySelectOptions = {
 
 export type CategoryActionTarget =
   | {
-      type: "categoryGroup";
-      id: CategoryGroupId;
-      name: string;
-    }
+    type: "categoryGroup";
+    id: CategoryGroupId;
+    name: string;
+  }
   | {
-      type: "category";
-      id: CategoryId;
-      name: string;
-      categoryGroupId: CategoryGroupId;
-    };
+    type: "category";
+    id: CategoryId;
+    name: string;
+    categoryGroupId: CategoryGroupId;
+  };
 
 export function useAllocation() {
   const dispatch = useAppDispatch();
@@ -360,14 +362,14 @@ export function useAllocation() {
 // Input
 type UseCategoryGroupViewsParams = {
   categoryGroups: {
-    user: Record<CategoryGroupId, CategoryGroupBranded>;
-    inflow: CategoryGroupBranded;
-    uncategorised: CategoryGroupBranded;
+    user: Record<CategoryGroupId, CategoryGroupUserBranded>;
+    inflow: CategoryGroupSystemBranded;
+    uncategorised: CategoryGroupSystemBranded;
   };
   categories: {
-    user: Record<CategoryId, CategoryBranded>;
-    rta: CategoryBranded;
-    uncategorised: CategoryBranded;
+    user: Record<CategoryId, CategoryUserBranded>;
+    rta: CategorySystemBranded;
+    uncategorised: CategorySystemBranded;
   };
   currentCategoryMonthMap: CategoryMonthMap;
   categoryMetricsById: CategoryMetricsById;
@@ -376,8 +378,8 @@ type UseCategoryGroupViewsParams = {
 // Output
 type CategoryGroupViews = {
   userCategoryGroupViews: CategoryGroupViewWithMetrics[];
-  uncategorisedRow: CategoryViewRow;
-  rtaRow: CategoryViewRow;
+  uncategorisedRow: CategoryViewRow<CategorySystemBranded>;
+  rtaRow: CategoryViewRow<CategorySystemBranded>;
 };
 
 export function buildCategoryGroupViews({

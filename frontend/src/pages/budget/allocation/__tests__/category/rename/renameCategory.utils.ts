@@ -1,13 +1,15 @@
-import { type ApiBudgetSnapshot } from "@/core/types/exported-types";
-import { type CategoryBranded } from "@/core/types/NormalizedData";
-import { UpdateCategoryDto } from "@/core/api/budget/category/categoryApiSlice";
+import {
+  type UpdateCategoryResponse,
+  type ApiBudgetSnapshot,
+} from "@/core/types/exported-types";
+import { type CategoryUserBranded } from "@/core/types/NormalizedData";
 
 export function renameCategoryResult(
   snapshot: ApiBudgetSnapshot,
   categoryId: string,
   name: string
-): UpdateCategoryDto {
-  const category = snapshot.categories.user[categoryId] as CategoryBranded;
+): UpdateCategoryResponse {
+  const category = snapshot.categories.user[categoryId] as CategoryUserBranded;
 
   category.name = name;
 

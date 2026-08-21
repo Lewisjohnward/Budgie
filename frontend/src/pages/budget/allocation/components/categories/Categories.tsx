@@ -37,7 +37,7 @@ import { CategoryGroupDeleteState } from "../../utils/getCategoryGroupDeleteStat
 type CategoriesProps = {
   currency: string;
   view: {
-    uncategorisedRow: CategoryViewRow;
+    uncategorisedRow: CategoryViewRow<CategorySystemBranded>;
     categoriesByGroup: MappedCategoryGroupViewWithMetrics[];
   };
   expandCategoryGroups: ExpandableCategoryGroupsState;

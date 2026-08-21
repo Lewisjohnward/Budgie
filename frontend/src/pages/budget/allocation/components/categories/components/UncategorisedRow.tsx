@@ -2,12 +2,12 @@ import { Month } from "@/core/types/Allocation";
 import { EmptyCell, CategoryCell, Available } from "./";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
 import { CategorySelectionState } from "../../../hooks/useAllocation/useCategorySelection";
-import { CategoryBranded } from "@/core/types/NormalizedData";
+import { CategorySystemBranded } from "@/core/types/NormalizedData";
 
 interface UncategorisedRowProps {
   currency: string;
   month: Month;
-  category: CategoryBranded;
+  category: CategorySystemBranded;
   categorySelector: CategorySelectionState;
 }
 
