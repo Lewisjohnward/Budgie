@@ -3,16 +3,17 @@ import {
   addCategories,
   clearCategories,
   removeCategories,
+  SelectableCategory,
   usePreviousSelectedCategory,
   useSelectedCategories,
 } from "../../slices/selectedCategorySlice";
 import { CategoryGroupId, CategoryId } from "../../types/types";
-import { CategoryBranded } from "@/core/types/NormalizedData";
+import { CategoryUserBranded } from "@/core/types/NormalizedData";
 import { useMemo } from "react";
 
 // Input
 export type UseCategorySelectionParams = {
-  orderedCategories: CategoryBranded[];
+  orderedCategories: CategoryUserBranded[];
 };
 
 // Output
@@ -20,10 +21,10 @@ export type CategorySelectionState = {
   selectAll: () => void;
   getAllSelectionState: () => SelectionState;
   isSelected: (id: CategoryId) => boolean;
-  onRowClick: (e: React.MouseEvent, category: CategoryBranded) => void;
+  onRowClick: (e: React.MouseEvent, category: CategoryUserBranded) => void;
   getCategoryGroupSelectionState: (id: CategoryGroupId) => SelectionState;
   onCategoryGroupClick: (id: CategoryGroupId) => void;
-  toggle: (category: CategoryBranded) => void;
+  toggle: (category: SelectableCategory) => void;
   clear: () => void;
 };
 
@@ -48,7 +49,7 @@ export const useCategorySelection = ({
 
   const clear = () => dispatch(clearCategories());
 
-  const toggle = (category: CategoryBranded): void => {
+  const toggle = (category: SelectableCategory): void => {
     if (isSelected(category.id)) {
       dispatch(removeCategories([category]));
     } else {
@@ -56,7 +57,10 @@ export const useCategorySelection = ({
     }
   };
 
-  const onRowClick = (e: React.MouseEvent, category: CategoryBranded): void => {
+  const onRowClick = (
+    e: React.MouseEvent,
+    category: CategoryUserBranded
+  ): void => {
     // CTRL = toggle
     if (e.ctrlKey) return toggle(category);
 
@@ -158,10 +162,10 @@ export const useCategorySelection = ({
 };
 
 function getRangeSelection(
-  ordered: CategoryBranded[],
+  ordered: CategoryUserBranded[],
   startId: CategoryId,
   endId: CategoryId
-): CategoryBranded[] {
+): CategoryUserBranded[] {
   const start = ordered.findIndex((c) => c.id === startId);
   const end = ordered.findIndex((c) => c.id === endId);
 

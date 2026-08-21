@@ -1,10 +1,12 @@
 import { http, HttpResponse } from "msw";
 import { getSnapshot } from "./state";
 import { setupServer } from "msw/node";
-import { ApiBudgetSnapshot } from "@/core/types/exported-types";
-import { DeleteCategoryDto } from "@/core/api/budget/category/categoryApiSlice";
 import {
-  CategoryBranded,
+  ApiBudgetSnapshot,
+  DeleteCategoryResponse,
+} from "@/core/types/exported-types";
+import {
+  CategoryUserBranded,
   MonthBranded,
   TransactionBranded,
 } from "@/core/types/NormalizedData";
@@ -71,8 +73,8 @@ function deleteCategory(
   snapshot: ApiBudgetSnapshot,
   id: string,
   inheritingCategoryId?: string
-): DeleteCategoryDto {
-  const category = snapshot.categories.user[id] as CategoryBranded;
+): DeleteCategoryResponse {
+  const category = snapshot.categories.user[id] as CategoryUserBranded;
 
   const monthsForCategory = Object.fromEntries(
     Object.entries(snapshot.months).filter(([_, m]) => m.categoryId === id)
@@ -80,7 +82,7 @@ function deleteCategory(
 
   const updatedCategories = { ...snapshot.categories.user } as Record<
     string,
-    CategoryBranded
+    CategoryUserBranded
   >;
 
   delete updatedCategories[id];

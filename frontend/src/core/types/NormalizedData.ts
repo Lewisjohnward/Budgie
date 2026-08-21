@@ -97,17 +97,28 @@ export const PAYEE_ORIGIN = ["USER", "SYSTEM"] as const;
 
 export type PayeeOrigin = (typeof PAYEE_ORIGIN)[number];
 
-export type CategoryGroupBranded = {
+export type CategoryGroupUserBranded = {
   id: CategoryGroupId;
   name: string;
   position: number;
 };
 
-export type CategoryBranded = {
+export type CategoryGroupSystemBranded = {
+  id: CategoryGroupId;
+  name: string;
+};
+
+export type CategoryUserBranded = {
   id: CategoryId;
   categoryGroupId: CategoryGroupId;
   name: string;
   position: number;
+};
+
+export type CategorySystemBranded = {
+  id: CategoryId;
+  categoryGroupId: CategoryGroupId;
+  name: string;
 };
 
 export type MonthBranded = {
@@ -151,14 +162,14 @@ export type PayeeBranded = {
 
 export type BudgetSnapshot = {
   categoryGroups: {
-    user: Record<CategoryGroupId, CategoryGroupBranded>;
-    inflow: CategoryGroupBranded;
-    uncategorised: CategoryGroupBranded;
+    user: Record<CategoryGroupId, CategoryGroupUserBranded>;
+    inflow: CategoryGroupUserBranded;
+    uncategorised: CategoryGroupUserBranded;
   };
   categories: {
-    user: Record<CategoryId, CategoryBranded>;
-    rta: CategoryBranded;
-    uncategorised: CategoryBranded;
+    user: Record<CategoryId, CategoryUserBranded>;
+    rta: CategorySystemBranded;
+    uncategorised: CategorySystemBranded;
   };
   months: Record<MonthId, MonthBranded>;
   // monthsByDate: Record<MonthKey, CategoryMonthMap>;

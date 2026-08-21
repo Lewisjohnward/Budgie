@@ -1,10 +1,13 @@
-import { components, paths } from "./schema";
+import { components, paths } from "./generated";
 
-export type ApiBudgetSnapshot =
-  paths["/budget/snapshot"]["get"]["responses"]["200"]["content"]["application/json"];
+// Entities
+export type ApiCategoryGroupUser = components["schemas"]["CategoryGroupUser"];
+export type ApiCategoryGroupSystem =
+  components["schemas"]["CategoryGroupSystem"];
 
-export type ApiCategoryGroup = components["schemas"]["CategoryGroup"];
-export type ApiCategory = components["schemas"]["Category"];
+export type ApiCategoryUser = components["schemas"]["CategoryUser"];
+export type ApiCategorySystem = components["schemas"]["CategorySystem"];
+
 export type ApiMonth = components["schemas"]["Month"];
 export type ApiMemo = components["schemas"]["Memo"];
 
@@ -14,6 +17,26 @@ export type ApiTransaction = components["schemas"]["Transaction"];
 
 export type ApiMonthKey = string;
 
-export type DeleteCategoryDto = components["schemas"]["DeleteCategoryDto"];
+// Snapshot response
+export type ApiBudgetSnapshot =
+  paths["/budget/snapshot"]["get"]["responses"]["200"]["content"]["application/json"];
 
-export type DeleteCategoryGroupDto = components["schemas"]["DeleteCategoryDto"];
+// Category responses
+export type CreateCategoryResponse =
+  components["schemas"]["CreateCategoryResponse"];
+export type UpdateCategoryResponse =
+  components["schemas"]["UpdateCategoryResponse"];
+export type DeleteCategoryResponse =
+  components["schemas"]["DeleteCategoryResponse"];
+export type CategoryPositionPatch =
+  components["schemas"]["CategoryPositionPatch"];
+
+// Category group responses
+export type CreateCategoryGroupResponse =
+  components["schemas"]["CreateCategoryGroupResponse"];
+export type UpdateCategoryGroupResponse =
+  components["schemas"]["UpdateCategoryGroupResponse"];
+export type DeleteCategoryGroupResponse =
+  components["schemas"]["DeleteCategoryGroupResponse"];
+export type CategoryGroupPositionPatch =
+  components["schemas"]["CategoryGroupPositionPatch"];

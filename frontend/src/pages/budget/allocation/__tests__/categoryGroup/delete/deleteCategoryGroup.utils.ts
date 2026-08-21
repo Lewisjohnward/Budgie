@@ -1,5 +1,5 @@
 import {
-  type DeleteCategoryGroupDto,
+  type DeleteCategoryGroupResponse,
   type ApiBudgetSnapshot,
 } from "@/core/types/exported-types";
 import {
@@ -15,7 +15,7 @@ export function calculateDeleteCategoryGroupResult(
   snapshot: ApiBudgetSnapshot,
   categoryGroupId: string,
   inheritingCategoryId?: string
-): DeleteCategoryGroupDto {
+): DeleteCategoryGroupResponse {
   // get category group
   const categoryGroup = snapshot.categoryGroups.user[
     categoryGroupId

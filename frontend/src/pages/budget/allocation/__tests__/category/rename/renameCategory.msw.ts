@@ -2,7 +2,7 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { getSnapshot } from "./renameCategory.state";
 import { renameCategoryResult } from "./renameCategory.utils";
-import { UpdateCategoryInput } from "@/core/api/budget/category/categoryApiSlice";
+import { UpdateCategoryInput } from "@/core/api/budget/category/types";
 
 export type UpdateCategoryBody = Omit<UpdateCategoryInput, "categoryGroupId">;
 

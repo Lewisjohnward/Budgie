@@ -1,236 +1,223 @@
 import {
-  CategoryGroupId,
-  CategoryId,
-  MonthId,
+  asCategoryGroupId,
+  asCategoryId,
+  asMonthId,
+  asTransactionId,
 } from "@/pages/budget/allocation/types/types";
 import { apiSlice } from "../../apiSlice";
 import { budgetSnapshotSlice } from "../budgetSnapshotSlice";
-import {
-  CategoryBranded,
-  MonthBranded,
-  TransactionBranded,
-} from "@/core/types/NormalizedData";
 import { UpdatedMonthsById } from "@/core/schemas/editMonthSchema";
 import { UpdateMonthsPayload } from "@/pages/budget/allocation/components/assign/types/assignTypes";
-import { DeleteCategoryDto } from "@/core/types/exported-types";
-import { toDeleteCategoryResult } from "@/core/mappers/toDeleteCategoryResult";
+import {
+  CreateCategoryResponse,
+  DeleteCategoryResponse,
+  UpdateCategoryResponse,
+} from "@/core/types/exported-types";
+import { mapCategory } from "../mappers/categoryMapper";
+import { mapMonth } from "../mappers/monthMapper";
+import {
+  CreateCategoryInput,
+  CreateCategoryResult,
+  DeleteCategoryInput,
+  DeleteCategoryResult,
+  UpdateCategoryInput,
+  UpdateCategoryResult,
+} from "./types";
+import { CategoryUserBranded } from "@/core/types/NormalizedData";
+import { mapTransaction } from "../mappers/transactionMapper";
 
 const CATEGORY_ENDPOINT_URL = "budget/categories";
 
-// Input to create category
-type CreateCategoryInput = {
-  name: string;
-  categoryGroupId: CategoryGroupId;
-};
-
-// Input to update category
-export type UpdateCategoryInput = {
-  categoryId: CategoryId;
-  name?: string;
-  categoryGroupId?: CategoryGroupId;
-  position?: number;
-};
-
-// Input to update category
-type DeleteCategoryInput = {
-  categoryId: CategoryId;
-  inheritingCategoryId?: CategoryId;
-};
-
-// Response to create category
-type CreateCategoryDto = {
-  created: {
-    category: CategoryBranded;
-    months: Record<string, MonthBranded>;
-  };
-};
-
-// Response to update category
-export type UpdateCategoryDto = {
-  updated: {
-    category: CategoryBranded;
-    categories: CategoryPositionPatch[];
-  };
-};
-
-// Patch for category when repositioning
-export type CategoryPositionPatch = {
-  id: string;
-  position: number;
-  categoryGroupId: string;
-};
-
-// Response to delete category
-export type DeleteCategoryResult = {
-  deleted: {
-    category: CategoryBranded;
-    months: Record<string, MonthBranded>;
-  };
-  updated: {
-    categories: Record<string, CategoryBranded>;
-    transactions: Record<string, TransactionBranded>;
-    months: Record<string, MonthBranded>;
-  };
-};
-
 export const categoryApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    createCategory: builder.mutation<CreateCategoryDto, CreateCategoryInput>({
-      query: (category) => ({
-        url: CATEGORY_ENDPOINT_URL,
-        method: "POST",
-        body: category,
-      }),
-
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          budgetSnapshotSlice.util.updateQueryData(
-            "getBudgetSnapshot",
-            undefined,
-            (draft) => {
-              // NO-OP optimistic placeholder
-              // because we don't yet know server-generated IDs
-            }
-          )
-        );
-
-        try {
-          const { data } = await queryFulfilled;
-
-          dispatch(
+    createCategory: builder.mutation<CreateCategoryResult, CreateCategoryInput>(
+      {
+        query: (category) => ({
+          url: CATEGORY_ENDPOINT_URL,
+          method: "POST",
+          body: category,
+        }),
+        transformResponse: (
+          response: CreateCategoryResponse
+        ): CreateCategoryResult => ({
+          created: {
+            category: mapCategory(response.created.category),
+            months: Object.fromEntries(
+              Object.entries(response.created.months).map(([id, month]) => [
+                asMonthId(id),
+                mapMonth(month),
+              ])
+            ),
+          },
+        }),
+        async onQueryStarted(_, { dispatch, queryFulfilled }) {
+          const patchResult = dispatch(
             budgetSnapshotSlice.util.updateQueryData(
               "getBudgetSnapshot",
               undefined,
               (draft) => {
-                const { category, months } = data.created;
-
-                draft.categories.user[category.id] = category;
-
-                for (const month of Object.values(months)) {
-                  draft.months[month.id] = month;
-                }
+                // NO-OP optimistic placeholder
+                // because we don't yet know server-generated IDs
               }
             )
           );
-        } catch {
-          patchResult.undo();
-        }
-      },
-    }),
-    updateCategory: builder.mutation<UpdateCategoryDto, UpdateCategoryInput>({
-      query: ({ categoryId, name, position, categoryGroupId }) => ({
-        url: `${CATEGORY_ENDPOINT_URL}/${categoryId}`,
-        method: "PATCH",
-        body: { name, position, categoryGroupId },
-      }),
 
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          budgetSnapshotSlice.util.updateQueryData(
-            "getBudgetSnapshot",
-            undefined,
-            (draft) => {
-              const categories = draft.categories.user;
+          try {
+            const { data } = await queryFulfilled;
 
-              const moved = categories[arg.categoryId];
-              if (!moved) return;
+            dispatch(
+              budgetSnapshotSlice.util.updateQueryData(
+                "getBudgetSnapshot",
+                undefined,
+                (draft) => {
+                  const { category, months } = data.created;
 
-              const fromGroup = moved.categoryGroupId;
-              const toGroup = arg.categoryGroupId ?? fromGroup;
-              const toPos = arg.position ?? moved.position;
+                  draft.categories.user[category.id] = category;
 
-              // Only perform the repositioning logic when the category
-              // is actually being moved.
-              if (
-                arg.position !== undefined ||
-                arg.categoryGroupId !== undefined
-              ) {
-                // Group categories into arrays
-                const groups: Record<string, CategoryBranded[]> = {};
-
-                Object.values(categories).forEach((category) => {
-                  const group = category.categoryGroupId;
-
-                  if (!groups[group]) {
-                    groups[group] = [];
+                  for (const month of Object.values(months)) {
+                    draft.months[month.id] = month;
                   }
-
-                  groups[group].push(category);
-                });
-
-                // Sort each group by position
-                Object.values(groups).forEach((group) => {
-                  group.sort((a, b) => a.position - b.position);
-                });
-
-                // Remove from old group
-                const fromList = groups[fromGroup];
-
-                const index = fromList.findIndex(
-                  (category) => category.id === moved.id
-                );
-
-                if (index !== -1) {
-                  const [removed] = fromList.splice(index, 1);
-
-                  // Insert into new group
-                  const toList = groups[toGroup] ?? [];
-                  groups[toGroup] = toList;
-
-                  toList.splice(toPos, 0, removed);
-
-                  // Normalise all groups
-                  Object.values(groups).forEach((group) => {
-                    group.forEach((category, index) => {
-                      category.position = index;
-
-                      if (group === toList) {
-                        category.categoryGroupId = toGroup;
-                      }
-                    });
-                  });
                 }
-              }
+              )
+            );
+          } catch {
+            patchResult.undo();
+          }
+        },
+      }
+    ),
+    updateCategory: builder.mutation<UpdateCategoryResult, UpdateCategoryInput>(
+      {
+        query: ({ categoryId, name, position, categoryGroupId }) => ({
+          url: `${CATEGORY_ENDPOINT_URL}/${categoryId}`,
+          method: "PATCH",
+          body: { name, position, categoryGroupId },
+        }),
+        transformResponse: (
+          response: UpdateCategoryResponse
+        ): UpdateCategoryResult => ({
+          updated: {
+            category: mapCategory(response.updated.category),
+            categories: response.updated.categories.map((p) => ({
+              id: asCategoryId(p.id),
+              position: p.position,
+              categoryGroupId: asCategoryGroupId(p.categoryGroupId),
+            })),
+          },
+        }),
 
-              // Optimistically update name
-              if (arg.name !== undefined) {
-                moved.name = arg.name;
-              }
-            }
-          )
-        );
+        async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+          // const patchResult = dispatch(
+          //   budgetSnapshotSlice.util.updateQueryData(
+          //     "getBudgetSnapshot",
+          //     undefined,
+          //     (draft) => {
+          //       const categories = draft.categories.user;
+          //
+          //       const moved = categories[arg.categoryId];
+          //       if (!moved) return;
+          //
+          //       const fromGroup = moved.categoryGroupId;
+          //       const toGroup = arg.categoryGroupId ?? fromGroup;
+          //       const toPos = arg.position ?? moved.position;
+          //
+          //       // Only perform the repositioning logic when the category
+          //       // is actually being moved.
+          //       if (
+          //         arg.position !== undefined ||
+          //         arg.categoryGroupId !== undefined
+          //       ) {
+          //         // Group categories into arrays
+          //         const groups: Record<string, CategoryUserBranded[]> = {};
+          //
+          //         Object.values(categories).forEach((category) => {
+          //           const group = category.categoryGroupId;
+          //
+          //           if (!groups[group]) {
+          //             groups[group] = [];
+          //           }
+          //
+          //           groups[group].push(category);
+          //         });
+          //
+          //         // Sort each group by position
+          //         Object.values(groups).forEach((group) => {
+          //           group.sort((a, b) => a.position - b.position);
+          //         });
+          //
+          //         // Remove from old group
+          //         const fromList = groups[fromGroup];
+          //
+          //         const index = fromList.findIndex(
+          //           (category) => category.id === moved.id
+          //         );
+          //
+          //         if (index !== -1) {
+          //           const [removed] = fromList.splice(index, 1);
+          //
+          //           // Insert into new group
+          //           const toList = groups[toGroup] ?? [];
+          //           groups[toGroup] = toList;
+          //
+          //           toList.splice(toPos, 0, removed);
+          //
+          //           // Normalise all groups
+          //           Object.values(groups).forEach((group) => {
+          //             group.forEach((category, index) => {
+          //               category.position = index;
+          //
+          //               if (group === toList) {
+          //                 category.categoryGroupId = toGroup;
+          //               }
+          //             });
+          //           });
+          //         }
+          //       }
+          //
+          //       // Optimistically update name
+          //       if (arg.name !== undefined) {
+          //         moved.name = arg.name;
+          //       }
+          //     }
+          //   )
+          // );
 
-        try {
-          const { data } = await queryFulfilled;
+          try {
+            const { data } = await queryFulfilled;
 
-          dispatch(
-            budgetSnapshotSlice.util.updateQueryData(
-              "getBudgetSnapshot",
-              undefined,
-              (draft) => {
-                const { category, categories } = data.updated;
+            dispatch(
+              budgetSnapshotSlice.util.updateQueryData(
+                "getBudgetSnapshot",
+                undefined,
+                (draft) => {
+                  const { category, categories } = data.updated;
+                  console.log("category:", category);
+                  console.log("categories:", categories);
 
-                // Apply the authoritative category returned by the server.
-                draft.categories.user[category.id] = category;
+                  // Apply the authoritative category returned by the server.
+                  draft.categories.user[category.id] = category;
 
-                // Apply any position/category-group changes returned
-                // by the server.
-                for (const categoryPatch of categories) {
-                  const existing = draft.categories.user[categoryPatch.id];
+                  // Apply any position/category-group changes returned
+                  // by the server.
+                  for (const categoryPatch of categories) {
+                    console.log("categoryPatch:", categoryPatch);
+                    const existing = draft.categories.user[categoryPatch.id];
+                    console.log("existing:", existing);
 
-                  if (!existing) continue;
+                    if (!existing) continue;
 
-                  existing.position = categoryPatch.position;
-                  existing.categoryGroupId = categoryPatch.categoryGroupId;
+                    existing.position = categoryPatch.position;
+                    existing.categoryGroupId = categoryPatch.categoryGroupId;
+                  }
                 }
-              }
-            )
-          );
-        } catch {
-          patchResult.undo();
-        }
-      },
-    }),
+              )
+            );
+          } catch {
+            // patchResult.undo();
+          }
+        },
+      }
+    ),
     deleteCategory: builder.mutation<DeleteCategoryResult, DeleteCategoryInput>(
       {
         query: ({ categoryId, inheritingCategoryId }) => ({
@@ -239,8 +226,44 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
           body: inheritingCategoryId ? { inheritingCategoryId } : undefined,
         }),
 
-        transformResponse: (dto: DeleteCategoryDto) =>
-          toDeleteCategoryResult(dto),
+        transformResponse: (
+          response: DeleteCategoryResponse
+        ): DeleteCategoryResult => ({
+          deleted: {
+            category: mapCategory(response.deleted.category),
+
+            months: Object.fromEntries(
+              Object.entries(response.deleted.months).map(([id, month]) => [
+                asMonthId(id),
+                mapMonth(month),
+              ])
+            ),
+          },
+
+          updated: {
+            categories: response.updated.categories.map((category) => ({
+              id: asCategoryId(category.id),
+              position: category.position,
+              categoryGroupId: asCategoryGroupId(category.categoryGroupId),
+            })),
+
+            transactions: Object.fromEntries(
+              Object.entries(response.updated.transactions).map(
+                ([id, transaction]) => [
+                  asTransactionId(id),
+                  mapTransaction(transaction),
+                ]
+              )
+            ),
+
+            months: Object.fromEntries(
+              Object.entries(response.updated.months).map(([id, month]) => [
+                asMonthId(id),
+                mapMonth(month),
+              ])
+            ),
+          },
+        }),
 
         async onQueryStarted(arg, { dispatch, queryFulfilled }) {
           const patchResult = dispatch(
@@ -282,10 +305,13 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
                   // Updated
 
                   // Categories
-                  for (const category of Object.values(
-                    data.updated.categories
-                  )) {
-                    draft.categories.user[category.id] = category;
+                  for (const patch of data.updated.categories) {
+                    const category = draft.categories.user[patch.id];
+
+                    if (!category) continue;
+
+                    category.position = patch.position;
+                    category.categoryGroupId = patch.categoryGroupId;
                   }
 
                   // Months
@@ -325,7 +351,7 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
             (draft) => {
               for (const [id, month] of Object.entries(data)) {
                 if (!month) continue;
-                draft.months[id as MonthId] = month;
+                draft.months[asMonthId(id)] = mapMonth(month);
               }
             }
           )

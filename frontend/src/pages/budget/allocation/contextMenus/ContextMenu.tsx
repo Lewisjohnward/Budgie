@@ -67,7 +67,7 @@ export function ContextMenu({
 
   const name = watch("name");
   const canRenameTarget = canRename(target, name);
-  const canSubmit = isDirty && canRenameTarget;
+  const canSubmit = isDirty && canRenameTarget && name !== "";
 
   const onSubmit = (data: NameType) => {
     if (!canSubmit) return;

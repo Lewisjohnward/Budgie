@@ -2,11 +2,10 @@ import { AutoAssign, CategoryBreakdown, Note, SelectedCategories } from ".";
 import { AllocationPanelLayout } from "./AllocationPanelLayout";
 import { CategoryBreakdownViewModel } from "../../../hooks/useAllocation/useCategoryBreakdown";
 import { AutoAssignViewModel } from "../../../hooks/useAllocation/useAutoAssign";
-import { CategoryBranded } from "@/core/types/NormalizedData";
 import { NoteViewModel } from "../hooks/useNoteViewModel";
 
 type AllocationPanelProps = {
-  selectedCategories: CategoryBranded[];
+  selectedCategories: SelectableCategory;
   categoryBreakDownViewModel: CategoryBreakdownViewModel;
   autoAssignViewModel: AutoAssignViewModel;
   noteViewModel: NoteViewModel;
