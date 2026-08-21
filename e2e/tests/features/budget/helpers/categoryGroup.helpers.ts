@@ -61,6 +61,8 @@ export const renameCategoryGroup = async (
   newCategoryGroupName: string
 ): Promise<void> => {
   await openCategoryGroupContextMenu(page, categoryGroupName);
-  await page.getByPlaceholder("New category name").fill(newCategoryGroupName);
+  await page
+    .getByPlaceholder("Rename category group")
+    .fill(newCategoryGroupName);
   await page.getByRole("button", { name: /ok/i }).click();
 };

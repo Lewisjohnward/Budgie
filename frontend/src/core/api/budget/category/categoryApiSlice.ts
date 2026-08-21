@@ -23,7 +23,6 @@ import {
   UpdateCategoryInput,
   UpdateCategoryResult,
 } from "./types";
-import { CategoryUserBranded } from "@/core/types/NormalizedData";
 import { mapTransaction } from "../mappers/transactionMapper";
 
 const CATEGORY_ENDPOINT_URL = "budget/categories";
@@ -191,18 +190,13 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
                 undefined,
                 (draft) => {
                   const { category, categories } = data.updated;
-                  console.log("category:", category);
-                  console.log("categories:", categories);
 
-                  // Apply the authoritative category returned by the server.
+                  // Updated
                   draft.categories.user[category.id] = category;
 
-                  // Apply any position/category-group changes returned
-                  // by the server.
+                  // Apply any position/category-group
                   for (const categoryPatch of categories) {
-                    console.log("categoryPatch:", categoryPatch);
                     const existing = draft.categories.user[categoryPatch.id];
-                    console.log("existing:", existing);
 
                     if (!existing) continue;
 

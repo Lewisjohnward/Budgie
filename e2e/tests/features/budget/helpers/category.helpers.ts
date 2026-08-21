@@ -100,6 +100,6 @@ export const renameCategory = async (
   newCategoryName: string
 ): Promise<void> => {
   await openCategoryContextMenu(page, categoryName);
-  await page.getByPlaceholder("New category name").fill(newCategoryName);
+  await page.getByPlaceholder("Rename category").fill(newCategoryName);
   await page.getByRole("button", { name: /ok/i }).click();
 };
