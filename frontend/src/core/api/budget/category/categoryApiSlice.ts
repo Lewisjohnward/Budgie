@@ -50,38 +50,23 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
           },
         }),
         async onQueryStarted(_, { dispatch, queryFulfilled }) {
-          const patchResult = dispatch(
+          const { data } = await queryFulfilled;
+
+          dispatch(
             budgetSnapshotSlice.util.updateQueryData(
               "getBudgetSnapshot",
               undefined,
               (draft) => {
-                // NO-OP optimistic placeholder
-                // because we don't yet know server-generated IDs
+                const { category, months } = data.created;
+
+                draft.categories.user[category.id] = category;
+
+                for (const month of Object.values(months)) {
+                  draft.months[month.id] = month;
+                }
               }
             )
           );
-
-          try {
-            const { data } = await queryFulfilled;
-
-            dispatch(
-              budgetSnapshotSlice.util.updateQueryData(
-                "getBudgetSnapshot",
-                undefined,
-                (draft) => {
-                  const { category, months } = data.created;
-
-                  draft.categories.user[category.id] = category;
-
-                  for (const month of Object.values(months)) {
-                    draft.months[month.id] = month;
-                  }
-                }
-              )
-            );
-          } catch {
-            patchResult.undo();
-          }
         },
       }
     ),
@@ -105,110 +90,31 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
           },
         }),
 
-        async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-          // const patchResult = dispatch(
-          //   budgetSnapshotSlice.util.updateQueryData(
-          //     "getBudgetSnapshot",
-          //     undefined,
-          //     (draft) => {
-          //       const categories = draft.categories.user;
-          //
-          //       const moved = categories[arg.categoryId];
-          //       if (!moved) return;
-          //
-          //       const fromGroup = moved.categoryGroupId;
-          //       const toGroup = arg.categoryGroupId ?? fromGroup;
-          //       const toPos = arg.position ?? moved.position;
-          //
-          //       // Only perform the repositioning logic when the category
-          //       // is actually being moved.
-          //       if (
-          //         arg.position !== undefined ||
-          //         arg.categoryGroupId !== undefined
-          //       ) {
-          //         // Group categories into arrays
-          //         const groups: Record<string, CategoryUserBranded[]> = {};
-          //
-          //         Object.values(categories).forEach((category) => {
-          //           const group = category.categoryGroupId;
-          //
-          //           if (!groups[group]) {
-          //             groups[group] = [];
-          //           }
-          //
-          //           groups[group].push(category);
-          //         });
-          //
-          //         // Sort each group by position
-          //         Object.values(groups).forEach((group) => {
-          //           group.sort((a, b) => a.position - b.position);
-          //         });
-          //
-          //         // Remove from old group
-          //         const fromList = groups[fromGroup];
-          //
-          //         const index = fromList.findIndex(
-          //           (category) => category.id === moved.id
-          //         );
-          //
-          //         if (index !== -1) {
-          //           const [removed] = fromList.splice(index, 1);
-          //
-          //           // Insert into new group
-          //           const toList = groups[toGroup] ?? [];
-          //           groups[toGroup] = toList;
-          //
-          //           toList.splice(toPos, 0, removed);
-          //
-          //           // Normalise all groups
-          //           Object.values(groups).forEach((group) => {
-          //             group.forEach((category, index) => {
-          //               category.position = index;
-          //
-          //               if (group === toList) {
-          //                 category.categoryGroupId = toGroup;
-          //               }
-          //             });
-          //           });
-          //         }
-          //       }
-          //
-          //       // Optimistically update name
-          //       if (arg.name !== undefined) {
-          //         moved.name = arg.name;
-          //       }
-          //     }
-          //   )
-          // );
+        async onQueryStarted(_, { dispatch, queryFulfilled }) {
+          const { data } = await queryFulfilled;
 
-          try {
-            const { data } = await queryFulfilled;
+          dispatch(
+            budgetSnapshotSlice.util.updateQueryData(
+              "getBudgetSnapshot",
+              undefined,
+              (draft) => {
+                const { category, categories } = data.updated;
 
-            dispatch(
-              budgetSnapshotSlice.util.updateQueryData(
-                "getBudgetSnapshot",
-                undefined,
-                (draft) => {
-                  const { category, categories } = data.updated;
+                // update category
+                draft.categories.user[category.id] = category;
 
-                  // Updated
-                  draft.categories.user[category.id] = category;
+                // apply position/group patches
+                for (const categoryPatch of categories) {
+                  const existing = draft.categories.user[categoryPatch.id];
 
-                  // Apply any position/category-group
-                  for (const categoryPatch of categories) {
-                    const existing = draft.categories.user[categoryPatch.id];
+                  if (!existing) continue;
 
-                    if (!existing) continue;
-
-                    existing.position = categoryPatch.position;
-                    existing.categoryGroupId = categoryPatch.categoryGroupId;
-                  }
+                  existing.position = categoryPatch.position;
+                  existing.categoryGroupId = categoryPatch.categoryGroupId;
                 }
-              )
-            );
-          } catch {
-            // patchResult.undo();
-          }
+              }
+            )
+          );
         },
       }
     ),
