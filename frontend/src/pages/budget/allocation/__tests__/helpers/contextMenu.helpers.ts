@@ -87,6 +87,14 @@ export function assertDuplicateCategoryGroupNameMessageVisible() {
   ).toBeInTheDocument();
 }
 
+export function assertInputVisible() {
+  expect(
+    screen.queryByRole("textbox", {
+      name: /rename category/i,
+    })
+  ).toBeInTheDocument();
+}
+
 export function assertDuplicateCategoryNameMessageVisible() {
   expect(
     screen.queryByText("A category with this name already exists")

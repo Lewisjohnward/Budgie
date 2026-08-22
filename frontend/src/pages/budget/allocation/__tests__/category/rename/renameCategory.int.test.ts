@@ -10,11 +10,12 @@ import {
   renameCategory,
   openContextMenuForCategory,
   assertDuplicateCategoryNameMessageVisible,
+  assertInputVisible,
 } from "../../helpers/contextMenu.helpers";
 import { pressCancelButton } from "../../helpers/deleteDialog.helpers";
 import { pressEnter } from "../../helpers/global.helpers";
 import { setupUser } from "../../helpers/user";
-import { baseSnapshot } from "./createBudgetSnapshot";
+import { createSnapshot } from "./renameCategory.snapshot";
 import {
   mockRenameCategoryFailure,
   mockRenameCategoryResponse,
@@ -31,7 +32,7 @@ describe("category", () => {
   describe("rename", () => {
     beforeEach(() => {
       setupUser();
-      setSnapshot(structuredClone(baseSnapshot));
+      setSnapshot(createSnapshot());
       renderAllocationPage();
     });
 
@@ -101,6 +102,12 @@ describe("category", () => {
 
       await assertCategoryRemoved(ORIGINAL_NAME);
       await assertCategoryVisible("Holiday from server");
+    });
+
+    it("does not rename when pressing Enter while OK is disabled", async () => {
+      await openContextMenuForCategory(ORIGINAL_NAME);
+      await pressEnter();
+      assertInputVisible();
     });
   });
 });

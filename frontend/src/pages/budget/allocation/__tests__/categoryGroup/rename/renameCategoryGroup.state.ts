@@ -1,4 +1,4 @@
-import { testSnapshot } from "./createBudgetSnapshot";
+import { testSnapshot } from "./renameCategoryGroup.snapshot";
 import { ApiBudgetSnapshot } from "@/core/types/exported-types";
 
 let snapshot: ApiBudgetSnapshot = testSnapshot;

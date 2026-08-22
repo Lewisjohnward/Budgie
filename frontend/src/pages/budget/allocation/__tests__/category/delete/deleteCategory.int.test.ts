@@ -4,9 +4,9 @@ import {
   baseSnapshot,
   withAssignedSnapshot,
   withTransactionSnapshot,
-} from "./createBudgetSnapshot";
+} from "./deleteCategory.snapshot";
 import { setupTestServer } from "./deleteCategory.msw";
-import { setSnapshot } from "./state";
+import { setSnapshot } from "./deleteCategory.state";
 import {
   assertAssignView,
   assertDeleteButtonDisabled,
