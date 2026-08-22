@@ -1,7 +1,7 @@
-import { testSnapshot } from "./createBudgetSnapshot";
 import { ApiBudgetSnapshot } from "@/core/types/exported-types";
+import { baseSnapshot } from "./deleteCategory.snapshot";
 
-let snapshot: ApiBudgetSnapshot = testSnapshot;
+let snapshot: ApiBudgetSnapshot = baseSnapshot;
 
 export function getSnapshot(): ApiBudgetSnapshot {
   return snapshot;
@@ -10,7 +10,3 @@ export function getSnapshot(): ApiBudgetSnapshot {
 export function setSnapshot(data: ApiBudgetSnapshot) {
   snapshot = structuredClone(data);
 }
-
-// export function resetSnapshot() {
-//   snapshot = createBudgetSnapshot();
-// }

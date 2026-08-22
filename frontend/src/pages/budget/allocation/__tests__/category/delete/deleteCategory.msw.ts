@@ -1,17 +1,7 @@
 import { http, HttpResponse } from "msw";
-import { getSnapshot } from "./state";
+import { getSnapshot } from "./deleteCategory.state";
 import { setupServer } from "msw/node";
-import {
-  ApiBudgetSnapshot,
-  DeleteCategoryResponse,
-} from "@/core/types/exported-types";
-import {
-  CategoryUserBranded,
-  MonthBranded,
-  TransactionBranded,
-} from "@/core/types/NormalizedData";
-import { rtaCategoryIdTest } from "./createBudgetSnapshot";
-import { CategoryId } from "../../../types/types";
+import { deleteCategoryResult } from "./deleteCategory.utils";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -46,7 +36,11 @@ export const handlers = [
 
       const snapshot = getSnapshot();
 
-      const res = deleteCategory(snapshot, categoryId, inheritingCategoryId);
+      const res = deleteCategoryResult(
+        snapshot,
+        categoryId,
+        inheritingCategoryId
+      );
 
       return HttpResponse.json(res);
     }
@@ -68,86 +62,3 @@ export const setupTestServer = () => {
 
   return server;
 };
-
-function deleteCategory(
-  snapshot: ApiBudgetSnapshot,
-  id: string,
-  inheritingCategoryId?: string
-): DeleteCategoryResponse {
-  const category = snapshot.categories.user[id] as CategoryUserBranded;
-
-  const monthsForCategory = Object.fromEntries(
-    Object.entries(snapshot.months).filter(([_, m]) => m.categoryId === id)
-  ) as Record<string, MonthBranded>;
-
-  const updatedCategories = { ...snapshot.categories.user } as Record<
-    string,
-    CategoryUserBranded
-  >;
-
-  delete updatedCategories[id];
-
-  const assignedTotal = Object.values(snapshot.months)
-    .filter((m) => m.categoryId === id)
-    .reduce((sum, m) => sum + m.assigned, 0);
-
-  const rtaMonthId = Object.keys(snapshot.months).find(
-    (id) => snapshot.months[id].categoryId === rtaCategoryIdTest
-  );
-
-  const updatedMonths = structuredClone(snapshot.months);
-
-  const updatedTransactions = structuredClone(snapshot.transactions) as Record<
-    string,
-    TransactionBranded
-  >;
-
-  //-----
-  // Reassign transactions + month values
-  //-----
-  if (inheritingCategoryId) {
-    const deletedMonth = Object.values(monthsForCategory)[0];
-
-    const inheritingMonth = Object.values(updatedMonths).find(
-      (month) => month.categoryId === inheritingCategoryId
-    );
-
-    if (deletedMonth && inheritingMonth) {
-      inheritingMonth.activity += deletedMonth.activity;
-      inheritingMonth.available += deletedMonth.activity;
-    }
-
-    Object.values(updatedTransactions).forEach((transaction) => {
-      if (transaction.categoryId === id) {
-        transaction.categoryId = inheritingCategoryId as CategoryId;
-      }
-    });
-  }
-
-  //-----
-  // remove deleted categories
-  //-----
-  for (const monthId of Object.keys(monthsForCategory)) {
-    delete updatedMonths[monthId];
-  }
-
-  //-----
-  // update rta
-  //-----
-  if (rtaMonthId) {
-    updatedMonths[rtaMonthId].available += assignedTotal;
-  }
-
-  return {
-    deleted: {
-      category,
-      months: monthsForCategory,
-    },
-    updated: {
-      // TODO:(lewis 2026-07-23 15:12) this is not needed
-      categories: updatedCategories,
-      transactions: updatedTransactions,
-      months: updatedMonths as Record<string, MonthBranded>,
-    },
-  };
-}

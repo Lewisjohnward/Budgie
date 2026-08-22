@@ -1,4 +1,4 @@
-import { baseSnapshot } from "./createBudgetSnapshot";
+import { baseSnapshot } from "./renameCategoryGroup.snapshot";
 import {
   mockRenameCategoryGroupFailure,
   mockRenameCategoryGroupResponse,
