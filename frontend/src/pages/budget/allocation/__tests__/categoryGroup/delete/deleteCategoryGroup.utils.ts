@@ -1,15 +1,12 @@
 import {
   type DeleteCategoryGroupResponse,
   type ApiBudgetSnapshot,
+  type ApiCategoryUser,
+  type ApiMonth,
+  type ApiTransactionNormal,
 } from "@/core/types/exported-types";
-import {
-  type CategoryGroupBranded,
-  type MonthBranded,
-  type CategoryBranded,
-  type TransactionBranded,
-} from "@/core/types/NormalizedData";
-import { type CategoryId } from "../../../types/types";
-import { rtaCategoryIdTest } from "./createBudgetSnapshot";
+import { type MonthBranded } from "@/core/types/NormalizedData";
+import { categoryIds } from "../../fixtures/ids";
 
 export function calculateDeleteCategoryGroupResult(
   snapshot: ApiBudgetSnapshot,
@@ -17,16 +14,18 @@ export function calculateDeleteCategoryGroupResult(
   inheritingCategoryId?: string
 ): DeleteCategoryGroupResponse {
   // get category group
-  const categoryGroup = snapshot.categoryGroups.user[
-    categoryGroupId
-  ] as CategoryGroupBranded;
+  const categoryGroup = snapshot.categoryGroups.user[categoryGroupId];
 
   // get categories belonging to group
   const categoriesToDelete = Object.values(snapshot.categories.user).filter(
     (c) => c.categoryGroupId === categoryGroup.id
   );
 
-  // sort months by category id
+  const categoriesToDeleteMap = Object.fromEntries(
+    categoriesToDelete.map((category) => [category.id, category])
+  );
+
+  // group months by category ID
   const monthsByCategoryId = Object.values(snapshot.months).reduce(
     (acc, month) => {
       if (!acc[month.categoryId]) {
@@ -37,7 +36,7 @@ export function calculateDeleteCategoryGroupResult(
 
       return acc;
     },
-    {} as Record<string, MonthBranded[]>
+    {} as Record<string, ApiMonth[]>
   );
 
   // get months to delete
@@ -45,10 +44,21 @@ export function calculateDeleteCategoryGroupResult(
     (category) => monthsByCategoryId[category.id] ?? []
   );
 
+  const monthsToDeleteMap = Object.fromEntries(
+    monthsToDelete.map((month) => [month.id, month])
+  );
+
+  const updatedCategoryGroups = Object.values(snapshot.categoryGroups.user)
+    .filter((cg) => cg.id !== categoryGroupId)
+    .map((cg) => ({
+      id: cg.id,
+      position: cg.position,
+    }));
+
   // clone user categories
   const updatedCategories = { ...snapshot.categories.user } as Record<
     string,
-    CategoryBranded
+    ApiCategoryUser
   >;
 
   // delete categories
@@ -61,19 +71,36 @@ export function calculateDeleteCategoryGroupResult(
 
   // get rtaMonthId
   const rtaMonthId = Object.keys(snapshot.months).find(
-    (id) => snapshot.months[id].categoryId === rtaCategoryIdTest
+    (id) => snapshot.months[id].categoryId === categoryIds.rta
   );
 
   const updatedMonths = structuredClone(snapshot.months);
 
-  const updatedTransactions = structuredClone(snapshot.transactions) as Record<
-    string,
-    TransactionBranded
-  >;
+  const categoryIdsToDelete = new Set(
+    categoriesToDelete.map((category) => category.id)
+  );
 
-  //-----
-  // Reassign transactions + month values
-  //-----
+  const updatedTransactionsMap = Object.values(
+    structuredClone(snapshot.transactions)
+  ).reduce(
+    (acc, transaction) => {
+      if (transaction.type !== "normal") return acc;
+
+      if (
+        inheritingCategoryId &&
+        categoryIdsToDelete.has(transaction.categoryId)
+      ) {
+        transaction.categoryId = inheritingCategoryId;
+      }
+
+      acc[transaction.id] = transaction;
+
+      return acc;
+    },
+    {} as Record<string, ApiTransactionNormal>
+  );
+
+  // transfer deleted month values to inheriting category
   if (inheritingCategoryId) {
     const deletedMonth = Object.values(monthsToDelete)[0];
 
@@ -86,27 +113,14 @@ export function calculateDeleteCategoryGroupResult(
       inheritingMonth.activity += deletedMonth.activity;
       inheritingMonth.available += deletedMonth.activity;
     }
-
-    const categoryIds = new Set(categoriesToDelete.map((c) => c.id));
-
-    Object.values(updatedTransactions).forEach((transaction) => {
-      if (!transaction.categoryId) return;
-      if (categoryIds.has(transaction.categoryId)) {
-        transaction.categoryId = inheritingCategoryId as CategoryId;
-      }
-    });
   }
 
-  //-----
   // remove months
-  //-----
   for (const { id } of monthsToDelete) {
     delete updatedMonths[id];
   }
 
-  //-----
   // update rta
-  //-----
   if (rtaMonthId) {
     updatedMonths[rtaMonthId].available += assignedTotal;
   }
@@ -114,12 +128,12 @@ export function calculateDeleteCategoryGroupResult(
   return {
     deleted: {
       categoryGroup: categoryGroup,
-      categories: categoriesToDelete,
-      months: monthsToDelete,
+      categories: categoriesToDeleteMap,
+      months: monthsToDeleteMap,
     },
     updated: {
-      categories: updatedCategories,
-      transactions: updatedTransactions,
+      categoryGroups: updatedCategoryGroups,
+      transactions: updatedTransactionsMap,
       months: updatedMonths as Record<string, MonthBranded>,
     },
   };

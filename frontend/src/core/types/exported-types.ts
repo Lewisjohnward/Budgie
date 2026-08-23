@@ -14,6 +14,7 @@ export type ApiMemo = components["schemas"]["Memo"];
 export type ApiAccount = components["schemas"]["Account"];
 export type ApiPayee = components["schemas"]["Payee"];
 export type ApiTransaction = components["schemas"]["Transaction"];
+export type ApiTransactionNormal = components["schemas"]["TransactionNormal"];
 
 export type ApiMonthKey = string;
 

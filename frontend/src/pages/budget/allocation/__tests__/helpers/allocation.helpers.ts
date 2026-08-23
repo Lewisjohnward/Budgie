@@ -27,9 +27,7 @@ export async function assertCategoryGroupRemoved(name: string) {
 }
 
 export async function assertCategoryGroupVisible(name: string) {
-  await waitFor(() => {
-    expect(screen.queryByText(name)).toBeInTheDocument();
-  });
+  expect(await screen.findByText(name)).toBeInTheDocument();
 }
 
 export const expectCategoryAmounts = (

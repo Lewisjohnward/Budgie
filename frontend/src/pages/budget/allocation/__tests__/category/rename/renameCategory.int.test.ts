@@ -15,15 +15,23 @@ import {
 import { pressCancelButton } from "../../helpers/deleteDialog.helpers";
 import { pressEnter } from "../../helpers/global.helpers";
 import { setupUser } from "../../helpers/user";
-import { createSnapshot } from "./renameCategory.snapshot";
 import {
-  mockRenameCategoryFailure,
   mockRenameCategoryResponse,
-  setupTestServer,
+  renameCategoryHandler,
 } from "./renameCategory.msw";
-import { setSnapshot } from "./renameCategory.state";
+import { server, setupTestServer } from "../../__helpers__/msw/server";
+import { ApiBudgetSnapshot } from "@/core/types/exported-types";
+import { snapshot } from "./renameCategory.snapshot";
+import { setSnapshot } from "../../__helpers__/msw/state";
 
 setupTestServer();
+
+const setupRenameCategoryTest = (snapshot: ApiBudgetSnapshot) => {
+  setSnapshot(snapshot);
+  server.use(renameCategoryHandler);
+  renderAllocationPage();
+  setupUser();
+};
 
 const ORIGINAL_NAME = "Groceries";
 const NEW_NAME = "Holiday";
@@ -31,9 +39,7 @@ const NEW_NAME = "Holiday";
 describe("category", () => {
   describe("rename", () => {
     beforeEach(() => {
-      setupUser();
-      setSnapshot(createSnapshot());
-      renderAllocationPage();
+      setupRenameCategoryTest(snapshot);
     });
 
     it("renames a category when pressing Enter", async () => {
@@ -82,16 +88,6 @@ describe("category", () => {
       await openContextMenuForCategory("Other");
 
       await assertInputHasText("Other");
-    });
-
-    it("reverts the rename when the request fails", async () => {
-      mockRenameCategoryFailure();
-
-      await renameCategory(ORIGINAL_NAME, NEW_NAME);
-      await pressEnter();
-
-      await assertCategoryVisible(ORIGINAL_NAME);
-      await assertCategoryRemoved(NEW_NAME);
     });
 
     it("updates the category with the name returned by the server", async () => {

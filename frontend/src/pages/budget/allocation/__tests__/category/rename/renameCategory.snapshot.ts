@@ -19,13 +19,7 @@ import { createMemo } from "../../utils/entities/createMemo";
 const defaultMonth = "2026-07";
 const monthKey = defaultMonth;
 
-export function createSnapshot(overrides?: Partial<ApiBudgetSnapshot>) {
-  return structuredClone({
-    ...baseSnapshot,
-    ...overrides,
-  });
-}
-export const baseSnapshot: ApiBudgetSnapshot = {
+export const snapshot: ApiBudgetSnapshot = {
   categories: {
     user: {
       [categoryIds.groceries]: createUserCategory(

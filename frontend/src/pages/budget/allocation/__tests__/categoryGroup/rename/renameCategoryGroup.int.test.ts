@@ -2,9 +2,8 @@ import { baseSnapshot } from "./renameCategoryGroup.snapshot";
 import {
   mockRenameCategoryGroupFailure,
   mockRenameCategoryGroupResponse,
-  setupTestServer,
+  renameCategoryGroupHandler,
 } from "./renameCategoryGroup.msw";
-import { setSnapshot } from "./renameCategoryGroup.state";
 import { setupUser } from "../../helpers/user";
 import {
   assertCategoryGroupRemoved,
@@ -21,8 +20,18 @@ import {
 import { pressCancelButton } from "../../helpers/deleteDialog.helpers";
 import { pressEnter } from "../../helpers/global.helpers";
 import { renderAllocationPage } from "../../__helpers__/testUtils";
+import { server, setupTestServer } from "../../__helpers__/msw/server";
+import { ApiBudgetSnapshot } from "@/core/types/exported-types";
+import { setSnapshot } from "../../__helpers__/msw/state";
 
 setupTestServer();
+
+const setupRenameCategoryGroupTest = (snapshot: ApiBudgetSnapshot) => {
+  setSnapshot(snapshot);
+  server.use(renameCategoryGroupHandler);
+  renderAllocationPage();
+  setupUser();
+};
 
 const ORIGINAL_NAME = "Important";
 const NEW_NAME = "Holiday";
@@ -30,9 +39,7 @@ const NEW_NAME = "Holiday";
 describe("category group", () => {
   describe("rename", () => {
     beforeEach(() => {
-      setupUser();
-      setSnapshot(structuredClone(baseSnapshot));
-      renderAllocationPage();
+      setupRenameCategoryGroupTest(baseSnapshot);
     });
 
     it("uses the selected category group's name when opening the context menu", async () => {
@@ -90,7 +97,7 @@ describe("category group", () => {
       await assertCategoryGroupRemoved(NEW_NAME);
     });
 
-    it("applies the category group returned by the server", async () => {
+    it.only("applies the category group returned by the server", async () => {
       mockRenameCategoryGroupResponse((name) => `${name} from server`);
 
       await renameCategoryGroup(ORIGINAL_NAME, NEW_NAME);

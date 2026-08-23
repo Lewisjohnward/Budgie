@@ -25,6 +25,7 @@ export const accountIds = {
 
 export const transactionIds = {
   groceries: "tx_1",
+  groceries2: "tx_2",
 };
 
 export const memoIds = {
