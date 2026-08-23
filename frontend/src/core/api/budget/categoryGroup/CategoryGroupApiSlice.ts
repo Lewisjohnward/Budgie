@@ -152,7 +152,27 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
         );
 
         try {
-          await queryFulfilled;
+          const { data } = await queryFulfilled;
+
+          dispatch(
+            budgetSnapshotSlice.util.updateQueryData(
+              "getBudgetSnapshot",
+              undefined,
+              (draft) => {
+                const { categoryGroup } = data.updated;
+
+                draft.categoryGroups.user[categoryGroup.id] = categoryGroup;
+
+                for (const patch of data.updated.categoryGroups) {
+                  const group = draft.categoryGroups.user[patch.id];
+
+                  if (!group) continue;
+
+                  group.position = patch.position;
+                }
+              }
+            )
+          );
         } catch {
           patchResult.undo();
         }
