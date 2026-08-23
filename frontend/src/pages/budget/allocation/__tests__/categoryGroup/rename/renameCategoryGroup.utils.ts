@@ -2,19 +2,24 @@ import {
   type UpdateCategoryGroupResponse,
   type ApiBudgetSnapshot,
 } from "@/core/types/exported-types";
-import { type CategoryGroupBranded } from "@/core/types/NormalizedData";
 
 export function renameCategoryGroupResult(
   snapshot: ApiBudgetSnapshot,
   categoryGroupId: string,
   name: string
 ): UpdateCategoryGroupResponse {
-  // get category group
-  const categoryGroup = snapshot.categoryGroups.user[
-    categoryGroupId
-  ] as CategoryGroupBranded;
+  const categoryGroup = snapshot.categoryGroups.user[categoryGroupId];
 
-  categoryGroup.name = name;
+  const updatedCategoryGroup = {
+    ...categoryGroup,
+    name,
+  };
 
-  return categoryGroup;
+  return {
+    updated: {
+      categoryGroup: updatedCategoryGroup,
+      // disabled because tested in e2e tests
+      categoryGroups: [],
+    },
+  };
 }

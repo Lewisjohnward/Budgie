@@ -1,14 +1,14 @@
 import { ApiBudgetSnapshot } from "@/core/types/exported-types";
+import { createMonth } from "../../utils/createMonth";
 import {
   createUserCategory,
   createSystemCategory,
-} from "../../utils/createCategory";
+} from "../../utils/entities/createCategory";
 import {
   createUserCategoryGroup,
   createSystemCategoryGroup,
-} from "../../utils/createCategoryGroup";
-import { createMemo } from "../../utils/createMemo";
-import { createMonth } from "../../utils/createMonth";
+} from "../../utils/entities/createCategoryGroup";
+import { createMemo } from "../../utils/entities/createMemo";
 
 const defaultMonth = "2026-07";
 
@@ -31,13 +31,6 @@ const memo1 = "memo_1";
 
 const monthKey = defaultMonth;
 
-export function createSnapshot(overrides?: Partial<ApiBudgetSnapshot>) {
-  return structuredClone({
-    ...baseSnapshot,
-    ...overrides,
-  });
-}
-
 export const baseSnapshot: ApiBudgetSnapshot = {
   categories: {
     user: {
@@ -46,6 +39,7 @@ export const baseSnapshot: ApiBudgetSnapshot = {
         importantCategoryGroupId,
         {
           name: "Groceries",
+          position: 0,
         }
       ),
       [rentCategoryId]: createUserCategory(
@@ -53,6 +47,7 @@ export const baseSnapshot: ApiBudgetSnapshot = {
         importantCategoryGroupId,
         {
           name: "Rent",
+          position: 1,
         }
       ),
     },
@@ -67,10 +62,14 @@ export const baseSnapshot: ApiBudgetSnapshot = {
     user: {
       [importantCategoryGroupId]: createUserCategoryGroup(
         importantCategoryGroupId,
-        { name: "Important" }
+        {
+          name: "Important",
+          position: 0,
+        }
       ),
       [otherCategoryGroupId]: createUserCategoryGroup(otherCategoryGroupId, {
         name: "Other",
+        position: 1,
       }),
     },
     inflow: createSystemCategoryGroup(inflowCategoryGroupId),

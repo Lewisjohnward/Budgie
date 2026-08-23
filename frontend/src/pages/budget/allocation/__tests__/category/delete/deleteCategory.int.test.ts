@@ -1,12 +1,10 @@
-import { screen, waitFor } from "@testing-library/react";
+import { waitFor } from "@testing-library/react";
 import { renderAllocationPage } from "../../__helpers__/testUtils";
 import {
   baseSnapshot,
   withAssignedSnapshot,
   withTransactionSnapshot,
 } from "./deleteCategory.snapshot";
-import { setupTestServer } from "./deleteCategory.msw";
-import { setSnapshot } from "./deleteCategory.state";
 import {
   assertAssignView,
   assertDeleteButtonDisabled,
@@ -29,31 +27,25 @@ import {
   assertReadyToAssign,
   expectCategoryAmounts,
 } from "../../helpers/allocation.helpers";
+import { server, setupTestServer } from "../../__helpers__/msw/server";
+import { deleteCategoryHandler } from "./deleteCategory.msw";
+import { setSnapshot } from "../../__helpers__/msw/state";
+import { ApiBudgetSnapshot } from "@/core/types/exported-types";
 
 setupTestServer();
 
+const setupDeleteCategoryTest = (snapshot: ApiBudgetSnapshot) => {
+  setSnapshot(snapshot);
+  server.use(deleteCategoryHandler);
+  renderAllocationPage();
+  setupUser();
+};
+
 describe("category", () => {
   describe("delete", () => {
-    beforeEach(() => {
-      setupUser();
-    });
-
-    it("renders the allocation page", async () => {
-      setSnapshot(structuredClone(baseSnapshot));
-      renderAllocationPage();
-
-      expect(
-        await screen.findByRole("button", {
-          name: "Category Group",
-        })
-      ).toBeInTheDocument();
-    });
-
     describe("without assigned or transactions", () => {
       beforeEach(() => {
-        setSnapshot(structuredClone(baseSnapshot));
-        renderAllocationPage();
-        setupUser();
+        setupDeleteCategoryTest(baseSnapshot);
       });
       it("deletes the category", async () => {
         await deleteCategoryFromContextMenu("Groceries");
@@ -64,9 +56,7 @@ describe("category", () => {
 
     describe("with assigned", () => {
       beforeEach(() => {
-        setSnapshot(structuredClone(withAssignedSnapshot));
-        renderAllocationPage();
-        setupUser();
+        setupDeleteCategoryTest(withAssignedSnapshot);
       });
       it("displays assigned view", async () => {
         await deleteCategoryFromContextMenu("Groceries");
@@ -91,12 +81,10 @@ describe("category", () => {
 
     describe("with transactions", () => {
       beforeEach(() => {
-        setSnapshot(structuredClone(withTransactionSnapshot));
-        renderAllocationPage();
-        setupUser();
+        setupDeleteCategoryTest(withTransactionSnapshot);
       });
 
-      it("dialog opens from context menu", async () => {
+      it("opens the dialog from the context menu", async () => {
         await deleteCategoryFromContextMenu("Groceries");
 
         await assertDialogOpen();
@@ -190,7 +178,7 @@ describe("category", () => {
         });
       });
 
-      it("Ready to Assign updated", async () => {
+      it("updates Ready to Assign", async () => {
         await deleteCategoryFromContextMenu("Groceries");
         await selectCategoryToInherit("Rent");
         await pressDeleteButton();

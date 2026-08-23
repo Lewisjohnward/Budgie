@@ -7,8 +7,6 @@ import {
   accountIds,
   transactionIds,
 } from "../../fixtures/ids";
-import { createMonth } from "../../utils/createMonth";
-import { createAccount } from "../../utils/entities/createAccount";
 import {
   createUserCategory,
   createSystemCategory,
@@ -17,10 +15,12 @@ import {
   createUserCategoryGroup,
   createSystemCategoryGroup,
 } from "../../utils/entities/createCategoryGroup";
+import { createMonth } from "../../utils/createMonth";
+import { createAccount } from "../../utils/entities/createAccount";
 import { createMemo } from "../../utils/entities/createMemo";
 import { createNormalTransaction } from "../../utils/entities/createTransaction";
-import { defaultMonth } from "../../utils/entities/defaults";
 
+const defaultMonth = "2026-07";
 const monthKey = defaultMonth;
 
 export function createSnapshot(overrides?: Partial<ApiBudgetSnapshot>) {
@@ -95,19 +95,33 @@ export const withAssignedSnapshot = createSnapshot({
 });
 
 export const withTransactionSnapshot = createSnapshot({
+  categoryGroups: {
+    ...baseSnapshot.categoryGroups,
+    user: {
+      ...baseSnapshot.categoryGroups.user,
+      [categoryGroupIds.other]: createUserCategoryGroup(
+        categoryGroupIds.other,
+        {
+          name: "Other",
+        }
+      ),
+    },
+  },
+
   categories: {
     ...baseSnapshot.categories,
     user: {
       ...baseSnapshot.categories.user,
       [categoryIds.rent]: createUserCategory(
         categoryIds.rent,
-        categoryGroupIds.important,
+        categoryGroupIds.other,
         {
           name: "Rent",
         }
       ),
     },
   },
+
   months: {
     ...baseSnapshot.months,
     [monthIds.rta]: {
@@ -117,22 +131,30 @@ export const withTransactionSnapshot = createSnapshot({
     [monthIds.groceries]: {
       ...baseSnapshot.months[monthIds.groceries],
       assigned: 10,
-      activity: -20,
-      available: -10,
+      activity: -25,
+      available: -25,
     },
     [monthIds.rent]: createMonth(monthIds.rent, categoryIds.rent),
   },
+
   accounts: {
-    ...baseSnapshot.accounts,
-    [accountIds.checking]: createAccount(accountIds.checking, { balance: -10 }),
+    [accountIds.checking]: createAccount(accountIds.checking, {
+      balance: -25,
+    }),
   },
+
   transactions: {
-    ...baseSnapshot.transactions,
     [transactionIds.groceries]: createNormalTransaction({
       id: transactionIds.groceries,
       accountId: accountIds.checking,
       categoryId: categoryIds.groceries,
-      outflow: 10,
+      outflow: 20,
+    }),
+    [transactionIds.groceries2]: createNormalTransaction({
+      id: transactionIds.groceries2,
+      accountId: accountIds.checking,
+      categoryId: categoryIds.groceries,
+      outflow: 5,
     }),
   },
 });
