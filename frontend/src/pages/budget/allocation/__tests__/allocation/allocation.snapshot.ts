@@ -20,8 +20,8 @@ import { createMemo } from "../utils/entities/createMemo";
 import { createNormalTransaction } from "../utils/entities/createTransaction";
 import { createAccount } from "../utils/entities/createAccount";
 
-const defaultMonth = "2026-07";
-const monthKey = defaultMonth;
+const monthKey1 = "2026-07";
+const monthKey2 = "2026-08";
 
 export const snapshot: ApiBudgetSnapshot = {
   categories: {
@@ -67,23 +67,49 @@ export const snapshot: ApiBudgetSnapshot = {
   },
 
   months: {
-    [monthIds.rtaM1]: createMonth(monthIds.rtaM1, categoryIds.rta),
+    [monthIds.rtaM1]: createMonth(monthIds.rtaM1, categoryIds.rta, {
+      month: monthKey1,
+    }),
+    [monthIds.rtaM2]: createMonth(monthIds.rtaM2, categoryIds.rta, {
+      month: monthKey2,
+    }),
     [monthIds.uncategorisedM1]: createMonth(
       monthIds.uncategorisedM1,
       categoryIds.uncategorised,
       {
-        activity: -10,
-        available: -10,
+        month: monthKey1,
+      }
+    ),
+    [monthIds.uncategorisedM2]: createMonth(
+      monthIds.uncategorisedM2,
+      categoryIds.uncategorised,
+      {
+        month: monthKey2,
       }
     ),
     [monthIds.groceriesM1]: createMonth(
       monthIds.groceriesM1,
-      categoryIds.groceries
+      categoryIds.groceries,
+      {
+        month: monthKey1,
+      }
     ),
-    [monthIds.rentM1]: createMonth(monthIds.rentM1, categoryIds.rent),
+    [monthIds.groceriesM2]: createMonth(
+      monthIds.groceriesM2,
+      categoryIds.groceries,
+      {
+        month: monthKey2,
+      }
+    ),
+    [monthIds.rentM1]: createMonth(monthIds.rentM1, categoryIds.rent, {
+      month: monthKey1,
+    }),
+    [monthIds.rentM2]: createMonth(monthIds.rentM2, categoryIds.rent, {
+      month: monthKey2,
+    }),
   },
 
-  monthKeys: [monthKey],
+  monthKeys: [monthKey1, monthKey2],
   accounts: {
     [accountIds.checking]: createAccount(accountIds.checking, { balance: -10 }),
   },
@@ -97,6 +123,7 @@ export const snapshot: ApiBudgetSnapshot = {
   },
   payees: {},
   memosByMonth: {
-    [monthKey]: createMemo(memoIds.memo),
+    [monthKey1]: createMemo(memoIds.memo),
+    [monthKey2]: createMemo(memoIds.memo),
   },
 };

@@ -1,6 +1,5 @@
 import { expect, test } from "@playwright/test";
 import { resetDatabase, setupScenario } from "../../../../../helpers/setup";
-import { navigateToPreviousMonth } from "../../helpers/month.helpers";
 import {
   confirmDelete,
   expectCategoryMissing,
@@ -76,8 +75,6 @@ test.describe("category group", () => {
 
       await expectCategoryGroupMissing(page, "Important");
       await expectCategoryMissing(page, "Groceries");
-
-      await navigateToPreviousMonth(page);
 
       await expectCategoryAmounts(page, "Unplanned", {
         activity: /-£10.00/i,
