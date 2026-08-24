@@ -17,17 +17,20 @@ export function MonthSelector({
         <NavButton
           onClick={navigation.prev}
           disabled={!navigation.canGoPrev}
-          aria-label="previous month"
+          aria-label="Previous month"
         >
           <ArrowLeftIcon />
         </NavButton>
-        <p className="w-24 text-center text-xl font-semibold">
+        <time
+          aria-label="Current displayed month"
+          className="w-24 text-center text-xl font-semibold"
+        >
           {current.labelLong}
-        </p>
+        </time>
         <NavButton
           onClick={navigation.next}
           disabled={!navigation.canGoNext}
-          aria-label="next month"
+          aria-label="Next month"
         >
           <ArrowRightIcon />
         </NavButton>
