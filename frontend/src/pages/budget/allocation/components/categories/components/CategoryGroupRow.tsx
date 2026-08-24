@@ -36,6 +36,7 @@ export function CategoryGroupRow({
       <ExpandButton open={open} onClick={onExpandClick} />
       <div className="flex min-w-0 items-center gap-4">
         <Checkbox
+          aria-label={`Select all categories in ${categoryGroup.name}`}
           className="[&_svg]:h-3 [&_svg]:w-3 size-3 rounded-[2px] shadow-none"
           checked={toCheckboxState(selectionState)}
           onClick={() => onGroupClick(categoryGroup.id)}

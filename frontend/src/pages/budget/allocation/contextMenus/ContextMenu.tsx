@@ -43,6 +43,11 @@ export function ContextMenu({
   onDelete,
   onClose,
 }: ContextMenuProps) {
+  const menuLabel =
+    target.type === "category"
+      ? `Category actions for ${target.name}`
+      : `Category group actions for ${target.name}`;
+
   const duplicateMessage =
     target.type === "category"
       ? "A category with this name already exists"
@@ -86,6 +91,8 @@ export function ContextMenu({
       <div className="fixed inset-0 z-40 cursor-default" ref={overlayRef} />
       <div
         ref={menuRef}
+        role="menu"
+        aria-label={menuLabel}
         style={{
           position: "fixed",
           left: position.x,
