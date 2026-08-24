@@ -1,4 +1,4 @@
-import { MonthKey } from "../types/types";
+import { asMonthKey, MonthKey } from "../types/types";
 
 export function formatDate(dateStr: MonthKey): string {
   const date = new Date(dateStr + "-01");
@@ -12,7 +12,9 @@ export function toMonthKey(date: string): string {
   return date.slice(0, 7);
 }
 
-export function getCurrentMonthKey(): string {
+export function getCurrentMonthKey(): MonthKey {
   const now = new Date();
-  return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+  return asMonthKey(
+    `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`
+  );
 }
