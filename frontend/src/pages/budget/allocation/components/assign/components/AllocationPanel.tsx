@@ -3,12 +3,14 @@ import { AllocationPanelLayout } from "./AllocationPanelLayout";
 import { CategoryBreakdownViewModel } from "../../../hooks/useAllocation/useCategoryBreakdown";
 import { AutoAssignViewModel } from "../../../hooks/useAllocation/useAutoAssign";
 import { NoteViewModel } from "../hooks/useNoteViewModel";
+import { CategoryActionTarget } from "../../../hooks/useAllocation/useAllocation";
 
 type AllocationPanelProps = {
   selectedCategories: SelectableCategory;
   categoryBreakDownViewModel: CategoryBreakdownViewModel;
   autoAssignViewModel: AutoAssignViewModel;
   noteViewModel: NoteViewModel;
+  onEditCategory: (e: React.MouseEvent, target: CategoryActionTarget) => void;
 };
 
 export function AllocationPanel({
@@ -16,6 +18,7 @@ export function AllocationPanel({
   categoryBreakDownViewModel,
   autoAssignViewModel,
   noteViewModel,
+  onEditCategory,
 }: AllocationPanelProps) {
   const areCategoriesSelected =
     categoryBreakDownViewModel.hasSelectedCategories;
@@ -26,6 +29,7 @@ export function AllocationPanel({
         selectedCategories={
           areCategoriesSelected && (
             <SelectedCategories
+              onEditCategory={onEditCategory}
               selectedCategories={selectedCategories}
               view={categoryBreakDownViewModel.view}
             />

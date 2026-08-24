@@ -1,7 +1,6 @@
-import { CategoryBranded, MonthBranded } from "@/core/types/NormalizedData";
+import { CategoryUserBranded, MonthBranded } from "@/core/types/NormalizedData";
 import { useRef } from "react";
 import { calculateBarColors } from "../../../utils/calculateBarColors";
-import { ContextMenu } from "../../../contextMenus/ContextMenu";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
 import {
   EmptyCell,
@@ -14,17 +13,11 @@ import {
 import { CategorySelectionState } from "../../../hooks/useAllocation/useCategorySelection";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { CategoryId } from "../../../types/types";
-import { CategoryDeleteState } from "../../../utils/getCategoryDeleteState";
-import {
-  ExcludeTarget,
-  CategorySelectOptions,
-} from "../../../hooks/useAllocation/useAllocation";
 import { formatCurrency } from "@/utils/formatCurrency";
 
 type CategoryRowProps = {
   onContextMenu?: React.MouseEventHandler<HTMLDivElement>;
-  category: CategoryBranded;
+  category: CategoryUserBranded;
   month: MonthBranded;
   // TODO:(lewis 2026-05-15 15:06) i dont like neither the name or the type, i think it should be categorySelector
   categorySelection: CategorySelectionState;
@@ -86,9 +79,9 @@ export function CategoryRow({
           <Checkbox
             className="[&_svg]:h-3 [&_svg]:w-3 size-3 rounded-[2px] shadow-none"
             checked={isRowSelected}
+            onCheckedChange={() => categorySelection.toggle(category)}
             onClick={(e) => {
               e.stopPropagation();
-              categorySelection.toggle(category);
             }}
           />
           <div className="w-5/6">

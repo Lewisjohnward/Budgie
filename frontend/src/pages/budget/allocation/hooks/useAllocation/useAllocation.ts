@@ -33,6 +33,8 @@ import { useNoteViewModel } from "../../components/assign/hooks/useNoteViewModel
 import { CategoryMetricsById } from "./useAllocationIndexes";
 import { getCategoryDeleteState as resolveCategoryDeleteState } from "../../utils/getCategoryDeleteState";
 import { getCategoryGroupDeleteState as resolveCategoryGroupDeleteState } from "../../utils/getCategoryGroupDeleteState";
+import { useCategoryActions } from "../../components/categories/hooks/useActions";
+import { useContextMenu } from "../../components/categories/hooks/useContextMenu";
 
 export type RtaInformation = {
   assignableLeftOverFromLastMonth: number;
@@ -293,6 +295,14 @@ export function useAllocation() {
     [engine.entities.categoryGroups.user, engine.entities.categories.user]
   );
 
+  const categoryActions = useCategoryActions({
+    getCategoryDeleteState: getCategoryDeleteState,
+    getCategoryGroupDeleteState: getCategoryGroupDeleteState,
+    getCategorySelectOptions: getCategorySelectOptions,
+  });
+
+  const contextMenu = useContextMenu();
+
   /*
    * misc
    */
@@ -335,10 +345,8 @@ export function useAllocation() {
       available,
     },
 
-    deleteState: {
-      getCategoryDeleteState,
-      getCategoryGroupDeleteState,
-    },
+    contextMenu,
+    categoryActions,
 
     selectors: {
       getCategorySelectOptions,
