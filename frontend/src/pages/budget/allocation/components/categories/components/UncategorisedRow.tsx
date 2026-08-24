@@ -23,6 +23,7 @@ export function UncategorisedRow({
       <EmptyCell />
       <div className="flex items-center gap-4">
         <Checkbox
+          aria-label={"Select Uncategorised"}
           className="[&_svg]:h-3 [&_svg]:w-3 size-3 rounded-[2px] shadow-none"
           checked={isRowSelected}
           onClick={(e) => {

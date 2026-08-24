@@ -77,6 +77,7 @@ export function CategoryRow({
         <EmptyCell />
         <div className="flex items-center min-w-0 gap-4">
           <Checkbox
+            aria-label={`Select ${category.name}`}
             className="[&_svg]:h-3 [&_svg]:w-3 size-3 rounded-[2px] shadow-none"
             checked={isRowSelected}
             onCheckedChange={() => categorySelection.toggle(category)}
