@@ -13,10 +13,14 @@ export const categoryIds = {
 };
 
 export const monthIds = {
-  rta: "rta_month_1",
-  uncategorised: "uncat_month_1",
-  groceries: "groceries_month_1",
-  rent: "rent_month_1",
+  rtaM1: "rta_month_1",
+  rtaM2: "rta_month_2",
+  uncategorisedM1: "uncat_month_1",
+  uncategorisedM2: "uncat_month_2",
+  groceriesM1: "groceries_month_1",
+  groceriesM2: "groceries_month_2",
+  rentM1: "rent_month_1",
+  rentM2: "rent_month_2",
 };
 
 export const accountIds = {

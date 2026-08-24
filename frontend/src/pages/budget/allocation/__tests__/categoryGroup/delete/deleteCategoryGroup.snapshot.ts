@@ -60,13 +60,13 @@ export const baseSnapshot: ApiBudgetSnapshot = {
   },
 
   months: {
-    [monthIds.rta]: createMonth(monthIds.rta, categoryIds.rta),
-    [monthIds.uncategorised]: createMonth(
-      monthIds.uncategorised,
+    [monthIds.rtaM1]: createMonth(monthIds.rtaM1, categoryIds.rta),
+    [monthIds.uncategorisedM1]: createMonth(
+      monthIds.uncategorisedM1,
       categoryIds.uncategorised
     ),
-    [monthIds.groceries]: createMonth(
-      monthIds.groceries,
+    [monthIds.groceriesM1]: createMonth(
+      monthIds.groceriesM1,
       categoryIds.groceries
     ),
   },
@@ -83,12 +83,12 @@ export const baseSnapshot: ApiBudgetSnapshot = {
 export const withAssignedSnapshot = createSnapshot({
   months: {
     ...baseSnapshot.months,
-    [monthIds.rta]: {
-      ...baseSnapshot.months[monthIds.rta],
+    [monthIds.rtaM1]: {
+      ...baseSnapshot.months[monthIds.rtaM1],
       available: 200,
     },
-    [monthIds.groceries]: {
-      ...baseSnapshot.months[monthIds.groceries],
+    [monthIds.groceriesM1]: {
+      ...baseSnapshot.months[monthIds.groceriesM1],
       assigned: 500,
     },
   },
@@ -124,17 +124,17 @@ export const withTransactionSnapshot = createSnapshot({
 
   months: {
     ...baseSnapshot.months,
-    [monthIds.rta]: {
-      ...baseSnapshot.months[monthIds.rta],
+    [monthIds.rtaM1]: {
+      ...baseSnapshot.months[monthIds.rtaM1],
       available: 200,
     },
-    [monthIds.groceries]: {
-      ...baseSnapshot.months[monthIds.groceries],
+    [monthIds.groceriesM1]: {
+      ...baseSnapshot.months[monthIds.groceriesM1],
       assigned: 10,
       activity: -25,
       available: -25,
     },
-    [monthIds.rent]: createMonth(monthIds.rent, categoryIds.rent),
+    [monthIds.rentM1]: createMonth(monthIds.rentM1, categoryIds.rent),
   },
 
   accounts: {

@@ -62,16 +62,16 @@ export const snapshot: ApiBudgetSnapshot = {
   },
 
   months: {
-    [monthIds.rta]: createMonth(monthIds.rta, categoryIds.rta),
-    [monthIds.uncategorised]: createMonth(
-      monthIds.uncategorised,
+    [monthIds.rtaM1]: createMonth(monthIds.rtaM1, categoryIds.rta),
+    [monthIds.uncategorisedM1]: createMonth(
+      monthIds.uncategorisedM1,
       categoryIds.uncategorised
     ),
-    [monthIds.groceries]: createMonth(
-      monthIds.groceries,
+    [monthIds.groceriesM1]: createMonth(
+      monthIds.groceriesM1,
       categoryIds.groceries
     ),
-    [monthIds.rent]: createMonth(monthIds.rent, categoryIds.rent),
+    [monthIds.rentM1]: createMonth(monthIds.rentM1, categoryIds.rent),
   },
 
   monthKeys: [monthKey],

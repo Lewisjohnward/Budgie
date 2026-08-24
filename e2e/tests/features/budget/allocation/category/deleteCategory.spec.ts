@@ -11,8 +11,6 @@ import {
   selectCategoryToReceiveTransactions,
 } from "../../helpers/category.helpers";
 
-import { navigateToPreviousMonth } from "../../helpers/month.helpers";
-
 import { expectTransactionCategoryVisible } from "../../helpers/transaction.helpers";
 
 test.describe("category", () => {
@@ -69,8 +67,6 @@ test.describe("category", () => {
       await confirmDelete(page);
 
       await expectCategoryMissing(page, "Groceries");
-
-      await navigateToPreviousMonth(page);
 
       await expectCategoryAmounts(page, "Christmas", {
         activity: /-£10.00/i,
