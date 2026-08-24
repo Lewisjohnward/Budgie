@@ -18,21 +18,11 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-
-import { CategoryGroupId, CategoryId } from "../../types/types";
+import { CategoryId } from "../../types/types";
 import { useDragAndDrop } from "./hooks/useDragAndDrop";
-import { ContextMenu } from "../../contextMenus/ContextMenu";
-import { DeleteDialog } from "../../dialogs/deleteCategoryDialog/DeleteDialog";
 import { CategoryGroupDropZone } from "./components/CategoryGroupDropZone";
-import { useContextMenu } from "./hooks/useContextMenu";
-import { useCategoryActions } from "./hooks/useActions";
-import {
-  ExcludeTarget,
-  CategorySelectOptions,
-  CategoryActionTarget,
-} from "../../hooks/useAllocation/useAllocation";
-import { CategoryDeleteState } from "../../utils/getCategoryDeleteState";
-import { CategoryGroupDeleteState } from "../../utils/getCategoryGroupDeleteState";
+import { CategoryActionTarget } from "../../hooks/useAllocation/useAllocation";
+import { CategorySystemBranded } from "@/core/types/NormalizedData";
 
 type CategoriesProps = {
   currency: string;
@@ -42,20 +32,7 @@ type CategoriesProps = {
   };
   expandCategoryGroups: ExpandableCategoryGroupsState;
   categorySelector: CategorySelectionState;
-  deleteState: {
-    getCategoryDeleteState: (categoryId: CategoryId) => CategoryDeleteState;
-    getCategoryGroupDeleteState: (
-      categoryGroupId: CategoryGroupId
-    ) => CategoryGroupDeleteState;
-  };
-  selectors: {
-    getCategorySelectOptions: (
-      exclude?: ExcludeTarget
-    ) => CategorySelectOptions;
-  };
-  validators: {
-    canRename: (target: CategoryActionTarget, name: string) => boolean;
-  };
+  onContextMenu: (e: React.MouseEvent, target: CategoryActionTarget) => void;
 };
 
 export type DeleteCategoryArgs = {
@@ -67,20 +44,10 @@ export function Categories({
   currency,
   view,
   expandCategoryGroups,
-  deleteState: { getCategoryDeleteState, getCategoryGroupDeleteState },
-  selectors: { getCategorySelectOptions },
-  validators: { canRename },
   categorySelector,
+  onContextMenu,
 }: CategoriesProps) {
   const { uncategorisedRow, categoriesByGroup } = view;
-
-  const categoryActions = useCategoryActions({
-    getCategoryDeleteState,
-    getCategoryGroupDeleteState,
-    getCategorySelectOptions,
-  });
-
-  const contextMenu = useContextMenu();
 
   const dragAndDrop = useDragAndDrop({ categoriesByGroup });
 
@@ -145,7 +112,7 @@ export function Categories({
                     id={group.id}
                     className="bg-stone-200"
                     onContextMenu={(e) =>
-                      contextMenu.open(e, {
+                      onContextMenu(e, {
                         type: "categoryGroup",
                         id: group.id,
                         name: group.name,
@@ -176,7 +143,7 @@ export function Categories({
                       return (
                         <CategoryRow
                           onContextMenu={(e) =>
-                            contextMenu.open(e, {
+                            onContextMenu(e, {
                               type: "category",
                               id: row.category.id,
                               name: row.category.name,
@@ -203,25 +170,6 @@ export function Categories({
           })}
         </SortableContext>
       </DndContext>
-      <DeleteDialog
-        open={categoryActions.deleteDialog.open}
-        state={categoryActions.deleteDialog.state}
-        selectOptions={categoryActions.deleteDialog.selectOptions}
-        accept={categoryActions.deleteDialog.accept}
-        cancel={categoryActions.deleteDialog.cancel}
-      />
-      {contextMenu.target && (
-        <ContextMenu
-          target={contextMenu.target}
-          position={contextMenu.menuPosition}
-          menuRef={contextMenu.menuRef}
-          overlayRef={contextMenu.overlayRef}
-          canRename={canRename}
-          onRename={categoryActions.renameTarget}
-          onDelete={categoryActions.handleRequestDelete}
-          onClose={contextMenu.close}
-        />
-      )}
     </div>
   );
 }

@@ -21,7 +21,7 @@ type UseDeleteDialogParams = {
 };
 
 // Output
-type UseDeleteDialogReturn = {
+export type DeleteDialogReturn = {
   open: boolean;
   state: DeleteState | null;
   selectOptions: CategorySelectOptions | null;
@@ -36,7 +36,7 @@ type UseDeleteDialogReturn = {
 export function useDeleteDialog({
   onDelete,
   getSelectOptions,
-}: UseDeleteDialogParams): UseDeleteDialogReturn {
+}: UseDeleteDialogParams): DeleteDialogReturn {
   const [open, setOpen] = useState(false);
   const [selectOptions, setSelectOptions] =
     useState<CategorySelectOptions | null>(null);

@@ -8,6 +8,7 @@ import {
 } from "@/core/api/budget/categoryGroup/CategoryGroupApiSlice";
 import {
   DeleteArgs,
+  DeleteDialogReturn,
   useDeleteDialog,
 } from "../../../dialogs/deleteCategoryDialog/useDeleteDialog";
 import {
@@ -37,11 +38,17 @@ type UseCategoryActionsProps = {
   ) => CategoryGroupDeleteState;
 };
 
+export type CategoryActions = {
+  deleteDialog: DeleteDialogReturn;
+  handleRequestDelete: (target: CategoryActionTarget) => void;
+  renameTarget: (target: CategoryActionTarget, name: string) => void;
+};
+
 export const useCategoryActions = ({
   getCategorySelectOptions,
   getCategoryDeleteState,
   getCategoryGroupDeleteState,
-}: UseCategoryActionsProps) => {
+}: UseCategoryActionsProps): CategoryActions => {
   //======
   // Delete dialog
   //======

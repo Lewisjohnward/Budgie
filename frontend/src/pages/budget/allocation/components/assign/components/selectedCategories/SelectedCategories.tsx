@@ -1,24 +1,19 @@
-import { CategoryBranded } from "@/core/types/NormalizedData";
-import {
-  ContextMenu,
-  NameType,
-} from "@/pages/budget/allocation/contextMenus/ContextMenu";
+import { CategoryActionTarget } from "@/pages/budget/allocation/hooks/useAllocation/useAllocation";
 import { CategoryBreakdownView } from "@/pages/budget/allocation/hooks/useAllocation/useCategoryBreakdown";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { SelectableCategory } from "@/pages/budget/allocation/slices/selectedCategorySlice";
 import clsx from "clsx";
 import { Pencil } from "lucide-react";
-import { ReactNode, useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 export type SelectedCategoriesProps = {
-  selectedCategories: CategoryBranded[];
+  selectedCategories: SelectableCategory[];
   view: CategoryBreakdownView;
+  onEditCategory: (e: React.MouseEvent, target: CategoryActionTarget) => void;
 };
 
 export function SelectedCategories({
   selectedCategories,
   view,
+  onEditCategory,
 }: SelectedCategoriesProps) {
   const numberOfCategoriesSelected = selectedCategories.length;
   const isSingle = view.kind === "single";
@@ -26,7 +21,8 @@ export function SelectedCategories({
   const displayEditButton = isSingle && !view.isUncategorisedSelected;
 
   return (
-    <div
+    <section
+      aria-label="Selected categories"
       className={clsx(
         numberOfCategoriesSelected > 0 && "py-4",
         "flex items-center rounded overflow-hidden"
@@ -45,11 +41,22 @@ export function SelectedCategories({
         )}
       </div>
       {displayEditButton && (
-        <ContextMenu category={{ name: "hello", id: "temp" }}>
-          <Pencil className="w-4 h-4 stroke-gray-500" />
-        </ContextMenu>
+        <button
+          type="button"
+          aria-label={`Edit ${selectedCategories[0].name}`}
+          onClick={(e) => {
+            onEditCategory(e, {
+              type: "category",
+              id: selectedCategories[0].id,
+              name: selectedCategories[0].name,
+              categoryGroupId: selectedCategories[0].categoryGroupId,
+            });
+          }}
+        >
+          <Pencil aria-hidden="true" className="w-4 h-4 stroke-gray-500" />
+        </button>
       )}
-    </div>
+    </section>
   );
 }
 
