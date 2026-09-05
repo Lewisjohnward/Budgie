@@ -25,7 +25,7 @@ export function SelectedCategories({
       aria-label="Selected categories"
       className={clsx(
         numberOfCategoriesSelected > 0 && "py-4",
-        "flex items-center rounded overflow-hidden"
+        "flex justify-between items-center rounded overflow-hidden"
       )}
     >
       <div className={`w-96 2xl:w-[500px] ${isSingle ? "truncate" : ""}`}>
