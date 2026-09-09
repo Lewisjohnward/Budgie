@@ -117,6 +117,10 @@ export const useDragAndDrop = ({ categoriesByGroup }: UseDragAndDropProps) => {
       .find((r) => r.category.id === active.id);
   }, [active, draftView]);
 
+  const activeCategoryGroup = useMemo(() => {
+    return draftView.find((g) => g.group.id === active.id);
+  }, [active, draftView]);
+
   const isDraggingCategoryGroup = active.type === "group";
 
   const isDragging = active.id !== null;
@@ -124,6 +128,8 @@ export const useDragAndDrop = ({ categoriesByGroup }: UseDragAndDropProps) => {
   return {
     sensors,
     activeCategory,
+    activeCategoryGroup,
+    activeId: active.id,
     draftView,
     isDraggingCategoryGroup,
     isDragging,

@@ -1,5 +1,4 @@
 import { useDroppable } from "@dnd-kit/core";
-import { cn } from "@/core/lib/utils";
 
 type CategoryGroupDropZoneProps = {
   groupId: string;
@@ -9,7 +8,6 @@ type CategoryGroupDropZoneProps = {
 
 export function CategoryGroupDropZone({
   groupId,
-  active,
   enabled,
 }: CategoryGroupDropZoneProps) {
   const { setNodeRef, isOver } = useDroppable({
@@ -17,12 +15,10 @@ export function CategoryGroupDropZone({
   });
 
   return (
-    <div
-      ref={setNodeRef}
-      className={cn(
-        active ? "h-0" : "h-0",
-        isOver && enabled && "h-10 bg-stone-100"
+    <div ref={setNodeRef} className="relative h-0">
+      {isOver && enabled && (
+        <div className="absolute inset-x-0 top-0 h-1 bg-stone-100" />
       )}
-    />
+    </div>
   );
 }
