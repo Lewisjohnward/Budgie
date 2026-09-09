@@ -477,6 +477,8 @@ export interface components {
             id: string;
             position: number;
         };
+        /** @description Response returned after updating a memo. Contains the updated memo. */
+        EditMemoResponse: components["schemas"]["Memo"];
         /** @example 2025-12 */
         MonthKey: string;
         TransactionNormal: {
