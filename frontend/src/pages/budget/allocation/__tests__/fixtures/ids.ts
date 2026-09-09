@@ -33,5 +33,6 @@ export const transactionIds = {
 };
 
 export const memoIds = {
-  memo: "memo_1",
+  memoM1: "memo_1",
+  memoM2: "memo_2",
 };

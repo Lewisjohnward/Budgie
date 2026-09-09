@@ -123,7 +123,7 @@ export const snapshot: ApiBudgetSnapshot = {
   },
   payees: {},
   memosByMonth: {
-    [monthKey1]: createMemo(memoIds.memo),
-    [monthKey2]: createMemo(memoIds.memo),
+    [monthKey1]: createMemo(memoIds.memoM1),
+    [monthKey2]: createMemo(memoIds.memoM2),
   },
 };
