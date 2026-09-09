@@ -1,5 +1,6 @@
 import { prisma } from "../../../../../../shared/prisma/client";
 import { asUserId, type UserId } from "../../../../../user/auth/auth.types";
+import { EditMemoResult } from "../../contracts/editMemo.contract";
 import { type EditMemoPayload } from "../../memo.schema";
 import { memoService } from "../../memo.service";
 import { asMemoId, type DomainMemo, type MemoId } from "../../memo.types";
@@ -55,7 +56,7 @@ const toEditMemoCommand = (p: EditMemoPayload): EditMemoCommand => ({
  */
 export const editMemo = async (
   payload: EditMemoPayload
-): Promise<DomainMemo> => {
+): Promise<EditMemoResult> => {
   const { userId, memoId, content } = toEditMemoCommand(payload);
 
   return await prisma.$transaction(async (tx) => {
@@ -63,6 +64,8 @@ export const editMemo = async (
 
     const updatedMemo = await memoService.updateMemo(tx, memoId, content);
 
-    return updatedMemo;
+    return {
+      updatedMemo,
+    };
   });
 };

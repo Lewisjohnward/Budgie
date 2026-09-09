@@ -88,3 +88,7 @@ components:
       $ref: "./schemas/responses/categoryGroups/deleteCategoryGroup.yml#/DeleteCategoryGroupResponse"
     CategoryGroupPositionPatch:
       $ref: "./schemas/responses/categoryGroups/patches/categoryGroupPositionPatch.yml#/CategoryGroupPositionPatch"
+
+    # Edit memo response
+    EditMemoResponse:
+      $ref: "./schemas/responses/memo/editMemo.yml#/EditMemoResponse"
