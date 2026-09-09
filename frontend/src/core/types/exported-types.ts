@@ -1,4 +1,15 @@
-import { components, paths } from "./generated";
+import { components, paths, operations } from "./generated";
+
+// Paths
+type ApiPath = keyof paths;
+
+export const API_PATHS = {
+  budgetSnapshot: "/budget/snapshot",
+  categories: "/budget/categories",
+  category: "/budget/categories/{categoryId}",
+  categoryGroup: "/budget/category-groups/{categoryGroupId}",
+  memo: "/budget/memo/{id}",
+} as const satisfies Record<string, ApiPath>;
 
 // Entities
 export type ApiCategoryGroupUser = components["schemas"]["CategoryGroupUser"];
@@ -41,3 +52,8 @@ export type DeleteCategoryGroupResponse =
   components["schemas"]["DeleteCategoryGroupResponse"];
 export type CategoryGroupPositionPatch =
   components["schemas"]["CategoryGroupPositionPatch"];
+
+// Memo
+export type EditMemoResponse = components["schemas"]["EditMemoResponse"];
+export type EditMemoRequest =
+  operations["editMemo"]["requestBody"]["content"]["application/json"];
