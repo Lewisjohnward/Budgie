@@ -10,6 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
+    "test:unit": "vitest --run",
+    "test:integration": "vitest --run --config vitest.integration.config.ts",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage --run",
     "storybook": "storybook dev -p 6006",
