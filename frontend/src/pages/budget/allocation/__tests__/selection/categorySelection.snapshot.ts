@@ -97,6 +97,6 @@ export const snapshot: ApiBudgetSnapshot = {
   },
   payees: {},
   memosByMonth: {
-    [monthKey]: createMemo(memoIds.memo),
+    [monthKey]: createMemo(memoIds.memoM1),
   },
 };

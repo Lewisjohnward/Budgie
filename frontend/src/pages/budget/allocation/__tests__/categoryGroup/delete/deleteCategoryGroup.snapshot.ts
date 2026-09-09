@@ -76,7 +76,7 @@ export const baseSnapshot: ApiBudgetSnapshot = {
   transactions: {},
   payees: {},
   memosByMonth: {
-    [monthKey]: createMemo(memoIds.memo),
+    [monthKey]: createMemo(memoIds.memoM1),
   },
 };
 
