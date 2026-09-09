@@ -95,6 +95,19 @@ export function Categories({
               month={dragAndDrop.activeCategory.month}
               categorySelection={categorySelector}
             />
+          ) : dragAndDrop.activeCategoryGroup ? (
+            <CategoryGridRow className="bg-stone-200">
+              <CategoryGroupRow
+                open={dragAndDrop.activeCategoryGroup.open}
+                categoryGroup={dragAndDrop.activeCategoryGroup.group}
+                currency={currency}
+                onExpandClick={() => {}}
+                selectionState={categorySelector.getCategoryGroupSelectionState(
+                  dragAndDrop.activeCategoryGroup.group.id
+                )}
+                onGroupClick={categorySelector.onCategoryGroupClick}
+              />
+            </CategoryGridRow>
           ) : null}
         </DragOverlay>
 
@@ -110,7 +123,9 @@ export function Categories({
                   <CategoryGridRow
                     aria-label={`${group.name} category group`}
                     id={group.id}
-                    className="bg-stone-200"
+                    className={`bg-stone-200 ${
+                      dragAndDrop.activeId === group.id ? "invisible" : ""
+                    }`}
                     onContextMenu={(e) =>
                       onContextMenu(e, {
                         type: "categoryGroup",
