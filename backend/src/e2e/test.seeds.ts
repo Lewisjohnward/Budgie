@@ -6,10 +6,12 @@ import { seedDeleteCategoryGroupBase } from "./seeds/budget/allocation/categoryG
 import { seedDeleteCategoryGroupWithAssigned } from "./seeds/budget/allocation/categoryGroup/delete/seedDeleteCategoryGroupWithAssigned";
 import { seedDeleteCategoryGroupWithTransaction } from "./seeds/budget/allocation/categoryGroup/delete/seedDeleteCategoryGroupWithTransaction";
 import { seedRenameCategoryGroup } from "./seeds/budget/allocation/categoryGroup/rename/renameCategoryGroup";
+import { seedUpdateMemoBase } from "./seeds/budget/allocation/memo/update/seedUpdateMemoBase";
 
 export const seeds = {
   login: seedLogin,
 
+  "update-memo-base": seedUpdateMemoBase,
   "delete-category-group-base": seedDeleteCategoryGroupBase,
   "delete-category-group-with-assigned": seedDeleteCategoryGroupWithAssigned,
   "delete-category-group-with-transaction":
