@@ -36,6 +36,7 @@ export function Note({ noteViewModel: { note, ui } }: NoteProps) {
       {ui.value && (
         <Textarea
           ref={textareaRef}
+          aria-label="Monthly memo"
           placeholder="Something to remember this month?"
           className="border-0 resize-none min-h-[100px]"
           value={note.text}
