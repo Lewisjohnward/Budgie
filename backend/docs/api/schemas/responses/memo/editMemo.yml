@@ -1,0 +1,6 @@
+EditMemoResponse:
+  description: >
+    Response returned after updating a memo.
+    Contains the updated memo.
+  allOf:
+    - $ref: "../../entities/memo.yml#/Memo"
