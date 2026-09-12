@@ -1,6 +1,6 @@
 import {
-  CategoryBranded,
-  CategoryGroupBranded,
+  CategoryUserBranded,
+  CategoryGroupUserBranded,
   MonthBranded,
 } from "@/core/types/NormalizedData";
 import {
@@ -14,8 +14,8 @@ import { filterMonthsBySelected } from "../../utils/filterMonthsBySelected";
 
 // Input
 type AutoAssignEngineParams = {
-  categories: Record<string, CategoryBranded>;
-  categoryGroups: Record<string, CategoryGroupBranded>;
+  categories: Record<string, CategoryUserBranded>;
+  categoryGroups: Record<string, CategoryGroupUserBranded>;
 
   currentMonths: MonthBranded[];
   previousMonths: MonthBranded[];
@@ -70,6 +70,7 @@ export const useAutoAssignEngine = ({
       currentMonths: filteredMonths.current,
       previousMonths: filteredMonths.previous,
       previousYearMonths: filteredMonths.previousYear,
+      ignoreRtaAvailable: autoAccept,
     });
 
     if (autoAccept) {
@@ -91,6 +92,7 @@ export const useAutoAssignEngine = ({
       currentMonths: filteredMonths.current,
       previousMonths: filteredMonths.previous,
       previousYearMonths: filteredMonths.previousYear,
+      ignoreRtaAvailable: autoAccept,
     });
 
   return {

@@ -4,7 +4,7 @@ import { useSpendingData } from "../hooks/useSpendingData";
 const PAGE_KEY = "spending-trends" as const;
 
 export function SpendingTrends() {
-  const { spendingData, titleBarState, viewModeState } = useSpendingData(PAGE_KEY);
+  const { titleBarState } = useSpendingData(PAGE_KEY);
 
   // TODO(lewis 2025-11-24 04:57): month state
   // TODO(lewis 2025-11-24 04:57): category state

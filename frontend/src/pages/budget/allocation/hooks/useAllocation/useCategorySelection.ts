@@ -8,12 +8,17 @@ import {
   useSelectedCategories,
 } from "../../slices/selectedCategorySlice";
 import { CategoryGroupId, CategoryId } from "../../types/types";
-import { CategoryUserBranded } from "@/core/types/NormalizedData";
+import {
+  CategorySystemBranded,
+  CategoryUserBranded,
+} from "@/core/types/NormalizedData";
 import { useMemo } from "react";
+
+type Category = CategoryUserBranded | CategorySystemBranded;
 
 // Input
 export type UseCategorySelectionParams = {
-  orderedCategories: CategoryUserBranded[];
+  orderedCategories: Category[];
 };
 
 // Output
@@ -162,10 +167,10 @@ export const useCategorySelection = ({
 };
 
 function getRangeSelection(
-  ordered: CategoryUserBranded[],
+  ordered: Category[],
   startId: CategoryId,
   endId: CategoryId
-): CategoryUserBranded[] {
+): Category[] {
   const start = ordered.findIndex((c) => c.id === startId);
   const end = ordered.findIndex((c) => c.id === endId);
 

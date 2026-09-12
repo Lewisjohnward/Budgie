@@ -1,6 +1,6 @@
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
 import { toggleManagePayees } from "@/core/slices/dialogSlice";
-import { useMemo, useReducer, useRef, useState } from "react";
+import { useMemo, useReducer, useRef } from "react";
 import { usePopover } from "../selectCategory";
 
 // TODO:(lewis 2025-11-29 12:10) this needs to come from api
@@ -83,11 +83,11 @@ type State =
 
 type Action =
   | {
-    type: "INPUT_CHANGED";
-    input: string;
-    hasExactMatch: boolean;
-    hasResults: boolean;
-  }
+      type: "INPUT_CHANGED";
+      input: string;
+      hasExactMatch: boolean;
+      hasResults: boolean;
+    }
   | { type: "SELECT"; input: string }
   | { type: "RESET" };
 

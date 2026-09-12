@@ -1,6 +1,10 @@
 import { ReactNode, useState } from "react";
 import { useForm } from "react-hook-form";
-import { AddCategoryFormData, AddCategorySchema } from "../types/types";
+import {
+  AddCategoryFormData,
+  AddCategorySchema,
+  CategoryGroupId,
+} from "../types/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Popover,
@@ -16,7 +20,7 @@ export function AddCategoryPopover({
   id,
   children,
 }: {
-  id: string;
+  id: CategoryGroupId;
   children: ReactNode;
 }) {
   const [displayPopover, setDisplayPopover] = useState(false);
@@ -28,9 +32,6 @@ export function AddCategoryPopover({
     formState: { isValid },
     reset,
   } = useForm<AddCategoryFormData>({
-    defaultValues: {
-      categoryGroupId: id,
-    },
     resolver: zodResolver(AddCategorySchema),
   });
 
@@ -42,7 +43,7 @@ export function AddCategoryPopover({
   };
 
   const onSubmit = (data: AddCategoryFormData) => {
-    createCategory(data);
+    createCategory({ name: data.name, categoryGroupId: id });
     togglePopover();
     reset();
   };

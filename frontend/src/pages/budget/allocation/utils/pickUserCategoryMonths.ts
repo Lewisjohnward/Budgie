@@ -1,9 +1,9 @@
-import { MonthBranded, CategoryBranded } from "@/core/types/NormalizedData";
+import { MonthBranded, CategoryUserBranded } from "@/core/types/NormalizedData";
 import { CategoryId } from "../types/types";
 
 export function pickUserCategoryMonths(
   categoryMonthMap: Record<CategoryId, MonthBranded>,
-  userCategories: Record<CategoryId, CategoryBranded>
+  userCategories: Record<CategoryId, CategoryUserBranded>
 ): Record<CategoryId, MonthBranded> {
   const result: Record<CategoryId, MonthBranded> = {};
 

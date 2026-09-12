@@ -54,7 +54,7 @@ export const useAccount = () => {
       displayAccountField: false,
       accountId: "",
       showWarning: false,
-      editingRowIndex: undefined,
+      editingTransactionId: undefined,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentAccount.id]);
@@ -68,7 +68,7 @@ export const useAccount = () => {
       displayAccountField: currentAccount.id === "all",
       accountId: currentAccount.id || "",
       showWarning: false,
-      editingRowIndex: undefined,
+      editingTransactionId: undefined,
     });
   };
 
@@ -111,9 +111,12 @@ export const useAccount = () => {
     duplicateTransactions({ transactionIds });
   };
 
+  const isDisplayingAllAccounts = currentAccount.name === "All Accounts";
+
   return {
     //account
     account: currentAccount,
+    isDisplayingAllAccounts,
     accountsAvailable,
     //table
     table: {
@@ -151,6 +154,7 @@ export const useAccount = () => {
 
 export type AccountTableState = ReturnType<typeof useAccount>;
 export type TransactionFormManager = AccountTableState["transactionForm"];
+export type TransactionTable = AccountTableState["table"];
 
 // const handleSubmitTransaction = async () => {
 //   const dummyTransaction = {

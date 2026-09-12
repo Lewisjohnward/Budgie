@@ -9,31 +9,23 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { columns } from "../components/columns";
+import { DetailedTransaction } from "./useAccountData";
 
-type Transaction = {
-  id: string;
-  accountId: string;
-  categoryId: string | null;
-  date: Date;
-  inflow: number | null;
-  outflow: number | null;
-  payee: string | null;
-  memo: string | null;
-  cleared: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-  category: any;
-  categoryGroup: any;
-};
+const GLOBAL_FILTER_COLUMN_IDS = [
+  "date",
+  "payee",
+  "category",
+  "memo",
+  "outflow",
+  "inflow",
+];
 
 export const useTransactionTable = (
-  transactions: Transaction[],
+  transactions: DetailedTransaction[],
   accountId: string
 ) => {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [lastRowSelection, setLastRowSelection] = useState<RowSelectionState>(
-    {}
-  );
+  const [_, setLastRowSelection] = useState<RowSelectionState>({});
   const [sorting, setSorting] = useState<SortingState>([
     { desc: true, id: "date" },
   ]);
@@ -90,26 +82,24 @@ export const useTransactionTable = (
   >(null);
 
   const handleSetColumnFilters = (filters: ColumnFiltersState) => {
-    if (filters[0].id === "") {
-      setGlobalFilter(filters[0].value);
-    } else {
-      const newFilters = filters.flatMap((f) => {
-        if (f.id === "") {
-          // apply this filter to all columns
-          const test = columns
-            .filter((col) => col.accessorKey) // only real data columns
-            .filter((col) => col.accessorKey != "accountName") // only real data columns
-            .map((col) => ({
-              id: col.accessorKey!, // force unwrap since accessorKey exists
-              value: f.value,
-            }));
-          return test;
-        } else {
-          return f; // normal filter
-        }
-      });
-      setColumnFilters(newFilters);
+    const globalFilter = filters.find((filter) => filter.id === "");
+
+    if (globalFilter && typeof globalFilter.value === "string") {
+      setGlobalFilter(globalFilter.value);
     }
+
+    const newFilters = filters.flatMap((filter) => {
+      if (filter.id !== "") {
+        return filter;
+      }
+
+      return GLOBAL_FILTER_COLUMN_IDS.map((id) => ({
+        id,
+        value: filter.value,
+      }));
+    });
+
+    setColumnFilters(newFilters);
   };
 
   const onRowSelection = useCallback(
@@ -255,8 +245,8 @@ export const useTransactionTable = (
 
   const earliestMonth = earliestTransactionDate
     ? new Date(earliestTransactionDate).toLocaleString("en-US", {
-      month: "long",
-    })
+        month: "long",
+      })
     : new Date().toLocaleString("en-US", { month: "long" });
 
   const futureYear = earliestYear

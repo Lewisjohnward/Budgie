@@ -1,7 +1,5 @@
 import express from "express";
 import cors from "cors";
-// import App from "./services/ExpressApp";
-// import dbConnection from "./services/Database";
 
 import path from "path";
 import bodyParser from "body-parser";
@@ -14,7 +12,6 @@ import budgetRoutes from "./features/budget/budget.router";
 import userRoutes from "./features/user/user.router";
 import { testRoutes } from "./e2e/test.router";
 
-// export const StartServer = async () => {
 if (!process.env.PAYLOAD_SECRET) {
   throw new Error("No value provided for payload secret");
 }
@@ -31,11 +28,6 @@ if (process.env.NODE_ENV !== "test") {
   app.use(morgan("dev"));
 }
 
-console.log({
-  NODE_ENV: process.env.NODE_ENV,
-  ENABLE_TEST_ROUTES: process.env.ENABLE_TEST_ROUTES,
-});
-
 if (
   process.env.ENABLE_TEST_ROUTES === "true" &&
   process.env.NODE_ENV !== "production"
@@ -47,7 +39,7 @@ app.use(
   cors({
     origin: ["http://localhost:5173", "http://localhost:5174"],
     credentials: true,
-    methods: ["GET", "POST", "OPTIONS", "DELETE", "PATCH"], // Allow GET, POST, and OPTIONS
+    methods: ["GET", "POST", "OPTIONS", "DELETE", "PATCH"],
   })
 );
 app.use(helmet());
@@ -55,7 +47,7 @@ app.use(helmet());
 app.use("/user", userRoutes);
 app.use("/budget", budgetRoutes);
 
-app.get("/", (req, res) => {
+app.get("/", (_, res) => {
   res.status(200).json({ ping: "pong" });
 });
 

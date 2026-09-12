@@ -37,16 +37,11 @@ export function TransactionSearchFilter({
   queries,
   query,
   queryPresent,
-  clearQueries,
   addQuery,
-  queriesString,
   updateQuery,
   inputValue,
   clearFilters,
   handleKeyPress,
-  filters,
-  focused,
-  setFocused,
 }: TransactionSearchFilterProps) {
   return (
     <Popover open={queryPresent}>

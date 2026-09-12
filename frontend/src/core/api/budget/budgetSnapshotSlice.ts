@@ -11,6 +11,7 @@ import {
   asPayeeId,
   asTransactionId,
 } from "@/pages/budget/allocation/types/types";
+import { mapTransaction } from "./mappers/transactionMapper";
 
 export const budgetSnapshotSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -22,6 +23,7 @@ export const budgetSnapshotSlice = apiSlice.injectEndpoints({
         };
       },
       transformResponse: toBudgetSnapshot,
+      providesTags: ["Bootstrap"],
     }),
   }),
 });
@@ -67,13 +69,11 @@ export function toBudgetSnapshot(raw: ApiBudgetSnapshot): BudgetSnapshot {
       inflow: {
         id: asCategoryGroupId(raw.categoryGroups.inflow.id),
         name: raw.categoryGroups.inflow.name,
-        position: raw.categoryGroups.inflow.position,
       },
 
       uncategorised: {
         id: asCategoryGroupId(raw.categoryGroups.uncategorised.id),
         name: raw.categoryGroups.uncategorised.name,
-        position: raw.categoryGroups.uncategorised.position,
       },
     },
 
@@ -93,14 +93,12 @@ export function toBudgetSnapshot(raw: ApiBudgetSnapshot): BudgetSnapshot {
       rta: {
         id: asCategoryId(raw.categories.rta.id),
         name: raw.categories.rta.name,
-        position: raw.categories.rta.position,
         categoryGroupId: asCategoryGroupId(raw.categories.rta.categoryGroupId),
       },
 
       uncategorised: {
         id: asCategoryId(raw.categories.uncategorised.id),
         name: raw.categories.uncategorised.name,
-        position: raw.categories.uncategorised.position,
         categoryGroupId: asCategoryGroupId(
           raw.categories.uncategorised.categoryGroupId
         ),
@@ -139,16 +137,7 @@ export function toBudgetSnapshot(raw: ApiBudgetSnapshot): BudgetSnapshot {
     transactions: Object.fromEntries(
       Object.entries(raw.transactions).map(([id, t]) => [
         asTransactionId(id),
-        {
-          id: asTransactionId(id),
-          accountId: asAccountId(t.accountId),
-          categoryId: t.categoryId ? asCategoryId(t.categoryId) : null,
-          payeeId: t.payeeId ? asPayeeId(t.payeeId) : null,
-          date: t.date,
-          memo: t.memo,
-          inflow: t.inflow,
-          outflow: t.outflow,
-        },
+        mapTransaction(t),
       ])
     ),
 

@@ -1,7 +1,10 @@
 import { formatCurrency } from "@/utils/formatCurrency";
 import { ChevronDown } from "lucide-react";
 import { useRef, useState, useEffect, useMemo } from "react";
-import { CategorySelectOptions } from "../../hooks/useAllocation/useAllocation";
+import {
+  CategorySelectOption,
+  CategorySelectOptions,
+} from "../../hooks/useAllocation/useAllocation";
 import { Button } from "@/core/components/uiLibrary/button";
 import {
   Dialog,
@@ -14,10 +17,6 @@ import {
   PopoverTrigger,
 } from "@/core/components/uiLibrary/popover";
 import { PopoverPortal } from "@radix-ui/react-popover";
-import {
-  CategoryBranded,
-  CategoryGroupBranded,
-} from "@/core/types/NormalizedData";
 import { CategoryGroupId, CategoryId } from "../../types/types";
 import { DeleteArgs } from "./useDeleteDialog";
 
@@ -71,18 +70,18 @@ export function DeleteDialog({
   const normalised = input.toLowerCase().trim();
 
   const filteredOptions = useMemo(() => {
-    if (!selectOptions) return;
+    if (!selectOptions) return [];
 
-    if (!normalised) return selectOptions;
-    // If user has already selected a category return all
-    if (selectedInheritingCategoryId) return selectOptions;
+    if (!normalised || selectedInheritingCategoryId) {
+      return selectOptions;
+    }
 
     return selectOptions
       .map((group) => {
         const groupMatches = group.name.toLowerCase().includes(normalised);
 
-        const filteredCategories = group.categories.filter((c) =>
-          c.name.toLowerCase().includes(normalised)
+        const filteredCategories = group.categories.filter((category) =>
+          category.name.toLowerCase().includes(normalised)
         );
 
         if (groupMatches) {
@@ -101,8 +100,8 @@ export function DeleteDialog({
 
         return null;
       })
-      .filter(Boolean);
-  }, [input, selectOptions]);
+      .filter((group) => group !== null);
+  }, [normalised, selectOptions, selectedInheritingCategoryId]);
 
   useEffect(() => {
     if (selectOptions === null) return;
@@ -129,10 +128,10 @@ export function DeleteDialog({
 
   // Handles selecting category from popover
   const handleSelect = (
-    group: CategoryGroupBranded,
-    category: CategoryBranded
+    groupName: string,
+    category: CategorySelectOption
   ): void => {
-    setInput(`${group.name}: ${category.name}`);
+    setInput(`${groupName}: ${category.name}`);
     setVisuallySelectedCategoryId(category.id);
     setSelectedInheritingCategoryId(category.id);
     setPopoverOpen(false);
@@ -239,7 +238,6 @@ export function DeleteDialog({
 
   const handleAcceptDelete = () => {
     if (!state) return;
-    console.log("debug-44", selectedInheritingCategoryId);
 
     const args: DeleteArgs =
       state.type === "category"
@@ -358,7 +356,6 @@ export function DeleteDialog({
                     onOpenAutoFocus={(e) => e.preventDefault()}
                     className="w-[475px] rounded-sm shadow-md animate-none"
                     side={"bottom"}
-                    onClick={() => console.log(" clicking on the popover")}
                     onWheelCapture={(e) => {
                       // Prevents onScroll from being cancelled higher up the tree (Radix)
                       e.stopPropagation();
@@ -392,7 +389,7 @@ export function DeleteDialog({
     ${isSelected ? "bg-stone-200/60" : "hover:bg-stone-200/60"}
   `}
                                         onClick={() =>
-                                          handleSelect(group, category)
+                                          handleSelect(group.name, category)
                                         }
                                       >
                                         <p>{category.name}</p>

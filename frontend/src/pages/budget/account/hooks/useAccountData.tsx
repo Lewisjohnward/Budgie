@@ -7,13 +7,10 @@ type Transaction = {
   accountId: string;
   categoryId: string | null;
   date: Date;
-  inflow: number | null;
-  outflow: number | null;
+  inflow: number;
+  outflow: number;
   payee: string | null;
   memo: string | null;
-  cleared: boolean;
-  createdAt: Date;
-  updatedAt: Date;
   category: any;
   categoryGroup: any;
 };
@@ -29,7 +26,7 @@ type CategoryGroup = {
   name: string;
 };
 
-type DetailedTransaction = Omit<Transaction, "category"> & {
+export type DetailedTransaction = Omit<Transaction, "category"> & {
   accountName: string;
   category: Category;
   categoryGroup: CategoryGroup | null;

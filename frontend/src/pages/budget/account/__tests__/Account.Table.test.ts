@@ -1,12 +1,10 @@
 import userEvent from "@testing-library/user-event";
-import { screen } from "@testing-library/react";
 import { setupTestServer } from "./__helpers__/serverHandlers";
 import {
   findTransactionRow,
   queryFormRow,
   renderAccountPage,
 } from "./__helpers__/testUtils";
-import { manyTransactionsAccountData } from "./__helpers__/mockData";
 
 describe("Account - Table", () => {
   let user: ReturnType<typeof userEvent.setup>;

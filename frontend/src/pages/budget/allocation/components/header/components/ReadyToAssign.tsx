@@ -26,7 +26,6 @@ export function ReadyToAssign({
     assignableLeftOverFromLastMonth,
     assignableCurrentMonth,
     totalAssignedCurrentMonth,
-    totalAssignedFuture,
     available,
   } = rtaInformation;
 

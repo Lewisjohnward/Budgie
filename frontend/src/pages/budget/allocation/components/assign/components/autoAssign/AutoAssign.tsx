@@ -75,7 +75,7 @@ export function AutoAssign({
           </div>
         )}
       </div>
-      <AssignModal modalState={modal} />
+      <AssignModal modalController={modal} />
     </>
   );
 }

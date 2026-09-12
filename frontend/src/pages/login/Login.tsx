@@ -35,7 +35,7 @@ export default function LoginPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const token = useAppSelector(selectAccessToken);
-  const [login, { isLoading }] = useLoginMutation();
+  const [login] = useLoginMutation();
 
   useEffect(() => {
     if (token) {
@@ -44,7 +44,7 @@ export default function LoginPage() {
   }, []);
 
   const handleLogin = async (values: FormValues) => {
-    const { email, password, stayLoggedIn } = values;
+    const { email, password } = values;
     try {
       const token = await login({
         email,
@@ -57,16 +57,18 @@ export default function LoginPage() {
       // TODO: react redux login auth flow 30:01
       // TODO: add typing
       console.log(error);
-      if (!error) {
-        //setErrMsg('')
-        console.log("No server response");
-      } else if (error.status === 400) {
-        console.log("Missing username or password");
-      } else if (error.status === 401) {
-        console.log("Unauthorised");
-      } else {
-        console.log("login failed");
-      }
+      // TODO:(lewis 2026-09-10 13:22) handle login errors
+
+      // if (!error) {
+      //   //setErrMsg('')
+      //   console.log("No server response");
+      // } else if (error.status === 400) {
+      //   console.log("Missing username or password");
+      // } else if (error.status === 401) {
+      //   console.log("Unauthorised");
+      // } else {
+      //   console.log("login failed");
+      // }
     }
   };
 
@@ -82,7 +84,6 @@ export default function LoginPage() {
 
 function LoginPageContent({
   handleLogin,
-  loginWithGoogle,
 }: {
   handleLogin: (values: FormValues) => void;
   loginWithGoogle: () => void;
@@ -148,7 +149,7 @@ function SocialAuth() {
         className="w-full"
         variant={"outline"}
         type="button"
-        onClick={() => { }}
+        onClick={() => {}}
       >
         <FcGoogle className="mr-2 size-5" />
         Continue with Google
@@ -157,7 +158,7 @@ function SocialAuth() {
         className="w-full"
         variant={"outline"}
         type="button"
-        onClick={() => { }}
+        onClick={() => {}}
       >
         <FaGithub />
         Continue with Github
@@ -166,7 +167,11 @@ function SocialAuth() {
   );
 }
 
-function LoginForm({ handleLogin }: { handleLogin: (formValues) => void }) {
+function LoginForm({
+  handleLogin,
+}: {
+  handleLogin: (values: FormValues) => void;
+}) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });

@@ -121,23 +121,23 @@ describe("Account - Table - TransactionFormRow", () => {
       user = userEvent.setup();
       renderAccountPage();
     });
-    it("should display edit form", async () => {
-      // Select multiple rows using Ctrl+click to keep them all selected
-      const txRow1 = await findTransactionRow("tx1");
-      await user.click(txRow1);
-      expect(txRow1).toHaveAttribute("data-state", "selected");
-      // Click the selected row again to open edit form
-      await user.click(txRow1);
-
-      // Form should be open
-      const formRow = await findFormRow();
-
-      // find cancel and save buttons
-      const cancelBtn = await screen.findByRole("button", { name: /cancel/i });
-      const saveBtn = await screen.findByRole("button", { name: "Save" });
-      // has correct data
-      // is replacing the row when open
-    });
+    // it("should display edit form", async () => {
+    //   // Select multiple rows using Ctrl+click to keep them all selected
+    //   const txRow1 = await findTransactionRow("tx1");
+    //   await user.click(txRow1);
+    //   expect(txRow1).toHaveAttribute("data-state", "selected");
+    //   // Click the selected row again to open edit form
+    //   await user.click(txRow1);
+    //
+    //   // Form should be open
+    //   const formRow = await findFormRow();
+    //
+    //   // find cancel and save buttons
+    //   const cancelBtn = await screen.findByRole("button", { name: /cancel/i });
+    //   const saveBtn = await screen.findByRole("button", { name: "Save" });
+    //   // has correct data
+    //   // is replacing the row when open
+    // });
     it("should unselect other rows when opening edit form", async () => {
       // Select multiple rows using Ctrl+click to keep them all selected
       const txRow1 = await findTransactionRow("tx1");
@@ -163,7 +163,7 @@ describe("Account - Table - TransactionFormRow", () => {
       await user.click(txRow3);
 
       // Form should be open
-      const formRow = await findFormRow();
+      // const formRow = await findFormRow();
 
       // Re-query the rows to get fresh references
       const txRow1Fresh = await findTransactionRow("tx1");

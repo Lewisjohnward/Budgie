@@ -8,7 +8,7 @@ import {
 } from "@/core/api/budgetApiSlice";
 import { useSelectCategory } from "../components/transactionFormRow/selectCategory/useSelectCategory";
 import { useSelectPayee } from "../components/transactionFormRow/selectPayee/useSelectPayee";
-import { CategoryT } from "@/core/types/NormalizedData";
+import { Category } from "@/core/types/NormalizedData";
 import { useSelectDate } from "../components/transactionFormRow/selectDate/useSelectDate";
 import { normaliseDate } from "../utils/normaliseDate";
 
@@ -61,7 +61,7 @@ export type TransactionFormState = {
   accountId: string | undefined;
   transactionId?: string;
   showWarning: boolean;
-  editingRowIndex?: number;
+  editingTransactionId?: string;
 };
 
 export const useTransactionFormRow = (accountId: string) => {
@@ -72,7 +72,7 @@ export const useTransactionFormRow = (accountId: string) => {
       displayAccountField: false,
       accountId: "",
       showWarning: false,
-      editingRowIndex: undefined,
+      editingTransactionId: undefined,
     });
 
   const transactionForm: TransactionForm = useForm<TransactionFormData>({
@@ -98,10 +98,7 @@ export const useTransactionFormRow = (accountId: string) => {
   const selectCategory = useSelectCategory();
 
   const handleSelectDate = (date: Date | undefined) => {
-    if (!date) {
-      setValue("date", date, { shouldDirty: true });
-      return;
-    }
+    if (!date) return;
     const utcDate = new Date(
       Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
     );
@@ -152,7 +149,7 @@ export const useTransactionFormRow = (accountId: string) => {
     }
   };
 
-  const handleSelectPayee = (item: {
+  const handleSelectPayee = (_: {
     name: string;
     id: string;
     type: "payee" | "account";
@@ -170,7 +167,7 @@ export const useTransactionFormRow = (accountId: string) => {
 
   const handleSelectCategory = (
     categoryGroupName: string,
-    category: CategoryT
+    category: Category
   ) => {
     // TODO:(lewis 2025-12-05 13:53) if user doesn't add category then just give uncategorised
     if (!categoryGroupName || !category) {
@@ -286,7 +283,7 @@ export const useTransactionFormRow = (accountId: string) => {
         displayAccountField: false,
         accountId: "",
         showWarning: false,
-        editingRowIndex: undefined,
+        editingTransactionId: undefined,
       });
     }
   };
@@ -366,7 +363,7 @@ export const useTransactionFormRow = (accountId: string) => {
       displayAccountField: false,
       accountId: "",
       showWarning: false,
-      editingRowIndex: undefined,
+      editingTransactionId: undefined,
     });
   };
 
@@ -384,7 +381,7 @@ export const useTransactionFormRow = (accountId: string) => {
     });
   };
 
-  const loadTransactionForEdit = (transaction: any, txId: number) => {
+  const loadTransactionForEdit = (transaction: any, txId: string) => {
     // Reset form with transaction data
     transactionForm.reset({
       accountId: transaction.accountId,
@@ -419,7 +416,7 @@ export const useTransactionFormRow = (accountId: string) => {
       accountId: accountId,
       transactionId: transaction.id,
       showWarning: false,
-      editingRowIndex: txId,
+      editingTransactionId: txId,
     });
   };
   return {
@@ -502,3 +499,4 @@ export const useTransactionFormRow = (accountId: string) => {
 
 type TransactionFormRow = ReturnType<typeof useTransactionFormRow>;
 export type SelectDateModel = TransactionFormRow["selectDate"];
+export type SelectCategoryModel = TransactionFormRow["selectCategory"];

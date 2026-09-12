@@ -1,3 +1,4 @@
+import { Allocation } from "../../../utils/autoAssignStrategies";
 import {
   FundingState,
   FundingStatus,
@@ -5,10 +6,9 @@ import {
 } from "../types/assignTypes";
 import { calculateAverageSpent } from "./calculateAverageSpent";
 import { roundToCents } from "@/pages/budget/utils/currency";
-import { AllocationContext } from "../../../hooks/useAllocation/useCategoryViewModel";
 
 export const generateAverageSpentState = (
-  allocationContext: AllocationContext
+  allocationContext: Allocation
 ): { monthsToUpdate: MonthsToUpdate[]; uiState: FundingState } => {
   const { currentMonths, previousYearMonths, categories, categoryGroups } =
     allocationContext;

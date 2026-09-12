@@ -97,7 +97,7 @@ describe("category group", () => {
       await assertCategoryGroupRemoved(NEW_NAME);
     });
 
-    it.only("applies the category group returned by the server", async () => {
+    it("applies the category group returned by the server", async () => {
       mockRenameCategoryGroupResponse((name) => `${name} from server`);
 
       await renameCategoryGroup(ORIGINAL_NAME, NEW_NAME);

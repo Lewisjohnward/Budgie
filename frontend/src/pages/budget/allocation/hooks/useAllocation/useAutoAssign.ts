@@ -1,6 +1,6 @@
 import {
-  CategoryBranded,
-  CategoryGroupBranded,
+  CategoryUserBranded,
+  CategoryGroupUserBranded,
   MonthBranded,
 } from "@/core/types/NormalizedData";
 import {
@@ -8,15 +8,15 @@ import {
   useUpdateMonths,
   useAutoAssignModal,
 } from "../../components/assign/hooks";
-import { UseAutoAssignModalReturn } from "../../components/assign/hooks/useAutoAssignModal";
+import { AutoAssignModalController } from "../../components/assign/hooks/useAutoAssignModal";
 import { FundingOption } from "../../components/assign/types/assignTypes";
 import { CategoryId } from "../../types/types";
 import { useAutoAssignEngine } from "./useAutoAssignEngine";
 
 // Input
 type UseAutoAssignParams = {
-  categories: Record<string, CategoryBranded>;
-  categoryGroups: Record<string, CategoryGroupBranded>;
+  categories: Record<string, CategoryUserBranded>;
+  categoryGroups: Record<string, CategoryGroupUserBranded>;
 
   isUncategorisedSelected: boolean;
 
@@ -40,7 +40,7 @@ export type AutoAssignViewModel = {
   displayUnderfunded: boolean;
   amount: (action: FundingOption) => number;
   handler: (action: FundingOption) => void;
-  modal: UseAutoAssignModalReturn;
+  modal: AutoAssignModalController;
 };
 
 export function useAutoAssignViewModel({
