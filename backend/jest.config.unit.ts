@@ -10,6 +10,7 @@ const config: Config = {
   moduleDirectories: ["node_modules", "src"],
   testPathIgnorePatterns: ["/src/__test__/"],
   setupFiles: ["<rootDir>/jest.setup.unit.ts"],
+  modulePathIgnorePatterns: ["<rootDir>/dist/"],
 };
 
 export default config;

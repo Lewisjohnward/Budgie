@@ -1,4 +1,4 @@
-import { LogOut, Pencil, Settings, User } from "lucide-react";
+import { LogOut, Settings, User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,7 +6,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/core/components/uiLibrary/dropdown-menu";
 import { MdOutlineManageAccounts } from "react-icons/md";

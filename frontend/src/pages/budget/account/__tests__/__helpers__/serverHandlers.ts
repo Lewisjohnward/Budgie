@@ -28,7 +28,7 @@ export const createHandlers = (options: HandlerOptions = {}) => {
       const newTransaction = await request.json();
       addTransactionSpy(newTransaction);
       return HttpResponse.json(
-        { ...newTransaction, id: "new-tx-id" },
+        // { ...newTransaction, id: "new-tx-id" },
         { status: 201 }
       );
     }),

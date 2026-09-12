@@ -88,7 +88,7 @@ function SocialAuth() {
         className="w-full"
         variant={"outline"}
         type="button"
-        onClick={() => { }}
+        onClick={() => {}}
       >
         <FcGoogle className="mr-2 size-5" />
         Continue with Google
@@ -97,7 +97,7 @@ function SocialAuth() {
         className="w-full"
         variant={"outline"}
         type="button"
-        onClick={() => { }}
+        onClick={() => {}}
       >
         <FaGithub />
         Continue with Github
@@ -119,27 +119,14 @@ function MyForm() {
     resolver: zodResolver(signupSchema),
   });
 
-  const { handleSubmit, control, setError } = form;
+  const { handleSubmit, control } = form;
 
   async function onSubmit(data: SignupPayload) {
     try {
       const token = await signUp(data).unwrap();
       dispatch(setCredentials({ token, email: data.email }));
     } catch (error) {
-      // if (
-      //   error &&
-      //   (error as { data?: { errors?: { email?: string } } }).data?.errors
-      //     ?.email
-      // ) {
-      //   setError("email", {
-      //     type: "server",
-      //     message: (error as { data: { errors: { email: string } } }).data
-      //       .errors.email,
-      //   });
-      // }
-      if (error?.data?.errors?.email) {
-        setError("email", { type: "server", message: error.data.errors.email });
-      }
+      // TODO:(lewis 2026-09-10 12:41) handle signup errors
     }
   }
 

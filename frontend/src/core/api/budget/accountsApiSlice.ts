@@ -1,4 +1,6 @@
+import { NormalizedData } from "@/core/types/NormalizedData";
 import { apiSlice } from "../apiSlice";
+import { AddAccountPayload } from "@/core/types/AccountSchema";
 
 export const accountsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({

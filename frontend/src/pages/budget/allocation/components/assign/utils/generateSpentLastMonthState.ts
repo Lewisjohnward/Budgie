@@ -5,10 +5,10 @@ import {
   MonthsToUpdate,
 } from "../types/assignTypes";
 import { roundToCents } from "@/pages/budget/utils/currency";
-import { AllocationContext } from "../../../hooks/useAllocation/useCategoryViewModel";
+import { Allocation } from "../../../utils/autoAssignStrategies";
 
 export const generateSpentLastMonthState = (
-  allocationContext: AllocationContext
+  allocationContext: Allocation
 ): { monthsToUpdate: MonthsToUpdate[]; uiState: FundingState } => {
   const { currentMonths, categories, categoryGroups, previousMonths } =
     allocationContext;

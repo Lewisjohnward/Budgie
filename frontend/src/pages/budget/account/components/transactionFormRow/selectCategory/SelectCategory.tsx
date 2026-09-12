@@ -8,7 +8,6 @@ import { PopoverArrow, PopoverPortal } from "@radix-ui/react-popover";
 import { Separator } from "@/pages/budget/account/components/Separator";
 import { ReactNode } from "react";
 import { useFormContext } from "react-hook-form";
-import { CategoryT } from "@/core/types/NormalizedData";
 import {
   Form,
   FormControl,
@@ -26,9 +25,8 @@ import {
   SelectValue,
 } from "@/core/components/uiLibrary/select";
 import { Button } from "@/core/components/uiLibrary/button";
-import { AddCircleIcon } from "@/core/icons/icons";
-import { SelectCategoryModel } from "./useSelectCategory";
 import clsx from "clsx";
+import { SelectCategoryModel } from "../../../hooks/useTransactionFormRow";
 
 type SelectCategoryProps = {
   selectCategory: SelectCategoryModel;
@@ -41,10 +39,6 @@ export function SelectCategory({ selectCategory }: SelectCategoryProps) {
     inputState,
     ref,
     input,
-    isFiltering,
-    isIdle,
-    isFocused,
-    isNoMatch,
     isExactMatch,
     handleInputChange,
     handleFocus,
@@ -75,8 +69,6 @@ export function SelectCategory({ selectCategory }: SelectCategoryProps) {
     popover.handleClose();
   };
 
-  console.log("input state", inputState);
-
   return (
     <Popover
       open={popover.isOpen}
@@ -106,8 +98,8 @@ export function SelectCategory({ selectCategory }: SelectCategoryProps) {
                   handleSelect(result.groupName, result.category);
                   return;
                 } else {
+                  // TODO:(lewis 2026-09-10 11:11) implement enter when no matching category functionality
                   e.preventDefault();
-                  handleSelect();
                   return;
                 }
               }

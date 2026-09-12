@@ -42,6 +42,7 @@ describe("memo", () => {
   });
 
   describe("editing", () => {
+    // TODO:(lewis 2026-09-09 11:35) this has an issue with debounce and unregistering msw handler, also need to test note edit failed
     it("allows the user to edit the memo", async () => {
       const textBox = await getMemoTextBox();
 

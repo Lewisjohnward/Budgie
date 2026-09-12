@@ -2457,8 +2457,16 @@ describe("Transaction Single Edit", () => {
       )!;
       expect(targetPayee).toBeDefined();
 
-      // June 2025
-      const newDate = new Date(2025, 7, 20, 9, 30, 0).toISOString();
+      // One month before the current month
+      const now = new Date();
+      const newDate = new Date(
+        now.getFullYear(),
+        now.getMonth() - 1,
+        20,
+        9,
+        30,
+        0,
+      ).toISOString();
 
       const editPayload: EditSingleTransactionInput = {
         // new account
@@ -2583,8 +2591,16 @@ describe("Transaction Single Edit", () => {
       )!;
       expect(targetPayee).toBeDefined();
 
-      // June 2025
-      const newDate = new Date(2025, 7, 20, 9, 30, 0).toISOString();
+      // One month before the current month
+      const now = new Date();
+      const newDate = new Date(
+        now.getFullYear(),
+        now.getMonth() - 1,
+        20,
+        9,
+        30,
+        0,
+      ).toISOString();
 
       const editPayload: EditSingleTransactionInput = {
         // new account
@@ -2702,8 +2718,16 @@ describe("Transaction Single Edit", () => {
       )!;
       expect(targetPayee).toBeDefined();
 
-      // June 2025
-      const newDate = new Date(2025, 7, 20, 9, 30, 0).toISOString();
+      // One month before the current month
+      const now = new Date();
+      const newDate = new Date(
+        now.getFullYear(),
+        now.getMonth() - 1,
+        20,
+        9,
+        30,
+        0,
+      ).toISOString();
 
       const editPayloadA: EditSingleTransactionInput = {
         // new account

@@ -50,7 +50,9 @@ export function buildCategoryViewModel({
   categoryMetricsById,
 }: BuildCategoryViewModelParams): CategoryViewModel {
   //  Build rows
-  const rows: CategoryViewRow[] = Object.values(categories.user)
+  const rows: CategoryViewRow<CategoryUserBranded>[] = Object.values(
+    categories.user
+  )
     .map((category) =>
       buildCategoryViewRow(
         category,
@@ -62,7 +64,10 @@ export function buildCategoryViewModel({
     .sort((a, b) => a.category.position - b.category.position);
 
   // Group rows
-  const rowsByGroup: Record<CategoryGroupId, CategoryViewRow[]> = {};
+  const rowsByGroup: Record<
+    CategoryGroupId,
+    CategoryViewRow<CategoryUserBranded>[]
+  > = {};
 
   for (const row of rows) {
     const groupId = row.category.categoryGroupId;

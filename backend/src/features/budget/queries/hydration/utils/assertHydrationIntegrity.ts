@@ -1,7 +1,10 @@
-import { NormalisedMonth } from "../../../core/category/core/category.types";
+import {
+  DomainMonth,
+  NormalisedMonth,
+} from "../../../core/category/core/category.types";
 import { toMonthKey } from "../../../utils/toMonthKey";
 import { HydrationInvariantError } from "../hydration.errors";
-import { type BudgetHydrationModel } from "../hydration.types";
+import { MonthKey, type BudgetHydrationModel } from "../hydration.types";
 import { buildMonthKeysFromRange } from "./buildMonthKeysFromRange";
 import { type HydrationDateRange } from "./hydrationDateRange";
 
@@ -41,8 +44,8 @@ export const assertHydrationIntegrity = (
   const expectedKeys = new Set(monthKeys);
 
   const memoKeys = new Set(Object.keys(normalisedData.memosByMonth));
-  const dataMonthKeys = new Set<string>();
-  const monthIndex = new Map<string, NormalisedMonth>();
+  const dataMonthKeys = new Set<MonthKey>();
+  const monthIndex = new Map<string, DomainMonth>();
 
   /**
    * -------------------------

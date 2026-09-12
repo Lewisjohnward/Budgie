@@ -52,7 +52,6 @@ export function CategoryRow({
   };
 
   const inputRef = useRef<HTMLInputElement>(null);
-  const currency = "£";
 
   const handleRowClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     inputRef.current?.focus();

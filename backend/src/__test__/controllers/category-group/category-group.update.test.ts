@@ -143,7 +143,7 @@ describe("Category group", () => {
           const res = await updateCategoryGroup(cookie, categoryGroup.id, {
             name: "new-name",
           });
-          expect(res.name).toBe("new-name");
+          expect(res.updated.categoryGroup.name).toBe("new-name");
         });
       });
     });

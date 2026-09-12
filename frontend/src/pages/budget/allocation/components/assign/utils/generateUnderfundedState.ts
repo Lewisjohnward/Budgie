@@ -1,4 +1,4 @@
-import { AllocationDomain } from "../../../hooks/useAllocation/useAllocationDomain";
+import { Allocation } from "../../../utils/autoAssignStrategies";
 import {
   FundingStatus,
   FundingLevel,
@@ -27,18 +27,17 @@ import { roundToCents } from "@/pages/budget/utils/currency";
  * - UI state breaks after first partially funded category for display purposes
  */
 export const generateUnderfundedState = (
-  allocationContext: AllocationDomain
+  allocationContext: Allocation
 ): { monthsToUpdate: MonthsToUpdate[]; uiState: FundingState } => {
   const {
     categoryGroups,
     categories,
     currentMonths,
-    autoAccept,
     rtaAvailable,
+    ignoreRtaAvailable,
   } = allocationContext;
 
   const unfundedMonths = currentMonths.filter((m) => m.available < 0);
-  const ignoreRtaAvailable = autoAccept;
 
   const monthsToFund: MonthsToUpdate[] = [];
   if (unfundedMonths.length && ignoreRtaAvailable) {

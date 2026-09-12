@@ -5,6 +5,7 @@ import {
   CategoryGroupViewWithMetrics,
 } from "../../utils/assembleCategoryGroupViews";
 import { CategoryViewRow } from "../../utils/buildCategoryViewModel";
+import { CategoryUserBranded } from "@/core/types/NormalizedData";
 
 // Input
 type UseExpandableCategoryGroupsParams = {
@@ -22,7 +23,7 @@ export type ExpandableCategoryGroupsState = {
 
 export type MappedCategoryGroupViewWithMetrics = {
   group: CategoryGroupWithMetrics;
-  rows: CategoryViewRow[];
+  rows: CategoryViewRow<CategoryUserBranded>[];
   open: boolean;
 };
 

@@ -1,6 +1,6 @@
 import { MdDelete } from "react-icons/md";
 import { FaCopy } from "react-icons/fa";
-import { flexRender, Table as TanstackTable, Row } from "@tanstack/react-table";
+import { flexRender } from "@tanstack/react-table";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -22,47 +22,13 @@ import { columns } from "./columns";
 import clsx from "clsx";
 import { Button } from "@/core/components/uiLibrary/button";
 import { ChevronRight } from "lucide-react";
-
-type Transaction = {
-  id: string;
-  accountId: string;
-  categoryId: string | null;
-  date: string;
-  inflow: number | null;
-  outflow: number | null;
-  payee: string | null;
-  memo: string | null;
-  cleared: boolean;
-  createdAt: string;
-  updatedAt: string;
-  category: {
-    id: string;
-    userId: string;
-    name: string;
-    categoryGroupId: string;
-  } | null;
-  categoryGroup: {
-    id: string;
-    userId: string;
-    name: string;
-  } | null;
-};
+import { TransactionFormManager, TransactionTable } from "../hooks/useAccount";
 
 type AccountTableProps = {
-  table: any; // Should have both TanstackTable and filterState
-  transactionForm: any;
-  onRowSelection: (
-    e: React.MouseEvent,
-    row: Row<Transaction>,
-    visualIndex?: number
-  ) => void;
-  onRowSelectionContextMenu: (row: Row<Transaction>) => void;
-  onTableInteraction: () => void;
+  table: TransactionTable;
+  transactionForm: TransactionFormManager;
   onDeleteSelected: () => void;
   onDuplicateSelected: () => void;
-  numberOfRows: number;
-  displaySelectionModal: boolean;
-  onCancelSelection: () => void;
 };
 
 export function AccountTable({
@@ -105,7 +71,7 @@ export function AccountTable({
         </TableHeader>
         <TableBody>
           {transactionForm.state.open &&
-            transactionForm.state.editingRowIndex === undefined && (
+            transactionForm.state.editingTransactionId === undefined && (
               // Add transaction
               <TransactionFormRow transactionForm={transactionForm} />
             )}
@@ -121,8 +87,8 @@ export function AccountTable({
           <TableCell>£5.00</TableCell>
           <TableCell></TableCell>
           {table.table.getRowModel().rows?.length > 0 &&
-            table.table.getRowModel().rows.map((row, i) =>
-              row.id === transactionForm.state.editingRowIndex &&
+            table.table.getRowModel().rows.map((row) =>
+              row.id === transactionForm.state.editingTransactionId &&
               transactionForm.state.open ? (
                 // Edit transaction
                 <TransactionFormRow
@@ -160,8 +126,7 @@ export function AccountTable({
                     <TableRow
                       key={row.id}
                       data-state={row.getIsSelected() && "selected"}
-                      // className={row.getIs ? "" : "hover:bg-transparent"}
-                      onClick={(e) => table.onRowSelection(e, row, i)}
+                      onClick={(e) => table.onRowSelection(e, row)}
                       onContextMenu={() => table.onRowSelectionContextMenu(row)}
                     >
                       {row.getVisibleCells().map((cell) => (

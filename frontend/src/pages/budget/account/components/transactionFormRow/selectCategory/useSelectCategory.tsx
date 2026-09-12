@@ -1,10 +1,11 @@
 import { useMemo, useReducer, useRef, useState } from "react";
-import { useForm, useFormContext } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useGetCategoriesQuery } from "@/core/api/budgetApiSlice";
-import { CategoryT, CategoryGroup } from "@/core/types/NormalizedData";
+import { CategoryGroup, Category } from "@/core/types/NormalizedData";
 import { useCreateCategoryMutation } from "@/core/api/budget/category/categoryApiSlice";
+import { asCategoryGroupId } from "@/pages/budget/allocation/types/types";
 
 type SelectCategoryForm = {
   showAddCategoryForm: boolean;
@@ -81,9 +82,13 @@ export const useSelectCategory = () => {
   const ref = useRef<HTMLInputElement>(null);
   const popover = usePopover();
   const { data } = useGetCategoriesQuery();
+  if (data === undefined) {
+    throw new Error("useSelectCategory - data undefined");
+  }
+
   const { months, categories, categoryGroups: allCategoryGroups } = data;
 
-  const allCategoriesArray: CategoryT[] = Object.values(categories);
+  const allCategoriesArray: Category[] = Object.values(categories);
 
   const [inputState, dispatchReducer] = useReducer(reducer, initialState);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
@@ -232,8 +237,7 @@ export const useSelectCategory = () => {
   }, [categories, months]);
 
   // to add a category /////
-  const [createCategory, { isLoading, isSuccess }] =
-    useCreateCategoryMutation();
+  const [createCategory, { isLoading }] = useCreateCategoryMutation();
   const form = useForm<SelectCategoryForm>({
     defaultValues: {
       showAddCategoryForm: false,
@@ -251,10 +255,12 @@ export const useSelectCategory = () => {
   };
 
   const onSubmit = (category: z.infer<typeof AddCategorySchema>) => {
-    createCategory(category);
+    createCategory({
+      name: category.name,
+      categoryGroupId: asCategoryGroupId(category.categoryGroupId),
+    });
   };
   /////
-  console.log(inputState.status);
 
   const focus = () => {
     ref.current?.focus();
@@ -381,5 +387,3 @@ export const useSelectCategory = () => {
     },
   };
 };
-
-export type SelectCategoryModel = ReturnType<typeof useSelectCategory>;

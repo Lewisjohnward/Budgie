@@ -23,13 +23,7 @@ export function useHasUnallocatedTransactions(account: Account) {
   }, [account.transactionIds, data?.transactions]);
 }
 
-export function AccountCard({
-  account,
-  currency,
-}: {
-  account: Account;
-  currency: any;
-}) {
+export function AccountCard({ account }: { account: Account }) {
   const { mouseOver, handleMouseEnter, handleMouseLeave } = useMouseOver();
   const dispatch = useAppDispatch();
   const handleOpenDialog = () => dispatch(toggleEditAccount(account));

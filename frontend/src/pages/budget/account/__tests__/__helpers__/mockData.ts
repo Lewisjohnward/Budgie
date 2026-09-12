@@ -16,9 +16,7 @@ export const baseMockAccountData: NormalizedData = {
       name: "Checking Account",
       type: "BANK",
       balance: 1000,
-      createdAt: new Date("2025-01-01T00:00:00.000Z"),
-      updatedAt: new Date("2025-01-01T00:00:00.000Z"),
-      transactions: ["tx1", "tx2", "tx3"],
+      transactionIds: ["tx1", "tx2", "tx3"],
     },
   },
   transactions: {
@@ -31,9 +29,6 @@ export const baseMockAccountData: NormalizedData = {
       outflow: 50,
       payee: "Grocery Store",
       memo: "tx1",
-      cleared: false,
-      createdAt: new Date("2025-10-31T00:00:00.000Z"),
-      updatedAt: new Date("2025-10-31T00:00:00.000Z"),
       category: "Food: Groceries",
     },
     tx2: {
@@ -45,9 +40,6 @@ export const baseMockAccountData: NormalizedData = {
       outflow: 0,
       payee: "Employer",
       memo: "tx2",
-      cleared: false,
-      createdAt: new Date("2025-10-30T00:00:00.000Z"),
-      updatedAt: new Date("2025-10-30T00:00:00.000Z"),
       category: "Inflow: Salary",
     },
     tx3: {
@@ -59,9 +51,6 @@ export const baseMockAccountData: NormalizedData = {
       outflow: 100,
       payee: "Employer",
       memo: "tx3",
-      cleared: false,
-      createdAt: new Date("2025-10-30T00:00:00.000Z"),
-      updatedAt: new Date("2025-10-30T00:00:00.000Z"),
       category: "Inflow: Salary",
     },
   },
@@ -172,7 +161,7 @@ export const emptyAccountData: NormalizedData = {
   accounts: {
     acc1: {
       ...baseMockAccountData.accounts.acc1,
-      transactions: [],
+      transactionIds: [],
     },
   },
   transactions: {},
@@ -190,7 +179,7 @@ export const manyTransactionsAccountData: NormalizedData = {
   accounts: {
     acc1: {
       ...baseMockAccountData.accounts.acc1,
-      transactions: manyTransactionIds,
+      transactionIds: manyTransactionIds,
     },
   },
   transactions: manyTransactionsById,

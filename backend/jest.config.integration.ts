@@ -6,6 +6,7 @@ const config: Config = {
   globalSetup: "<rootDir>/src/__test__/setup/setup.ts",
   globalTeardown: "<rootDir>/src/__test__/setup/teardown.ts",
   setupFilesAfterEnv: ["<rootDir>/src/__test__/setup/setupTests.ts"],
+  modulePathIgnorePatterns: ["<rootDir>/dist/"],
   maxWorkers: 1,
   testRunner: "jest-circus/runner",
   verbose: true,

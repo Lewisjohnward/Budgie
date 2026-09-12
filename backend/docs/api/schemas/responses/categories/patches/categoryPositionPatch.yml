@@ -21,6 +21,7 @@ CategoryPositionPatch:
         The category's new zero-based position within its category group.
       example: 2
 
+    # TODO:(lewis 2026-08-17 03:44) i dont think i need to return this
     categoryGroupId:
       type: string
       format: uuid

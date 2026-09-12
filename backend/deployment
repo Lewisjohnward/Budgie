@@ -1,0 +1,10 @@
+docker build --no-cache -t budgie-backend .
+
+docker run --rm -p 3000:3000   --env-file .env   budgie-backend
+
+docker compose down
+docker volume rm 07parrot_budgie_data
+docker compose up -d --build
+
+docker compose exec backend npx prisma migrate deploy \
+  --schema=src/shared/prisma/schema.prisma

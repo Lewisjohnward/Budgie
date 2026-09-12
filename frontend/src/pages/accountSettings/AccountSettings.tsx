@@ -1,6 +1,5 @@
 import { Input } from "@/core/components/uiLibrary/input";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
-import { Label } from "@/core/components/uiLibrary/label";
 import AccountSettingsHeader from "./components/AccountSettingsHeader";
 import AccountSettingsSection from "./components/AccountSettingsSection";
 
