@@ -4,9 +4,10 @@ import { CategoryBreakdownViewModel } from "../../../hooks/useAllocation/useCate
 import { AutoAssignViewModel } from "../../../hooks/useAllocation/useAutoAssign";
 import { NoteViewModel } from "../hooks/useNoteViewModel";
 import { CategoryActionTarget } from "../../../hooks/useAllocation/useAllocation";
+import { SelectableCategory } from "../../../slices/selectedCategorySlice";
 
 type AllocationPanelProps = {
-  selectedCategories: SelectableCategory;
+  selectedCategories: SelectableCategory[];
   categoryBreakDownViewModel: CategoryBreakdownViewModel;
   autoAssignViewModel: AutoAssignViewModel;
   noteViewModel: NoteViewModel;

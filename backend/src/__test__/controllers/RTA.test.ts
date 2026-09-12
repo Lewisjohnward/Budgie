@@ -1169,7 +1169,6 @@ describe("RTA allocation", () => {
         await compareRTAMonthsToExpected(
           [1.12, 1.12, 1.12, 1.12, 1.12],
           cookie,
-          true
         );
 
         await request(app)
@@ -2196,7 +2195,7 @@ describe("RTA allocation", () => {
   });
 
   describe.skip("editing transactions", () => {
-    it.skip("Should correctly update rta months when editing from uncategorised to category", async () => {});
+    it.skip("Should correctly update rta months when editing from uncategorised to category", async () => { });
     it("first test", async () => {
       const { id: accountId } = testAccount;
 

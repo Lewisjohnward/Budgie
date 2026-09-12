@@ -8,7 +8,7 @@ import {
 import { type CategoryId } from "../category/core/category.types";
 import { type AccountId } from "../account/account.types";
 import { type PayeeId } from "../payee/payee.types";
-import { type UserId } from "../../user/auth/auth.types";
+import { UserId } from "../../../user/auth/auth.types";
 
 export interface TransactionRepository {
   getTransactionsByAccountIds(

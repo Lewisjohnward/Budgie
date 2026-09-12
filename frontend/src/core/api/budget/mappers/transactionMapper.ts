@@ -1,26 +1,35 @@
-import { TransactionBranded } from "@/core/types/NormalizedData";
 import { ApiTransaction } from "@/core/types/exported-types";
 import {
-  AccountId,
-  CategoryId,
-  TransactionId,
+  asAccountId,
+  asCategoryId,
+  asPayeeId,
+  asTransactionId,
 } from "@/pages/budget/allocation/types/types";
 
-export const mapTransaction = (
-  transaction: ApiTransaction
-): TransactionBranded => ({
-  // TODO:(lewis 2026-08-17 04:09) this needs to be a
-  id: transaction.id as TransactionId,
-  // TODO:(lewis 2026-08-17 04:09) this needs to be a
-  accountId: transaction.accountId as AccountId,
-  categoryId:
-    // TODO:(lewis 2026-08-17 04:09) this needs to be a
-    transaction.type === "normal"
-      ? (transaction.categoryId as CategoryId)
-      : null,
-  date: transaction.date,
-  inflow: transaction.inflow,
-  outflow: transaction.outflow,
-  payeeId: transaction.payeeId,
-  memo: transaction.memo,
-});
+export function mapTransaction(t: ApiTransaction) {
+  if (t.type === "normal") {
+    return {
+      type: "normal" as const,
+      id: asTransactionId(t.id),
+      accountId: asAccountId(t.accountId),
+      categoryId: asCategoryId(t.categoryId),
+      payeeId: t.payeeId ? asPayeeId(t.payeeId) : null,
+      date: t.date,
+      memo: t.memo,
+      inflow: t.inflow,
+      outflow: t.outflow,
+    };
+  }
+  return {
+    type: "transfer" as const,
+    id: asTransactionId(t.id),
+    accountId: asAccountId(t.accountId),
+    payeeId: t.payeeId ? asPayeeId(t.payeeId) : null,
+    date: t.date,
+    memo: t.memo,
+    inflow: t.inflow,
+    outflow: t.outflow,
+    transferAccountId: asAccountId(t.transferAccountId),
+    transferTransactionId: asTransactionId(t.transferTransactionId),
+  };
+}

@@ -10,8 +10,11 @@ export type HydrationDateRange = {
 export function getHydrationDateRange(): HydrationDateRange {
   const now = new Date();
 
+  // const from = new Date(
+  //   Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11, 1)
+  // );
   const from = new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 11, 1)
+    Date.UTC(now.getUTCFullYear() - 5, now.getUTCMonth() - 11, 1)
   );
 
   const to = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));

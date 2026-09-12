@@ -20,7 +20,9 @@ export function moveCategoryGroup(
   const fromIndex = next.findIndex((g) => g.group.id === activeId);
   const toIndex = next.findIndex((g) => g.group.id === overId);
 
-  if (fromIndex === -1 || toIndex === -1) return view;
+  if (fromIndex === -1 || toIndex === -1) {
+    throw new Error("Category group not found");
+  }
 
   const [moved] = next.splice(fromIndex, 1);
   next.splice(toIndex, 0, moved);

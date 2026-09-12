@@ -1,12 +1,12 @@
+import { Allocation } from "../../../utils/autoAssignStrategies";
 import {
   FundingState,
   FundingStatus,
   MonthsToUpdate,
 } from "../types/assignTypes";
-import { AllocationContext } from "../../../hooks/useAllocation/useCategoryViewModel";
 
 export const generateResetAssignedState = (
-  allocationContext: AllocationContext
+  allocationContext: Allocation
 ): { monthsToUpdate: MonthsToUpdate[]; uiState: FundingState } => {
   const { currentMonths, categories, categoryGroups } = allocationContext;
 

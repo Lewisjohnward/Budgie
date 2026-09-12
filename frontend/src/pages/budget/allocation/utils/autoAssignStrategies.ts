@@ -1,6 +1,6 @@
 import {
-  CategoryBranded,
-  CategoryGroupBranded,
+  CategoryUserBranded,
+  CategoryGroupUserBranded,
   MonthBranded,
 } from "@/core/types/NormalizedData";
 import {
@@ -21,14 +21,15 @@ import {
 import { calculateAverageAssigned } from "../components/assign/utils/calculateAverageAssigned";
 
 export type Allocation = {
-  categories: Record<string, CategoryBranded>;
-  categoryGroups: Record<string, CategoryGroupBranded>;
+  categories: Record<string, CategoryUserBranded>;
+  categoryGroups: Record<string, CategoryGroupUserBranded>;
 
   currentMonths: MonthBranded[];
   previousMonths: MonthBranded[];
   previousYearMonths: MonthBranded[];
 
   rtaAvailable: number;
+  ignoreRtaAvailable: boolean;
 };
 
 type Strategy = {

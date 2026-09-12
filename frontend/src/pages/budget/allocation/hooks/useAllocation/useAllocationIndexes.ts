@@ -1,5 +1,5 @@
 import {
-  CategoryBranded,
+  CategoryUserBranded,
   MonthBranded,
   TransactionBranded,
 } from "@/core/types/NormalizedData";
@@ -21,7 +21,7 @@ type UseAllocationParams = {
   months: Record<MonthId, MonthBranded>;
   monthKeys: MonthKey[];
   monthIndex: number;
-  userCategories: Record<CategoryId, CategoryBranded>;
+  userCategories: Record<CategoryId, CategoryUserBranded>;
   transactions: Record<TransactionId, TransactionBranded>;
 };
 
@@ -118,6 +118,7 @@ export function useAllocationIndexes({
     const metrics: CategoryMetricsById = {};
 
     // Init from categories
+    // TODO:(lewis 2026-09-04 11:56) this as is a smell
     for (const categoryId of Object.keys(userCategories) as CategoryId[]) {
       metrics[categoryId] = {
         name: userCategories[categoryId].name,
@@ -130,7 +131,7 @@ export function useAllocationIndexes({
 
     // Transactions → transactionCount
     for (const tx of Object.values(transactions)) {
-      if (!tx.categoryId) continue;
+      if (tx.type === "transfer") continue;
 
       const entry = metrics[tx.categoryId];
       if (!entry) continue;

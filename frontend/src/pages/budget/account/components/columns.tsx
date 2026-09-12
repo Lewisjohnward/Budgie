@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { Column } from "@tanstack/react-table";
+import { Column, createColumnHelper } from "@tanstack/react-table";
+import { DetailedTransaction } from "../hooks/useAccountData";
 
 const createSortableHeader =
   (label: string) =>
@@ -20,87 +21,101 @@ const createSortableHeader =
     );
   };
 
+const columnHelper = createColumnHelper<DetailedTransaction>();
+
 export const columns = [
-  {
-    accessorKey: "accountName",
+  columnHelper.accessor("accountName", {
     id: "account",
     header: createSortableHeader("Account"),
     cell: (info) => {
       const value = info.getValue();
+
       return (
         <div className="truncate" title={value}>
           {value}
         </div>
       );
     },
-  },
-  {
-    accessorFn: (row) => new Date(row.date),
+  }),
+
+  columnHelper.accessor((row) => new Date(row.date), {
     id: "date",
     header: createSortableHeader("Date"),
-    cell: (info) => info.getValue<Date>().toLocaleDateString("en-GB"),
+    cell: (info) => info.getValue().toLocaleDateString("en-GB"),
     filterFn: (row, columnId, filterValue) => {
-      if (!filterValue || !filterValue.start || !filterValue.end) return true;
+      if (!filterValue || !filterValue.start || !filterValue.end) {
+        return true;
+      }
+
       const rowDate = row.getValue<Date>(columnId);
+
       return rowDate >= filterValue.start && rowDate <= filterValue.end;
     },
-  },
-  {
-    accessorKey: "payee",
+  }),
+
+  columnHelper.accessor("payee", {
     header: createSortableHeader("Payee"),
     cell: (info) => info.getValue() ?? "",
-  },
-  {
-    accessorFn: (row) => {
+  }),
+
+  columnHelper.accessor(
+    (row) => {
       if (row.unassigned) return "This needs a category";
+
       return `${row.categoryGroup.name} : ${row.category.name}`;
     },
-    id: "category",
-    header: createSortableHeader("Category"),
-    cell: (info) => {
-      const value = info.getValue();
-      const unassigned = info.row.original.unassigned;
-      return (
-        <div title={value} className="truncate">
-          <span
-            className={
-              unassigned ? "bg-yellow-300/70 px-2 py-[2px] rounded-lg" : ""
-            }
-          >
-            {value}
-          </span>
-        </div>
-      );
-    },
-  },
-  {
-    accessorKey: "memo",
+    {
+      id: "category",
+      header: createSortableHeader("Category"),
+      cell: (info) => {
+        const value = info.getValue();
+        const unassigned = info.row.original.unassigned;
+
+        return (
+          <div title={value} className="truncate">
+            <span
+              className={
+                unassigned ? "bg-yellow-300/70 px-2 py-[2px] rounded-lg" : ""
+              }
+            >
+              {value}
+            </span>
+          </div>
+        );
+      },
+    }
+  ),
+
+  columnHelper.accessor("memo", {
     header: createSortableHeader("Memo"),
     cell: (info) => {
       const value = info.getValue();
+
       return (
-        <div className="truncate" title={value}>
+        <div className="truncate" title={value ?? ""}>
           {value}
         </div>
       );
     },
-  },
-  {
-    accessorKey: "outflow",
+  }),
+
+  columnHelper.accessor("outflow", {
     id: "outflow",
     header: createSortableHeader("Outflow"),
     cell: (info) => {
-      const value = info.getValue<number>();
+      const value = info.getValue();
+
       return value === 0 ? "" : `£${value.toFixed(2)}`;
     },
-  },
-  {
-    accessorKey: "inflow",
+  }),
+
+  columnHelper.accessor("inflow", {
     id: "inflow",
     header: createSortableHeader("Inflow"),
     cell: (info) => {
-      const value = info.getValue<number>();
+      const value = info.getValue();
+
       return value === 0 ? "" : `£${value.toFixed(2)}`;
     },
-  },
+  }),
 ];

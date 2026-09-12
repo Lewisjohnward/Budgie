@@ -26,14 +26,11 @@ const baseQuery = fetchBaseQuery({
     }
 
     if (contentType?.includes("application/json")) {
-      console.log("json");
-      return response.json(); // Parse as JSON if Content-Type is JSON
+      return response.json();
     } else if (contentType?.includes("text/plain")) {
-      console.log("text");
-      return response.text(); // Parse as plain text if Content-Type is text
+      return response.text();
     } else if (response.status === 204) {
-      console.log("error 204");
-      return null; // Handle 204 No Content (empty response body)
+      return null;
     } else {
       throw new Error(`Unsupported content type: ${contentType}`);
     }
@@ -45,7 +42,6 @@ const baseQueryWithReauth: BaseQueryFn<
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  console.log("base query with reauth");
   let result = await baseQuery(args, api, extraOptions);
 
   // If server returns a 401 when sending a request refresh token
@@ -65,14 +61,13 @@ const baseQueryWithReauth: BaseQueryFn<
     }
   }
 
-  console.log("base query, no error");
-
   return result;
 };
 
 export const apiSlice = createApi({
   // baseQuery: baseQuery /* baseQueryWithReauth */,
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Accounts", "Categories"],
+  // TODO:(lewis 2026-09-09 13:19) bootstrap will need removing when finishing accounts
+  tagTypes: ["Accounts", "Categories", "Bootstrap"],
   endpoints: () => ({}),
 });

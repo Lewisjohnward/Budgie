@@ -2,7 +2,6 @@ import { MonthBranded } from "@/core/types/NormalizedData";
 import { z } from "zod";
 
 export const AddCategorySchema = z.object({
-  categoryGroupId: z.string(),
   name: z.string().min(1),
 });
 

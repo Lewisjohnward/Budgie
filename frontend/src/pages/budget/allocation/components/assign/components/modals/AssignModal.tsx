@@ -8,14 +8,15 @@ import {
 import { Button } from "@/core/components/uiLibrary/button";
 import { cn } from "@/core/lib/utils";
 import { getModalState } from "./assignModalStateMachine";
-import { AutoAssignModalState } from "../../hooks/useAutoAssign";
+import { AutoAssignModalController } from "../../hooks/useAutoAssignModal";
 
 export function AssignModal({
-  modalState,
+  modalController,
 }: {
-  modalState: AutoAssignModalState;
+  modalController: AutoAssignModalController;
 }) {
-  const { isOpen, confirm, close, goToNextMonth, fundingState } = modalState;
+  const { isOpen, confirm, close, goToNextMonth, fundingState } =
+    modalController;
 
   if (!fundingState) {
     return null;

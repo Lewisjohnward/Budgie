@@ -4,7 +4,10 @@ import {
   useAllocationIndexes,
 } from "./useAllocationIndexes";
 import { useBudgetSnapshot } from "./useCategories";
-import { useSelectedCategories } from "../../slices/selectedCategorySlice";
+import {
+  SelectableCategory,
+  useSelectedCategories,
+} from "../../slices/selectedCategorySlice";
 import {
   CategoryUserBranded,
   CategoryGroupUserBranded,
@@ -60,7 +63,7 @@ export type AllocationEngine = {
   };
 
   selection: {
-    categories: CategoryUserBranded[];
+    categories: SelectableCategory[];
 
     ids: CategoryId[];
 

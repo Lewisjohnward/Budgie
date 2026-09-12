@@ -51,25 +51,27 @@ export type ExcludeTarget =
 export type CategorySelectOptions = {
   id: CategoryGroupId;
   name: string;
-  categories: {
-    id: CategoryId;
-    name: string;
-    available: number;
-  }[];
+  categories: CategorySelectOption[];
 }[];
+
+export type CategorySelectOption = {
+  id: CategoryId;
+  name: string;
+  available: number;
+};
 
 export type CategoryActionTarget =
   | {
-    type: "categoryGroup";
-    id: CategoryGroupId;
-    name: string;
-  }
+      type: "categoryGroup";
+      id: CategoryGroupId;
+      name: string;
+    }
   | {
-    type: "category";
-    id: CategoryId;
-    name: string;
-    categoryGroupId: CategoryGroupId;
-  };
+      type: "category";
+      id: CategoryId;
+      name: string;
+      categoryGroupId: CategoryGroupId;
+    };
 
 export function useAllocation() {
   const dispatch = useAppDispatch();
@@ -120,7 +122,6 @@ export function useAllocation() {
   // Get RTA
   const rtaId = engine.entities.categories.rta.id;
   const currentRtaMonth = engine.computed.currentCategoryMonthMap[rtaId];
-  const previousRtaMonth = engine.computed?.previousCategoryMonthMap?.[rtaId];
 
   const totalAssignedCurrentMonth = engine.domain.currentMonths.reduce(
     (acc, current) => {

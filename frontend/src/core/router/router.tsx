@@ -1,6 +1,5 @@
 import { createBrowserRouter, Navigate, Outlet } from "react-router-dom";
 import {
-  AccountSettingsPage,
   BudgetPage,
   Allocation,
   Account,
@@ -11,7 +10,10 @@ import {
   NotFoundPage,
   SignUpPage,
 } from "@/pages";
-import { SpendingBreakdown, SpendingTrends } from "@/pages/budget/reflect/Reflect";
+import {
+  SpendingBreakdown,
+  SpendingTrends,
+} from "@/pages/budget/reflect/Reflect";
 import { RedirectIfAuth, RequireAuth, PersistLogin } from "@/core/components";
 import AccountSettings from "@/pages/accountSettings/AccountSettings";
 

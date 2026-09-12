@@ -1,4 +1,4 @@
-import { AllocationDomain } from "../../../hooks/useAllocation/useAllocationDomain";
+import { Allocation } from "../../../utils/autoAssignStrategies";
 import {
   FundingState,
   FundingStatus,
@@ -8,7 +8,7 @@ import { calculateAverageAssigned } from "./calculateAverageAssigned";
 import { roundToCents } from "@/pages/budget/utils/currency";
 
 export const generateAverageAssignedState = (
-  allocationContext: AllocationDomain
+  allocationContext: Allocation
 ): { monthsToUpdate: MonthsToUpdate[]; uiState: FundingState } => {
   const { categoryGroups, categories, currentMonths, previousYearMonths } =
     allocationContext;

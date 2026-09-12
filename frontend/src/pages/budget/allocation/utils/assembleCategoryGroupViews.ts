@@ -1,3 +1,4 @@
+import { CategoryUserBranded } from "@/core/types/NormalizedData";
 import { CategoryGroupId } from "../types/types";
 import { CategoryGroupsWithMetrics } from "./buildCategoryGroupMetrics";
 import { CategoryViewRow } from "./buildCategoryViewModel";
@@ -14,13 +15,13 @@ type CategoryGroupViewInput = {
     name: string;
     position: number;
   };
-  rows: CategoryViewRow[];
+  rows: CategoryViewRow<CategoryUserBranded>[];
 };
 
 // Output
 export type CategoryGroupViewWithMetrics = {
   group: CategoryGroupWithMetrics;
-  rows: CategoryViewRow[];
+  rows: CategoryViewRow<CategoryUserBranded>[];
 };
 
 export type CategoryGroupWithMetrics = {

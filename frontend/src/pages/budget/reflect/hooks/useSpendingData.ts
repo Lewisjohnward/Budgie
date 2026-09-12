@@ -31,7 +31,6 @@ export const useSpendingData = (page: ReflectPageKey) => {
   const months = Object.values(data.months);
   const categories = Object.values(data.categories);
   const uniqueMonths = [...new Set(months.map((m) => m.month))];
-  const targetMonthDate = uniqueMonths[monthIndex];
 
   const uncategorisedCategoryId = categories.find(
     (c) => c.name === UNCATEGORISED_CATEGORY

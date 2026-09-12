@@ -28,9 +28,6 @@ export const createTransaction = (
     outflow: !isInflow ? faker.number.int({ min: 10, max: 500 }) : 0,
     payee: faker.company.name(),
     memo: faker.lorem.words({ min: 1, max: 5 }),
-    cleared: faker.datatype.boolean(),
-    createdAt: date,
-    updatedAt: date,
     category: categoryMap[categoryId as keyof typeof categoryMap],
     ...overrides,
   };

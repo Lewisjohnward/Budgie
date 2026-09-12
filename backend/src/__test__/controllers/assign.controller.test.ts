@@ -120,42 +120,48 @@ describe("Assign", () => {
       );
     });
     describe("Success", () => {
-      it.only("Should assign to a single month", async () => {
+      it("Should assign to a single month", async () => {
         const testCategory = await getTestCategory(cookie);
         const rtaCategory = await getRTACategory(cookie);
 
         const updatedMonths = [
           {
-            monthId: testCategory!.months[0],
+            monthId: testCategory.months[0],
             assigned: 50,
           },
         ];
 
         const res = await updateMonthAssignments(cookie, updatedMonths);
 
-        console.log("res bod:", res.body);
-        // expect(res.statusCode).toBe(200);
-        //
-        // const body = res.body;
-        //
-        // // Check test category got updated
-        // const testCategoryMonths = body[testCategory.id];
-        // const rtaCategoryMonths = body[rtaCategory.id];
-        //
-        // expect(testCategoryMonths[0].assigned).toBe("50");
-        // expect(testCategoryMonths[0].available).toBe("50");
-        // expect(testCategoryMonths[1].available).toBe("50");
-        //
-        // expect(rtaCategoryMonths[0].available).toBe("-50");
-        // expect(rtaCategoryMonths[1].available).toBe("-50");
+        expect(res.statusCode).toBe(200);
+
+        const { body } = res;
+
+        const testCategoryMonths = [
+          body[testCategory.months[0]],
+          body[testCategory.months[1]],
+        ];
+
+        const rtaCategoryMonths = [
+          body[rtaCategory.months[0]],
+          body[rtaCategory.months[1]],
+        ];
+
+        expect(testCategoryMonths[0].assigned).toBe(50);
+        expect(testCategoryMonths[0].available).toBe(50);
+        expect(testCategoryMonths[1].available).toBe(50);
+
+        expect(rtaCategoryMonths[0].available).toBe(-50);
+        expect(rtaCategoryMonths[1].available).toBe(-50);
       });
+
       it("Should handle assigning 0 to a month", async () => {
         const testCategory = await getTestCategory(cookie);
         const rtaCategory = await getRTACategory(cookie);
 
         const updatedMonthsA = [
           {
-            monthId: testCategory!.months[0],
+            monthId: testCategory.months[0],
             assigned: 50,
           },
         ];
@@ -164,25 +170,33 @@ describe("Assign", () => {
 
         const updatedMonthsB = [
           {
-            monthId: testCategory!.months[0],
+            monthId: testCategory.months[0],
             assigned: 0,
           },
         ];
 
         const res = await updateMonthAssignments(cookie, updatedMonthsB);
 
-        const body = res.body;
+        expect(res.statusCode).toBe(200);
 
-        // Check test category got updated
-        const testCategoryMonths = body[testCategory.id];
-        const rtaCategoryMonths = body[rtaCategory.id];
+        const { body } = res;
 
-        expect(testCategoryMonths[0].assigned).toBe("0");
-        expect(testCategoryMonths[0].available).toBe("0");
-        expect(testCategoryMonths[1].available).toBe("0");
+        const testCategoryMonths = [
+          body[testCategory.months[0]],
+          body[testCategory.months[1]],
+        ];
 
-        expect(rtaCategoryMonths[0].available).toBe("0");
-        expect(rtaCategoryMonths[1].available).toBe("0");
+        const rtaCategoryMonths = [
+          body[rtaCategory.months[0]],
+          body[rtaCategory.months[1]],
+        ];
+
+        expect(testCategoryMonths[0].assigned).toBe(0);
+        expect(testCategoryMonths[0].available).toBe(0);
+        expect(testCategoryMonths[1].available).toBe(0);
+
+        expect(rtaCategoryMonths[0].available).toBe(0);
+        expect(rtaCategoryMonths[1].available).toBe(0);
       });
 
       it("Should be able to assign to multiple months", async () => {
@@ -202,24 +216,36 @@ describe("Assign", () => {
         ];
 
         const res = await updateMonthAssignments(cookie, updatedMonths);
+
         expect(res.statusCode).toBe(200);
 
         const { body } = res;
 
-        const testCategoryMonths = body[testCategory.id];
-        const anotherTestCategoryMonths = body[anotherTestCategory.id];
-        const rtaCategoryMonths = body[rtaCategory.id];
+        const testCategoryMonths = [
+          body[testCategory.months[0]],
+          body[testCategory.months[1]],
+        ];
 
-        expect(testCategoryMonths[0].assigned).toBe("50");
-        expect(testCategoryMonths[0].available).toBe("50");
-        expect(testCategoryMonths[1].available).toBe("50");
+        const anotherTestCategoryMonths = [
+          body[anotherTestCategory.months[0]],
+          body[anotherTestCategory.months[1]],
+        ];
 
-        expect(anotherTestCategoryMonths[0].assigned).toBe("10");
-        expect(anotherTestCategoryMonths[0].available).toBe("10");
-        expect(anotherTestCategoryMonths[1].available).toBe("10");
+        const rtaCategoryMonths = [
+          body[rtaCategory.months[0]],
+          body[rtaCategory.months[1]],
+        ];
 
-        expect(rtaCategoryMonths[0].available).toBe("-60");
-        expect(rtaCategoryMonths[1].available).toBe("-60");
+        expect(testCategoryMonths[0].assigned).toBe(50);
+        expect(testCategoryMonths[0].available).toBe(50);
+        expect(testCategoryMonths[1].available).toBe(50);
+
+        expect(anotherTestCategoryMonths[0].assigned).toBe(10);
+        expect(anotherTestCategoryMonths[0].available).toBe(10);
+        expect(anotherTestCategoryMonths[1].available).toBe(10);
+
+        expect(rtaCategoryMonths[0].available).toBe(-60);
+        expect(rtaCategoryMonths[1].available).toBe(-60);
       });
     });
   });

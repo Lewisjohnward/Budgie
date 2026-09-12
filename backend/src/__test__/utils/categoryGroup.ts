@@ -1,6 +1,7 @@
 import request, { type Response } from "supertest";
 import app from "../../app";
 import {
+  UpdateCategoryGroupDto,
   type CategoryGroupsMap,
   type CategoryGroupSystemMap,
   type CategoryGroupUserDto,
@@ -69,7 +70,7 @@ export const updateCategoryGroup = async (
   cookie: string,
   id: string,
   payload?: UpdateCategoryGroupPayloadTest
-): Promise<CategoryGroupUserDto> => {
+): Promise<UpdateCategoryGroupDto> => {
   const res = await request(app)
     .patch(`${CATEGORY_GROUPS_ENDPOINT_URL}/${id}`)
     .set("Authorization", `Bearer ${cookie}`)

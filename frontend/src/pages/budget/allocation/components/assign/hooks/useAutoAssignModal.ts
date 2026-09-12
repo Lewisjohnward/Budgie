@@ -13,7 +13,7 @@ type UseAutoAssignModalParams = {
 };
 
 // Output
-export type UseAutoAssignModalReturn = {
+export type AutoAssignModalController = {
   isOpen: boolean;
   fundingState: FundingState | null;
 
@@ -26,7 +26,7 @@ export type UseAutoAssignModalReturn = {
 export const useAutoAssignModal = ({
   onConfirm,
   continueToNextMonth,
-}: UseAutoAssignModalParams): UseAutoAssignModalReturn => {
+}: UseAutoAssignModalParams): AutoAssignModalController => {
   const [open, setOpen] = useState(false);
   const [fundingState, setFundingState] = useState<FundingState | null>(null);
   const [monthsToUpdate, setMonthsToUpdate] = useState<MonthsToUpdate[]>([]);

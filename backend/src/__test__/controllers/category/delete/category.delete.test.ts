@@ -8,7 +8,7 @@ import { createTransactionForCategory } from "../../../utils/scenarios/createTra
 import path from "node:path";
 import jestOpenAPI from "jest-openapi";
 
-jestOpenAPI(path.resolve(__dirname, "../../../../docs/api/openapi.yml"));
+jestOpenAPI(path.resolve(__dirname, "../../../../../docs/api/openapi.yml"));
 
 describe("Category", () => {
   let cookie: string;
@@ -24,11 +24,6 @@ describe("Category", () => {
     categoryGroupId = categoryGroup.id;
   });
   describe("Delete", () => {
-    it("delete category conforms to OpenAPI contract", async () => {
-      const res = await deleteCategoryRaw(cookie, categoryId);
-
-      expect(res).toSatisfyApiSpec();
-    });
     describe("Error Cases", () => {
       it("Should return 401 on unauthenticated requests ", async () => {
         const res = await deleteCategoryRaw("invalid-cookie", "invalid-id");

@@ -35,11 +35,3 @@ function ForgotPasswordForm() {
     </div>
   );
 }
-
-function ResetSuccess() {
-  return (
-    <div>
-      <div>hello</div>
-    </div>
-  );
-}

@@ -1,5 +1,3 @@
-import { useAppDispatch } from "@/core/hooks/reduxHooks";
-import { toggleEditAccount } from "@/core/slices/dialogSlice";
 import { AccountLayout } from "./components/AccountLayout";
 import { AccountAlert } from "./components/AccountAlert";
 import { AccountHeader } from "./components/AccountHeader";
@@ -10,10 +8,9 @@ import { useAccount } from "./hooks/useAccount";
 import { useEffect } from "react";
 
 export default function Account() {
-  const dispatch = useAppDispatch();
-
   const {
     account,
+    isDisplayingAllAccounts,
     accountsAvailable,
     table,
     displayTransactionFormRow,
@@ -46,8 +43,10 @@ export default function Account() {
         <AccountHeader
           name={account.name}
           type={account.type}
-          showEditButton={account.name !== "all"}
-          onEdit={() => dispatch(toggleEditAccount())}
+          showEditButton={!isDisplayingAllAccounts}
+          onEdit={() => {
+            // TODO:(lewis 2026-09-10 09:24) implement account editing
+          }}
         />
       }
       info={<AccountInfo balance={account.balance} />}

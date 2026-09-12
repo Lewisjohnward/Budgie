@@ -1,7 +1,7 @@
 import { Textarea } from "@/core/components/uiLibrary/textarea";
 import { ChevronDownIcon } from "lucide-react";
-import { NoteViewModel } from "../../hooks/useNote";
 import { useRef, useEffect } from "react";
+import { NoteViewModel } from "../../hooks/useNoteViewModel";
 
 type NoteProps = {
   noteViewModel: NoteViewModel;
@@ -28,8 +28,9 @@ export function Note({ noteViewModel: { note, ui } }: NoteProps) {
         <span className="flex items-center gap-2">
           <span className="text-sm font-bold">Notes</span>
           <ChevronDownIcon
-            className={`transition-transform duration-100 ${ui.value ? "rotate-0" : "-rotate-90"
-              }`}
+            className={`transition-transform duration-100 ${
+              ui.value ? "rotate-0" : "-rotate-90"
+            }`}
           />
         </span>
       </button>

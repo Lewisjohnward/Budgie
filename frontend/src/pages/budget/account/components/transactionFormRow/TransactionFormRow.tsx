@@ -1,9 +1,6 @@
 import { useGetAccountsQuery } from "@/core/api/budgetApiSlice";
 import { Input } from "@/core/components/uiLibrary/input";
-import { DatePickerDemo } from "@/core/components/uiLibrary/datePicker";
-import { z } from "zod";
-import { FormProvider, useForm, useFormContext } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { FormProvider, useFormContext } from "react-hook-form";
 import { TableCell, TableRow } from "@/core/components/uiLibrary/table";
 import {
   Popover,
@@ -12,13 +9,11 @@ import {
 } from "@/core/components/uiLibrary/popover";
 import { ChevronDown } from "lucide-react";
 import { PopoverArrow } from "@radix-ui/react-popover";
-import { useState } from "react";
 import clsx from "clsx";
 import { TransactionFormManager } from "../../hooks/useAccount";
 import { TransactionFormMode } from "../../hooks/useTransactionFormRow";
 import { SelectPayee } from "./selectPayee";
 import { SelectCategory } from "./selectCategory";
-import { Separator } from "../Separator";
 import { Button } from "@/core/components/uiLibrary/button";
 import { SelectDate } from "./selectDate/SelectDate";
 

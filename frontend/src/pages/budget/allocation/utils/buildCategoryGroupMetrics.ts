@@ -1,6 +1,6 @@
 import {
-  CategoryBranded,
-  CategoryGroupBranded,
+  CategoryUserBranded,
+  CategoryGroupUserBranded,
   MonthBranded,
 } from "@/core/types/NormalizedData";
 import { CategoryGroupId, CategoryId } from "../types/types";
@@ -8,8 +8,8 @@ import { CategoryMetricsById } from "../hooks/useAllocation/useAllocationIndexes
 
 // Input
 type BuildCategoryGroupsWithMetricsParams = {
-  categoryGroups: Record<CategoryGroupId, CategoryGroupBranded>;
-  categories: Record<CategoryId, CategoryBranded>;
+  categoryGroups: Record<CategoryGroupId, CategoryGroupUserBranded>;
+  categories: Record<CategoryId, CategoryUserBranded>;
   currentUserCategoryMonthMap: Record<CategoryId, MonthBranded>;
   categoryMetricsById: CategoryMetricsById;
 };

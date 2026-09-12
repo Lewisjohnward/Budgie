@@ -2,15 +2,12 @@ import {
   AccountId,
   CategoryGroupId,
   CategoryId,
-  CategoryMonthMap,
-  MemoId,
   MonthId,
   MonthKey,
   NoteId,
   PayeeId,
   TransactionId,
 } from "@/pages/budget/allocation/types/types";
-import { Month } from "./Allocation";
 
 export type Account = {
   id: string;
@@ -26,8 +23,8 @@ export type Transaction = {
   accountId: string;
   categoryId: string;
   date: Date;
-  inflow: number | null;
-  outflow: number | null;
+  inflow: number;
+  outflow: number;
   payee: string | null;
   memo: string | null;
   category: string;
@@ -140,15 +137,31 @@ export type AccountBranded = {
   balance: number;
 };
 
-export type TransactionBranded = {
+export type TransactionBranded = TransactionNormal | TransactionTransfer;
+
+export type TransactionNormal = {
+  type: "normal";
   id: TransactionId;
   accountId: AccountId;
-  categoryId: CategoryId | null;
+  categoryId: CategoryId;
+  payeeId: PayeeId | null;
   date: string;
+  memo: string;
   inflow: number;
   outflow: number;
-  payeeId: string | null;
+};
+
+export type TransactionTransfer = {
+  type: "transfer";
+  id: TransactionId;
+  accountId: AccountId;
+  payeeId: PayeeId | null;
+  date: string;
   memo: string;
+  inflow: number;
+  outflow: number;
+  transferAccountId: AccountId;
+  transferTransactionId: TransactionId;
 };
 
 export type PayeeBranded = {
@@ -163,8 +176,8 @@ export type PayeeBranded = {
 export type BudgetSnapshot = {
   categoryGroups: {
     user: Record<CategoryGroupId, CategoryGroupUserBranded>;
-    inflow: CategoryGroupUserBranded;
-    uncategorised: CategoryGroupUserBranded;
+    inflow: CategoryGroupSystemBranded;
+    uncategorised: CategoryGroupSystemBranded;
   };
   categories: {
     user: Record<CategoryId, CategoryUserBranded>;

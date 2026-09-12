@@ -7,8 +7,6 @@ import clsx from "clsx";
 export function AccountOverview() {
   const { userHasAccounts, accounts, balance } = useAccounts();
 
-  const currency = "£";
-
   // TODO: need to handle mutiple accounts with sum of money
   // TODO: handle negative numbers
   // TODO: persist expanded close budget state when opening navbar
@@ -28,7 +26,7 @@ export function AccountOverview() {
                   <ChevronDownIcon
                     className={clsx(
                       "m-auto transition-transform duration-100",
-                      accounts.cash.expanded ? "rotate-0" : "-rotate-90",
+                      accounts.cash.expanded ? "rotate-0" : "-rotate-90"
                     )}
                   />
                   <p className="text-sm font-[400]">CASH</p>
@@ -38,7 +36,7 @@ export function AccountOverview() {
               {accounts.cash.expanded && (
                 <div className="space-y-2">
                   {accounts.cash.accounts.map((account) => (
-                    <AccountCard account={account} currency={currency} />
+                    <AccountCard account={account} />
                   ))}
                 </div>
               )}
