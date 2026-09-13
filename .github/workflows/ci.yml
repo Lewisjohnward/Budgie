@@ -1,0 +1,298 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "What should this workflow do?"
+        required: true
+        default: "test"
+        type: choice
+        options:
+          - test
+          - deploy
+
+concurrency:
+  group: budgie-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      e2e: ${{ steps.filter.outputs.e2e }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+            e2e:
+              - 'e2e/**'
+
+  backend:
+    needs: changes
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      needs.changes.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: myuser
+          POSTGRES_PASSWORD: mypassword
+          POSTGRES_DB: mydb
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd="pg_isready -U myuser -d mydb"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DATABASE_URL: postgresql://myuser:mypassword@localhost:5433/mydb
+      PAYLOAD_SECRET: ci-test-secret
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate --schema=src/shared/prisma/schema.prisma
+
+      - name: Run tests
+        run: npm run test:integration
+
+      - name: Build
+        run: npm run build
+
+  frontend:
+    needs: changes
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test:integration
+
+      - name: Build
+        run: npm run build
+
+  e2e:
+    needs: changes
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      needs.changes.outputs.backend == 'true' ||
+      needs.changes.outputs.frontend == 'true' ||
+      needs.changes.outputs.e2e == 'true'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: myuser
+          POSTGRES_PASSWORD: mypassword
+          POSTGRES_DB: budgie_e2e_db
+          PORT: 8001
+          DATABASE_URL: postgresql://myuser:mypassword@localhost:5434/budgie_e2e_db
+          ENABLE_TEST_ROUTES: true
+          ENABLE_DEMO_ROUTES: true
+          NODE_ENV: test
+          DEMO_EMAIL: demo@example.com
+          DEMO_PASSWORD: demo-passwordA£
+          DEMO_PASSWORD_HASH: $2b$10$QA7KmsPsIclt6t4TBaIqCu2dUgpz8sRG3mhohE78.pbzdk7ppWZDe
+          DEMO_PASSWORD_SALT: $2b$10$QA7KmsPsIclt6t4TBaIqCu
+          DEMO_RESET_SECRET: test-secret
+          PAYLOAD_SECRET: some-test-secret
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd="pg_isready -U myuser -d budgie_e2e_db"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      PAYLOAD_SECRET: ci-test-secret
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+            e2e/package-lock.json
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Generate Prisma client
+        working-directory: backend
+        run: npx prisma generate --schema=src/shared/prisma/schema.prisma
+
+      - name: Reset E2E database
+        working-directory: backend
+        run: make reset-e2e-db
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install E2E dependencies
+        working-directory: e2e
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        working-directory: e2e
+        run: npm test
+
+  docker:
+    if: |
+      (
+        github.event_name == 'push' &&
+        github.ref == 'refs/heads/main'
+      ) ||
+      (
+        github.event_name == 'workflow_dispatch' &&
+        inputs.mode == 'deploy'
+      )
+      &&
+      (needs.backend.result == 'success' || needs.backend.result == 'skipped') &&
+      (needs.frontend.result == 'success' || needs.frontend.result == 'skipped') &&
+      needs.e2e.result == 'success'
+    runs-on: ubuntu-latest
+    needs:
+      - backend
+      - frontend
+      - e2e
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ghcr.io/lewisjohnward/budgie-backend:latest
+            ghcr.io/lewisjohnward/budgie-backend:${{ github.sha }}
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          build-args: |
+            VITE_DEMO_MODE=false
+          tags: |
+            ghcr.io/lewisjohnward/budgie-frontend:latest
+            ghcr.io/lewisjohnward/budgie-frontend:${{ github.sha }}
+
+      - name: Build and push demo frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          build-args: |
+            VITE_DEMO_MODE=true
+          tags: |
+            ghcr.io/lewisjohnward/budgie-frontend:demo
+            ghcr.io/lewisjohnward/budgie-frontend:demo-${{ github.sha }}
+
+  deploy:
+    if: |
+      (
+        github.event_name == 'push' &&
+        github.ref == 'refs/heads/main'
+      ) ||
+      (
+        github.event_name == 'workflow_dispatch' &&
+        inputs.mode == 'deploy'
+      )
+    runs-on: ubuntu-latest
+    needs: docker
+
+    steps:
+      - name: Deploy to Linode
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: root
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /opt/budgie
+            git fetch origin
+            git reset --hard origin/main
+            docker compose --env-file .env.demo -f docker-compose.demo.yml pull
+            docker compose --env-file .env.demo -f docker-compose.demo.yml up -d
