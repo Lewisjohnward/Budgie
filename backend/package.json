@@ -11,6 +11,7 @@
     "build": "tsc",
     "test": "jest -i",
     "test:unit:watch": "jest --config jest.config.unit.ts --watch",
+    "test:integration": "jest --config jest.config.integration.ts /src/__test__/",
     "test:integration:watch": "jest --config jest.config.integration.ts --watch /src/__test__/"
   },
   "prisma": {
