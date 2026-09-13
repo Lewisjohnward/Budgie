@@ -16,8 +16,7 @@ services:
       - "5432:5432"
 
   backend:
-    build:
-      context: ./backend
+    image: ghcr.io/lewisjohnward/budgie-backend:latest
     env_file:
       - ./backend/.env
     environment:
@@ -30,8 +29,7 @@ services:
         condition: service_healthy
 
   frontend:
-    build:
-      context: ./frontend
+    image: ghcr.io/lewisjohnward/budgie-frontend:latest
     ports:
       - "80:80"
     depends_on:
