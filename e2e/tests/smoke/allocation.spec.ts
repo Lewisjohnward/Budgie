@@ -11,6 +11,17 @@ test("allocation page loads for authenticated user", async ({
   page,
   request,
 }) => {
+  page.on("request", (request) => {
+    if (request.url().includes("auth")) {
+      console.log("REQUEST:", request.method(), request.url());
+    }
+  });
+
+  page.on("response", async (response) => {
+    if (response.url().includes("auth")) {
+      console.log("RESPONSE:", response.status(), response.url());
+    }
+  });
   const credentials = await seed(request, "login");
 
   await login(page, credentials as RegisterPayload);

@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "dev:e2e": "VITE_API_URL=http://localhost:8001 VITE_DEMO_MODE=false vite --host --port 5174",
-    "dev:e2e:demo": "VITE_API_URL=http://localhost:8001 VITE_DEMO_MODE=true vite --host --port 5175",
+    "dev:e2e": "VITE_API_URL=http://localhost:8001/api/v1 VITE_DEMO_MODE=false vite --host --port 5174",
+    "dev:e2e:demo": "VITE_API_URL=http://localhost:8001/api/v1 VITE_DEMO_MODE=true vite --host --port 5175",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
