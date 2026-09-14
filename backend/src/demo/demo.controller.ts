@@ -16,7 +16,7 @@ export const reset = async (
         await demoService.seed(tx);
       },
       {
-        timeout: 15_000,
+        timeout: 60_000,
       }
     );
 
