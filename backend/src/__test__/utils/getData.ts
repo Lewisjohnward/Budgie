@@ -5,21 +5,21 @@ import { NormalisedAccounts } from "../../features/budget/core/account/types/acc
 
 export const getCategories = async (cookie: string) => {
   const res = await request(app)
-    .get("/budget/categories")
+    .get("/api/v1/budget/categories")
     .set("Authorization", `Bearer ${cookie}`);
   return res.body as NormalisedData;
 };
 
 export const getAccounts = async (cookie: string) => {
   const res = await request(app)
-    .get("/budget/account")
+    .get("/api/v1/budget/account")
     .set("Authorization", `Bearer ${cookie}`);
   return res.body as NormalisedAccounts;
 };
 
 export const getReadyToAssignMonths = async (cookie: string) => {
   const res = await request(app)
-    .get("/budget/categories")
+    .get("/api/v1/budget/categories")
     .set("Authorization", `Bearer ${cookie}`);
 
   const { categories, months } = res.body as NormalisedData;

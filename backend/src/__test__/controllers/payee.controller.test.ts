@@ -180,7 +180,7 @@ describe("Payee", () => {
         .fill(null)
         .map(() =>
           request(app)
-            .post("/budget/transaction")
+            .post("/api/v1/budget/transaction")
             .set("Authorization", `Bearer ${cookie}`)
             .send(transaction)
         );
@@ -413,7 +413,7 @@ describe("Payee", () => {
       ).toBeDefined();
 
       await request(app)
-        .delete("/budget/payees")
+        .delete("/api/v1/budget/payees")
         .set("Authorization", `Bearer ${cookie}`)
         .send({ payeeId: createdPayee!.id })
         .expect(200);
@@ -477,7 +477,7 @@ describe("Payee", () => {
       expect(txsWithPayeeToDelete.length).toBe(2);
 
       await request(app)
-        .delete("/budget/payees")
+        .delete("/api/v1/budget/payees")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           payeeId: payeesToDelete!.id,
@@ -516,7 +516,7 @@ describe("Payee", () => {
       const cookie2 = await login(user2);
 
       await request(app)
-        .delete("/budget/payees")
+        .delete("/api/v1/budget/payees")
         .set("Authorization", `Bearer ${cookie2}`)
         .send({ payeeId: user1Payee.id })
         .expect(404);
@@ -558,7 +558,7 @@ describe("Payee", () => {
       const user2Payee = Object.values(user2Payees)[0];
 
       await request(app)
-        .delete("/budget/payees")
+        .delete("/api/v1/budget/payees")
         .set("Authorization", `Bearer ${cookie2}`)
         .send({
           payeeId: user2Payee.id,
@@ -582,7 +582,7 @@ describe("Payee", () => {
 
       // Attempt to delete the system payee - backend should reject
       await request(app)
-        .delete("/budget/payees")
+        .delete("/api/v1/budget/payees")
         .set("Authorization", `Bearer ${cookie}`)
         .send({ payeeId: systemPayee!.id })
         .expect(400);
@@ -753,7 +753,7 @@ describe("Payee", () => {
         const payeeId = Object.values(payees)[0].id;
 
         await request(app)
-          .patch("/budget/payees/bulk")
+          .patch("/api/v1/budget/payees/bulk")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             payeeIds: [payeeId],
@@ -774,7 +774,7 @@ describe("Payee", () => {
 
         // Attempt to bulk edit the system payee - backend should reject
         await request(app)
-          .patch("/budget/payees/bulk")
+          .patch("/api/v1/budget/payees/bulk")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             payeeIds: [systemPayee!.id],
@@ -1010,7 +1010,7 @@ describe("Payee", () => {
         const payeeId = Object.values(payees)[0].id;
 
         await request(app)
-          .post("/budget/payees/combine")
+          .post("/api/v1/budget/payees/combine")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             payeeIds: [payeeId],

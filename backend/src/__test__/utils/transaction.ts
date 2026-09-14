@@ -40,7 +40,7 @@ export const addTransactionLegacy = async (
     : `test_transaction_${uniqueId}`;
 
   await request(app)
-    .post("/budget/transaction")
+    .post("/api/v1/budget/transaction")
     .set("Authorization", `Bearer ${cookie}`)
     .send({ ...transaction, memo: uniqueMemo })
     .expect(expectCode);
@@ -74,7 +74,7 @@ export const createTransactionRaw = async (
   transaction: TestInsertTransactionInputWithoutUserId
 ): Promise<Response> => {
   const res = await request(app)
-    .post("/budget/transaction")
+    .post("/api/v1/budget/transaction")
     .set("Authorization", `Bearer ${cookie}`)
     .send(transaction);
 
@@ -92,7 +92,7 @@ export const createTransaction = async (
   transaction: TestInsertTransactionInputWithoutUserId
 ): Promise<CreateTransactionDto> => {
   const res = await request(app)
-    .post("/budget/transaction")
+    .post("/api/v1/budget/transaction")
     .set("Authorization", `Bearer ${cookie}`)
     .send(transaction);
 
@@ -117,7 +117,7 @@ export const deleteTransactions = async (
   expectCode: number = 200
 ) => {
   await request(app)
-    .delete("/budget/transaction")
+    .delete("/api/v1/budget/transaction")
     .set("Authorization", `Bearer ${cookie}`)
     .send({ transactionIds })
     .expect(expectCode);
@@ -129,7 +129,7 @@ export const editTransactions = async (
   expectCode: number = 200
 ) => {
   await request(app)
-    .patch("/budget/transaction")
+    .patch("/api/v1/budget/transaction")
     .set("Authorization", `Bearer ${cookie}`)
     .send({ transactions: transactionsToUpdate })
     .expect(expectCode);
@@ -141,7 +141,7 @@ export const duplicateTransactions = async (
   expectCode: number = 200
 ) => {
   await request(app)
-    .post("/budget/transaction/duplicate")
+    .post("/api/v1/budget/transaction/duplicate")
     .set("Authorization", `Bearer ${cookie}`)
     .send({ transactionIds: transactionsToDuplicate })
     .expect(expectCode);
@@ -155,7 +155,7 @@ const testAccountData = {
 
 export const addAccount = async (cookie: string) => {
   return await request(app)
-    .post("/budget/account")
+    .post("/api/v1/budget/account")
     .set("Authorization", `Bearer ${cookie}`)
     .send(testAccountData);
 };
@@ -166,7 +166,7 @@ export const editSingleTransaction = async (
   payload: EditSingleTransactionInput
 ) => {
   const res = await request(app)
-    .patch(`/budget/transaction/${id}`)
+    .patch(`/api/v1/budget/transaction/${id}`)
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload);
 
@@ -185,7 +185,7 @@ export const editBulkTransactions = async (
   payload: TestEditBulkTransactionsInputWithoutUserId
 ) => {
   const res = await request(app)
-    .patch(`/budget/transaction/bulk`)
+    .patch(`/api/v1/budget/transaction/bulk`)
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload);
 

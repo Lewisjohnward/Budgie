@@ -9,7 +9,7 @@ export const updateMemo = async (
   updatedContent?: string
 ) => {
   const res = await request(app)
-    .patch(`/budget/memo/${memoId}`)
+    .patch(`/api/v1/budget/memo/${memoId}`)
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       content: updatedContent,

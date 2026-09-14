@@ -30,7 +30,7 @@ describe("Transaction Create", () => {
       };
 
       const res = await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .send(testTransaction);
 
       expect(res.status).toBe(401);
@@ -133,7 +133,7 @@ describe("Transaction Create", () => {
       const transactionDate = new Date(2025, 6, 15, 1, 0, 0);
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           accountId: account.id,
@@ -151,7 +151,7 @@ describe("Transaction Create", () => {
         const account = await createAccountAndFetch(cookie);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             accountId: account.id,
@@ -203,7 +203,7 @@ describe("Transaction Create", () => {
         };
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send(testTransaction)
           .expect(400);
@@ -217,7 +217,7 @@ describe("Transaction Create", () => {
         };
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send(testTransaction)
           .expect(400);

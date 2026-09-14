@@ -22,7 +22,7 @@ const mockId = "dbfbbeb4-89d9-4b08-b627-1be5b4748107";
 describe("Add account", () => {
   it("should return 400 for missing required fields", async () => {
     const response = await request(app)
-      .post("/budget/account")
+      .post("/api/v1/budget/account")
       .send({})
       .set("Authorization", "Bearer mock-token");
 
@@ -32,7 +32,7 @@ describe("Add account", () => {
 
   it("should return 400 for missing type or balance", async () => {
     const response = await request(app)
-      .post("/budget/account")
+      .post("/api/v1/budget/account")
       .send({
         name: "Personal Account",
       })
@@ -44,7 +44,7 @@ describe("Add account", () => {
 
   it("should return 400 for invalid type", async () => {
     const response = await request(app)
-      .post("/budget/account")
+      .post("/api/v1/budget/account")
       .send({
         name: "Invalid Type Account",
         type: "INVALID_TYPE",
@@ -66,7 +66,7 @@ describe("Add account", () => {
     console.log("MOCK DATA", mockData);
 
     const response = await request(app)
-      .post("/budget/account")
+      .post("/api/v1/budget/account")
       .send(mockData)
       .set("Authorization", "Bearer mock-token");
 
@@ -87,7 +87,7 @@ describe("Add account", () => {
     };
 
     const response = await request(app)
-      .post("/budget/account")
+      .post("/api/v1/budget/account")
       .send(mockData)
       .set("Authorization", "Bearer mock-token");
 
@@ -106,7 +106,7 @@ describe("getAccounts", () => {
     (selectAccounts as jest.Mock).mockRejectedValue(
       new Error("Database error")
     );
-    const response = await request(app).get("/budget/accounts");
+    const response = await request(app).get("/api/v1/budget/accounts");
     expect(response.status).toBe(500);
   });
 
@@ -114,7 +114,7 @@ describe("getAccounts", () => {
     const selectAccountsMock = selectAccounts as jest.Mock;
     selectAccountsMock.mockResolvedValue([]);
 
-    const response = await request(app).get("/budget/accounts");
+    const response = await request(app).get("/api/v1/budget/accounts");
 
     expect(response.status).toBe(200);
   });

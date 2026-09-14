@@ -11,7 +11,7 @@ export const testUser = {
 export const login = async (
   user: { email: string; password: string } = testUser
 ): Promise<string> => {
-  const res = await request(app).post("/user/auth/login").send(user);
+  const res = await request(app).post("/api/v1/user/auth/login").send(user);
   const cookie = res.body;
 
   return cookie;
@@ -25,7 +25,7 @@ export const registerRaw = async ({
   email?: string;
   password?: string;
 }): Promise<Response> => {
-  return await request(app).post("/user/auth/register").send({
+  return await request(app).post("/api/v1/user/auth/register").send({
     email,
     password,
   });
@@ -39,7 +39,7 @@ export const register = async ({
   email: string;
   password: string;
 }): Promise<string> => {
-  await request(app).post("/user/auth/register").send({
+  await request(app).post("/api/v1/user/auth/register").send({
     email,
     password,
   });
@@ -53,20 +53,20 @@ export const register = async ({
 export const registerUser = async (
   user: { email: string; password: string } = testUser
 ) => {
-  const res = await request(app).post("/user/auth/register").send(user);
+  const res = await request(app).post("/api/v1/user/auth/register").send(user);
 
   const cookie = res.body;
 
   // Create a test category group
   await request(app)
-    .post("/budget/category-groups")
+    .post("/api/v1/budget/category-groups")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       name: "test category group",
     });
 
   const categoriesResponse = await request(app)
-    .get("/budget/categories")
+    .get("/api/v1/budget/categories")
     .set("Authorization", `Bearer ${cookie}`);
 
   const responseBody = categoriesResponse.body as NormalisedCategoryData;
@@ -81,7 +81,7 @@ export const registerUser = async (
 
   // Create a test category for the user
   await request(app)
-    .post("/budget/categories")
+    .post("/api/v1/budget/categories")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       categoryGroupId: testCategoryGroup.id,
@@ -90,7 +90,7 @@ export const registerUser = async (
 
   // Create another test category for the user
   await request(app)
-    .post("/budget/categories")
+    .post("/api/v1/budget/categories")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       categoryGroupId: testCategoryGroup.id,
@@ -104,11 +104,11 @@ export const registerUser = async (
   });
 
   const accountsRes = await request(app)
-    .get("/budget/account")
+    .get("/api/v1/budget/account")
     .set("Authorization", `Bearer ${cookie}`);
 
   const catRes = await request(app)
-    .get("/budget/category")
+    .get("/api/v1/budget/category")
     .set("Authorization", `Bearer ${cookie}`);
 
   // console.log("WHY ARE THESE 2 DIFFERENT??");
