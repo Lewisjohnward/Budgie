@@ -49,3 +49,18 @@ _Auto-assign budget feature._
 ## Installation (TODO)
 
 Instructions for running the project locally will be added soon.
+
+## Deployment
+
+Budgie is deployed using GitHub Actions.
+
+- Backend and frontend tests run in CI
+- Docker images are built in GitHub Actions
+- Images are published to GitHub Container Registry
+- Production runs on a Linode instance using Docker Compose
+- Caddy provides HTTPS with automatic Let's Encrypt certificates
+- Prisma migrations run automatically when the backend starts
+- Pushes to `main` automatically deploy the latest images
+
+The public instance at https://trybudgie.co.uk is a disposable demo environment.
+For persistent use, Budgie can be self-hosted using Docker Compose.

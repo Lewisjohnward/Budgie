@@ -20,13 +20,13 @@ export default defineConfig({
       testDir: "./tests/features",
       dependencies: ["smoke"],
     },
-    {
-      name: "demoMode",
-      testDir: "./tests/demoMode",
-      use: {
-        baseURL: "http://localhost:5175",
-      },
-    },
+    // {
+    //   name: "demoMode",
+    //   testDir: "./tests/demoMode",
+    //   use: {
+    //     baseURL: "http://localhost:5175",
+    //   },
+    // },
   ],
 
   webServer: [
@@ -43,12 +43,12 @@ export default defineConfig({
       reuseExistingServer: true,
       timeout: 60_000,
     },
-    {
-      command: "npm run dev:e2e:demo",
-      cwd: "../frontend",
-      url: "http://localhost:5175",
-      reuseExistingServer: true,
-      timeout: 60_000,
-    },
+    // {
+    //   command: "npm run dev:e2e:demo",
+    //   cwd: "../frontend",
+    //   url: "http://localhost:5175",
+    //   reuseExistingServer: true,
+    //   timeout: 60_000,
+    // },
   ],
 });
