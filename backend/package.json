@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "dev": "PORT=8000 ts-node-dev --respawn src/index.ts",
-    "e2e:server": "PORT=8001 DATABASE_URL=postgresql://myuser:mypassword@localhost:5434/budgie_e2e_db ENABLE_TEST_ROUTES=true NODE_ENV=test ts-node src/index.ts",
+    "e2e:server": "PORT=8001 DATABASE_URL=postgresql://myuser:mypassword@localhost:5434/budgie_e2e_db ENABLE_TEST_ROUTES=true ENABLE_DEMO_ROUTES=true DEMO_EMAIL=demo@example.com DEMO_PASSWORD=demo-password DEMO_RESET_SECRET=test-secret NODE_ENV=test ts-node src/index.ts",
     "types": "openapi-typescript docs/api/openapi.yml -o ../frontend/src/core/types/schema.ts",
     "start": "node dist/index.js",
     "build": "tsc",

@@ -7,6 +7,9 @@ RUN npm ci
 
 COPY . .
 
+ARG VITE_DEMO_MODE=false
+ENV VITE_DEMO_MODE=$VITE_DEMO_MODE
+
 RUN npm run build
 
 

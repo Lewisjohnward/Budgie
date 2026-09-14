@@ -183,6 +183,8 @@ jobs:
           tags: |
             ghcr.io/lewisjohnward/budgie-frontend:latest
             ghcr.io/lewisjohnward/budgie-frontend:${{ github.sha }}
+          build-args: |
+            VITE_DEMO_MODE=true
 
   deploy:
     runs-on: ubuntu-latest

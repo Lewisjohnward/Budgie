@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useDemoLoginMutation } from "@/core/api/authApiSlice";
 import { selectAccessToken, setCredentials } from "@/core/slices/authSlice";
 import { useAppDispatch, useAppSelector } from "@/core/hooks/reduxHooks";
 import { useEffect } from "react";
@@ -22,6 +23,7 @@ import { FaGithub, FcGoogle, IoMdArrowBack } from "@/core/icons/icons";
 import { PasswordInput } from "@/core/components/uiLibrary/PasswordInput";
 import { Copyright } from "@/core/components";
 import { LockIcon, MailIcon } from "lucide-react";
+import { isDemoMode } from "@/core/config/environment";
 
 const formSchema = z.object({
   email: z.string(),
@@ -36,12 +38,30 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const token = useAppSelector(selectAccessToken);
   const [login] = useLoginMutation();
+  const [demoLogin, { isLoading: isDemoLoggingIn }] = useDemoLoginMutation();
 
   useEffect(() => {
     if (token) {
       navigate("/budget", { replace: true });
     }
   }, []);
+
+  const handleDemoLogin = async () => {
+    try {
+      const token = await demoLogin().unwrap();
+
+      dispatch(
+        setCredentials({
+          token,
+          email: "demo",
+        })
+      );
+
+      navigate("/budget", { replace: true });
+    } catch (error) {
+      console.error("Demo login failed", error);
+    }
+  };
 
   const handleLogin = async (values: FormValues) => {
     const { email, password } = values;
@@ -78,15 +98,21 @@ export default function LoginPage() {
     <LoginPageContent
       handleLogin={handleLogin}
       loginWithGoogle={loginWithGoogle}
+      handleDemoLogin={handleDemoLogin}
+      isDemoLoggingIn={isDemoLoggingIn}
     />
   );
 }
 
 function LoginPageContent({
   handleLogin,
+  handleDemoLogin,
+  isDemoLoggingIn,
 }: {
   handleLogin: (values: FormValues) => void;
   loginWithGoogle: () => void;
+  handleDemoLogin: () => Promise<void>;
+  isDemoLoggingIn: boolean;
 }) {
   return (
     <div className="flex min-h-screen min-w-96 bg-[radial-gradient(rgba(53,87,129)_0%,rgba(28,65,72,1)_100%)]">
@@ -94,7 +120,33 @@ function LoginPageContent({
         <LogoLink />
         <div className="flex-grow flex flex-col lg:flex-row items-center lg:justify-center lg:pt-20 lg:gap-20 space-y-10 lg:space-y-0">
           <Aside />
-          <LoginForm handleLogin={handleLogin} />
+          <div className="w-full xs:max-w-[500px] py-8 px-6 space-y-0 rounded-lg bg-white">
+            {isDemoMode ? (
+              <div className="h-full flex flex-col items-center justify-center px-4 text-center">
+                <div className="space-y-3">
+                  <h1 className="text-4xl font-bold">Try Budgie</h1>
+                  <p className="text-gray-600">
+                    Explore a fully populated demo of Budgie.
+                  </p>
+                </div>
+
+                <Button
+                  type="button"
+                  className={`${buttonBlue} w-full mt-8`}
+                  onClick={handleDemoLogin}
+                  disabled={isDemoLoggingIn}
+                >
+                  {isDemoLoggingIn ? "Loading demo..." : "Try the demo"}
+                </Button>
+
+                <p className="mt-4 text-sm text-gray-500">
+                  This is a disposable demo environment.
+                </p>
+              </div>
+            ) : (
+              <LoginForm handleLogin={handleLogin} />
+            )}
+          </div>
         </div>
         <Copyright />
       </main>
@@ -177,7 +229,7 @@ function LoginForm({
   });
 
   return (
-    <div className="w-full xs:max-w-[500px] py-8 px-6 space-y-0 rounded-lg bg-white">
+    <>
       <div className="space-y-5">
         <h1 className="text-center text-4xl font-bold">Log In</h1>
         <p className="text-center">
@@ -265,6 +317,6 @@ function LoginForm({
       </Form>
       <Separator />
       <SocialAuth />
-    </div>
+    </>
   );
 }
