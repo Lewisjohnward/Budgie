@@ -54,7 +54,7 @@ if (process.env.ENABLE_DEMO_ROUTES === "true") {
     throw new Error("No value provided for demo reset secret");
   }
 
-  app.use("/__demo__", demoRoutes);
+  app.use("/api/v1/__demo__", demoRoutes);
 }
 
 if (
