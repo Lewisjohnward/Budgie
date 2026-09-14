@@ -133,5 +133,6 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
             cd /opt/budgie
+            git pull
             docker compose pull
             docker compose up -d

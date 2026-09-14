@@ -1,0 +1,7 @@
+trybudgie.co.uk {
+    reverse_proxy frontend:80
+}
+
+www.trybudgie.co.uk {
+    redir https://trybudgie.co.uk{uri} permanent
+}
