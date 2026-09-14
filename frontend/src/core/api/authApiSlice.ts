@@ -5,7 +5,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     signup: builder.mutation<void, SignupPayload>({
       query: (credentials) => ({
-        url: "user/auth/register",
+        url: "/user/auth/register",
         method: "POST",
         body: { ...credentials },
       }),
@@ -14,20 +14,20 @@ export const authApiSlice = apiSlice.injectEndpoints({
     // TODO: this needs typing <res, req>
     login: builder.mutation({
       query: (credentials) => ({
-        url: "user/auth/login",
+        url: "/user/auth/login",
         method: "POST",
         body: { ...credentials },
       }),
     }),
     logout: builder.mutation<void, void>({
       query: () => ({
-        url: "user/auth/logout",
+        url: "/user/auth/logout",
         method: "POST",
       }),
     }),
     refreshToken: builder.mutation<void, void>({
       query: () => ({
-        url: "user/auth/refresh",
+        url: "/user/auth/refresh",
         method: "GET",
       }),
     }),

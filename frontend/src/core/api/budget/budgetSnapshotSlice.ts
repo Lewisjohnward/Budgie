@@ -18,7 +18,7 @@ export const budgetSnapshotSlice = apiSlice.injectEndpoints({
     getBudgetSnapshot: builder.query<BudgetSnapshot, void>({
       query: () => {
         return {
-          url: "budget/snapshot",
+          url: "/budget/snapshot",
           method: "GET",
         };
       },
