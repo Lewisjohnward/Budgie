@@ -10,10 +10,15 @@ export const reset = async (
   next: NextFunction
 ) => {
   try {
-    await prisma.$transaction(async (tx) => {
-      await demoService.reset(tx);
-      await demoService.seed(tx);
-    });
+    await prisma.$transaction(
+      async (tx) => {
+        await demoService.reset(tx);
+        await demoService.seed(tx);
+      },
+      {
+        timeout: 15_000,
+      }
+    );
 
     res.json({
       message: "database reset",
