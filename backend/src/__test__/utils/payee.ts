@@ -10,7 +10,7 @@ import { NormalisedPayees } from "../../features/budget/core/payee/payee.types";
 
 export const getPayees = async (cookie: string) => {
   const res = await request(app)
-    .get("/budget/payees")
+    .get("/api/v1/budget/payees")
     .set("Authorization", `Bearer ${cookie}`)
     .expect(200);
 
@@ -25,7 +25,7 @@ export const editPayee = async (
   expectCode: number = 200
 ) => {
   return await request(app)
-    .patch("/budget/payees")
+    .patch("/api/v1/budget/payees")
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload)
     .expect(expectCode);
@@ -42,7 +42,7 @@ export const deletePayees = async (
   expectCode: number = 200
 ) => {
   return await request(app)
-    .delete("/budget/payees/bulk")
+    .delete("/api/v1/budget/payees/bulk")
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload)
     .expect(expectCode);
@@ -59,7 +59,7 @@ export const combinePayees = async (
   expectCode: number = 200
 ) => {
   return await request(app)
-    .post("/budget/payees/combine")
+    .post("/api/v1/budget/payees/combine")
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload)
     .expect(expectCode);
@@ -76,7 +76,7 @@ export const editPayees = async (
   expectCode: number = 200
 ) => {
   return await request(app)
-    .patch("/budget/payees/bulk")
+    .patch("/api/v1/budget/payees/bulk")
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload)
     .expect(expectCode);

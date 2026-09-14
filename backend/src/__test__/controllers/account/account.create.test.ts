@@ -22,7 +22,7 @@ describe("Account - Create", () => {
       };
 
       const resAddAccount = await request(app)
-        .post("/budget/account")
+        .post("/api/v1/budget/account")
         .set("Authorization", `Bearer ${cookie}`)
         .send(testAccountData);
       expect(resAddAccount.status).toBe(400);
@@ -35,7 +35,7 @@ describe("Account - Create", () => {
       };
 
       const resAddAccount = await request(app)
-        .post("/budget/account")
+        .post("/api/v1/budget/account")
         .set("Authorization", `Bearer ${cookie}`)
         .send(testAccountData);
       expect(resAddAccount.status).toBe(400);
@@ -48,7 +48,7 @@ describe("Account - Create", () => {
       };
 
       const resAddAccount = await request(app)
-        .post("/budget/account")
+        .post("/api/v1/budget/account")
         .set("Authorization", `Bearer ${cookie}`)
         .send(testAccountData);
       expect(resAddAccount.status).toBe(200);
@@ -60,7 +60,7 @@ describe("Account - Create", () => {
       };
 
       const resAddAccountB = await request(app)
-        .post("/budget/account")
+        .post("/api/v1/budget/account")
         .set("Authorization", `Bearer ${cookie}`)
         .send(testAccountDataB);
 
@@ -76,7 +76,7 @@ describe("Account - Create", () => {
     it("should assign unique sequential positions under concurrency", async () => {
       const create = (name: string) =>
         request(app)
-          .post("/budget/account")
+          .post("/api/v1/budget/account")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             name,
@@ -116,7 +116,7 @@ describe("Account - Create", () => {
         };
 
         const resAddAccount = await request(app)
-          .post("/budget/account")
+          .post("/api/v1/budget/account")
           .set("Authorization", `Bearer ${cookie}`)
           .send(testAccountData);
         expect(resAddAccount.status).toBe(200);
@@ -132,7 +132,7 @@ describe("Account - Create", () => {
       };
 
       await request(app)
-        .post("/budget/account")
+        .post("/api/v1/budget/account")
         .set("Authorization", `Bearer ${cookie}`)
         .send(validAccountData);
 
@@ -157,7 +157,7 @@ describe("Account - Create", () => {
 
         const testAccountData = { name: rawName, type: "BANK", balance: 0 };
         const resAddAccount = await request(app)
-          .post("/budget/account")
+          .post("/api/v1/budget/account")
           .set("Authorization", `Bearer ${cookie}`)
           .send(testAccountData);
         expect(resAddAccount.status).toBe(200);
@@ -177,7 +177,7 @@ describe("Account - Create", () => {
       };
 
       const resAddAccount = await request(app)
-        .post("/budget/account")
+        .post("/api/v1/budget/account")
         .set("Authorization", `Bearer ${cookie}`)
         .send(testAccountData);
 
@@ -214,7 +214,7 @@ describe("Account - Create", () => {
       };
 
       const resAddAccount = await request(app)
-        .post("/budget/account")
+        .post("/api/v1/budget/account")
         .set("Authorization", `Bearer ${cookie}`)
         .send(testAccountData);
 
@@ -260,7 +260,7 @@ describe("Account - Create", () => {
       };
 
       const resAddAccount = await request(app)
-        .post("/budget/account")
+        .post("/api/v1/budget/account")
         .set("Authorization", `Bearer ${cookie}`)
         .send(testAccountData);
 
@@ -302,7 +302,7 @@ describe("Account - Create", () => {
       };
 
       const resAddAccountA = await request(app)
-        .post("/budget/account")
+        .post("/api/v1/budget/account")
         .set("Authorization", `Bearer ${cookie}`)
         .send(testAccountDataA);
 
@@ -322,17 +322,17 @@ describe("Account - Create", () => {
       };
 
       const resAddAccountB = await request(app)
-        .post("/budget/account")
+        .post("/api/v1/budget/account")
         .set("Authorization", `Bearer ${cookie}`)
         .send(testAccountDataB);
 
       const resAddAccountC = await request(app)
-        .post("/budget/account")
+        .post("/api/v1/budget/account")
         .set("Authorization", `Bearer ${cookie}`)
         .send(testAccountDataC);
 
       const resAddAccountD = await request(app)
-        .post("/budget/account")
+        .post("/api/v1/budget/account")
         .set("Authorization", `Bearer ${cookie}`)
         .send(testAccountDataD);
 

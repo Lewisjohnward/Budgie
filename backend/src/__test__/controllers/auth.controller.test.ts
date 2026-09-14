@@ -237,7 +237,7 @@ describe("Auth Controller", () => {
     });
 
     it("should return 200 and set refresh token cookie on successful login", async () => {
-      const response = await request(app).post("/user/auth/login").send({
+      const response = await request(app).post("/api/v1/user/auth/login").send({
         email: testEmail,
         password: testPassword,
       });
@@ -254,7 +254,7 @@ describe("Auth Controller", () => {
 
     it("should return 400 if email is missing", async () => {
       const response = await request(app)
-        .post("/user/auth/login")
+        .post("/api/v1/user/auth/login")
         .send({ password: testPassword });
 
       expect(response.status).toBe(400);
@@ -262,14 +262,14 @@ describe("Auth Controller", () => {
 
     it("should return 400 if password is missing", async () => {
       const response = await request(app)
-        .post("/user/auth/login")
+        .post("/api/v1/user/auth/login")
         .send({ email: testEmail });
 
       expect(response.status).toBe(400);
     });
 
     it("should return 401 if email is not registered", async () => {
-      const response = await request(app).post("/user/auth/login").send({
+      const response = await request(app).post("/api/v1/user/auth/login").send({
         email: "nonexistent@example.com",
         password: testPassword,
       });
@@ -278,7 +278,7 @@ describe("Auth Controller", () => {
     });
 
     it("should return 401 if password is incorrect", async () => {
-      const response = await request(app).post("/user/auth/login").send({
+      const response = await request(app).post("/api/v1/user/auth/login").send({
         email: testEmail,
         password: "WrongPassword123!",
       });
@@ -287,7 +287,7 @@ describe("Auth Controller", () => {
     });
 
     it("should return 401 if email is invalid", async () => {
-      const response = await request(app).post("/user/auth/login").send({
+      const response = await request(app).post("/api/v1/user/auth/login").send({
         email: "invalid-email",
         password: testPassword,
       });
@@ -305,7 +305,7 @@ describe("Auth Controller", () => {
     const testPassword = "ValidPass123!";
 
     beforeEach(async () => {
-      await request(app).post("/user/auth/register").send({
+      await request(app).post("/api/v1/user/auth/register").send({
         email: testEmail,
         password: testPassword,
       });
@@ -325,7 +325,7 @@ describe("Auth Controller", () => {
 
     it("should clear refresh token from database and clear cookie on successful logout", async () => {
       const response = await request(app)
-        .post("/user/auth/logout")
+        .post("/api/v1/user/auth/logout")
         .set("Cookie", [`jwt=${testRefreshToken}`])
         .send();
 
@@ -348,7 +348,7 @@ describe("Auth Controller", () => {
       });
 
       const response = await request(app)
-        .post("/user/auth/logout")
+        .post("/api/v1/user/auth/logout")
         .set("Cookie", [`jwt=${testRefreshToken}`])
         .send();
 
@@ -360,7 +360,7 @@ describe("Auth Controller", () => {
     });
 
     it("should return 204 even if no JWT cookie is present", async () => {
-      const response = await request(app).post("/user/auth/logout").send();
+      const response = await request(app).post("/api/v1/user/auth/logout").send();
 
       expect(response.status).toBe(204);
       expect(response.headers["set-cookie"]).toBeUndefined();
@@ -374,7 +374,7 @@ describe("Auth Controller", () => {
     const testPassword = "ValidPass123!";
 
     beforeEach(async () => {
-      await request(app).post("/user/auth/register").send({
+      await request(app).post("/api/v1/user/auth/register").send({
         email: testEmail,
         password: testPassword,
       });
@@ -393,14 +393,14 @@ describe("Auth Controller", () => {
     });
 
     it("should return 401 if no refresh token cookie is present", async () => {
-      const response = await request(app).get("/user/auth/refresh").send();
+      const response = await request(app).get("/api/v1/user/auth/refresh").send();
 
       expect(response.status).toBe(401);
     });
 
     it("should return 403 if refresh token is invalid", async () => {
       const response = await request(app)
-        .get("/user/auth/refresh")
+        .get("/api/v1/user/auth/refresh")
         .set("Cookie", [`jwt=invalid-token`])
         .send();
 
@@ -413,7 +413,7 @@ describe("Auth Controller", () => {
       });
 
       const response = await request(app)
-        .get("/user/auth/refresh")
+        .get("/api/v1/user/auth/refresh")
         .set("Cookie", [`jwt=${testRefreshToken}`])
         .send();
 
@@ -422,7 +422,7 @@ describe("Auth Controller", () => {
 
     it("should return 200 with new access token if refresh token is valid", async () => {
       const loginResponse = await request(app)
-        .post("/user/auth/login")
+        .post("/api/v1/user/auth/login")
         .send({
           email: testEmail,
           password: testPassword,
@@ -436,7 +436,7 @@ describe("Auth Controller", () => {
       }
 
       const refreshResponse = await request(app)
-        .get("/user/auth/refresh")
+        .get("/api/v1/user/auth/refresh")
         .set("Cookie", `jwt=${refreshToken}`)
         .send();
 

@@ -34,14 +34,14 @@ describe("User Controller", () => {
 
     it("Should return 400 if either email or password are missing", async () => {
       const noEmailReponse = await request(app)
-        .post("/user/auth/register")
+        .post("/api/v1/user/auth/register")
         .send({ password: "abcdefgG8£" })
         .set("Authorization", "Bearer mock-token");
 
       expect(noEmailReponse.status).toBe(400);
 
       const noPasswordReponse = await request(app)
-        .post("/user/auth/register")
+        .post("/api/v1/user/auth/register")
         .send({ email: "test@email.com" })
         .set("Authorization", "Bearer mock-token");
 
@@ -50,7 +50,7 @@ describe("User Controller", () => {
 
     it("Should return 400 if both email and password are missing", async () => {
       const response = await request(app)
-        .post("/user/auth/register")
+        .post("/api/v1/user/auth/register")
         .send({})
         .set("Authorization", "Bearer mock-token");
 
@@ -59,7 +59,7 @@ describe("User Controller", () => {
 
     it("Should return 401 if credentials validation fails", async () => {
       const response = await request(app)
-        .post("/user/auth/register")
+        .post("/api/v1/user/auth/register")
         .send({ email: "test", password: "test" })
         .set("Authorization", "Bearer mock-token");
 
@@ -70,7 +70,7 @@ describe("User Controller", () => {
       (userExists as jest.Mock).mockResolvedValue(true);
 
       const response = await request(app)
-        .post("/user/auth/register")
+        .post("/api/v1/user/auth/register")
         .send({ email: "test@email.com", password: "abdegh745K!k" })
         .set("Authorization", "Bearer mock-token");
 
@@ -83,7 +83,7 @@ describe("User Controller", () => {
       });
 
       const response = await request(app)
-        .post("/user/auth/register")
+        .post("/api/v1/user/auth/register")
         .send({ email: "test@email.com", password: "abdegh745K!a" })
         .set("Authorization", "Bearer mock-token");
 
@@ -93,7 +93,7 @@ describe("User Controller", () => {
     it("Should return 200 and register user", async () => {
       (createUser as jest.Mock).mockReturnValue({ id: "test" });
       const response = await request(app)
-        .post("/user/auth/register")
+        .post("/api/v1/user/auth/register")
         .send({ email: "test@email.com", password: "abdegh745K!a" })
         .set("Authorization", "Bearer mock-token");
 
@@ -104,7 +104,7 @@ describe("User Controller", () => {
   describe("Login", () => {
     it("Should return 400 if both email and password are missing", async () => {
       const response = await request(app)
-        .post("/user/auth/register")
+        .post("/api/v1/user/auth/register")
         .send({})
         .set("Authorization", "Bearer mock-token");
 
@@ -113,12 +113,12 @@ describe("User Controller", () => {
 
     it("Should return 400 if either email or password are missing", async () => {
       const noEmailReponse = await request(app)
-        .post("/user/auth/register")
+        .post("/api/v1/user/auth/register")
         .send({ password: "abcdefgG8£" })
         .set("Authorization", "Bearer mock-token");
 
       const noPasswordReponse = await request(app)
-        .post("/user/auth/register")
+        .post("/api/v1/user/auth/register")
         .send({ email: "test@email.com" })
         .set("Authorization", "Bearer mock-token");
 
@@ -130,7 +130,7 @@ describe("User Controller", () => {
       (getUser as jest.Mock).mockResolvedValue(null);
 
       const response = await request(app)
-        .post("/user/auth/login")
+        .post("/api/v1/user/auth/login")
         .send({ email: "test@example.com", password: "password" });
 
       expect(response.status).toBe(401);
@@ -146,7 +146,7 @@ describe("User Controller", () => {
       (ValidatePassword as jest.Mock).mockResolvedValue(false);
 
       const response = await request(app)
-        .post("/user/auth/login")
+        .post("/api/v1/user/auth/login")
         .send({ email: "test@example.com", password: "wrongPassword" });
 
       expect(response.status).toBe(401);
@@ -166,7 +166,7 @@ describe("User Controller", () => {
       updateRefreshToken as jest.Mock;
 
       const response = await request(app)
-        .post("/user/auth/login")
+        .post("/api/v1/user/auth/login")
         .send({ email: "test@example.com", password: "password" });
 
       expect(response.status).toBe(200);

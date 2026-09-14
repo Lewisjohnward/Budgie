@@ -69,7 +69,7 @@ const createCategory = async ({
   name: string;
 }) => {
   await request(app)
-    .post("/budget/category-groups")
+    .post("/api/v1/budget/category-groups")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       name: "test categoryGroup",
@@ -85,7 +85,7 @@ const createCategory = async ({
     throw new Error(`Unable to find created- ${name} category group`);
 
   await request(app)
-    .post("/budget/categories")
+    .post("/api/v1/budget/categories")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       categoryGroupId: testCategoryGroup.id,
@@ -103,7 +103,7 @@ const createCategory = async ({
 
 const createTestCategory = async (cookie: string) => {
   await request(app)
-    .post("/budget/category-groups")
+    .post("/api/v1/budget/category-groups")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       name: "test category group a",
@@ -118,7 +118,7 @@ const createTestCategory = async (cookie: string) => {
   if (!testCategoryGroup) throw new Error("Unable to find test category group");
 
   await request(app)
-    .post("/budget/categories")
+    .post("/api/v1/budget/categories")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       categoryGroupId: testCategoryGroup.id,
@@ -150,7 +150,7 @@ const addTransaction = async ({
   date?: string;
 }) => {
   await request(app)
-    .post("/budget/transaction")
+    .post("/api/v1/budget/transaction")
     .set("Authorization", `Bearer ${cookie}`)
     .send({
       inflow,
@@ -191,7 +191,7 @@ describe("RTA allocation", () => {
         };
 
         const resAddAccount = await request(app)
-          .post("/budget/account")
+          .post("/api/v1/budget/account")
           .set("Authorization", `Bearer ${cookie}`)
           .send(testAccountData);
 
@@ -213,7 +213,7 @@ describe("RTA allocation", () => {
         );
 
         const resAddTransaction = await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             ...testTransaction,
@@ -246,7 +246,7 @@ describe("RTA allocation", () => {
           balance: 0,
         };
         await request(app)
-          .post("/budget/account")
+          .post("/api/v1/budget/account")
           .set("Authorization", `Bearer ${cookie}`)
           .send(testAccountData)
           .expect(200);
@@ -268,7 +268,7 @@ describe("RTA allocation", () => {
         const { id: accountId } = testAccount;
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             inflow: "10",
@@ -302,7 +302,7 @@ describe("RTA allocation", () => {
           balance: 0,
         };
         const resAddAccount = await request(app)
-          .post("/budget/account")
+          .post("/api/v1/budget/account")
           .set("Authorization", `Bearer ${cookie}`)
           .send(testAccountData)
           .expect(200);
@@ -324,7 +324,7 @@ describe("RTA allocation", () => {
         const { id: accountId } = testAccount;
 
         const resAddTransaction = await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             ...testTransaction,
@@ -378,7 +378,7 @@ describe("RTA allocation", () => {
           balance: 0,
         };
         const resAddAccount = await request(app)
-          .post("/budget/account")
+          .post("/api/v1/budget/account")
           .set("Authorization", `Bearer ${cookie}`)
           .send(testAccountData)
           .expect(200);
@@ -400,7 +400,7 @@ describe("RTA allocation", () => {
         const { id: accountId } = testAccount;
 
         const resAddTransaction = await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             ...testTransaction,
@@ -410,7 +410,7 @@ describe("RTA allocation", () => {
           .expect(200);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             inflow: "10",
@@ -464,7 +464,7 @@ describe("RTA allocation", () => {
           balance: 0,
         };
         const resAddAccount = await request(app)
-          .post("/budget/account")
+          .post("/api/v1/budget/account")
           .set("Authorization", `Bearer ${cookie}`)
           .send(testAccountData)
           .expect(200);
@@ -493,7 +493,7 @@ describe("RTA allocation", () => {
         const { id: accountId } = testAccount;
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             inflow: "10",
@@ -504,7 +504,7 @@ describe("RTA allocation", () => {
           .expect(200);
 
         const resAddTransaction = await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             ...testTransaction,
@@ -549,7 +549,7 @@ describe("RTA allocation", () => {
           balance: 0,
         };
         const resAddAccount = await request(app)
-          .post("/budget/account")
+          .post("/api/v1/budget/account")
           .set("Authorization", `Bearer ${cookie}`)
           .send(testAccountData)
           .expect(200);
@@ -572,7 +572,7 @@ describe("RTA allocation", () => {
         const { id: accountId } = testAccount;
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             ...testTransaction,
@@ -581,7 +581,7 @@ describe("RTA allocation", () => {
           .expect(200);
 
         // await request(app)
-        //   .post("/budget/transaction")
+        //   .post("/api/v1/budget/transaction")
         //   .set("Authorization", `Bearer ${cookie}`)
         //   .send({
         //     inflow: "23",
@@ -641,7 +641,7 @@ describe("RTA allocation", () => {
         const rtaCategoryId = await getRTACategoryId(cookie);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             inflow: "10",
@@ -654,7 +654,7 @@ describe("RTA allocation", () => {
         await compareRTAMonthsToExpected([10, 10, 10, 10, 10], cookie);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             outflow: "20",
@@ -667,7 +667,7 @@ describe("RTA allocation", () => {
         await compareRTAMonthsToExpected([10, 10, -10, -10, -10], cookie);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             outflow: "20",
@@ -690,7 +690,7 @@ describe("RTA allocation", () => {
         const testAccount = await createAccountAndFetch(cookie);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             outflow: "40",
@@ -715,7 +715,7 @@ describe("RTA allocation", () => {
         const testAccount = await createAccountAndFetch(cookie);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             inflow: "40",
@@ -737,7 +737,7 @@ describe("RTA allocation", () => {
         const twoMonthsAgo = subMonths(new Date(), 2);
         const lastMonth = subMonths(new Date(), 1);
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             inflow: "40",
@@ -760,7 +760,7 @@ describe("RTA allocation", () => {
         await compareRTAMonthsToExpected([0, 0, 0, 0], cookie);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             outflow: "40",
@@ -785,7 +785,7 @@ describe("RTA allocation", () => {
         await compareRTAMonthsToExpected([0, 0, 0, 0], cookie);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             outflow: "10",
@@ -811,7 +811,7 @@ describe("RTA allocation", () => {
         await compareRTAMonthsToExpected([0, 0, 0, -10], cookie);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             outflow: "40",
@@ -845,7 +845,7 @@ describe("RTA allocation", () => {
 
         const testAccount = await createAccountAndFetch(cookie);
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             outflow: "10",
@@ -854,7 +854,7 @@ describe("RTA allocation", () => {
           .expect(200);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             inflow: "40",
@@ -886,7 +886,7 @@ describe("RTA allocation", () => {
         )?.id;
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             inflow: "10",
@@ -915,7 +915,7 @@ describe("RTA allocation", () => {
         if (!testAccount) throw new Error("Unable to find test account");
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             inflow: "10",
@@ -929,7 +929,7 @@ describe("RTA allocation", () => {
         const dateThreeMonthsAgo = subMonths(new Date(), 3);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             outflow: "10",
@@ -970,7 +970,7 @@ describe("RTA allocation", () => {
         if (!testAccount) throw new Error("Unable to find test account");
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             outflow: "50",
@@ -981,7 +981,7 @@ describe("RTA allocation", () => {
         await compareRTAMonthsToExpected([0, -50], cookie);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             inflow: "70",
@@ -1004,7 +1004,7 @@ describe("RTA allocation", () => {
 
       it("should update rta for future months when adding transaction", async () => {
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             outflow: "10",
@@ -1047,7 +1047,7 @@ describe("RTA allocation", () => {
         if (!testAccount) throw new Error("Unable to find test account");
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             inflow: "10",
@@ -1057,7 +1057,7 @@ describe("RTA allocation", () => {
           .expect(200);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             outflow: "10",
@@ -1134,7 +1134,7 @@ describe("RTA allocation", () => {
         const testAccount = await createAccountAndFetch(cookie);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             inflow: "1.11",
@@ -1145,7 +1145,7 @@ describe("RTA allocation", () => {
         await compareRTAMonthsToExpected([0, 0], cookie);
 
         await request(app)
-          .delete("/budget/transaction")
+          .delete("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({ transactionIds: [await getTransactionId(1.11, cookie)] })
           .expect(200);
@@ -1156,7 +1156,7 @@ describe("RTA allocation", () => {
         const dateThreeMonthsAgo = subMonths(new Date(), 3);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             inflow: "1.12",
@@ -1172,7 +1172,7 @@ describe("RTA allocation", () => {
         );
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             inflow: "1.13",
@@ -1187,7 +1187,7 @@ describe("RTA allocation", () => {
         );
 
         await request(app)
-          .delete("/budget/transaction")
+          .delete("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({ transactionIds: [await getTransactionId(1.13, cookie)] })
           .expect(200);
@@ -1198,7 +1198,7 @@ describe("RTA allocation", () => {
         );
 
         await request(app)
-          .delete("/budget/transaction")
+          .delete("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({ transactionIds: [await getTransactionId(1.12, cookie)] })
           .expect(200);
@@ -1206,7 +1206,7 @@ describe("RTA allocation", () => {
         await compareRTAMonthsToExpected([0, 0, 0, 0, 0], cookie);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             outflow: "0.01",
@@ -1222,7 +1222,7 @@ describe("RTA allocation", () => {
         );
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             inflow: "0.02",
@@ -1237,7 +1237,7 @@ describe("RTA allocation", () => {
         );
 
         await request(app)
-          .delete("/budget/transaction")
+          .delete("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             transactionIds: [await getTransactionId(0.01, cookie, "outflow")],
@@ -1247,7 +1247,7 @@ describe("RTA allocation", () => {
         await compareRTAMonthsToExpected([0, 0, 0, 0.02, 0.02], cookie);
 
         await request(app)
-          .delete("/budget/transaction")
+          .delete("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             transactionIds: [await getTransactionId(0.02, cookie, "inflow")],
@@ -1256,7 +1256,7 @@ describe("RTA allocation", () => {
         await compareRTAMonthsToExpected([0, 0, 0, 0, 0], cookie);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             inflow: "0.04",
@@ -1268,7 +1268,7 @@ describe("RTA allocation", () => {
         await compareRTAMonthsToExpected([0, 0, 0, 0.04, 0.04], cookie);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             outflow: "0.03",
@@ -1284,7 +1284,7 @@ describe("RTA allocation", () => {
         );
 
         await request(app)
-          .delete("/budget/transaction")
+          .delete("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             transactionIds: [await getTransactionId(0.03, cookie, "outflow")],
@@ -1294,7 +1294,7 @@ describe("RTA allocation", () => {
         await compareRTAMonthsToExpected([0, 0, 0, 0.04, 0.04], cookie);
 
         await request(app)
-          .delete("/budget/transaction")
+          .delete("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             transactionIds: [await getTransactionId(0.04, cookie)],
@@ -1304,7 +1304,7 @@ describe("RTA allocation", () => {
         await compareRTAMonthsToExpected([0, 0, 0, 0, 0], cookie);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             outflow: "39.01",
@@ -1316,7 +1316,7 @@ describe("RTA allocation", () => {
         await compareRTAMonthsToExpected([0, 0, 0, 0, -39.01], cookie);
 
         await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             inflow: "39",
@@ -1351,7 +1351,7 @@ describe("RTA allocation", () => {
       await compareRTAMonthsToExpected([10, 10], cookie);
 
       await request(app)
-        .delete("/budget/transaction")
+        .delete("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           transactionIds: [await getTransactionId(10, cookie)],
@@ -1373,7 +1373,7 @@ describe("RTA allocation", () => {
         balance: 0,
       };
       const resAddAccount = await request(app)
-        .post("/budget/account")
+        .post("/api/v1/budget/account")
         .set("Authorization", `Bearer ${cookie}`)
         .send(testAccountData)
         .expect(200);
@@ -1395,7 +1395,7 @@ describe("RTA allocation", () => {
       const { id: accountId } = testAccount;
 
       const resAddTransaction = await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           ...testTransaction,
@@ -1413,7 +1413,7 @@ describe("RTA allocation", () => {
       if (!transaction) throw new Error("Unable to find test transaction");
 
       await request(app)
-        .delete("/budget/transaction")
+        .delete("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({ transactionIds: [transaction.id] })
         .expect(200);
@@ -1458,7 +1458,7 @@ describe("RTA allocation", () => {
       if (!testCategory) throw new Error("Unable to find test category month");
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           outflow: "10",
@@ -1470,7 +1470,7 @@ describe("RTA allocation", () => {
       await compareRTAMonthsToExpected([-10, -10], cookie);
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           inflow: "9.99",
@@ -1481,7 +1481,7 @@ describe("RTA allocation", () => {
       await compareRTAMonthsToExpected([-10, -10], cookie);
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           outflow: "9.99",
@@ -1492,7 +1492,7 @@ describe("RTA allocation", () => {
       await compareRTAMonthsToExpected([-10, -10], cookie);
 
       await request(app)
-        .delete("/budget/transaction")
+        .delete("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           transactionIds: [await getTransactionId(10, cookie, "outflow")],
@@ -1502,7 +1502,7 @@ describe("RTA allocation", () => {
       await compareRTAMonthsToExpected([0, 0], cookie);
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           outflow: "10",
@@ -1515,7 +1515,7 @@ describe("RTA allocation", () => {
       await compareRTAMonthsToExpected([-10, -10, -10, -10, -10], cookie);
 
       await request(app)
-        .delete("/budget/transaction")
+        .delete("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           transactionIds: [await getTransactionId(10, cookie, "outflow")],
@@ -1525,7 +1525,7 @@ describe("RTA allocation", () => {
       await compareRTAMonthsToExpected([0, 0, 0, 0, 0], cookie);
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           inflow: "9.99",
@@ -1541,7 +1541,7 @@ describe("RTA allocation", () => {
       const testAccount = await createAccountAndFetch(cookie);
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           inflow: "10",
@@ -1551,7 +1551,7 @@ describe("RTA allocation", () => {
         .expect(200);
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           inflow: "11",
@@ -1563,7 +1563,7 @@ describe("RTA allocation", () => {
       await compareRTAMonthsToExpected([21, 21], cookie);
 
       await request(app)
-        .delete("/budget/transaction")
+        .delete("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           transactionIds: [
@@ -1581,7 +1581,7 @@ describe("RTA allocation", () => {
       const testCategoryId = await createTestCategory(cookie);
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           outflow: "10",
@@ -1591,7 +1591,7 @@ describe("RTA allocation", () => {
         .expect(200);
 
       await request(app)
-        .delete("/budget/transaction")
+        .delete("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           transactionIds: [await getTransactionId(10, cookie, "outflow")],
@@ -1616,7 +1616,7 @@ describe("RTA allocation", () => {
       const testCategoryId = await createTestCategory(cookie);
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           inflow: "10",
@@ -1626,7 +1626,7 @@ describe("RTA allocation", () => {
         .expect(200);
 
       await request(app)
-        .delete("/budget/transaction")
+        .delete("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({ transactionIds: [await getTransactionId(10, cookie)] })
         .expect(200);
@@ -1649,7 +1649,7 @@ describe("RTA allocation", () => {
       const testCategoryId = await createTestCategory(cookie);
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           inflow: "10",
@@ -1659,7 +1659,7 @@ describe("RTA allocation", () => {
         .expect(200);
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           inflow: "11",
@@ -1669,7 +1669,7 @@ describe("RTA allocation", () => {
         .expect(200);
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           inflow: "12",
@@ -1678,7 +1678,7 @@ describe("RTA allocation", () => {
         .expect(200);
 
       await request(app)
-        .delete("/budget/transaction")
+        .delete("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           transactionIds: [
@@ -1707,7 +1707,7 @@ describe("RTA allocation", () => {
       const testAccount = await createAccountAndFetch(cookie);
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           inflow: "10",
@@ -1717,7 +1717,7 @@ describe("RTA allocation", () => {
         .expect(200);
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           inflow: "11",
@@ -1729,7 +1729,7 @@ describe("RTA allocation", () => {
       await compareRTAMonthsToExpected([21, 21], cookie);
 
       await request(app)
-        .delete("/budget/transaction")
+        .delete("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           transactionIds: [
@@ -1744,7 +1744,7 @@ describe("RTA allocation", () => {
 
     it("should update RTA for future months when deleting outflow transaction", async () => {
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           outflow: "10",
@@ -1762,7 +1762,7 @@ describe("RTA allocation", () => {
         throw new Error("Unable to find outflow transaction");
 
       await request(app)
-        .delete("/budget/transaction")
+        .delete("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({ transactionIds: [outflowTransaction.id] })
         .expect(200);
@@ -1785,7 +1785,7 @@ describe("RTA allocation", () => {
       if (!testCategory) throw new Error("Unable to find test category month");
 
       await request(app)
-        .patch("/budget/assign")
+        .patch("/api/v1/budget/assign")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           assigned: "10",
@@ -1794,7 +1794,7 @@ describe("RTA allocation", () => {
         .expect(200);
 
       await request(app)
-        .patch("/budget/assign")
+        .patch("/api/v1/budget/assign")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           assigned: "10",
@@ -1817,7 +1817,7 @@ describe("RTA allocation", () => {
       if (!testCategory) throw new Error("Unable to find test category month");
 
       await request(app)
-        .patch("/budget/assign")
+        .patch("/api/v1/budget/assign")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           assigned: "5",
@@ -1826,7 +1826,7 @@ describe("RTA allocation", () => {
         .expect(200);
 
       await request(app)
-        .patch("/budget/assign")
+        .patch("/api/v1/budget/assign")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           assigned: "5",
@@ -1847,7 +1847,7 @@ describe("RTA allocation", () => {
       )?.id;
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           inflow: "10",
@@ -1886,7 +1886,7 @@ describe("RTA allocation", () => {
       if (!testAccount) throw new Error("Unable to find test account");
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           inflow: "100",
@@ -1896,7 +1896,7 @@ describe("RTA allocation", () => {
         .expect(200);
 
       await request(app)
-        .patch("/budget/assign")
+        .patch("/api/v1/budget/assign")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           assigned: "50",
@@ -1905,7 +1905,7 @@ describe("RTA allocation", () => {
         .expect(200);
 
       await request(app)
-        .patch("/budget/assign")
+        .patch("/api/v1/budget/assign")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           assigned: "50",
@@ -1943,7 +1943,7 @@ describe("RTA allocation", () => {
       if (!testAccount) throw new Error("Unable to find test account");
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           inflow: "10",
@@ -1953,7 +1953,7 @@ describe("RTA allocation", () => {
         .expect(200);
 
       await request(app)
-        .patch("/budget/assign")
+        .patch("/api/v1/budget/assign")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           assigned: "5",
@@ -1962,7 +1962,7 @@ describe("RTA allocation", () => {
         .expect(200);
 
       await request(app)
-        .patch("/budget/assign")
+        .patch("/api/v1/budget/assign")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           assigned: "5",
@@ -1971,7 +1971,7 @@ describe("RTA allocation", () => {
         .expect(200);
 
       await request(app)
-        .patch("/budget/assign")
+        .patch("/api/v1/budget/assign")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           assigned: "0",
@@ -2003,7 +2003,7 @@ describe("RTA allocation", () => {
       if (!testAccount) throw new Error("Unable to find test account");
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           inflow: "10",
@@ -2015,7 +2015,7 @@ describe("RTA allocation", () => {
       const dateThreeMonthsAgo = subMonths(new Date(), 3);
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           outflow: "10",
@@ -2032,7 +2032,7 @@ describe("RTA allocation", () => {
       if (!testCategoryUpdated) throw new Error("Unable to find test account");
 
       await request(app)
-        .patch("/budget/assign")
+        .patch("/api/v1/budget/assign")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           assigned: "5",
@@ -2067,7 +2067,7 @@ describe("RTA allocation", () => {
       if (!testAccount) throw new Error("Unable to find test account");
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           inflow: "10",
@@ -2094,7 +2094,7 @@ describe("RTA allocation", () => {
       if (!testCategoryUpdated) throw new Error("Unable to find test account");
 
       await request(app)
-        .patch("/budget/assign")
+        .patch("/api/v1/budget/assign")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           assigned: "10",
@@ -2103,7 +2103,7 @@ describe("RTA allocation", () => {
         .expect(200);
 
       await request(app)
-        .delete("/budget/transaction")
+        .delete("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({ transactionIds: [inflowTransaction.id] })
         .expect(200);
@@ -2138,7 +2138,7 @@ describe("RTA allocation", () => {
       if (!testAccount) throw new Error("Unable to find test account");
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           inflow: "10",
@@ -2150,7 +2150,7 @@ describe("RTA allocation", () => {
       const dateThreeMonthsAgo = subMonths(new Date(), 3);
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           outflow: "10",
@@ -2167,7 +2167,7 @@ describe("RTA allocation", () => {
       if (!testCategoryUpdated) throw new Error("Unable to find test account");
 
       await request(app)
-        .patch("/budget/assign")
+        .patch("/api/v1/budget/assign")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           assigned: "5",
@@ -2176,7 +2176,7 @@ describe("RTA allocation", () => {
         .expect(200);
 
       await request(app)
-        .patch("/budget/assign")
+        .patch("/api/v1/budget/assign")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           assigned: "0",
@@ -2200,7 +2200,7 @@ describe("RTA allocation", () => {
       const { id: accountId } = testAccount;
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           inflow: "10",
@@ -2225,7 +2225,7 @@ describe("RTA allocation", () => {
       };
 
       await request(app)
-        .patch("/budget/transaction")
+        .patch("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send(payload)
         .expect(200);

@@ -44,8 +44,8 @@ app.use(
 );
 app.use(helmet());
 
-app.use("/user", userRoutes);
-app.use("/budget", budgetRoutes);
+app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/budget", budgetRoutes);
 
 app.get("/", (_, res) => {
   res.status(200).json({ ping: "pong" });

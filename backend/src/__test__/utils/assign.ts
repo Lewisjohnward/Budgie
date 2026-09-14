@@ -6,7 +6,7 @@ import { getTestCategory } from "./category";
 import { UpdatedMonthsByCategoryDto } from "../../features/budget/core/category/core/category.types";
 import { CategoryMonthsMap } from "../../features/budget/core/category/months/month.types";
 
-const CATEGORY_MONTHS_ENDPOINT_URL = "/budget/categories/months";
+const CATEGORY_MONTHS_ENDPOINT_URL = "/api/v1/budget/categories/months";
 
 /**
  * Creates a user and returns a monthId

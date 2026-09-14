@@ -76,14 +76,14 @@ describe("Budget", () => {
         };
 
         const addCategoryResponse = await request(app)
-          .post("/budget/categories")
+          .post("/api/v1/budget/categories")
           .send(testCategory)
           .set("Authorization", `Bearer ${cookie}`);
 
         expect(addCategoryResponse.status).toBe(403);
 
         const categoriesResponseAfter = await request(app)
-          .get("/budget/categories")
+          .get("/api/v1/budget/categories")
           .set("Authorization", `Bearer ${cookie}`);
 
         const responseBodyAfter =
@@ -112,14 +112,14 @@ describe("Budget", () => {
         };
 
         const addCategoryResponse = await request(app)
-          .post("/budget/categories")
+          .post("/api/v1/budget/categories")
           .send(testCategory)
           .set("Authorization", `Bearer ${cookie}`);
 
         expect(addCategoryResponse.status).toBe(403);
 
         const categoriesResponseAfter = await request(app)
-          .get("/budget/categories")
+          .get("/api/v1/budget/categories")
           .set("Authorization", `Bearer ${cookie}`);
 
         const responseBodyAfter =
@@ -155,14 +155,14 @@ describe("Budget", () => {
 
         if (!existingCategory) {
           await request(app)
-            .post("/budget/categories")
+            .post("/api/v1/budget/categories")
             .set("Authorization", `Bearer ${cookie}`)
             .send(testCategory)
             .expect(201);
         }
 
         const duplicateCategoryRes = await request(app)
-          .post("/budget/categories")
+          .post("/api/v1/budget/categories")
           .set("Authorization", `Bearer ${cookie}`)
           .send(testCategory);
 
@@ -204,7 +204,7 @@ describe("Budget", () => {
       };
 
       const res = await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .send(testTransaction);
 
       expect(res.status).toBe(401);
@@ -220,7 +220,7 @@ describe("Budget", () => {
       const transactionDate = new Date(2025, 6, 15, 1, 0, 0);
 
       const addTransactionRes = await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           accountId: account.id,
@@ -243,7 +243,7 @@ describe("Budget", () => {
       const account = await createAccountAndFetch(cookie);
 
       const addTransactionRes = await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({
           accountId: account.id,
@@ -278,7 +278,7 @@ describe("Budget", () => {
       };
 
       await request(app)
-        .post("/budget/transaction")
+        .post("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send(testTransaction)
         .expect(400);
@@ -310,7 +310,7 @@ describe("Budget", () => {
           balance: 0,
         };
         const resAddAccount = await request(app)
-          .post("/budget/account")
+          .post("/api/v1/budget/account")
           .set("Authorization", `Bearer ${cookie}`)
           .send(testAccountData)
           .expect(200);
@@ -332,7 +332,7 @@ describe("Budget", () => {
         const { id: accountId } = testAccount;
 
         const resAddTransaction = await request(app)
-          .post("/budget/transaction")
+          .post("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({
             ...testTransaction,
@@ -350,7 +350,7 @@ describe("Budget", () => {
         if (!transaction) throw new Error("Unable to find test transaction");
 
         await request(app)
-          .delete("/budget/transaction")
+          .delete("/api/v1/budget/transaction")
           .set("Authorization", `Bearer ${cookie}`)
           .send({ transactionIds: [transaction.id] })
           .expect(200);
@@ -847,7 +847,7 @@ const testUserB = {
 
 describe("When signing up", () => {
   it("Should add Inflow category group", async () => {
-    const res = await request(app).post("/user/auth/register").send(testUserA);
+    const res = await request(app).post("/api/v1/user/auth/register").send(testUserA);
     const cookie = await login();
 
     const { categoryGroups } = await getCategories(cookie);
@@ -860,7 +860,7 @@ describe("When signing up", () => {
   });
 
   it("Should add Ready to Assign category", async () => {
-    const res = await request(app).post("/user/auth/register").send(testUserA);
+    const res = await request(app).post("/api/v1/user/auth/register").send(testUserA);
     const cookie = await login();
 
     const { categories } = await getCategories(cookie);
@@ -874,7 +874,7 @@ describe("When signing up", () => {
   });
 
   it("Should add Uncategorised category", async () => {
-    const res = await request(app).post("/user/auth/register").send(testUserA);
+    const res = await request(app).post("/api/v1/user/auth/register").send(testUserA);
     const cookie = await login();
 
     const { categories } = await getCategories(cookie);
@@ -914,10 +914,10 @@ describe("Auth", () => {
   describe("Sign up", () => {
     it("Should prevent sign up with pre-existing email address", async () => {
       const resA = await request(app)
-        .post("/user/auth/register")
+        .post("/api/v1/user/auth/register")
         .send(testUserA);
       const resB = await request(app)
-        .post("/user/auth/register")
+        .post("/api/v1/user/auth/register")
         .send(testUserA);
 
       expect(resA.status).toBe(200);
@@ -926,10 +926,10 @@ describe("Auth", () => {
 
     it("Should allow multiple users to sign up without category name collision", async () => {
       const resA = await request(app)
-        .post("/user/auth/register")
+        .post("/api/v1/user/auth/register")
         .send(testUserA);
       const resB = await request(app)
-        .post("/user/auth/register")
+        .post("/api/v1/user/auth/register")
         .send(testUserB);
 
       expect(resA.status).toBe(200);
@@ -943,7 +943,7 @@ describe("Auth", () => {
       const cookie = await login();
 
       const logoutRes = await request(app)
-        .post("/user/auth/logout")
+        .post("/api/v1/user/auth/logout")
         .set("Cookie", `jwt=${cookie}`)
         .expect(204);
 

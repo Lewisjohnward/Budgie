@@ -8,7 +8,7 @@ import {
 } from "../../features/budget/core/categorygroup/categoryGroup.types";
 import { type CategoryUserDto } from "../../features/budget/core/category/core/types/category.dto";
 
-const SNAPSHOT_ENDPOINT_URL = "/budget/snapshot";
+const SNAPSHOT_ENDPOINT_URL = "/api/v1/budget/snapshot";
 
 /**
  * Executes a raw HTTP request to fetch the full budget application snapshot.

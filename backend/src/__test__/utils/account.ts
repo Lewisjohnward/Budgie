@@ -13,11 +13,11 @@ export type TestCreateAccountInputWithoutUserId = Omit<
   "userId"
 >;
 
-const createAccountEndpoint = "/budget/account";
+const createAccountEndpoint = "/api/v1/budget/account";
 
 export const toggleCloseAccount = async (cookie: string, accountId: string) => {
   const res = await request(app)
-    .patch(`/budget/account/${accountId}/close`)
+    .patch(`/api/v1/budget/account/${accountId}/close`)
     .set("Authorization", `Bearer ${cookie}`);
 
   return res;
@@ -25,7 +25,7 @@ export const toggleCloseAccount = async (cookie: string, accountId: string) => {
 
 export const deleteAccount = async (cookie: string, accountId: string) => {
   const res = await request(app)
-    .delete(`/budget/account/${accountId}`)
+    .delete(`/api/v1/budget/account/${accountId}`)
     .set("Authorization", `Bearer ${cookie}`);
 
   return res;
@@ -90,7 +90,7 @@ export const createAccountAndFetch = async (
   };
 
   await request(app)
-    .post("/budget/account")
+    .post("/api/v1/budget/account")
     .set("Authorization", `Bearer ${cookie}`)
     .send(testAccount);
 
@@ -111,7 +111,7 @@ export const editAccount = async (
   payload: { balance?: string; name?: string }
 ) => {
   const res = await request(app)
-    .patch(`/budget/account/${accountId}`)
+    .patch(`/api/v1/budget/account/${accountId}`)
     .set("Authorization", `Bearer ${cookie}`)
     .send(payload);
 
