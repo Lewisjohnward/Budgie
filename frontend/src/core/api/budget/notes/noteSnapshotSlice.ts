@@ -3,7 +3,7 @@ import { apiSlice } from "../../apiSlice";
 import { budgetSnapshotSlice } from "../budgetSnapshotSlice";
 import { EditMemoInput } from "./types";
 
-const NOTE_ENDPOINT_URL = "budget/memo";
+const NOTE_ENDPOINT_URL = "/budget/memo";
 
 // TODO:(lewis 2026-05-18 13:43) this should be called noteApiSlice
 export const noteSnapshotSlice = apiSlice.injectEndpoints({

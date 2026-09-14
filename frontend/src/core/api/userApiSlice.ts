@@ -9,23 +9,22 @@ import { apiSlice } from "./apiSlice";
 export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getUserProfile: builder.query({
-      // query: () => "user/profile",
-      query: () => "user",
+      query: () => "/user/profile",
       keepUnusedDataFor: 0,
     }),
     updateUserProfile: builder.mutation({
       query: (updatedData) => ({
-        url: "user/profile",
+        url: "/user/profile",
         method: "PUT",
         body: { ...updatedData },
       }),
     }),
     getUserSettings: builder.query({
-      query: () => "user/settings",
+      query: () => "/user/settings",
     }),
     updateUserSettings: builder.mutation({
       query: (updatedSettings) => ({
-        url: "user/settings",
+        url: "/user/settings",
         method: "PUT",
         body: { ...updatedSettings },
       }),

@@ -25,7 +25,7 @@ import {
 } from "./types";
 import { mapTransaction } from "../mappers/transactionMapper";
 
-const CATEGORY_ENDPOINT_URL = "budget/categories";
+const CATEGORY_ENDPOINT_URL = "/budget/categories";
 
 export const categoryApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({

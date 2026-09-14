@@ -9,14 +9,14 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAccounts: builder.query<NormalizedData, void>({
       query: () => ({
-        url: "budget/account",
+        url: "/budget/account",
         method: "GET",
       }),
       providesTags: ["Accounts"],
     }),
     addAccount: builder.mutation<void, AddAccountPayload>({
       query: (newAccount) => ({
-        url: "budget/account",
+        url: "/budget/account",
         method: "POST",
         body: newAccount,
       }),
@@ -24,7 +24,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
     }),
     deleteAccount: builder.mutation<void, { accountId: string }>({
       query: (accountId) => ({
-        url: `budget/account`,
+        url: `/budget/account`,
         method: "DELETE",
         body: accountId,
       }),
@@ -33,7 +33,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
     // TODO: TYPING
     addTransaction: builder.mutation<any, any>({
       query: (transaction) => ({
-        url: "budget/transaction",
+        url: "/budget/transaction",
         method: "POST",
         body: transaction,
       }),
@@ -41,7 +41,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
     }),
     duplicateTransactions: builder.mutation<void, DuplicateTransactions>({
       query: (transactions) => ({
-        url: "budget/transaction/duplicate",
+        url: "/budget/transaction/duplicate",
         method: "POST",
         body: transactions,
       }),
@@ -49,7 +49,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
     }),
     deleteTransaction: builder.mutation<any, any>({
       query: (transaction) => ({
-        url: "budget/transaction",
+        url: "/budget/transaction",
         method: "DELETE",
         body: transaction,
       }),
@@ -57,7 +57,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
     }),
     editTransaction: builder.mutation<any, any>({
       query: (transaction) => ({
-        url: "budget/transaction",
+        url: "/budget/transaction",
         method: "PATCH",
         body: transaction,
       }),
@@ -65,7 +65,7 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
     }),
     getCategories: builder.query<AllocationData, void>({
       query: () => ({
-        url: "budget/categories",
+        url: "/budget/categories",
         method: "GET",
       }),
       providesTags: ["Categories"],

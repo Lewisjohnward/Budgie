@@ -24,7 +24,7 @@ import { mapCategory } from "../mappers/categoryMapper";
 import { mapMonth } from "../mappers/monthMapper";
 import { mapTransaction } from "../mappers/transactionMapper";
 
-const CATEGORY_GROUP_ENDPOINT_URL = "budget/category-groups";
+const CATEGORY_GROUP_ENDPOINT_URL = "/budget/category-groups";
 
 export const categoryGroupApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
