@@ -8,6 +8,11 @@ export const testCredentials: RegisterPayload = {
   password: "EBcav4KN$tmG",
 };
 
+export const demoCredentials: RegisterPayload = {
+  email: process.env.DEMO_EMAIL!,
+  password: process.env.DEMO_PASSWORD!,
+};
+
 export const registerUser = async (
   tx: Prisma.TransactionClient,
   credentials: RegisterPayload = testCredentials

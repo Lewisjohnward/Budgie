@@ -31,6 +31,12 @@ export const authApiSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
+    demoLogin: builder.mutation<string, void>({
+      query: () => ({
+        url: "/__demo__/login",
+        method: "POST",
+      }),
+    }),
   }),
 });
 
@@ -39,4 +45,5 @@ export const {
   useLoginMutation,
   useLogoutMutation,
   useRefreshTokenMutation,
+  useDemoLoginMutation,
 } = authApiSlice;

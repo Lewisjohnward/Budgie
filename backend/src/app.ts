@@ -11,6 +11,7 @@ import { errorHandler } from "./shared/middleWare/errorHandler";
 import budgetRoutes from "./features/budget/budget.router";
 import userRoutes from "./features/user/user.router";
 import { testRoutes } from "./e2e/test.router";
+import { demoRoutes } from "./demo/demo.router";
 
 if (!process.env.PAYLOAD_SECRET) {
   throw new Error("No value provided for payload secret");
@@ -28,6 +29,37 @@ if (process.env.NODE_ENV !== "test") {
   app.use(morgan("dev"));
 }
 
+app.use(
+  cors({
+    origin: [
+      // fe
+      "http://localhost:5173",
+      // fe e2e
+      "http://localhost:5174",
+      // fe e2e:demo
+      "http://localhost:5175",
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "OPTIONS", "DELETE", "PATCH"],
+  })
+);
+
+if (process.env.ENABLE_DEMO_ROUTES === "true") {
+  if (!process.env.DEMO_EMAIL) {
+    throw new Error("No value provided for demo email");
+  }
+
+  if (!process.env.DEMO_PASSWORD) {
+    throw new Error("No value provided for demo password");
+  }
+
+  if (!process.env.DEMO_RESET_SECRET) {
+    throw new Error("No value provided for demo reset secret");
+  }
+
+  app.use("/api/v1/__demo__", demoRoutes);
+}
+
 if (
   process.env.ENABLE_TEST_ROUTES === "true" &&
   process.env.NODE_ENV !== "production"
@@ -35,13 +67,6 @@ if (
   app.use("/__test__", testRoutes);
 }
 
-app.use(
-  cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
-    credentials: true,
-    methods: ["GET", "POST", "OPTIONS", "DELETE", "PATCH"],
-  })
-);
 app.use(helmet());
 
 app.use("/api/v1/user", userRoutes);
