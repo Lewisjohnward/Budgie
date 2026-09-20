@@ -34,9 +34,11 @@ export default function PersistLogin() {
       }
     };
 
-    setTimeout(() => {
-      !token && persist ? verifyRefreshToken() : setIsLoading(false);
-    }, 1000);
+    if (!token && persist) {
+      verifyRefreshToken();
+    } else {
+      setIsLoading(false);
+    }
 
     return () => {
       isMounted = false;
@@ -51,10 +53,20 @@ export default function PersistLogin() {
       {!persist ? (
         <Outlet />
       ) : isLoading && isOnBudgetPage ? (
-        <div className="h-screen bg-red-400">Loading...</div>
+        <>
+          <AuthLoading />
+        </>
       ) : (
         <Outlet />
       )}
     </>
+  );
+}
+
+function AuthLoading() {
+  return (
+    <div className="flex min-h-screen min-w-96 bg-[radial-gradient(rgba(53,87,129)_0%,rgba(28,65,72,1)_100%)]">
+      <div className="text-2xl font-bold text-gray-800">Budgie.</div>
+    </div>
   );
 }
