@@ -7,6 +7,7 @@ Budgie is a self-hosted personal finance management application based on the env
 It provides tools for allocating available funds to spending categories, recording and categorising transactions, managing accounts, and reviewing spending against a monthly budget.
 
 Budgie is free and open-source, with Docker Compose used to provide a straightforward self-hosting setup.
+ruleset test
 
 ## Table of Contents
 
