@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { darkBlueBg, bannerColorText } from "../../core/theme/colors";
-import { GiHamburgerMenu } from "../../core/icons/icons";
 import { useMenu } from "@/pages/landing/hooks/useMenu";
+import { cn } from "@/core/lib/utils";
 
 export default function LandingPage() {
   const { menu } = useMenu();
@@ -32,7 +32,6 @@ function TopBar({ menu }: MenuProps) {
             <Logo />
             <NavBar />
           </div>
-          <MenuButton onClick={menu.toggle} />
           <AuthActions />
         </div>
       </div>
@@ -65,18 +64,6 @@ function NavBar() {
   );
 }
 
-function MenuButton({ onClick }: { onClick: () => void }) {
-  return (
-    <ul className="md:hidden hover:cursor-pointer">
-      <GiHamburgerMenu
-        className="text-white"
-        size={28}
-        onClick={() => onClick()}
-      />
-    </ul>
-  );
-}
-
 function AuthActions() {
   return (
     <ul className="hidden md:flex items-center space-x-10">
@@ -94,23 +81,29 @@ function AuthActions() {
 
 function Body({ menuVisible }: { menuVisible: boolean }) {
   return (
-    <div className={`h-screen ${menuVisible && "overflow-hidden"}`}>
+    <div className={cn("h-screen", menuVisible && "overflow-hidden")}>
       <HomeHero />
-      <section className="h-[5000px] bg-amber-50"></section>
     </div>
   );
 }
 
 function HomeHero() {
   return (
-    <section className="flex justify-center pt-20 pb-40 bg-indigo-500">
-      <div className="max-w-screen-xl px-4 pt-20 bg-indigo-500">
+    <section
+      className="h-screen flex justify-center bg-[#FEFAEE] bg-cover bg-top bg-no-repeat"
+      style={{
+        backgroundImage:
+          "url('https://cdn.prod.website-files.com/640f69143ec11b21d42015c6/6776d0feb0dad6298ff22ba1_bkg_home_tissuepaper_noise.avif')",
+        backgroundSize: "3000px 1300px",
+      }}
+    >
+      <div className="max-w-screen-xl px-4 pt-40">
         <div className="flex gap-40">
-          <div>
-            <h1 className="text-4xl text-white font-bold pb-4">
+          <div className="space-y-4">
+            <h1 className="text-4xl text-white text-center md:text-left font-bold pb-4">
               Rethink your relationship with money.
             </h1>
-            <p className="italic text-white pb-4">
+            <p className="italic text-white pb-4 text-center md:text-left">
               Budgie aims to help thousands discover how to spend wisely, save
               confidently, and live joyfully through a straightforward set of
               transformative habits.
@@ -122,7 +115,7 @@ function HomeHero() {
               Join Budgie
             </Link>
           </div>
-          <div className="hidden md:block bg-pink-400 w-10/12"></div>
+          <div className="hidden md:block w-10/12"></div>
         </div>
       </div>
     </section>
