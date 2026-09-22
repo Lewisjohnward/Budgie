@@ -52,7 +52,7 @@ export function Categories({
   const dragAndDrop = useDragAndDrop({ categoriesByGroup });
 
   return (
-    <div className="bg-stone-100">
+    <div className="flex w-full h-full min-h-0 flex-col">
       <DndContext
         sensors={dragAndDrop.sensors}
         collisionDetection={closestCenter}
@@ -77,113 +77,115 @@ export function Categories({
         </CategoryGridRow>
 
         {/* // TODO:(lewis 2026-05-11 18:36) make this more semantic */}
-        {uncategorisedRow.month.available !== 0 &&
-          !dragAndDrop.isDraggingCategoryGroup && (
-            <CategoryGridRow>
-              <UncategorisedRow
-                currency={currency}
-                category={uncategorisedRow.category}
-                month={uncategorisedRow.month}
-                categorySelector={categorySelector}
-              />
-            </CategoryGridRow>
-          )}
-        <DragOverlay>
-          {dragAndDrop.activeCategory ? (
-            <CategoryRow
-              category={dragAndDrop.activeCategory.category}
-              month={dragAndDrop.activeCategory.month}
-              categorySelection={categorySelector}
-            />
-          ) : dragAndDrop.activeCategoryGroup ? (
-            <CategoryGridRow className="bg-stone-200">
-              <CategoryGroupRow
-                open={dragAndDrop.activeCategoryGroup.open}
-                categoryGroup={dragAndDrop.activeCategoryGroup.group}
-                currency={currency}
-                onExpandClick={() => {}}
-                selectionState={categorySelector.getCategoryGroupSelectionState(
-                  dragAndDrop.activeCategoryGroup.group.id
-                )}
-                onGroupClick={categorySelector.onCategoryGroupClick}
-              />
-            </CategoryGridRow>
-          ) : null}
-        </DragOverlay>
-
-        {/* category group rows */}
-        <SortableContext
-          items={dragAndDrop.draftView.map((g) => g.group.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          {dragAndDrop.draftView.map(({ group, rows, open }) => {
-            return (
-              <div key={group.id}>
-                <div className="group">
-                  <CategoryGridRow
-                    aria-label={`${group.name} category group`}
-                    id={group.id}
-                    className={`bg-stone-200 ${
-                      dragAndDrop.activeId === group.id ? "invisible" : ""
-                    }`}
-                    onContextMenu={(e) =>
-                      onContextMenu(e, {
-                        type: "categoryGroup",
-                        id: group.id,
-                        name: group.name,
-                      })
-                    }
-                  >
-                    <CategoryGroupRow
-                      open={open}
-                      categoryGroup={group}
-                      currency={currency}
-                      onExpandClick={() => {
-                        expandCategoryGroups.expandCategoryGroup(group.id);
-                      }}
-                      selectionState={categorySelector.getCategoryGroupSelectionState(
-                        group.id
-                      )}
-                      onGroupClick={categorySelector.onCategoryGroupClick}
-                    />
-                  </CategoryGridRow>
-                </div>
-                {open && !dragAndDrop.isDraggingCategoryGroup && (
-                  <SortableContext
-                    items={rows.map((r) => r.category.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    {/* category rows */}
-                    {rows.map((row) => {
-                      return (
-                        <CategoryRow
-                          onContextMenu={(e) =>
-                            onContextMenu(e, {
-                              type: "category",
-                              id: row.category.id,
-                              name: row.category.name,
-                              categoryGroupId: row.category.categoryGroupId,
-                            })
-                          }
-                          key={row.category.id}
-                          category={row.category}
-                          month={row.month}
-                          // TODO:(lewis 2026-05-15 15:05) this should be categorySelector
-                          categorySelection={categorySelector}
-                        />
-                      );
-                    })}
-                  </SortableContext>
-                )}
-                <CategoryGroupDropZone
-                  groupId={group.id}
-                  active={dragAndDrop.isDragging}
-                  enabled={rows.length === 0 || !open}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {uncategorisedRow.month.available !== 0 &&
+            !dragAndDrop.isDraggingCategoryGroup && (
+              <CategoryGridRow>
+                <UncategorisedRow
+                  currency={currency}
+                  category={uncategorisedRow.category}
+                  month={uncategorisedRow.month}
+                  categorySelector={categorySelector}
                 />
-              </div>
-            );
-          })}
-        </SortableContext>
+              </CategoryGridRow>
+            )}
+          <DragOverlay>
+            {dragAndDrop.activeCategory ? (
+              <CategoryRow
+                category={dragAndDrop.activeCategory.category}
+                month={dragAndDrop.activeCategory.month}
+                categorySelection={categorySelector}
+              />
+            ) : dragAndDrop.activeCategoryGroup ? (
+              <CategoryGridRow className="bg-stone-200">
+                <CategoryGroupRow
+                  open={dragAndDrop.activeCategoryGroup.open}
+                  categoryGroup={dragAndDrop.activeCategoryGroup.group}
+                  currency={currency}
+                  onExpandClick={() => {}}
+                  selectionState={categorySelector.getCategoryGroupSelectionState(
+                    dragAndDrop.activeCategoryGroup.group.id
+                  )}
+                  onGroupClick={categorySelector.onCategoryGroupClick}
+                />
+              </CategoryGridRow>
+            ) : null}
+          </DragOverlay>
+
+          {/* category group rows */}
+          <SortableContext
+            items={dragAndDrop.draftView.map((g) => g.group.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {dragAndDrop.draftView.map(({ group, rows, open }) => {
+              return (
+                <div key={group.id}>
+                  <div className="group">
+                    <CategoryGridRow
+                      aria-label={`${group.name} category group`}
+                      id={group.id}
+                      className={`bg-stone-200 ${
+                        dragAndDrop.activeId === group.id ? "invisible" : ""
+                      }`}
+                      onContextMenu={(e) =>
+                        onContextMenu(e, {
+                          type: "categoryGroup",
+                          id: group.id,
+                          name: group.name,
+                        })
+                      }
+                    >
+                      <CategoryGroupRow
+                        open={open}
+                        categoryGroup={group}
+                        currency={currency}
+                        onExpandClick={() => {
+                          expandCategoryGroups.expandCategoryGroup(group.id);
+                        }}
+                        selectionState={categorySelector.getCategoryGroupSelectionState(
+                          group.id
+                        )}
+                        onGroupClick={categorySelector.onCategoryGroupClick}
+                      />
+                    </CategoryGridRow>
+                  </div>
+                  {open && !dragAndDrop.isDraggingCategoryGroup && (
+                    <SortableContext
+                      items={rows.map((r) => r.category.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {/* category rows */}
+                      {rows.map((row) => {
+                        return (
+                          <CategoryRow
+                            onContextMenu={(e) =>
+                              onContextMenu(e, {
+                                type: "category",
+                                id: row.category.id,
+                                name: row.category.name,
+                                categoryGroupId: row.category.categoryGroupId,
+                              })
+                            }
+                            key={row.category.id}
+                            category={row.category}
+                            month={row.month}
+                            // TODO:(lewis 2026-05-15 15:05) this should be categorySelector
+                            categorySelection={categorySelector}
+                          />
+                        );
+                      })}
+                    </SortableContext>
+                  )}
+                  <CategoryGroupDropZone
+                    groupId={group.id}
+                    active={dragAndDrop.isDragging}
+                    enabled={rows.length === 0 || !open}
+                  />
+                </div>
+              );
+            })}
+          </SortableContext>
+        </div>
       </DndContext>
     </div>
   );
