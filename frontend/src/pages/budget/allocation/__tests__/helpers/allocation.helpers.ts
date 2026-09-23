@@ -62,6 +62,11 @@ export const getCategoryCheckbox = (name: string) =>
     name: `Select ${name}`,
   });
 
+export const getSelectAllCheckbox = () =>
+  screen.findByRole("checkbox", {
+    name: "Select all categories",
+  });
+
 export const getCategoryGroupCheckbox = (name: string) =>
   screen.findByRole("checkbox", {
     name: `Select all categories in ${name}`,

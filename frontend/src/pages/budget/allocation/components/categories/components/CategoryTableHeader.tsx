@@ -24,6 +24,7 @@ export function CategoryTableHeader({
       {showExpandButton ? <ExpandButton open={open} onClick={onClick} /> : null}
       <div className="flex justify-start items-center gap-4">
         <Checkbox
+          aria-label="Select all categories"
           className="[&_svg]:h-3 [&_svg]:w-3 size-3 rounded-[2px] shadow-none"
           checked={toCheckboxState(getAllSelectionState())}
           onClick={(e) => {

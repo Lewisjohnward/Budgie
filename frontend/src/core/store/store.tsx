@@ -2,7 +2,7 @@ import { configureStore } from "@reduxjs/toolkit/react";
 import authReducer from "@/core/slices/authSlice";
 import dialogReducer from "@/core/slices/dialogSlice";
 import settingsReducer from "@/core/slices/settingsSlice";
-import selectedCategoryReducer from "@/pages/budget/allocation/slices/selectedCategorySlice";
+import categorySelectionReducer from "@/pages/budget/allocation/slices/categorySelectionSlice";
 import transactionFormRowReducer from "@/pages/budget/account/slices/transactionFormRowSlice";
 import monthReducer from "@/pages/budget/allocation/slices/monthSlice";
 import reflectMonthReducer from "@/pages/budget/reflect/slices/reflectMonthSlice";
@@ -17,7 +17,7 @@ export const createStore = () =>
       month: monthReducer,
       reflectMonth: reflectMonthReducer,
       settings: settingsReducer,
-      selectedCategories: selectedCategoryReducer,
+      categorySelection: categorySelectionReducer,
 
       [apiSlice.reducerPath]: apiSlice.reducer,
     },

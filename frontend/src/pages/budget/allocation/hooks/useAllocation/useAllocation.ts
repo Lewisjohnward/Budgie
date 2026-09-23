@@ -175,8 +175,11 @@ export function useAllocation() {
   );
 
   // TODO:(lewis 2026-05-15 15:13) this should not be coming from views
+  const categoryGroupIds = userCategoryGroupViews.map(({ group }) => group.id);
+
   const categorySelector = useCategorySelector({
     orderedCategories: [...orderedCategories, uncategorisedRow.category],
+    categoryGroupIds,
   });
 
   useEffect(() => {

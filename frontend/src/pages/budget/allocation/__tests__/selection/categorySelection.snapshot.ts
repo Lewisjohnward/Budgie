@@ -61,6 +61,12 @@ export const snapshot: ApiBudgetSnapshot = {
           name: "Other",
         }
       ),
+      [categoryGroupIds.empty]: createUserCategoryGroup(
+        categoryGroupIds.empty,
+        {
+          name: "Empty",
+        }
+      ),
     },
     inflow: createSystemCategoryGroup(categoryGroupIds.inflow),
     uncategorised: createSystemCategoryGroup(categoryGroupIds.uncategorised),

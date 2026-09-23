@@ -7,7 +7,7 @@ import { useBudgetSnapshot } from "./useCategories";
 import {
   SelectableCategory,
   useSelectedCategories,
-} from "../../slices/selectedCategorySlice";
+} from "../../slices/categorySelectionSlice";
 import {
   CategoryUserBranded,
   CategoryGroupUserBranded,

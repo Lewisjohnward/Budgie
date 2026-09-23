@@ -16,6 +16,7 @@ import {
   getCategoryContextMenu,
   getCategoryGroupCheckbox,
   getEditCategoryButton,
+  getSelectAllCheckbox,
   selectCategories,
   selectCategory,
   selectCategoryGroup,
@@ -70,6 +71,38 @@ describe("selection", () => {
       assertCategoryNotSelected("Groceries");
       assertCategoryNotSelected("Rent");
       assertNoCategoriesSelected();
+    });
+
+    it("checking an empty category group selects the category group", async () => {
+      await selectCategoryGroup("Empty");
+
+      expect(await getCategoryGroupCheckbox("Empty")).toBeChecked();
+    });
+
+    it("unchecking an empty category group deselects the category group", async () => {
+      const checkbox = await getCategoryGroupCheckbox("Empty");
+
+      await getUser().click(checkbox);
+      expect(checkbox).toBeChecked();
+
+      await getUser().click(checkbox);
+
+      expect(checkbox).not.toBeChecked();
+      assertNoCategoriesSelected();
+    });
+
+    it("shows a partial state when one category in the group is deselected", async () => {
+      await selectCategoryGroup("Important");
+
+      await getUser().click(await getCategoryCheckbox("Groceries"));
+
+      expect(await getCategoryGroupCheckbox("Important")).toHaveAttribute(
+        "data-state",
+        "indeterminate"
+      );
+
+      assertCategoryNotSelected("Groceries");
+      assertCategorySelected("Rent");
     });
   });
 
@@ -130,6 +163,41 @@ describe("selection", () => {
       await getUser().click(getEditCategoryButton("Groceries"));
 
       expect(await getCategoryContextMenu("Groceries")).toBeInTheDocument();
+    });
+  });
+
+  describe("select all", () => {
+    it("selects all categories and empty category groups", async () => {
+      const checkbox = await getSelectAllCheckbox();
+
+      await getUser().click(checkbox);
+
+      expect(checkbox).toBeChecked();
+
+      assertCategorySelected("Groceries");
+      assertCategorySelected("Rent");
+      assertCategorySelected("Uncategorised");
+      assertSelectedCategoryCount(2);
+    });
+
+    it("clears all categories and empty category groups when checked again", async () => {
+      const checkbox = await getSelectAllCheckbox();
+
+      await getUser().click(checkbox);
+      expect(checkbox).toBeChecked();
+
+      await getUser().click(checkbox);
+
+      expect(checkbox).not.toBeChecked();
+      assertNoCategoriesSelected();
+    });
+
+    it("shows a partial state when only an empty category group is selected", async () => {
+      await selectCategoryGroup("Empty");
+
+      const checkbox = await getSelectAllCheckbox();
+
+      expect(checkbox).toHaveAttribute("data-state", "indeterminate");
     });
   });
 });

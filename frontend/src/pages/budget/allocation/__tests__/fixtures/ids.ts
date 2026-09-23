@@ -3,6 +3,7 @@ export const categoryGroupIds = {
   uncategorised: "uncat_cat_group_id",
   important: "important_cat_group_id",
   other: "other_cat_group_id",
+  empty: "empty_cat_group_id",
 };
 
 export const categoryIds = {
