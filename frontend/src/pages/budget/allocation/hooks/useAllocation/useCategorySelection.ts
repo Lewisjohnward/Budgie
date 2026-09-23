@@ -1,12 +1,15 @@
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
 import {
   addCategories,
-  clearCategories,
+  addCategoryGroup,
+  clearSelection,
   removeCategories,
+  removeCategoryGroup,
   SelectableCategory,
   usePreviousSelectedCategory,
   useSelectedCategories,
-} from "../../slices/selectedCategorySlice";
+  useSelectedCategoryGroupIds,
+} from "../../slices/categorySelectionSlice";
 import { CategoryGroupId, CategoryId } from "../../types/types";
 import {
   CategorySystemBranded,
@@ -19,6 +22,7 @@ type Category = CategoryUserBranded | CategorySystemBranded;
 // Input
 export type UseCategorySelectionParams = {
   orderedCategories: Category[];
+  categoryGroupIds: CategoryGroupId[];
 };
 
 // Output
@@ -26,7 +30,10 @@ export type CategorySelectionState = {
   selectAll: () => void;
   getAllSelectionState: () => SelectionState;
   isSelected: (id: CategoryId) => boolean;
-  onRowClick: (e: React.MouseEvent, category: CategoryUserBranded) => void;
+  onRowClick: (
+    e: React.MouseEvent,
+    category: CategoryUserBranded | CategorySystemBranded
+  ) => void;
   getCategoryGroupSelectionState: (id: CategoryGroupId) => SelectionState;
   onCategoryGroupClick: (id: CategoryGroupId) => void;
   toggle: (category: SelectableCategory) => void;
@@ -39,10 +46,12 @@ export type SelectionState = (typeof SELECTION_STATE)[number];
 
 export const useCategorySelection = ({
   orderedCategories,
+  categoryGroupIds,
 }: UseCategorySelectionParams): CategorySelectionState => {
   const dispatch = useAppDispatch();
 
   const selected = useSelectedCategories();
+  const selectedCategoryGroupIds = useSelectedCategoryGroupIds();
   const previous = usePreviousSelectedCategory();
 
   const selectedSet = useMemo(
@@ -50,9 +59,22 @@ export const useCategorySelection = ({
     [selected]
   );
 
+  const selectedCategoryGroupSet = useMemo(
+    () => new Set(selectedCategoryGroupIds),
+    [selectedCategoryGroupIds]
+  );
+
+  const emptyCategoryGroupIds = useMemo(() => {
+    const groupsWithCategories = new Set(
+      orderedCategories.map((category) => category.categoryGroupId)
+    );
+
+    return categoryGroupIds.filter((id) => !groupsWithCategories.has(id));
+  }, [orderedCategories, categoryGroupIds]);
+
   const isSelected = (id: CategoryId) => selectedSet.has(id);
 
-  const clear = () => dispatch(clearCategories());
+  const clear = () => dispatch(clearSelection());
 
   const toggle = (category: SelectableCategory): void => {
     if (isSelected(category.id)) {
@@ -64,10 +86,13 @@ export const useCategorySelection = ({
 
   const onRowClick = (
     e: React.MouseEvent,
-    category: CategoryUserBranded
+    category: CategoryUserBranded | CategorySystemBranded
   ): void => {
     // CTRL = toggle
-    if (e.ctrlKey) return toggle(category);
+    if (e.ctrlKey) {
+      toggle(category);
+      return;
+    }
 
     // SHIFT = range select
     if (e.shiftKey && previous) {
@@ -84,10 +109,12 @@ export const useCategorySelection = ({
       } else {
         dispatch(addCategories(range));
       }
+
+      return;
     }
 
-    // normal click
-    dispatch(clearCategories());
+    // Normal click
+    dispatch(clearSelection());
     dispatch(addCategories([category]));
   };
 
@@ -98,7 +125,10 @@ export const useCategorySelection = ({
       (c) => c.categoryGroupId === id
     );
 
-    if (groupCategories.length === 0) return "NONE";
+    // Empty groups are selected independently from categories.
+    if (groupCategories.length === 0) {
+      return selectedCategoryGroupSet.has(id) ? "COMPLETE" : "NONE";
+    }
 
     const selectedCount = groupCategories.reduce((count, c) => {
       return count + (selectedSet.has(c.id) ? 1 : 0);
@@ -114,10 +144,24 @@ export const useCategorySelection = ({
     const categoriesToSelect = orderedCategories.filter(
       (c) => c.categoryGroupId === id
     );
-    const isAtleastOneSelected = categoriesToSelect.some((c) =>
+
+    // Empty category groups have no categories to select, so track
+    // the group itself instead.
+    if (categoriesToSelect.length === 0) {
+      if (selectedCategoryGroupSet.has(id)) {
+        dispatch(removeCategoryGroup(id));
+      } else {
+        dispatch(addCategoryGroup(id));
+      }
+
+      return;
+    }
+
+    const isAtLeastOneSelected = categoriesToSelect.some((c) =>
       isSelected(c.id)
     );
-    if (isAtleastOneSelected) {
+
+    if (isAtLeastOneSelected) {
       dispatch(removeCategories(categoriesToSelect));
     } else {
       dispatch(addCategories(categoriesToSelect));
@@ -125,27 +169,46 @@ export const useCategorySelection = ({
   };
 
   const selectAll = (): void => {
-    const isAtleastOneSelected = orderedCategories.some((c) =>
-      isSelected(c.id)
-    );
+    const selectedCategoryCount = orderedCategories.filter((c) =>
+      selectedSet.has(c.id)
+    ).length;
 
-    if (isAtleastOneSelected) {
-      dispatch(clearCategories());
-    } else {
-      dispatch(addCategories(orderedCategories));
+    const selectedEmptyGroupCount = emptyCategoryGroupIds.filter((id) =>
+      selectedCategoryGroupSet.has(id)
+    ).length;
+
+    const selectedCount = selectedCategoryCount + selectedEmptyGroupCount;
+
+    if (selectedCount > 0) {
+      dispatch(clearSelection());
+      return;
+    }
+
+    dispatch(addCategories(orderedCategories));
+
+    for (const id of emptyCategoryGroupIds) {
+      dispatch(addCategoryGroup(id));
     }
   };
 
   const getAllSelectionState = (): SelectionState => {
-    if (orderedCategories.length === 0) return "NONE";
+    const totalSelectableCount =
+      orderedCategories.length + emptyCategoryGroupIds.length;
 
-    const selectedCount = orderedCategories.reduce((count, c) => {
-      return count + (selectedSet.has(c.id) ? 1 : 0);
-    }, 0);
+    if (totalSelectableCount === 0) return "NONE";
+
+    const selectedCategoryCount = orderedCategories.filter((c) =>
+      selectedSet.has(c.id)
+    ).length;
+
+    const selectedEmptyGroupCount = emptyCategoryGroupIds.filter((id) =>
+      selectedCategoryGroupSet.has(id)
+    ).length;
+
+    const selectedCount = selectedCategoryCount + selectedEmptyGroupCount;
 
     if (selectedCount === 0) return "NONE";
-    if (selectedCount === orderedCategories.length) return "COMPLETE";
-    if (selectedCount > 0) return "PARTIAL";
+    if (selectedCount === totalSelectableCount) return "COMPLETE";
 
     return "PARTIAL";
   };
@@ -153,16 +216,12 @@ export const useCategorySelection = ({
   return {
     selectAll,
     getAllSelectionState,
-
-    // isRowSelected
     isSelected,
     onRowClick,
-
     getCategoryGroupSelectionState,
     onCategoryGroupClick,
     toggle,
     clear,
-    // TODO:(lewis 2026-05-10 15:30) maybe separate this into category and categoryGroup?
   };
 };
 

@@ -1,6 +1,6 @@
 import { CategoryActionTarget } from "@/pages/budget/allocation/hooks/useAllocation/useAllocation";
 import { CategoryBreakdownView } from "@/pages/budget/allocation/hooks/useAllocation/useCategoryBreakdown";
-import { SelectableCategory } from "@/pages/budget/allocation/slices/selectedCategorySlice";
+import { SelectableCategory } from "@/pages/budget/allocation/slices/categorySelectionSlice";
 import clsx from "clsx";
 import { Pencil } from "lucide-react";
 
