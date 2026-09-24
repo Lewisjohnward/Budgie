@@ -53,7 +53,7 @@ export function CategoryRow({
 
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleRowClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+  const handleRowClick = (e: React.MouseEvent) => {
     inputRef.current?.focus();
     categorySelection.onRowClick(e, category);
   };
@@ -65,7 +65,6 @@ export function CategoryRow({
   return (
     <div
       onContextMenu={onContextMenu}
-      onClick={handleRowClick}
       className="cursor-pointer"
       ref={setNodeRef}
       style={style}
@@ -75,6 +74,7 @@ export function CategoryRow({
       <CategoryGridRow
         aria-label={`${category.name} category`}
         isSelected={isRowSelected}
+        onClick={handleRowClick}
       >
         <EmptyCell />
         <div className="flex items-center min-w-0 gap-4">
