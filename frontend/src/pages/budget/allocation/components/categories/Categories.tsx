@@ -85,6 +85,9 @@ export function Categories({
                 isSelected={categorySelector.isSelected(
                   uncategorisedRow.category.id
                 )}
+                onClick={(e: React.MouseEvent) =>
+                  categorySelector.onRowClick(e, uncategorisedRow.category)
+                }
               >
                 <UncategorisedRow
                   currency={currency}
