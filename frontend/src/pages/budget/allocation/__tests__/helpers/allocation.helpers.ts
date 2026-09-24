@@ -57,6 +57,19 @@ export const expectCategoryAmounts = (
   }
 };
 
+export const getCategoryRow = (name: string) =>
+  screen.findByRole("row", {
+    name: `${name} category`,
+  });
+
+export const getAssignedAmountInput = async (category: string) => {
+  const row = await getCategoryRow(category);
+
+  return within(row).getByRole("textbox", {
+    name: `${category} assigned amount`,
+  });
+};
+
 export const getCategoryCheckbox = (name: string) =>
   screen.findByRole("checkbox", {
     name: `Select ${name}`,

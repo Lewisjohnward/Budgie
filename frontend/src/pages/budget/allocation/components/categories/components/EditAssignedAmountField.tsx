@@ -8,6 +8,7 @@ import { useAllocateToMonthsMutation } from "@/core/api/budget/category/category
 type AssignedAmountFieldProps = {
   assigned: number;
   monthId: MonthId;
+  "aria-label": string;
 };
 
 type MonthForm = {
@@ -31,7 +32,7 @@ type MonthForm = {
 export const AssignedAmountField = forwardRef<
   HTMLInputElement,
   AssignedAmountFieldProps
->(({ assigned, monthId }, ref) => {
+>(({ assigned, monthId, "aria-label": ariaLabel }, ref) => {
   const [allocateToMonths] = useAllocateToMonthsMutation();
   const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -79,6 +80,7 @@ export const AssignedAmountField = forwardRef<
         render={({ field }) => (
           <input
             {...field}
+            aria-label={ariaLabel}
             ref={(el) => {
               field.ref(el);
               inputRef.current = el;
