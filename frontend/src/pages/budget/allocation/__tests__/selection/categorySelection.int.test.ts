@@ -20,6 +20,8 @@ import {
   selectCategories,
   selectCategory,
   selectCategoryGroup,
+  getAssignedAmountInput,
+  getCategoryRow,
 } from "../helpers/allocation.helpers";
 import { snapshot } from "./categorySelection.snapshot";
 
@@ -198,6 +200,61 @@ describe("selection", () => {
       const checkbox = await getSelectAllCheckbox();
 
       expect(checkbox).toHaveAttribute("data-state", "indeterminate");
+    });
+  });
+
+  describe("focus", () => {
+    it("focuses the assigned field when clicking a category row", async () => {
+      const user = getUser();
+
+      const groceriesInput = await getAssignedAmountInput("Groceries");
+      const rentInput = await getAssignedAmountInput("Rent");
+
+      await user.click(await getCategoryRow("Groceries"));
+      expect(groceriesInput).toHaveFocus();
+
+      await user.click(await getCategoryRow("Rent"));
+      expect(rentInput).toHaveFocus();
+
+      await user.click(await getCategoryRow("Groceries"));
+      expect(groceriesInput).toHaveFocus();
+    });
+
+    it("focuses the assigned field when checking a category checkbox with no selection", async () => {
+      const user = getUser();
+
+      const checkbox = await getCategoryCheckbox("Groceries");
+      const assignedInput = await getAssignedAmountInput("Groceries");
+
+      await user.click(checkbox);
+
+      expect(assignedInput).toHaveFocus();
+    });
+
+    it("does not focus the assigned field when checking a category checkbox with an existing selection", async () => {
+      const user = getUser();
+
+      await selectCategory("Rent");
+
+      const groceriesCheckbox = await getCategoryCheckbox("Groceries");
+      const groceriesInput = await getAssignedAmountInput("Groceries");
+
+      await user.click(groceriesCheckbox);
+
+      expect(groceriesInput).not.toHaveFocus();
+    });
+
+    it("does not focus the remaining category when unchecking a category", async () => {
+      const user = getUser();
+
+      await selectCategories("Groceries", "Rent");
+
+      const groceriesCheckbox = await getCategoryCheckbox("Groceries");
+      const rentInput = await getAssignedAmountInput("Rent");
+
+      await user.click(groceriesCheckbox);
+
+      expect(rentInput).not.toHaveFocus();
     });
   });
 });

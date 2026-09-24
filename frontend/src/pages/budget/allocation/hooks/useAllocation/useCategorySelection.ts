@@ -28,6 +28,7 @@ export type UseCategorySelectionParams = {
 // Output
 export type CategorySelectionState = {
   selectAll: () => void;
+  selected: SelectableCategory[];
   getAllSelectionState: () => SelectionState;
   isSelected: (id: CategoryId) => boolean;
   onRowClick: (
@@ -215,6 +216,7 @@ export const useCategorySelection = ({
 
   return {
     selectAll,
+    selected,
     getAllSelectionState,
     isSelected,
     onRowClick,

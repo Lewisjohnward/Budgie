@@ -54,8 +54,21 @@ export function CategoryRow({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleRowClick = (e: React.MouseEvent) => {
-    inputRef.current?.focus();
     categorySelection.onRowClick(e, category);
+
+    if (!e.ctrlKey && !e.shiftKey) {
+      inputRef.current?.focus();
+    }
+  };
+
+  const handleCheckboxChange = (checked: boolean) => {
+    const shouldFocus = checked && categorySelection.selected.length === 0;
+
+    categorySelection.toggle(category);
+
+    if (shouldFocus) {
+      inputRef.current?.focus();
+    }
   };
 
   const isRowSelected = categorySelection.isSelected(category.id);
@@ -82,7 +95,7 @@ export function CategoryRow({
             aria-label={`Select ${category.name}`}
             className="[&_svg]:h-3 [&_svg]:w-3 size-3 rounded-[2px] shadow-none"
             checked={isRowSelected}
-            onCheckedChange={() => categorySelection.toggle(category)}
+            onCheckedChange={handleCheckboxChange}
             onClick={(e) => {
               e.stopPropagation();
             }}
@@ -109,6 +122,7 @@ export function CategoryRow({
           </div>
         </div>
         <AssignedAmountField
+          aria-label={`${category.name} assigned amount`}
           ref={inputRef}
           assigned={month.assigned}
           monthId={month.id}
