@@ -6,6 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 
 type Props = {
   children: ReactNode;
+  isSelected?: boolean;
   className?: string;
   id?: CategoryGroupId;
   "aria-label"?: string;
@@ -15,6 +16,7 @@ type Props = {
 
 export function CategoryGridRow({
   children,
+  isSelected,
   className,
   id,
   "aria-label": ariaLabel,
@@ -44,7 +46,8 @@ export function CategoryGridRow({
       {...sortable?.attributes}
       {...sortable?.listeners}
       className={cn(
-        "py-2 px-2 grid grid-cols-[30px_20fr_3fr_3fr_3fr] gap-x-2 border bg-white",
+        "py-2 px-2 grid grid-cols-[30px_20fr_3fr_3fr_3fr] gap-x-2 border",
+        isSelected ? "bg-blue-100" : "bg-white",
         className
       )}
       style={style}
