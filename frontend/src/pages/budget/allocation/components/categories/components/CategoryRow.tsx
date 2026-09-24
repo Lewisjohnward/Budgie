@@ -66,13 +66,16 @@ export function CategoryRow({
     <div
       onContextMenu={onContextMenu}
       onClick={handleRowClick}
-      className={`${isRowSelected ? "bg-gray-100" : "bg-white"} cursor-pointer`}
+      className="cursor-pointer"
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...listeners}
     >
-      <CategoryGridRow aria-label={`${category.name} category`}>
+      <CategoryGridRow
+        aria-label={`${category.name} category`}
+        isSelected={isRowSelected}
+      >
         <EmptyCell />
         <div className="flex items-center min-w-0 gap-4">
           <Checkbox

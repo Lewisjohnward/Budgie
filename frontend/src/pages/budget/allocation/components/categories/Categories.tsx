@@ -80,7 +80,12 @@ export function Categories({
         <div className="flex-1 min-h-0 overflow-y-auto">
           {uncategorisedRow.month.available !== 0 &&
             !dragAndDrop.isDraggingCategoryGroup && (
-              <CategoryGridRow className="py-3">
+              <CategoryGridRow
+                className="py-3"
+                isSelected={categorySelector.isSelected(
+                  uncategorisedRow.category.id
+                )}
+              >
                 <UncategorisedRow
                   currency={currency}
                   category={uncategorisedRow.category}
