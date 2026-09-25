@@ -258,8 +258,61 @@ describe("selection", () => {
     });
   });
   describe("keyboard", () => {
-    it.skip("esc deselects");
-    it.skip("shift selects");
-    it.skip("ctrl selects");
+    it("clears all selected categories when Escape is pressed", async () => {
+      const user = getUser();
+
+      await selectCategories("Groceries", "Rent");
+      await user.keyboard("{Escape}");
+
+      assertNoCategoriesSelected();
+    });
+
+    it("toggles category selection with Ctrl-click", async () => {
+      const user = getUser();
+
+      await user.click(await getCategoryRow("Groceries"));
+
+      await user.keyboard("{Control>}");
+      await user.click(await getCategoryRow("Rent"));
+      await user.keyboard("{/Control}");
+
+      assertCategorySelected("Groceries");
+      assertCategorySelected("Rent");
+
+      await user.keyboard("{Control>}");
+      await user.click(await getCategoryRow("Groceries"));
+      await user.keyboard("{/Control}");
+
+      assertCategoryNotSelected("Groceries");
+      assertCategorySelected("Rent");
+    });
+
+    it("selects a range with Shift-click", async () => {
+      const user = getUser();
+
+      await user.click(await getCategoryRow("Groceries"));
+      await user.keyboard("{Shift>}");
+      await user.click(await getCategoryRow("Rent"));
+      await user.keyboard("{/Shift}");
+
+      assertCategorySelected("Groceries");
+      assertCategorySelected("Extra");
+      assertCategorySelected("Rent");
+      assertSelectedCategoryCount(3);
+    });
+
+    it.only("uses Uncategorised as the Shift-click anchor", async () => {
+      const user = getUser();
+
+      await selectCategory("Uncategorised");
+      await user.keyboard("{Shift>}");
+      await user.click(await getCategoryRow("Extra"));
+      await user.keyboard("{/Shift}");
+
+      assertCategorySelected("Uncategorised");
+      assertCategorySelected("Groceries");
+      assertCategorySelected("Extra");
+      assertCategoryNotSelected("Rent");
+    });
   });
 });

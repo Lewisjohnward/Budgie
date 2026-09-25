@@ -31,6 +31,15 @@ export const snapshot: ApiBudgetSnapshot = {
         categoryGroupIds.important,
         {
           name: "Groceries",
+          position: 0,
+        }
+      ),
+      [categoryIds.extra]: createUserCategory(
+        categoryIds.extra,
+        categoryGroupIds.important,
+        {
+          name: "Extra",
+          position: 1,
         }
       ),
       [categoryIds.rent]: createUserCategory(
@@ -38,6 +47,7 @@ export const snapshot: ApiBudgetSnapshot = {
         categoryGroupIds.important,
         {
           name: "Rent",
+          position: 2,
         }
       ),
     },
@@ -86,6 +96,7 @@ export const snapshot: ApiBudgetSnapshot = {
       monthIds.groceriesM1,
       categoryIds.groceries
     ),
+    [monthIds.extraM1]: createMonth(monthIds.extraM1, categoryIds.extra),
     [monthIds.rentM1]: createMonth(monthIds.rentM1, categoryIds.rent),
   },
 

@@ -6,9 +6,10 @@ import {
   removeCategories,
   removeCategoryGroup,
   SelectableCategory,
-  usePreviousSelectedCategory,
   useSelectedCategories,
   useSelectedCategoryGroupIds,
+  useShiftAnchor,
+  setShiftAnchor,
 } from "../../slices/categorySelectionSlice";
 import { CategoryGroupId, CategoryId } from "../../types/types";
 import {
@@ -53,7 +54,7 @@ export const useCategorySelection = ({
 
   const selected = useSelectedCategories();
   const selectedCategoryGroupIds = useSelectedCategoryGroupIds();
-  const previous = usePreviousSelectedCategory();
+  const shiftAnchor = useShiftAnchor();
 
   const selectedSet = useMemo(
     () => new Set(selected.map((c) => c.id)),
@@ -96,20 +97,16 @@ export const useCategorySelection = ({
     }
 
     // SHIFT = range select
-    if (e.shiftKey && previous) {
+    if (e.shiftKey && shiftAnchor) {
       const range = getRangeSelection(
         orderedCategories,
-        previous.id,
+        shiftAnchor.id,
         category.id
       );
 
-      const alreadySelected = range.every((c) => selectedSet.has(c.id));
-
-      if (alreadySelected) {
-        dispatch(removeCategories(range));
-      } else {
-        dispatch(addCategories(range));
-      }
+      dispatch(clearSelection());
+      dispatch(addCategories(range));
+      dispatch(setShiftAnchor(shiftAnchor));
 
       return;
     }
@@ -117,6 +114,7 @@ export const useCategorySelection = ({
     // Normal click
     dispatch(clearSelection());
     dispatch(addCategories([category]));
+    dispatch(setShiftAnchor(category));
   };
 
   const getCategoryGroupSelectionState = (

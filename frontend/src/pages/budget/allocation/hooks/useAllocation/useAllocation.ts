@@ -178,7 +178,7 @@ export function useAllocation() {
   const categoryGroupIds = userCategoryGroupViews.map(({ group }) => group.id);
 
   const categorySelector = useCategorySelector({
-    orderedCategories: [...orderedCategories, uncategorisedRow.category],
+    orderedCategories: [uncategorisedRow.category, ...orderedCategories],
     categoryGroupIds,
   });
 
