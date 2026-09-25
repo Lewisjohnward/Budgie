@@ -1,6 +1,6 @@
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
 import { selectMonthIndex, useMonthIndex } from "../slices/monthSlice";
-import { formatDate } from "../utils/dateUtils";
+import { formatDate, getCurrentMonthKey } from "../utils/dateUtils";
 import { MonthKey } from "../types/types";
 import { getMonthName } from "../utils/getMonthName";
 
@@ -35,12 +35,6 @@ export function useMonthSelectorViewModel({
   const dispatch = useAppDispatch();
   const monthIndex = useMonthIndex();
 
-  const defaultMonthIndex = monthKeys.length - 1;
-
-  const selectCurrent = () => {
-    dispatch(selectMonthIndex(defaultMonthIndex));
-  };
-
   const next = () =>
     dispatch(
       selectMonthIndex(
@@ -52,13 +46,22 @@ export function useMonthSelectorViewModel({
       selectMonthIndex(monthIndex - 1 >= 0 ? monthIndex - 1 : monthIndex)
     );
 
-  const currentMonthKey = monthKeys[monthIndex];
-  const currentMonthNameFormatLong = formatDate(currentMonthKey);
-  const currentMonthNameFormatShort = getMonthName(currentMonthKey);
+  const currentMonthKey = getCurrentMonthKey();
+  const currentMonthIndex = monthKeys.indexOf(currentMonthKey);
+  const selectedMonthKey = monthKeys[monthIndex];
+
+  const selectCurrent = () => {
+    if (currentMonthIndex !== -1) {
+      dispatch(selectMonthIndex(currentMonthIndex));
+    }
+  };
 
   const canGoNext = monthIndex < monthKeys.length - 1;
   const canGoPrev = monthIndex > 0;
-  const isCurrentMonth = defaultMonthIndex === monthIndex;
+  const isCurrentMonth = monthIndex === currentMonthIndex;
+
+  const currentMonthNameFormatLong = formatDate(selectedMonthKey);
+  const currentMonthNameFormatShort = getMonthName(selectedMonthKey);
 
   const goToNextOrPrevious = () => (canGoNext ? next() : prev());
 

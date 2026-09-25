@@ -1,7 +1,6 @@
 import { darkBlueBgHover } from "@/core/theme/colors";
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 import { NavButton } from "./NavButton";
-import clsx from "clsx";
 import { MonthSelectorViewModel } from "../../../hooks/useMonthSelector";
 
 type MonthSelectorProps = {
@@ -35,17 +34,17 @@ export function MonthSelector({
           <ArrowRightIcon />
         </NavButton>
       </div>
-      <button
-        disabled={current.isCurrent}
-        className={clsx("px-2 py-1 rounded", {
-          "opacity-0": current.isCurrent,
-          [`bg-sky-950/30 hover:${darkBlueBgHover} hover:text-white cursor-pointer`]:
-            !current.isCurrent,
-        })}
-        onClick={navigation.selectCurrent}
-      >
-        Today
-      </button>
+      <div className="w-20">
+        {!current.isCurrent && (
+          <button
+            aria-label="Go to today"
+            className={`px-2 py-1 rounded bg-sky-950/30 hover:${darkBlueBgHover} hover:text-white cursor-pointer`}
+            onClick={navigation.selectCurrent}
+          >
+            Today
+          </button>
+        )}
+      </div>
     </>
   );
 }
