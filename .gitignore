@@ -32,6 +32,7 @@ coverage/
 storybook-static
  
 budgie_backup*
+*.tsbuildinfo
 
 # Playwright
 test-results/
