@@ -13,13 +13,13 @@ export type SelectableCategory = {
 };
 
 export type CategorySelectionState = {
-  previousSelectedCategory: SelectableCategory | null;
+  shiftAnchor: SelectableCategory | null;
   selectedCategories: SelectableCategory[];
   selectedCategoryGroupIds: CategoryGroupId[];
 };
 
 const initialState: CategorySelectionState = {
-  previousSelectedCategory: null,
+  shiftAnchor: null,
   selectedCategories: [],
   selectedCategoryGroupIds: [],
 };
@@ -30,11 +30,6 @@ const categorySelectionSlice = createSlice({
   reducers: {
     addCategories: (state, action: PayloadAction<SelectableCategory[]>) => {
       state.selectedCategories.push(...action.payload);
-
-      if (action.payload.length > 0) {
-        state.previousSelectedCategory =
-          action.payload[action.payload.length - 1];
-      }
     },
 
     removeCategories: (state, action: PayloadAction<SelectableCategory[]>) => {
@@ -43,13 +38,13 @@ const categorySelectionSlice = createSlice({
       state.selectedCategories = state.selectedCategories.filter(
         (category) => !idsToRemove.includes(category.id)
       );
+    },
 
-      if (action.payload.length > 1) {
-        state.previousSelectedCategory =
-          state.selectedCategories[state.selectedCategories.length - 1] ?? null;
-      } else if (action.payload.length === 1) {
-        state.previousSelectedCategory = action.payload[0];
-      }
+    setShiftAnchor: (
+      state,
+      action: PayloadAction<SelectableCategory | null>
+    ) => {
+      state.shiftAnchor = action.payload;
     },
 
     addCategoryGroup: (state, action: PayloadAction<CategoryGroupId>) => {
@@ -67,7 +62,7 @@ const categorySelectionSlice = createSlice({
     clearSelection: (state) => {
       state.selectedCategories = [];
       state.selectedCategoryGroupIds = [];
-      state.previousSelectedCategory = null;
+      state.shiftAnchor = null;
     },
   },
 });
@@ -75,6 +70,7 @@ const categorySelectionSlice = createSlice({
 export const {
   addCategories,
   removeCategories,
+  setShiftAnchor,
   addCategoryGroup,
   removeCategoryGroup,
   clearSelection,
@@ -89,10 +85,8 @@ export const useSelectedCategories = () => {
   return useAppSelector((state) => state.categorySelection.selectedCategories);
 };
 
-export const usePreviousSelectedCategory = () => {
-  return useAppSelector(
-    (state) => state.categorySelection.previousSelectedCategory
-  );
+export const useShiftAnchor = () => {
+  return useAppSelector((state) => state.categorySelection.shiftAnchor);
 };
 
 export const useSelectedCategoryGroupIds = () => {

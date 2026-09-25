@@ -8,6 +8,7 @@ export const categoryGroupIds = {
 
 export const categoryIds = {
   groceries: "cat_groceries",
+  extra: "cat_extra",
   rent: "cat_rent",
   rta: "cat_rta",
   uncategorised: "cat_uncat",
@@ -16,6 +17,8 @@ export const categoryIds = {
 export const monthIds = {
   rtaM1: "rta_month_1",
   rtaM2: "rta_month_2",
+  extraM1: "extra_month_1",
+  extraM2: "extra_month_2",
   uncategorisedM1: "uncat_month_1",
   uncategorisedM2: "uncat_month_2",
   groceriesM1: "groceries_month_1",

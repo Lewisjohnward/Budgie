@@ -57,6 +57,8 @@ export default function BudgetPage() {
   );
 }
 
+// this needs the loading from the login component
+
 //TODO: the border is too thick above CATEGORY
 
 // TODO: NEED TO TEST WHAT IT LOOKS LIKE WITHOUT CATEGORIES

@@ -16,6 +16,7 @@ export function SelectedCategories({
   onEditCategory,
 }: SelectedCategoriesProps) {
   const numberOfCategoriesSelected = selectedCategories.length;
+  console.log("numberOfCategoriesSelected:", numberOfCategoriesSelected);
   const isSingle = view.kind === "single";
 
   const displayEditButton = isSingle && !view.isUncategorisedSelected;
