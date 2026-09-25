@@ -257,4 +257,9 @@ describe("selection", () => {
       expect(rentInput).not.toHaveFocus();
     });
   });
+  describe("keyboard", () => {
+    it.skip("esc deselects");
+    it.skip("shift selects");
+    it.skip("ctrl selects");
+  });
 });
