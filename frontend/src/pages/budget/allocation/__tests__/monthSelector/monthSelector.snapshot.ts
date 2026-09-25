@@ -20,8 +20,8 @@ import { createMemo } from "../utils/entities/createMemo";
 import { createNormalTransaction } from "../utils/entities/createTransaction";
 import { createAccount } from "../utils/entities/createAccount";
 
-const monthKey1 = "2026-07";
-const monthKey2 = "2026-08";
+const defaultMonth = "2026-07";
+const monthKey = defaultMonth;
 
 export const snapshot: ApiBudgetSnapshot = {
   categories: {
@@ -61,6 +61,12 @@ export const snapshot: ApiBudgetSnapshot = {
           name: "Other",
         }
       ),
+      [categoryGroupIds.empty]: createUserCategoryGroup(
+        categoryGroupIds.empty,
+        {
+          name: "Empty",
+        }
+      ),
     },
     inflow: createSystemCategoryGroup(categoryGroupIds.inflow),
     uncategorised: createSystemCategoryGroup(categoryGroupIds.uncategorised),
@@ -68,48 +74,45 @@ export const snapshot: ApiBudgetSnapshot = {
 
   months: {
     [monthIds.rtaM1]: createMonth(monthIds.rtaM1, categoryIds.rta, {
-      month: monthKey1,
-    }),
-    [monthIds.rtaM2]: createMonth(monthIds.rtaM2, categoryIds.rta, {
-      month: monthKey2,
+      month: "2026-07",
     }),
     [monthIds.uncategorisedM1]: createMonth(
       monthIds.uncategorisedM1,
       categoryIds.uncategorised,
       {
-        month: monthKey1,
+        month: "2026-07",
       }
     ),
+
+    [monthIds.groceriesM1]: createMonth(
+      monthIds.groceriesM1,
+      categoryIds.groceries,
+      { month: "2026-07" }
+    ),
+    [monthIds.rentM1]: createMonth(monthIds.rentM1, categoryIds.rent, {
+      month: "2026-07",
+    }),
+    [monthIds.rtaM2]: createMonth(monthIds.rtaM2, categoryIds.rta, {
+      month: "2026-08",
+    }),
+    [monthIds.groceriesM2]: createMonth(
+      monthIds.groceriesM2,
+      categoryIds.groceries,
+      { month: "2026-08" }
+    ),
+    [monthIds.rentM2]: createMonth(monthIds.rentM2, categoryIds.rent, {
+      month: "2026-08",
+    }),
     [monthIds.uncategorisedM2]: createMonth(
       monthIds.uncategorisedM2,
       categoryIds.uncategorised,
       {
-        month: monthKey2,
+        month: "2026-08",
       }
     ),
-    [monthIds.groceriesM1]: createMonth(
-      monthIds.groceriesM1,
-      categoryIds.groceries,
-      {
-        month: monthKey1,
-      }
-    ),
-    [monthIds.groceriesM2]: createMonth(
-      monthIds.groceriesM2,
-      categoryIds.groceries,
-      {
-        month: monthKey2,
-      }
-    ),
-    [monthIds.rentM1]: createMonth(monthIds.rentM1, categoryIds.rent, {
-      month: monthKey1,
-    }),
-    [monthIds.rentM2]: createMonth(monthIds.rentM2, categoryIds.rent, {
-      month: monthKey2,
-    }),
   },
 
-  monthKeys: [monthKey1, monthKey2],
+  monthKeys: [monthKey, "2026-08"],
   accounts: {
     [accountIds.checking]: createAccount(accountIds.checking, { balance: -10 }),
   },
@@ -123,7 +126,7 @@ export const snapshot: ApiBudgetSnapshot = {
   },
   payees: {},
   memosByMonth: {
-    [monthKey1]: createMemo(memoIds.memoM1),
-    [monthKey2]: createMemo(memoIds.memoM2),
+    [monthKey]: createMemo(memoIds.memoM1),
+    ["2026-08"]: createMemo(memoIds.memoM2),
   },
 };
