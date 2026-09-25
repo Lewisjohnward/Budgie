@@ -295,3 +295,5 @@ jobs:
             git reset --hard origin/main
             docker compose --env-file .env.demo -f docker-compose.demo.yml pull
             docker compose --env-file .env.demo -f docker-compose.demo.yml up -d
+
+            docker image prune -a -f
