@@ -81,7 +81,7 @@ export function Categories({
           {uncategorisedRow.month.available !== 0 &&
             !dragAndDrop.isDraggingCategoryGroup && (
               <CategoryGridRow
-                className="py-3"
+                className="py-3 cursor-default"
                 isSelected={categorySelector.isSelected(
                   uncategorisedRow.category.id
                 )}
