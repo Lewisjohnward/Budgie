@@ -42,33 +42,36 @@ describe("buildMonthsByDate", () => {
       }),
     } as Record<MonthId, MonthBranded>;
 
-    const monthKeys = [mkMonthKey("2026-01"), mkMonthKey("2026-02")];
+    const january = mkMonthKey("2026-01");
+    const february = mkMonthKey("2026-02");
+
+    const monthKeys = [january, february];
 
     const result = buildMonthsByDate(months, monthKeys) as Record<
       MonthKey,
       Record<CategoryId, MonthBranded>
     >;
 
-    const jan = result["2026-01"];
-    const feb = result["2026-02"];
+    const jan = result[january];
+    const feb = result[february];
 
     expect(jan[c1].id).toBe("m1");
     expect(jan[c2].id).toBe("m2");
     expect(feb[c1].id).toBe("m3");
-    expect(result["2026-01"][c1].id).toBe("m1");
-    expect(result["2026-01"][c2].id).toBe("m2");
-    expect(result["2026-02"][c1].id).toBe("m3");
   });
 
   it("initializes empty buckets for all monthKeys", () => {
-    const monthKeys = [mkMonthKey("2026-01"), mkMonthKey("2026-02")];
+    const january = mkMonthKey("2026-01");
+    const february = mkMonthKey("2026-02");
+
+    const monthKeys = [january, february];
 
     const months = {} as Record<MonthId, MonthBranded>;
 
     const result = buildMonthsByDate(months, monthKeys);
 
-    expect(result["2026-01"]).toEqual({});
-    expect(result["2026-02"]).toEqual({});
+    expect(result[january]).toEqual({});
+    expect(result[february]).toEqual({});
   });
 
   it("throws when derived MonthKey is not in monthKeys", () => {
@@ -128,10 +131,12 @@ describe("buildMonthsByDate", () => {
       }),
     } as Record<MonthId, MonthBranded>;
 
-    const monthKeys = [mkMonthKey("2026-01")];
+    const january = mkMonthKey("2026-01");
+
+    const monthKeys = [january];
 
     const result = buildMonthsByDate(months, monthKeys);
 
-    expect(result["2026-01"][c1].id).toBe("m2");
+    expect(result[january][c1].id).toBe("m2");
   });
 });
