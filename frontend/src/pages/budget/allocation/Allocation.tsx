@@ -4,7 +4,7 @@ import { Categories } from "./components/categories/Categories";
 import { AllocationLayout } from "./components/Layout";
 import { useAllocation } from "./hooks/useAllocation/useAllocation";
 import { ContextMenu } from "./contextMenus/ContextMenu";
-import { DeleteDialog } from "./dialogs/deleteCategoryDialog/DeleteDialog";
+import { DeleteDialog } from "./dialogs/deleteDialog/DeleteDialog";
 
 export default function Allocation() {
   const {
