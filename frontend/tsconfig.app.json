@@ -24,8 +24,8 @@
   },
   "include": ["src"],
   "exclude": [
-    "**/*.test.ts",
-    "**/*.test.tsx",
+    "**/*.legacy.test.ts",
+    "**/*.legacy.test.tsx",
     "**/*.spec.ts",
     "**/*.spec.tsx",
     "**/*.stories.tsx",
