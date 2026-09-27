@@ -12,6 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { CategoryActionTarget } from "../hooks/useAllocation/useAllocation";
+import { type MenuPlacement } from "../components/categories/hooks/useContextMenu";
 
 const NameSchema = z.object({
   name: z.string().min(1, { message: "Category requires a name" }),
@@ -25,6 +26,7 @@ type ContextMenuProps = {
     x: number;
     y: number;
   };
+  menuPlacement: MenuPlacement;
   menuRef: React.MutableRefObject<HTMLDivElement | null>;
   overlayRef: React.MutableRefObject<HTMLDivElement | null>;
   canRename: (target: CategoryActionTarget, name: string) => boolean;
@@ -38,6 +40,7 @@ export function ContextMenu({
   menuRef,
   overlayRef,
   position,
+  menuPlacement,
   canRename,
   onRename,
   onDelete,
@@ -101,18 +104,15 @@ export function ContextMenu({
         className="relative z-50 w-96 space-y-2 rounded-md border border-slate-200 bg-white px-4 py-2 shadow-[0_10px_30px_rgba(0,0,0,0.18),0_4px_10px_rgba(0,0,0,0.10)]"
       >
         <div
-          className="
-          absolute
-          -left-2
-          top-1/2
-          h-0
-          w-0
-          -translate-y-1/2
-          border-y-[10px]
-          border-y-transparent
-          border-r-[10px]
-          border-r-white
-        "
+          className={cn(
+            "absolute h-0 w-0",
+            menuPlacement === "right" &&
+            "left-[-10px] top-1/2 -translate-y-1/2 border-y-[10px] border-y-transparent border-r-[10px] border-r-white",
+            menuPlacement === "left" &&
+            "right-[-10px] top-1/2 -translate-y-1/2 border-y-[10px] border-y-transparent border-l-[10px] border-l-white",
+            menuPlacement === "above" &&
+            "bottom-[-10px] left-1/2 -translate-x-1/2 border-x-[10px] border-x-transparent border-t-[10px] border-t-white"
+          )}
         />
 
         <Form {...form}>
