@@ -57,6 +57,7 @@ const defaultProps = {
   open: true,
   state: {
     type: "category" as const,
+    categoryId: "1" as CategoryId,
     name: "Food",
     transactionCount: 5,
     hasAssigned: false,
@@ -136,21 +137,26 @@ describe("DeleteCategoryDialog", () => {
 
       expect(screen.getByRole("button", { name: /delete/i })).toBeDisabled();
     });
+
     it("displays the category to be deleted", () => {
       renderDeleteDialog({
         state: {
           type: "category",
+          categoryId: "1" as CategoryId,
           name: "Food",
           transactionCount: 5,
           hasAssigned: false,
         },
       });
+
       expect(screen.getByText(/food/i)).toBeInTheDocument();
     });
+
     it("displays number of transactions to be inherited", () => {
       renderDeleteDialog({
         state: {
           type: "category",
+          categoryId: "1" as CategoryId,
           name: "Food",
           transactionCount: 5,
           hasAssigned: false,
@@ -160,6 +166,7 @@ describe("DeleteCategoryDialog", () => {
       expect(screen.getByText(/all transactions/i)).toBeInTheDocument();
       expect(screen.getByText("[5]")).toBeInTheDocument();
     });
+
     it("closes modal when cancel is clicked", () => {
       renderDeleteDialog();
 
@@ -167,6 +174,7 @@ describe("DeleteCategoryDialog", () => {
 
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
+
     it("closes modal when x is clicked", () => {
       renderDeleteDialog();
 
@@ -174,6 +182,7 @@ describe("DeleteCategoryDialog", () => {
 
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
+
     it("doesn't close modal when clicking outside", async () => {
       const user = userEvent.setup({ pointerEventsCheck: 0 });
       renderDeleteDialog();
@@ -184,6 +193,7 @@ describe("DeleteCategoryDialog", () => {
 
       expect(screen.queryByRole("dialog")).toBeInTheDocument();
     });
+
     it("closes modal when pressing escape key", async () => {
       const user = userEvent.setup();
       renderDeleteDialog();
@@ -194,6 +204,7 @@ describe("DeleteCategoryDialog", () => {
 
       expect(dialog).not.toBeInTheDocument();
     });
+
     it("calls accept with inheritingCategoryId when deleting a category with transactions", async () => {
       const user = userEvent.setup();
       const { mocks } = renderDeleteDialog();
@@ -210,6 +221,7 @@ describe("DeleteCategoryDialog", () => {
       // assert that accept was called with the correct ID
       expect(mocks.accept).toHaveBeenCalledWith({
         type: "category",
+        categoryId: "1",
         inheritingCategoryId: "2",
       });
     });
@@ -227,12 +239,14 @@ describe("DeleteCategoryDialog", () => {
 
           expect(screen.getByText(/important/i)).toBeInTheDocument();
         });
+
         it("displays correct available amount in popover", () => {
           renderDeleteDialog();
           openPopover();
 
           expect(screen.getByText(/100\.00/i)).toBeInTheDocument();
         });
+
         it("first category is selected when popover opens", () => {
           renderDeleteDialog();
           openPopover();
@@ -241,6 +255,7 @@ describe("DeleteCategoryDialog", () => {
             screen.getByRole("option", { name: /groceries/i })
           ).toHaveAttribute("aria-selected", "true");
         });
+
         it("only selects the category at the top on blur of input when it is not empty", async () => {
           const user = userEvent.setup();
 
@@ -258,6 +273,7 @@ describe("DeleteCategoryDialog", () => {
             expect(input).toHaveValue("");
           });
         });
+
         it("clears input on blur if all categories filtered", async () => {
           const user = userEvent.setup();
 
@@ -277,6 +293,7 @@ describe("DeleteCategoryDialog", () => {
             expect(input).toHaveValue("");
           });
         });
+
         it("selects the category at the top on blur of input", async () => {
           const user = userEvent.setup();
 
@@ -296,6 +313,7 @@ describe("DeleteCategoryDialog", () => {
             expect(input).toHaveValue("Leisure: Dining Out");
           });
         });
+
         it("closes modal when pressing escape key", async () => {
           const user = userEvent.setup();
           renderDeleteDialog();
@@ -332,6 +350,7 @@ describe("DeleteCategoryDialog", () => {
             ).not.toBeInTheDocument();
           });
         });
+
         it("focusing input with click after selection opens popover with all categories and user selected highlighted", async () => {
           renderDeleteDialog();
           openPopover();
@@ -394,6 +413,7 @@ describe("DeleteCategoryDialog", () => {
             screen.getByRole("option", { name: /groceries/i })
           ).toHaveAttribute("aria-selected", "false");
         });
+
         it("moves selection up with ArrowUp", () => {
           renderDeleteDialog();
           openPopover();
@@ -417,6 +437,7 @@ describe("DeleteCategoryDialog", () => {
             screen.getByRole("option", { name: /groceries/i })
           ).toHaveAttribute("aria-selected", "false");
         });
+
         it("arrow keys dont move cursor position in text box", () => {
           renderDeleteDialog();
           openPopover();
@@ -436,6 +457,7 @@ describe("DeleteCategoryDialog", () => {
 
           expect(after).toBe(before);
         });
+
         it("selection wraps around when navigating with arrow keys", () => {
           renderDeleteDialog();
           openPopover();
@@ -456,6 +478,7 @@ describe("DeleteCategoryDialog", () => {
             screen.getByRole("option", { name: /groceries/i })
           ).toHaveAttribute("aria-selected", "true");
         });
+
         it("selecting category with enter doesnt lose focus on input", async () => {
           renderDeleteDialog();
           openPopover();
@@ -487,6 +510,7 @@ describe("DeleteCategoryDialog", () => {
           expect(screen.getByText("Groceries")).toBeInTheDocument();
           expect(screen.queryByText("Bills")).not.toBeInTheDocument();
         });
+
         it("filters across category groups", () => {
           renderDeleteDialog();
           openPopover();
@@ -494,6 +518,7 @@ describe("DeleteCategoryDialog", () => {
 
           expect(screen.getByText("Dining Out")).toBeInTheDocument();
         });
+
         it("shows all categories when input is cleared", () => {
           renderDeleteDialog();
           openPopover();
@@ -504,6 +529,7 @@ describe("DeleteCategoryDialog", () => {
           expect(screen.getByText("Groceries")).toBeInTheDocument();
           expect(screen.getByText("Bills")).toBeInTheDocument();
         });
+
         it("when filtering the first option is selected visually", async () => {
           renderDeleteDialog();
           openPopover();
@@ -515,6 +541,7 @@ describe("DeleteCategoryDialog", () => {
             screen.getByRole("option", { name: /dining out/i })
           ).toHaveAttribute("aria-selected", "true");
         });
+
         it("does not crash when filtered group has no categories", () => {
           const selectOptions = [
             {
@@ -551,6 +578,7 @@ describe("DeleteCategoryDialog", () => {
         });
       });
     });
+
     describe("has assigned", () => {
       it("displays reassign view", async () => {
         const user = userEvent.setup();
@@ -592,6 +620,7 @@ describe("DeleteCategoryDialog", () => {
         renderDeleteDialog({
           state: {
             type: "categoryGroup",
+            categoryGroupId: "group-2" as CategoryGroupId,
             name: "Leisure Group",
             transactionCount: 2,
             categoryCount: 3,
@@ -604,11 +633,13 @@ describe("DeleteCategoryDialog", () => {
         expect(screen.getByText(/\[3\]/i)).toBeInTheDocument();
       });
     });
+
     describe("category has no transactions but money assigned", () => {
       it("renders heading when deleting a category group", () => {
         renderDeleteDialog({
           state: {
             type: "categoryGroup",
+            categoryGroupId: "group-2" as CategoryGroupId,
             name: "Leisure Group",
             transactionCount: 2,
             categoryCount: 3,

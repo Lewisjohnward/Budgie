@@ -10,7 +10,7 @@ import {
   DeleteArgs,
   DeleteDialogReturn,
   useDeleteDialog,
-} from "../../../dialogs/deleteCategoryDialog/useDeleteDialog";
+} from "../../../dialogs/deleteDialog/useDeleteDialog";
 import {
   CategoryActionTarget,
   CategorySelectOptions,
