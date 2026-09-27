@@ -65,6 +65,7 @@ export default function Allocation() {
         <ContextMenu
           target={contextMenu.target}
           position={contextMenu.menuPosition}
+          menuPlacement={contextMenu.menuPlacement}
           menuRef={contextMenu.menuRef}
           overlayRef={contextMenu.overlayRef}
           canRename={validators.canRename}

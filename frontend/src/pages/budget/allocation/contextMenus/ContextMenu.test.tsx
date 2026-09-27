@@ -38,6 +38,7 @@ describe("ContextMenu", () => {
         x: 100,
         y: 200,
       },
+      menuPlacement: "right",
       menuRef: { current: null },
       overlayRef: { current: null },
       canRename: vi.fn().mockReturnValue(true),
