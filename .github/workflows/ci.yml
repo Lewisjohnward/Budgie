@@ -31,7 +31,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check changed paths
         id: filter
@@ -206,22 +206,24 @@ jobs:
         working-directory: e2e
         run: npm test
 
-  docker:
+  build:
+    name: Build and push images
     if: |
-      always() &&
-      (
+      ${{ !cancelled() &&
         (
-          github.event_name == 'push' &&
-          github.ref == 'refs/heads/main'
-        ) ||
-        (
-          github.event_name == 'workflow_dispatch' &&
-          inputs.mode == 'deploy'
-        )
-      ) &&
-      (needs.backend.result == 'success' || needs.backend.result == 'skipped') &&
-      (needs.frontend.result == 'success' || needs.frontend.result == 'skipped') &&
-      needs.e2e.result == 'success'
+          (
+            github.event_name == 'push' &&
+            github.ref == 'refs/heads/main'
+          ) ||
+          (
+            github.event_name == 'workflow_dispatch' &&
+            inputs.mode == 'deploy'
+          )
+        ) &&
+        (needs.backend.result == 'success' || needs.backend.result == 'skipped') &&
+        (needs.frontend.result == 'success' || needs.frontend.result == 'skipped') &&
+        needs.e2e.result == 'success'
+      }}
     runs-on: ubuntu-latest
     needs:
       - backend
@@ -276,19 +278,21 @@ jobs:
 
   deploy:
     if: |
-      needs.docker.result == 'success' &&
-      (
+      ${{ !cancelled() &&
+        needs.build.result == 'success' &&
         (
-          github.event_name == 'push' &&
-          github.ref == 'refs/heads/main'
-        ) ||
-        (
-          github.event_name == 'workflow_dispatch' &&
-          inputs.mode == 'deploy'
+          (
+            github.event_name == 'push' &&
+            github.ref == 'refs/heads/main'
+          ) ||
+          (
+            github.event_name == 'workflow_dispatch' &&
+            inputs.mode == 'deploy'
+          )
         )
-      )
+      }}
     runs-on: ubuntu-latest
-    needs: docker
+    needs: build
 
     steps:
       - name: Deploy to Linode
