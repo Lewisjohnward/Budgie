@@ -15,7 +15,7 @@ export function OverspentWarning({
           categories or{" "}
           <span className="bg-red-300 rounded px-1 font-bold">
             £{Math.abs(available).toFixed(2)}
-          </span>
+          </span>{" "}
           will be deducted from the amount you have available next month.
         </p>
       ) : (
