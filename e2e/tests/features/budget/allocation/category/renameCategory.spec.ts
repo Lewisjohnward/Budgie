@@ -15,6 +15,7 @@ test.describe("category", () => {
     });
 
     test("can rename category", async ({ page, request }) => {
+      // TODO:(lewis 2026-09-30 12:01) this should not be using this seed, it should be using rename-category (will need creation)
       await setupScenario(page, request, "rename-category-group");
 
       await renameCategory(page, "Groceries", "Transport");
