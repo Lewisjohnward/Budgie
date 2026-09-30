@@ -1,5 +1,5 @@
 import { CategoryUserBranded, MonthBranded } from "@/core/types/NormalizedData";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { calculateBarColors } from "../../../utils/calculateBarColors";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
 import {
@@ -14,13 +14,16 @@ import { CategorySelectionState } from "../../../hooks/useAllocation/useCategory
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { formatCurrency } from "@/utils/formatCurrency";
+import clsx from "clsx";
 
 type CategoryRowProps = {
   onContextMenu?: React.MouseEventHandler<HTMLDivElement>;
   category: CategoryUserBranded;
   month: MonthBranded;
+  isOverEmptyOrClosedGroup?: boolean;
   // TODO:(lewis 2026-05-15 15:06) i dont like neither the name or the type, i think it should be categorySelector
   categorySelection: CategorySelectionState;
+  className?: string;
 };
 
 export function CategoryRow({
@@ -28,7 +31,10 @@ export function CategoryRow({
   category,
   month,
   categorySelection,
+  isOverEmptyOrClosedGroup,
+  className,
 }: CategoryRowProps) {
+  const [rowHeight, setRowHeight] = useState<number>();
   const { activity, available, assigned } = month;
 
   const {
@@ -46,9 +52,14 @@ export function CategoryRow({
   });
 
   const style = {
-    transform: CSS.Transform.toString(transform),
+    transform: isOverEmptyOrClosedGroup
+      ? CSS.Transform.toString(null)
+      : CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0 : 1,
+    marginBottom:
+      isDragging && isOverEmptyOrClosedGroup && rowHeight
+        ? -rowHeight
+        : undefined,
   };
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -75,11 +86,24 @@ export function CategoryRow({
 
   const values = calculateBarColors({ activity, available, assigned });
 
+  const setRefs = (node: HTMLDivElement | null) => {
+    setNodeRef(node);
+
+    if (node) {
+      setRowHeight(node.getBoundingClientRect().height);
+    }
+  };
+
   return (
     <div
       onContextMenu={onContextMenu}
-      className="cursor-pointer"
-      ref={setNodeRef}
+      className={clsx(
+        "cursor-pointer",
+        isDragging && "opacity-0",
+        isDragging && isOverEmptyOrClosedGroup && "hidden",
+        className
+      )}
+      ref={setRefs}
       style={style}
       {...attributes}
       {...listeners}
