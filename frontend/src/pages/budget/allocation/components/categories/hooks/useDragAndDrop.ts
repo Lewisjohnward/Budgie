@@ -7,12 +7,14 @@ import {
   PointerSensor,
   DragStartEvent,
   DragOverEvent,
+  DragEndEvent,
 } from "@dnd-kit/core";
 import { useState, useEffect, useMemo } from "react";
 import { MappedCategoryGroupViewWithMetrics } from "../../../hooks/useAllocation/useExpandableCategoryGroups";
 import { CategoryId, CategoryGroupId } from "../../../types/types";
 import { moveCategoryGroup } from "../utils/categoryOrdering/moveCategoryGroup";
 import { moveCategory } from "../utils/categoryOrdering/moveCategory";
+import { mergeCategoryGroups } from "../utils/categoryOrdering/mergeCategoryGroups";
 
 type UseDragAndDropProps = {
   categoriesByGroup: MappedCategoryGroupViewWithMetrics[];
@@ -44,7 +46,7 @@ export const useDragAndDrop = ({ categoriesByGroup }: UseDragAndDropProps) => {
   const [updateCategoryGroup] = useUpdateCategoryGroupMutation();
 
   useEffect(() => {
-    setDraftView(categoriesByGroup);
+    setDraftView((current) => mergeCategoryGroups(current, categoriesByGroup));
   }, [categoriesByGroup]);
 
   const onDragStart = (event: DragStartEvent) => {
@@ -56,32 +58,51 @@ export const useDragAndDrop = ({ categoriesByGroup }: UseDragAndDropProps) => {
 
   const onDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
-    const activeId = active.id;
 
     if (!over) return;
+
+    const activeId = active.id;
     const overId = over.id;
 
     if (active.data.current?.type === "group") {
-      const { view, updatedGroup } = moveCategoryGroup(
-        draftView,
-        activeId,
-        overId
-      );
-      setDraftView(view);
-      setUpdatedCategoryGroup(updatedGroup);
       return;
     }
 
     const { view, updatedCategory } = moveCategory(draftView, activeId, overId);
+
     setDraftView(view);
     setUpdatedCategory(updatedCategory);
   };
 
-  const onDragEnd = () => {
+  const onDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over) {
+      setActive({ id: null, type: null });
+      return;
+    }
+
+    if (active.data.current?.type === "group") {
+      const activeId = active.id as CategoryGroupId;
+      const overId = over.id as CategoryGroupId;
+
+      if (activeId !== overId) {
+        const { view, updatedGroup } = moveCategoryGroup(
+          draftView,
+          activeId,
+          overId
+        );
+
+        setDraftView(view);
+        setUpdatedCategoryGroup(updatedGroup);
+      }
+    }
+
     if (updatedCategory) {
       updateCategory(updatedCategory);
       setUpdatedCategory(null);
     }
+
     if (updatedCategoryGroup) {
       updateCategoryGroup(updatedCategoryGroup);
       setUpdatedCategoryGroup(null);
@@ -93,12 +114,8 @@ export const useDragAndDrop = ({ categoriesByGroup }: UseDragAndDropProps) => {
   const onDragCancel = () => {
     setDraftView(categoriesByGroup);
 
-    if (updatedCategory) {
-      setUpdatedCategory(null);
-    }
-    if (updatedCategoryGroup) {
-      setUpdatedCategoryGroup(null);
-    }
+    setUpdatedCategory(null);
+    setUpdatedCategoryGroup(null);
 
     setActive({ id: null, type: null });
   };

@@ -122,7 +122,9 @@ export const categoryGroupApiSlice = apiSlice.injectEndpoints({
 
               // Handle position update
               if (arg.position !== undefined) {
-                const list = Object.values(groups);
+                const list = Object.values(groups).sort(
+                  (a, b) => a.position - b.position
+                );
                 const fromPos = moved.position;
                 const toPos = arg.position;
 

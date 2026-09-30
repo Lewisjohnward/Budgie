@@ -13,7 +13,12 @@ import {
   MappedCategoryGroupViewWithMetrics,
 } from "../../hooks/useAllocation/useExpandableCategoryGroups";
 import { CategorySelectionState } from "../../hooks/useAllocation/useCategorySelection";
-import { closestCenter, DndContext, DragOverlay } from "@dnd-kit/core";
+import {
+  closestCenter,
+  closestCorners,
+  DndContext,
+  DragOverlay,
+} from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -55,7 +60,7 @@ export function Categories({
     <div className="flex w-full h-full min-h-0 flex-col">
       <DndContext
         sensors={dragAndDrop.sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={closestCorners}
         onDragStart={dragAndDrop.onDragStart}
         onDragOver={dragAndDrop.onDragOver}
         onDragEnd={dragAndDrop.onDragEnd}
@@ -78,25 +83,24 @@ export function Categories({
 
         {/* // TODO:(lewis 2026-05-11 18:36) make this more semantic */}
         <div className="flex-1 min-h-0 overflow-y-auto">
-          {uncategorisedRow.month.available !== 0 &&
-            !dragAndDrop.isDraggingCategoryGroup && (
-              <CategoryGridRow
-                className="py-3 cursor-default"
-                isSelected={categorySelector.isSelected(
-                  uncategorisedRow.category.id
-                )}
-                onClick={(e: React.MouseEvent) =>
-                  categorySelector.onRowClick(e, uncategorisedRow.category)
-                }
-              >
-                <UncategorisedRow
-                  currency={currency}
-                  category={uncategorisedRow.category}
-                  month={uncategorisedRow.month}
-                  categorySelector={categorySelector}
-                />
-              </CategoryGridRow>
-            )}
+          {uncategorisedRow.month.available !== 0 && (
+            <CategoryGridRow
+              className="py-3 cursor-default"
+              isSelected={categorySelector.isSelected(
+                uncategorisedRow.category.id
+              )}
+              onClick={(e: React.MouseEvent) =>
+                categorySelector.onRowClick(e, uncategorisedRow.category)
+              }
+            >
+              <UncategorisedRow
+                currency={currency}
+                category={uncategorisedRow.category}
+                month={uncategorisedRow.month}
+                categorySelector={categorySelector}
+              />
+            </CategoryGridRow>
+          )}
           <DragOverlay>
             {dragAndDrop.activeCategory ? (
               <CategoryRow
@@ -132,9 +136,7 @@ export function Categories({
                     <CategoryGridRow
                       aria-label={`${group.name} category group`}
                       id={group.id}
-                      className={`bg-stone-200 ${
-                        dragAndDrop.activeId === group.id ? "invisible" : ""
-                      }`}
+                      className={`bg-stone-200 `}
                       onContextMenu={(e) =>
                         onContextMenu(e, {
                           type: "categoryGroup",
@@ -184,11 +186,6 @@ export function Categories({
                       })}
                     </SortableContext>
                   )}
-                  <CategoryGroupDropZone
-                    groupId={group.id}
-                    active={dragAndDrop.isDragging}
-                    enabled={rows.length === 0 || !open}
-                  />
                 </div>
               );
             })}
