@@ -23,5 +23,6 @@ export const seeds = {
   "delete-category-base": seedDeleteCategoryBase,
   "delete-category-with-assigned": seedDeleteCategoryWithAssigned,
   "delete-category-with-transaction": seedDeleteCategoryWithTransaction,
+  // TODO:(lewis 2026-09-30 12:04) create a seed here for rename category
   demo: seedDemo,
 } as const;
