@@ -34,10 +34,10 @@ export function CategoryGridRow({
 
   const style = sortable
     ? {
-      transform: CSS.Transform.toString(sortable.transform),
-      transition: sortable.transition,
-      opacity: sortable.isDragging ? 0.4 : 1,
-    }
+        transform: CSS.Transform.toString(sortable.transform),
+        transition: sortable.transition,
+        opacity: sortable.isDragging ? 0 : 1,
+      }
     : undefined;
 
   return (
