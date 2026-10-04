@@ -14,21 +14,25 @@ export enum CategoryGroupSource {
 }
 
 /**
- * Default category groups created for new users.
+ * System category groups for users.
  */
-export const DEFAULT_CATEGORY_GROUPS = [
+export const SYSTEM_CATEGORY_GROUPS = [
   {
     name: CATEGORY_GROUP_NAMES.INFLOW,
     categories: ["Ready to Assign"],
     source: CategoryGroupSource.SYSTEM,
-    position: null,
   },
   {
     name: CATEGORY_GROUP_NAMES.UNCATEGORISED,
     categories: ["Uncategorised Transactions"],
     source: CategoryGroupSource.SYSTEM,
-    position: null,
   },
+] as const;
+
+/**
+ * Default category groups created for new users.
+ */
+export const DEFAULT_USER_CATEGORY_GROUPS = [
   {
     name: "Bills",
     categories: ["🏠 Rent/Mortgage", "🔌 Utilities"],

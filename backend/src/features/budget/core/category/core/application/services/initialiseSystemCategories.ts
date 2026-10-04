@@ -1,28 +1,24 @@
 import { type Prisma } from "@prisma/client";
 import { type UserId } from "../../../../../../user/auth/auth.types";
 import { getMonth } from "../../utils/getMonth";
-import { DEFAULT_CATEGORY_GROUPS } from "../../../../categorygroup/categoryGroup.constants";
+import { SYSTEM_CATEGORY_GROUPS } from "../../../../categorygroup/categoryGroup.constants";
 
-// TODO: NEEDS TO BE CLEANED UP REPOSITORY
-export const initialiseCategories = async (
+export const initialiseSystemCategories = async (
   tx: Prisma.TransactionClient,
   userId: UserId
 ) => {
   const { startOfCurrentMonth, nextMonth } = getMonth();
 
-  for (const group of DEFAULT_CATEGORY_GROUPS) {
+  for (const group of SYSTEM_CATEGORY_GROUPS) {
     const createdGroup = await tx.categoryGroup.create({
       data: {
         userId,
         name: group.name,
-        position: group.position,
         source: group.source,
       },
     });
 
-    let position = 0;
-
-    for (const name of group.categories) {
+    for (const [position, name] of group.categories.entries()) {
       const newCategory = await tx.category.create({
         data: {
           userId,
@@ -32,21 +28,18 @@ export const initialiseCategories = async (
         },
       });
 
-      await tx.month.create({
-        data: {
-          categoryId: newCategory.id,
-          month: startOfCurrentMonth,
-        },
+      await tx.month.createMany({
+        data: [
+          {
+            categoryId: newCategory.id,
+            month: startOfCurrentMonth,
+          },
+          {
+            categoryId: newCategory.id,
+            month: nextMonth,
+          },
+        ],
       });
-
-      await tx.month.create({
-        data: {
-          categoryId: newCategory.id,
-          month: nextMonth,
-        },
-      });
-      position++;
     }
-    position = 0;
   }
 };

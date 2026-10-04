@@ -24,7 +24,8 @@ export async function provisionUser(
     salt,
   });
 
-  await categoryService.categories.initialiseCategories(tx, user.id);
+  await categoryService.categories.initialiseSystemCategories(tx, user.id);
+  await categoryService.categories.initialiseUserCategories(tx, user.id);
   await memoService.initialiseMemos(tx, user.id);
   await payeeService.initialiseSystemPayees(tx, user.id);
 
