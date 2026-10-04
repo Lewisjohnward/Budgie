@@ -7,9 +7,20 @@ import { authService } from "../../auth.service";
 import { generatePassword, generateSalt } from "../../utils/password";
 import { type DomainUser } from "../../auth.types";
 
+type ProvisionUserOptions = {
+  createDefaultUserCategories?: boolean;
+};
+
+/**
+ * Provisions a new user and their system resources.
+ *
+ * By default, also creates the user's default category groups.
+ * Set `createDefaults` to false to omit the default user category groups.
+ */
 export async function provisionUser(
   tx: Prisma.TransactionClient,
-  payload: RegisterPayload
+  payload: RegisterPayload,
+  { createDefaultUserCategories = true }: ProvisionUserOptions = {}
 ): Promise<DomainUser> {
   const { password, email } = payload;
 
@@ -25,7 +36,11 @@ export async function provisionUser(
   });
 
   await categoryService.categories.initialiseSystemCategories(tx, user.id);
-  await categoryService.categories.initialiseUserCategories(tx, user.id);
+
+  if (createDefaultUserCategories) {
+    await categoryService.categories.initialiseUserCategories(tx, user.id);
+  }
+
   await memoService.initialiseMemos(tx, user.id);
   await payeeService.initialiseSystemPayees(tx, user.id);
 
