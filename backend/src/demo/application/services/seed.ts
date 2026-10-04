@@ -17,7 +17,8 @@ export const seedDemo = async (tx: Prisma.TransactionClient) => {
     salt: process.env.DEMO_PASSWORD_SALT! as Salt,
   });
 
-  await categoryService.categories.initialiseCategories(tx, user.id);
+  await categoryService.categories.initialiseSystemCategories(tx, user.id);
+  await categoryService.categories.initialiseUserCategories(tx, user.id);
   await memoService.initialiseMemos(tx, user.id);
   await payeeService.initialiseSystemPayees(tx, user.id);
 

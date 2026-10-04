@@ -1,6 +1,6 @@
 import { getCategory } from "./application/services/getCategory";
 import { getNextCategoryPosition } from "./application/services/getNextCategoryPosition";
-import { initialiseCategories } from "./application/services/initialiseCategories";
+import { initialiseUserCategories } from "./application/services/initialiseUserCategories";
 import { createMonthsForCategory } from "./application/services/months/createMonthsForCategory";
 import { insertMissingMonths } from "./application/services/months/insertMissingMonths";
 import { ensureMonthsContinuity } from "./application/services/months/ensureMonthsContinuity";
@@ -25,6 +25,7 @@ import { moveCategory } from "./application/services/moveCategory";
 import { createCategoryWithMonths } from "./application/services/createCategoryWithMonths";
 import { getUserCategories } from "./application/services/getUserCategories";
 import { getSystemCategories } from "./application/services/getSystemCategories";
+import { initialiseSystemCategories } from "./application/services/initialiseSystemCategories";
 
 export const categoryService = {
   rta: {
@@ -55,7 +56,8 @@ export const categoryService = {
     getCategoryIdsByCategoryGroupId,
     renameCategory,
     getModifiableCategory,
-    initialiseCategories,
+    initialiseUserCategories,
+    initialiseSystemCategories,
     getNextCategoryPosition,
     ensureUserOwnsCategories,
     moveCategory,
