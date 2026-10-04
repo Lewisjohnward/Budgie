@@ -40,28 +40,26 @@ export const createCategoryGroupWithCategories = async (
     options.categoryGroupName
   );
 
-  const categories = Object.fromEntries(
-    await Promise.all(
-      options.categoryNames.map(async (name) => {
-        const { category, months } = await createCategory(tx, userId, {
-          categoryGroupId: categoryGroup.id,
-          name,
-        });
+  const entries = [];
 
-        return [
-          name,
-          {
-            category,
-            months,
-          },
-        ] as const;
-      })
-    )
-  );
+  for (const name of options.categoryNames) {
+    const { category, months } = await createCategory(tx, userId, {
+      categoryGroupId: categoryGroup.id,
+      name,
+    });
+
+    entries.push([
+      name,
+      {
+        category,
+        months,
+      },
+    ] as const);
+  }
 
   return {
     categoryGroup,
-    categories,
+    categories: Object.fromEntries(entries),
   };
 };
 
