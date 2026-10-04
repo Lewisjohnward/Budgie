@@ -13,9 +13,16 @@ export const demoCredentials: RegisterPayload = {
   password: process.env.DEMO_PASSWORD!,
 };
 
+type RegisterUserOptions = {
+  createDefaultUserCategories?: boolean;
+};
+
 export const registerUser = async (
   tx: Prisma.TransactionClient,
-  credentials: RegisterPayload = testCredentials
+  credentials: RegisterPayload = testCredentials,
+  { createDefaultUserCategories = true }: RegisterUserOptions = {}
 ): Promise<DomainUser> => {
-  return await authService.provisionUser(tx, credentials);
+  return await authService.provisionUser(tx, credentials, {
+    createDefaultUserCategories,
+  });
 };
