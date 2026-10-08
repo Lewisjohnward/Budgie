@@ -26,9 +26,10 @@
   "exclude": [
     "**/*.legacy.test.ts",
     "**/*.legacy.test.tsx",
+    "**/*.legacy.tsx",
+    "**/*.legacy.ts",
     "**/*.spec.ts",
     "**/*.spec.tsx",
-    "**/*.stories.tsx",
-    "**/__tests__/*"
+    "**/*.stories.tsx"
   ]
 }
