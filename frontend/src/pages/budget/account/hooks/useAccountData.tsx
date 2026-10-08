@@ -57,7 +57,12 @@ export const useData = () => {
   return { data };
 };
 
-export const useAccountData = () => {
+type UseAccountData = {
+  currentAccount: AccountOverview;
+  accountsAvailable: boolean;
+};
+
+export const useAccountData = (): UseAccountData => {
   const { data } = useData();
   const navigate = useNavigate();
 
