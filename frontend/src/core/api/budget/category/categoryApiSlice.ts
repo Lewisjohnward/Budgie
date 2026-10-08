@@ -101,7 +101,9 @@ export const categoryApiSlice = apiSlice.injectEndpoints({
                 const { category, categories } = data.updated;
 
                 // update category
-                draft.categories.user[category.id] = category;
+                draft.categories.user[category.id] = {
+                  ...category,
+                };
 
                 // apply position/group patches
                 for (const categoryPatch of categories) {
