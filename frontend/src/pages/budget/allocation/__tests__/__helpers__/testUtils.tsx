@@ -3,9 +3,6 @@ import { Provider } from "react-redux";
 import { act } from "react";
 import { createStore } from "@/core/store/store";
 import { selectMonthIndex } from "@/pages/budget/allocation/slices/monthSlice";
-import { addCategories } from "../../slices/selectedCategorySlice";
-// import { Assign } from "../../components/assign/components/Assign";
-import { Category } from "@/core/types/NormalizedData";
 import { MemoryRouter } from "react-router-dom";
 import { Routes, Route } from "react-router";
 import BudgetPage from "@/pages/budget/Budget";
@@ -25,16 +22,6 @@ export const renderAllocationPage = (store = createStore()) => {
   );
 };
 
-// export const renderAssignComponent = (store = createStore()) => {
-//   let result;
-//   result = render(
-//     <Provider store={store}>
-//       <Assign />
-//     </Provider>
-//   );
-//   return result!;
-// };
-
 export const createStoreWithMonthIndex = (monthIndex: number) => {
   const store = createStore();
   act(() => {
@@ -51,14 +38,6 @@ export const selectMonth = (
     store.dispatch(selectMonthIndex(monthIndex));
   });
 };
-
-// export const createStoreWithSelectedCategories = (categories: Category[]) => {
-//   const store = createStore();
-//   act(() => {
-//     store.dispatch(addCategories(categories));
-//   });
-//   return store;
-// };
 
 export const clickButtonAndWaitForModal = async (
   buttonName: string | RegExp
