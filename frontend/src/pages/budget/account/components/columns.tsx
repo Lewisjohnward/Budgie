@@ -1,6 +1,6 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Column, createColumnHelper } from "@tanstack/react-table";
-import { DetailedTransaction } from "../hooks/useAccountData";
+import { DetailedTransaction } from "../hooks/useAccountData/types";
 
 const createSortableHeader =
   (label: string) =>
