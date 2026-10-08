@@ -9,7 +9,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { columns } from "../components/columns";
-import { DetailedTransaction } from "./useAccountData";
+import { DetailedTransaction } from "./useAccountData/types";
 
 const GLOBAL_FILTER_COLUMN_IDS = [
   "date",
