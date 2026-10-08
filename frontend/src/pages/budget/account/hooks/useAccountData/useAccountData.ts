@@ -1,7 +1,6 @@
 import { useBudgetSnapshot } from "@/pages/budget/allocation/hooks/useAllocation/useCategories";
 import { AccountId } from "@/pages/budget/allocation/types/types";
 import { useMemo } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import {
   CategoriesById,
   CategoryGroupsById,
@@ -9,20 +8,20 @@ import {
   AccountOverview,
 } from "./types";
 
-export const emptyAccount: AccountOverview = {
-  name: "",
-  type: "ALL_ACCOUNTS",
-  balance: 0,
-  transactions: [],
-  id: "",
+// Input
+type UseAccountDataParams = {
+  accountId: AccountId;
 };
 
+// Output
 export type UseAccountData = {
   currentAccount: AccountOverview;
   accountsAvailable: boolean;
 };
 
-export const useAccountData = (): UseAccountData => {
+export const useAccountData = ({
+  accountId,
+}: UseAccountDataParams): UseAccountData => {
   const {
     data: { categoryGroups, categories, accounts: accountsById, transactions },
   } = useBudgetSnapshot();
@@ -30,19 +29,6 @@ export const useAccountData = (): UseAccountData => {
   const uncategorisedCategoryId = categories.uncategorised.id;
 
   const accounts = Object.values(accountsById);
-
-  // if accountId undefined push home
-  if (!accountId) {
-    accounts.length > 0
-      ? navigate("/budget/account/all")
-      : navigate("/budget/allocation");
-    // Return empty state while redirecting
-
-    return {
-      currentAccount: emptyAccount,
-      accountsAvailable: false,
-    };
-  }
 
   const chosenAccount = accountId === "all" ? "all" : accountsById[accountId];
 

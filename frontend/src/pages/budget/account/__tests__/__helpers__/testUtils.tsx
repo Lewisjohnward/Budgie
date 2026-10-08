@@ -3,20 +3,32 @@ import BudgetPage from "../../../Budget";
 import Account from "../../Account";
 import { Provider } from "react-redux";
 import { createStore } from "@/core/store/store";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 
-export const renderAccountPage = (
-  accountId = "acc1",
-  store = createStore()
-) => {
+function CurrentPath() {
+  const { pathname } = useLocation();
+  return <div data-testid="current-path">{pathname}</div>;
+}
+
+export const renderAccountRedirectTest = (store = createStore()) => {
   return render(
     <Provider store={store}>
-      <MemoryRouter initialEntries={[`/budget/account/${accountId}`]}>
+      <MemoryRouter initialEntries={["/budget/account/fake"]}>
         <Routes>
           <Route path="/budget" element={<BudgetPage />}>
             <Route path="account/:accountId" element={<Account />} />
           </Route>
+
+          <Route
+            path="/budget/account/all"
+            element={<div>All accounts destination</div>}
+          />
+          <Route
+            path="/budget/allocation"
+            element={<div>Allocation destination</div>}
+          />
         </Routes>
+        <CurrentPath />
       </MemoryRouter>
     </Provider>
   );
