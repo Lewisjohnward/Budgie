@@ -4,11 +4,11 @@ import {
   useDuplicateTransactionsMutation,
 } from "@/core/api/budgetApiSlice";
 import { useTransactionTable } from "./useTransactionTable";
-import { useAccountData } from "./useAccountData";
 import {
   TransactionFormMode,
   useTransactionFormRow,
 } from "./useTransactionFormRow";
+import { useAccountData } from "./useAccountData/useAccountData";
 
 export const useAccount = () => {
   const { currentAccount, accountsAvailable } = useAccountData();
