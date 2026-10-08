@@ -33,7 +33,11 @@ export function CategoryGroupRow({
 }: CategoryGroupRowProps) {
   return (
     <>
-      <ExpandButton open={open} onClick={onExpandClick} />
+      <ExpandButton
+        open={open}
+        onClick={onExpandClick}
+        aria-label={`${open ? "Collapse" : "Expand"} ${categoryGroup.name} category group`}
+      />
       <div className="flex min-w-0 items-center gap-4">
         <Checkbox
           aria-label={`Select all categories in ${categoryGroup.name}`}
