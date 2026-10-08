@@ -9,9 +9,10 @@ import {
   useTransactionFormRow,
 } from "./useTransactionFormRow";
 import { useAccountData } from "./useAccountData/useAccountData";
+import { AccountId } from "../../allocation/types/types";
 
-export const useAccount = () => {
-  const { currentAccount, accountsAvailable } = useAccountData();
+export const useAccount = (accountId: AccountId) => {
+  const { currentAccount, accountsAvailable } = useAccountData({ accountId });
   const transactionTable = useTransactionTable(
     currentAccount.transactions,
     currentAccount.id

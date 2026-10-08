@@ -1,3 +1,4 @@
+import { Navigate, useParams } from "react-router-dom";
 import { AccountLayout } from "./components/AccountLayout";
 import { AccountAlert } from "./components/AccountAlert";
 import { AccountHeader } from "./components/AccountHeader";
@@ -5,9 +6,33 @@ import { AccountInfo } from "./components/AccountInfo";
 import { AccountActions } from "./components/AccountActions";
 import { AccountTable } from "./components/AccountTable";
 import { useAccount } from "./hooks/useAccount";
+import { useBudgetSnapshot } from "@/pages/budget/allocation/hooks/useAllocation/useCategories";
+import { AccountId } from "@/pages/budget/allocation/types/types";
 import { useEffect } from "react";
 
 export default function Account() {
+  const { accountId } = useParams<{ accountId: AccountId }>();
+  const {
+    data: { accounts },
+  } = useBudgetSnapshot();
+
+  if (!accountId || (accountId !== "all" && !accounts[accountId])) {
+    const destination =
+      Object.keys(accounts).length > 0
+        ? "/budget/account/all"
+        : "/budget/allocation";
+
+    return <Navigate to={destination} replace />;
+  }
+
+  return <AccountContent accountId={accountId} />;
+}
+
+type AccountContentProps = {
+  accountId: AccountId;
+};
+
+function AccountContent({ accountId }: AccountContentProps) {
   const {
     account,
     isDisplayingAllAccounts,
@@ -18,7 +43,7 @@ export default function Account() {
     uncategorisedTransactions,
     handleDeleteSelectedTransactions,
     handleDuplicateTransactions,
-  } = useAccount();
+  } = useAccount(accountId);
 
   // TODO:(lewis 2025-12-03 12:57) can this go in useAccount?
   useEffect(() => {
@@ -32,6 +57,7 @@ export default function Account() {
         displayTransactionFormRow();
       }
     };
+
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [table]);
