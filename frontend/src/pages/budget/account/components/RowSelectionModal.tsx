@@ -19,16 +19,36 @@ import {
   DropdownMenuTrigger,
 } from "@/core/components/uiLibrary/dropdown-menu";
 import { DropdownMenuArrow } from "@radix-ui/react-dropdown-menu";
+import { useEditBulkMutation } from "@/core/api/budget/transaction/transactionApiSlice";
+import { DetailedTransaction } from "../hooks/useAccountData/types";
+import { CategoryId } from "../../allocation/types/types";
 
 export function SelectionModal({
+  selectedTransactions,
   rowCount,
   display,
   cancel,
 }: {
+  selectedTransactions: DetailedTransaction[];
   rowCount: number;
   display: boolean;
   cancel: () => void;
 }) {
+  const [editBulk] = useEditBulkMutation();
+
+  const handleOnSelect = (categoryId: CategoryId) => {
+    const transactionIds = selectedTransactions.map(
+      (transaction) => transaction.id
+    );
+
+    editBulk({
+      transactionIds,
+      updates: {
+        categoryId,
+      },
+    });
+  };
+
   const { data } = useGetCategoriesQuery();
   if (!data) return <div>There has been an error</div>;
 
@@ -70,7 +90,10 @@ export function SelectionModal({
                       <DropdownMenuPortal>
                         <DropdownMenuSubContent>
                           {categoryGroup.categories.map((categoryId) => (
-                            <DropdownMenuItem>
+                            <DropdownMenuItem
+                              key={categoryId}
+                              onSelect={() => handleOnSelect(categoryId)}
+                            >
                               <span>{categories[categoryId].name}</span>
                             </DropdownMenuItem>
                           ))}

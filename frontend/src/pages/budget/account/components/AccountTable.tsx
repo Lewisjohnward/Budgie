@@ -37,6 +37,10 @@ export function AccountTable({
   onDeleteSelected,
   onDuplicateSelected,
 }: AccountTableProps) {
+  const selectedTransactions = table.table
+    .getSelectedRowModel()
+    .rows.map((row) => row.original);
+
   return (
     <>
       {/* <section */}
@@ -181,6 +185,7 @@ export function AccountTable({
       </Table>
       {/* </section> */}
       <SelectionModal
+        selectedTransactions={selectedTransactions}
         rowCount={table.numberOfRows}
         display={table.displaySelectionModal}
         cancel={table.cancelSelection}
