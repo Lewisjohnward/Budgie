@@ -1,0 +1,71 @@
+CreateTransactionResponse:
+  type: object
+  description: >
+    Result of creating transactions, including created entities and
+    any related entity mutations.
+  required:
+    - created
+    - updated
+  properties:
+    created:
+      type: object
+      required:
+        - transactions
+        - memos
+        - months
+      properties:
+        transactions:
+          oneOf:
+            - type: object
+              required:
+                - type
+                - transaction
+              properties:
+                type:
+                  type: string
+                  enum: [normal]
+                transaction:
+                  $ref: "../../entities/transaction.yml#/Transaction"
+            - type: object
+              required:
+                - type
+                - source
+                - destination
+              properties:
+                type:
+                  type: string
+                  enum: [transfer]
+                source:
+                  $ref: "../../entities/transaction.yml#/Transaction"
+                destination:
+                  $ref: "../../entities/transaction.yml#/Transaction"
+          discriminator:
+            propertyName: type
+        payee:
+          $ref: "../../entities/payee.yml#/Payee"
+        memos:
+          type: array
+          description: Newly created memos.
+          items:
+            $ref: "../../entities/memo.yml#/Memo"
+        months:
+          type: object
+          description: Newly created months keyed by month id.
+          additionalProperties:
+            $ref: "../../entities/month.yml#/Month"
+    updated:
+      type: object
+      required:
+        - accounts
+        - months
+      properties:
+        accounts:
+          type: object
+          description: Updated accounts keyed by account id.
+          additionalProperties:
+            $ref: "../../entities/account.yml#/Account"
+        months:
+          type: object
+          description: Updated months keyed by month id.
+          additionalProperties:
+            $ref: "../../entities/month.yml#/Month"

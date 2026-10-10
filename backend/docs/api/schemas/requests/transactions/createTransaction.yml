@@ -1,0 +1,85 @@
+CreateTransactionRequest:
+  type: object
+  description: >
+    Request to create a new transaction. Supports both normal transactions
+    and transfers between accounts.
+  required:
+    - accountId
+  properties:
+    accountId:
+      type: string
+      format: uuid
+      description: ID of the account the transaction belongs to.
+
+    date:
+      type: string
+      format: date-time
+      description: >
+        Transaction date as an ISO 8601 date-time with a timezone offset.
+        Must not be in the future and must be within the last 12 months.
+      example: "2026-10-10T12:00:00Z"
+
+    transferAccountId:
+      type: string
+      format: uuid
+      description: >
+        ID of the other account involved in a transfer. When provided,
+        payeeId, payeeName and categoryId must not be provided.
+
+    payeeId:
+      type: string
+      format: uuid
+      description: >
+        ID of the existing payee for the transaction. Must not be provided
+        alongside payeeName or for an account transfer.
+
+    payeeName:
+      type: string
+      minLength: 1
+      maxLength: 50
+      description: >
+        Name of a payee to create or resolve for the transaction.
+        Must not be provided alongside payeeId or for an account transfer.
+        Leading and trailing whitespace is trimmed.
+
+    categoryId:
+      type: string
+      format: uuid
+      description: >
+        ID of the category to assign to the transaction. Must not be
+        provided for an account transfer.
+
+    memo:
+      type: string
+      maxLength: 100
+      description: >
+        Memo associated with the transaction. Leading and trailing
+        whitespace is trimmed.
+
+    inflow:
+      type: string
+      description: >
+        Transaction amount entering the account, represented as a decimal
+        string. Must be provided instead of outflow and must not be zero
+        or blank. Negative amounts are supported.
+      example: "125.50"
+
+    outflow:
+      type: string
+      description: >
+        Transaction amount leaving the account, represented as a decimal
+        string. Must be provided instead of inflow and must not be zero
+        or blank. Negative amounts are supported.
+      example: "-25.99"
+
+  oneOf:
+    - required:
+        - inflow
+      not:
+        required:
+          - outflow
+    - required:
+        - outflow
+      not:
+        required:
+          - inflow
