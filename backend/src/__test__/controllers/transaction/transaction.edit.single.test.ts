@@ -115,7 +115,7 @@ describe("Transaction Single Edit", () => {
       const transaction = await addTransactionLegacy(
         cookie2,
         transactionPayload,
-        200
+        201
       );
 
       const editTransactionPayload: EditSingleTransactionInput = {
@@ -2465,7 +2465,7 @@ describe("Transaction Single Edit", () => {
         20,
         9,
         30,
-        0,
+        0
       ).toISOString();
 
       const editPayload: EditSingleTransactionInput = {
@@ -2599,7 +2599,7 @@ describe("Transaction Single Edit", () => {
         20,
         9,
         30,
-        0,
+        0
       ).toISOString();
 
       const editPayload: EditSingleTransactionInput = {
@@ -2726,7 +2726,7 @@ describe("Transaction Single Edit", () => {
         20,
         9,
         30,
-        0,
+        0
       ).toISOString();
 
       const editPayloadA: EditSingleTransactionInput = {

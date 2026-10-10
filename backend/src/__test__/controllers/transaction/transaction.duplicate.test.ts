@@ -51,7 +51,7 @@ describe("Transaction Duplicate", () => {
       const transaction = await addTransactionLegacy(
         cookie,
         transactionPayload,
-        200
+        201
       );
 
       await duplicateTransactions(cookieA, [transaction!.id], 404);
@@ -80,8 +80,8 @@ describe("Transaction Duplicate", () => {
       };
 
       // Create the original transfer
-      await addTransactionLegacy(cookie, transactionPayload1, 200);
-      await addTransactionLegacy(cookie, transactionPayload2, 200);
+      await addTransactionLegacy(cookie, transactionPayload1, 201);
+      await addTransactionLegacy(cookie, transactionPayload2, 201);
 
       // Get the original transactions
       const originalResponse = await getAccounts(cookie);
@@ -143,7 +143,7 @@ describe("Transaction Duplicate", () => {
         outflow: "10",
       };
 
-      await addTransactionLegacy(cookie, transactionPayload, 200);
+      await addTransactionLegacy(cookie, transactionPayload, 201);
 
       const originalResponse = await getAccounts(cookie);
       const originalTransactions = Object.values(originalResponse.transactions);
@@ -193,17 +193,17 @@ describe("Transaction Duplicate", () => {
       const transferTx = await addTransactionLegacy(
         cookie,
         transactionPayload1,
-        200
+        201
       );
       const normalTx1 = await addTransactionLegacy(
         cookie,
         transactionPayload2,
-        200
+        201
       );
       const normalTx2 = await addTransactionLegacy(
         cookie,
         transactionPayload3,
-        200
+        201
       );
 
       const originalResponse = await getAccounts(cookie);
@@ -324,7 +324,7 @@ describe("Transaction Duplicate", () => {
       };
 
       // Create the original transfer
-      await addTransactionLegacy(cookie, transactionPayload, 200);
+      await addTransactionLegacy(cookie, transactionPayload, 201);
 
       // Get the original transactions
       const originalResponse = await getAccounts(cookie);

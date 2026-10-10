@@ -339,7 +339,7 @@ describe("Budget", () => {
             categoryId: testCategory.id,
             accountId,
           })
-          .expect(200);
+          .expect(201);
 
         const { transactions } = await getAccounts(cookie);
 
@@ -847,7 +847,9 @@ const testUserB = {
 
 describe("When signing up", () => {
   it("Should add Inflow category group", async () => {
-    const res = await request(app).post("/api/v1/user/auth/register").send(testUserA);
+    const res = await request(app)
+      .post("/api/v1/user/auth/register")
+      .send(testUserA);
     const cookie = await login();
 
     const { categoryGroups } = await getCategories(cookie);
@@ -860,7 +862,9 @@ describe("When signing up", () => {
   });
 
   it("Should add Ready to Assign category", async () => {
-    const res = await request(app).post("/api/v1/user/auth/register").send(testUserA);
+    const res = await request(app)
+      .post("/api/v1/user/auth/register")
+      .send(testUserA);
     const cookie = await login();
 
     const { categories } = await getCategories(cookie);
@@ -874,7 +878,9 @@ describe("When signing up", () => {
   });
 
   it("Should add Uncategorised category", async () => {
-    const res = await request(app).post("/api/v1/user/auth/register").send(testUserA);
+    const res = await request(app)
+      .post("/api/v1/user/auth/register")
+      .send(testUserA);
     const cookie = await login();
 
     const { categories } = await getCategories(cookie);

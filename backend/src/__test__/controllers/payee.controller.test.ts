@@ -187,9 +187,9 @@ describe("Payee", () => {
 
       const results = await Promise.allSettled(promises);
 
-      // Exactly one should succeed (200)
+      // Exactly one should succeed (201)
       const succeeded = results.filter(
-        (r) => r.status === "fulfilled" && r.value?.status === 200
+        (r) => r.status === "fulfilled" && r.value?.status === 201
       );
       expect(succeeded).toHaveLength(1);
 

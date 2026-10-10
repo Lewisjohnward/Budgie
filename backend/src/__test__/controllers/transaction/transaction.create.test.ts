@@ -140,7 +140,7 @@ describe("Transaction Create", () => {
           outflow: "10",
           date: transactionDate,
         })
-        .expect(200);
+        .expect(201);
 
       jest.useRealTimers();
     });
@@ -190,7 +190,7 @@ describe("Transaction Create", () => {
             outflow: "10",
             date: earliestAllowed.toISOString(),
           },
-          200
+          201
         );
       });
     });
@@ -306,7 +306,7 @@ describe("Transaction Create", () => {
             date: pastDate,
           };
 
-          await addTransactionLegacy(cookie, transferTransaction, 200);
+          await addTransactionLegacy(cookie, transferTransaction, 201);
 
           const { months: monthsAfter } = await getCategories(cookie);
 
@@ -332,7 +332,7 @@ describe("Transaction Create", () => {
             outflow: "10",
           };
 
-          await addTransactionLegacy(cookie, transferTransaction, 200);
+          await addTransactionLegacy(cookie, transferTransaction, 201);
 
           const accountAfter = await fetchAccountByName(
             cookie,
@@ -464,7 +464,7 @@ describe("Transaction Create", () => {
           date: new Date(2026, 6, 15, 1, 0, 0).toISOString(),
         };
 
-        await addTransactionLegacy(cookie, transaction, 200);
+        await addTransactionLegacy(cookie, transaction, 201);
 
         const transferTransaction: TestInsertTransactionInputWithoutUserId = {
           accountId: userAccount.id,
@@ -489,7 +489,7 @@ describe("Transaction Create", () => {
           date: new Date(2026, 6, 15, 1, 0, 0).toISOString(),
         };
 
-        await addTransactionLegacy(cookie, transferTransaction, 200);
+        await addTransactionLegacy(cookie, transferTransaction, 201);
 
         // Verify account balances updated correctly
         const { accounts, transactions } = await getAccounts(cookie);
@@ -599,7 +599,7 @@ describe("Transaction Create", () => {
             date: pastDate,
           };
 
-          await addTransactionLegacy(cookie, transferTransaction, 200);
+          await addTransactionLegacy(cookie, transferTransaction, 201);
 
           const { accounts, transactions } = await getAccounts(cookie);
 
@@ -671,7 +671,7 @@ describe("Transaction Create", () => {
             transferAccountId: account2Before.id,
           };
 
-          await addTransactionLegacy(cookie, transferTransaction, 200);
+          await addTransactionLegacy(cookie, transferTransaction, 201);
 
           const account1After = await fetchAccountByName(cookie, account1.name);
 
