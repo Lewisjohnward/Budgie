@@ -65,6 +65,10 @@ components:
     DeleteCategoryRequest:
       $ref: "./schemas/requests/categories/deleteCategory.yml#/DeleteCategoryRequest"
 
+    # Transaction requests
+    CreateTransactionRequest:
+      $ref: "./schemas/requests/transactions/createTransaction.yml#/CreateTransactionRequest"
+
     #----------
     # Responses
     #----------
@@ -88,6 +92,10 @@ components:
       $ref: "./schemas/responses/categoryGroups/deleteCategoryGroup.yml#/DeleteCategoryGroupResponse"
     CategoryGroupPositionPatch:
       $ref: "./schemas/responses/categoryGroups/patches/categoryGroupPositionPatch.yml#/CategoryGroupPositionPatch"
+
+    # Transaction responses
+    CreateTransactionResponse:
+      $ref: "./schemas/responses/transactions/createTransaction.yml#/CreateTransactionResponse"
 
     # Edit memo response
     EditMemoResponse:
