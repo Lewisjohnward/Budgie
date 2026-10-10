@@ -1,0 +1,102 @@
+post:
+  summary: Create transaction
+  description: >
+    Creates a transaction. A transaction can be a normal transaction
+    or a transfer. Transfers cannot have a category or payee.
+    The date, transfer account, payee, payee name, category, and memo
+    are optional. If date is omitted, the backend determines the
+    transaction date.
+  operationId: createTransaction
+  tags:
+    - Transactions
+  security:
+    - bearerAuth: []
+
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - accountId
+            - inflow
+            - outflow
+          properties:
+            accountId:
+              type: string
+              format: uuid
+              description: UUID of the account associated with the transaction.
+              example: "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d"
+
+            date:
+              type: string
+              format: date-time
+              description: >
+                Transaction date as an ISO 8601 datetime with a timezone
+                offset. Must be within the last 12 months and cannot be in
+                the future.
+              example: "2026-10-09T12:00:00Z"
+
+            transferAccountId:
+              type: string
+              format: uuid
+              description: >
+                UUID of the account to transfer funds to. When provided,
+                categoryId, payeeId, and payeeName must be omitted.
+              example: "9b8c7d6e-5f4a-3b2c-1d0e-9f8a7b6c5d4e"
+
+            payeeId:
+              type: string
+              format: uuid
+              description: UUID of the existing payee.
+              example: "7c6d5e4f-3a2b-1c0d-9e8f-7a6b5c4d3e2f"
+
+            payeeName:
+              type: string
+              description: Name of the payee.
+              example: "Tesco"
+
+            categoryId:
+              type: string
+              format: uuid
+              description: UUID of the transaction category.
+              example: "6d5e4f3a-2b1c-0d9e-8f7a-6b5c4d3e2f1a"
+
+            memo:
+              type: string
+              maxLength: 100
+              description: Optional memo describing the transaction.
+              example: "Weekly groceries"
+
+            inflow:
+              type: string
+              description: >
+                Inflow amount represented as a decimal string.
+              example: "0.00"
+
+            outflow:
+              type: string
+              description: >
+                Outflow amount represented as a decimal string.
+              example: "42.50"
+
+  responses:
+    "201":
+      description: Successfully created transaction
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/responses/transactions/createTransaction.yml#/CreateTransactionResponse"
+
+    "400":
+      description: Invalid transaction data
+
+    "401":
+      description: Unauthorised (missing or expired session token)
+
+    "404":
+      description: Referenced account, payee, or category not found or inaccessible
+
+    "500":
+      description: Server error
