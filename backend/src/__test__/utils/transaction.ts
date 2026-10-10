@@ -30,7 +30,7 @@ export type TestEditBulkTransactionsInputWithoutUserId = Omit<
 export const addTransactionLegacy = async (
   cookie: string,
   transaction: TestInsertTransactionInputWithoutUserId,
-  expectCode: number = 200
+  expectCode: number = 201
 ): Promise<NormalisedTransaction | void> => {
   // Create a unique memo to identify this transaction
   const uniqueId =
@@ -45,7 +45,7 @@ export const addTransactionLegacy = async (
     .send({ ...transaction, memo: uniqueMemo })
     .expect(expectCode);
 
-  if (expectCode != 200) {
+  if (expectCode != 201) {
     return;
   }
 
@@ -96,7 +96,7 @@ export const createTransaction = async (
     .set("Authorization", `Bearer ${cookie}`)
     .send(transaction);
 
-  expect(res.status).toBe(200);
+  expect(res.status).toBe(201);
 
   return res.body;
 };

@@ -53,7 +53,7 @@ describe("Transaction Delete", () => {
       const transaction = await addTransactionLegacy(
         cookie,
         transactionPayload,
-        200
+        201
       );
 
       await deleteTransactions(cookieA, [transaction!.id], 404);
@@ -71,7 +71,7 @@ describe("Transaction Delete", () => {
         outflow: "10",
       };
 
-      const tx = await addTransactionLegacy(cookie, transactionPayload, 200);
+      const tx = await addTransactionLegacy(cookie, transactionPayload, 201);
 
       await deleteTransactions(cookie, [tx!.id]);
       const { transactions, accounts } = await getAccounts(cookie);
@@ -94,7 +94,7 @@ describe("Transaction Delete", () => {
       const transaction = await addTransactionLegacy(
         cookie,
         transactionPayload,
-        200
+        201
       );
 
       await deleteTransactions(cookie, [transaction!.id]);
@@ -125,9 +125,9 @@ describe("Transaction Delete", () => {
       const transferTx = await addTransactionLegacy(
         cookie,
         transferTxPayload,
-        200
+        201
       );
-      const tx = await addTransactionLegacy(cookie, txPayload, 200);
+      const tx = await addTransactionLegacy(cookie, txPayload, 201);
 
       await deleteTransactions(cookie, [transferTx!.id, tx!.id]);
       const { transactions, accounts } = await getAccounts(cookie);
@@ -184,7 +184,7 @@ describe("Transaction Delete", () => {
         const transaction = await addTransactionLegacy(
           cookie,
           transactionPayload,
-          200
+          201
         );
 
         expect(transaction).toBeDefined();
