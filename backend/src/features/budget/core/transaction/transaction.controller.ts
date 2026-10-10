@@ -27,8 +27,7 @@ export const createTransaction = async (
 
     const dto = transactionMapper.toCreateTransactionDto(result);
 
-    // should this be 201??
-    res.status(200).json(dto);
+    res.status(201).json(dto);
   } catch (error) {
     next(error);
   }

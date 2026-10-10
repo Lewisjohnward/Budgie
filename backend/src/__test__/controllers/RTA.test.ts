@@ -159,7 +159,7 @@ const addTransaction = async ({
       accountId,
       date,
     })
-    .expect(200);
+    .expect(201);
 };
 
 describe("RTA allocation", () => {
@@ -221,7 +221,7 @@ describe("RTA allocation", () => {
             date: earliestAllowed,
           });
 
-        expect(resAddTransaction.status).toBe(200);
+        expect(resAddTransaction.status).toBe(201);
 
         const { categories } = await getCategories(cookie);
 
@@ -276,7 +276,7 @@ describe("RTA allocation", () => {
             categoryId: testCategory.id,
             accountId,
           })
-          .expect(200);
+          .expect(201);
 
         const { months } = await getCategories(cookie);
 
@@ -331,7 +331,7 @@ describe("RTA allocation", () => {
             categoryId: testCategory.id,
             accountId,
           })
-          .expect(200);
+          .expect(201);
 
         const { transactions } = await getAccounts(cookie);
 
@@ -407,7 +407,7 @@ describe("RTA allocation", () => {
             categoryId: testCategory.id,
             accountId,
           })
-          .expect(200);
+          .expect(201);
 
         await request(app)
           .post("/api/v1/budget/transaction")
@@ -418,7 +418,7 @@ describe("RTA allocation", () => {
             categoryId: testCategory.id,
             accountId,
           })
-          .expect(200);
+          .expect(201);
 
         const { transactions } = await getAccounts(cookie);
 
@@ -501,7 +501,7 @@ describe("RTA allocation", () => {
             categoryId: testCategory.id,
             accountId,
           })
-          .expect(200);
+          .expect(201);
 
         const resAddTransaction = await request(app)
           .post("/api/v1/budget/transaction")
@@ -511,7 +511,7 @@ describe("RTA allocation", () => {
             categoryId: testCategory.id,
             accountId,
           })
-          .expect(200);
+          .expect(201);
 
         const { transactions } = await getAccounts(cookie);
 
@@ -578,7 +578,7 @@ describe("RTA allocation", () => {
             ...testTransaction,
             accountId,
           })
-          .expect(200);
+          .expect(201);
 
         // await request(app)
         //   .post("/api/v1/budget/transaction")
@@ -649,7 +649,7 @@ describe("RTA allocation", () => {
             categoryId: rtaCategoryId,
             date: threeMonthAgoUTC,
           })
-          .expect(200);
+          .expect(201);
 
         await compareRTAMonthsToExpected([10, 10, 10, 10, 10], cookie);
 
@@ -662,7 +662,7 @@ describe("RTA allocation", () => {
             categoryId: rtaCategoryId,
             date: oneMonthAgoUTC,
           })
-          .expect(200);
+          .expect(201);
 
         await compareRTAMonthsToExpected([10, 10, -10, -10, -10], cookie);
 
@@ -673,7 +673,7 @@ describe("RTA allocation", () => {
             outflow: "20",
             accountId: testAccount.id,
           })
-          .expect(200);
+          .expect(201);
 
         await compareRTAMonthsToExpected([10, 10, -10, -10, -30], cookie);
       });
@@ -697,7 +697,7 @@ describe("RTA allocation", () => {
             accountId: testAccount.id,
             categoryId: testCategory.id,
           })
-          .expect(200);
+          .expect(201);
 
         await compareRTAMonthsToExpected([0, -40], cookie);
       });
@@ -722,7 +722,7 @@ describe("RTA allocation", () => {
             accountId: testAccount.id,
             categoryId: testCategory.id,
           })
-          .expect(200);
+          .expect(201);
 
         await compareRTAMonthsToExpected([0, 0], cookie);
       });
@@ -745,7 +745,7 @@ describe("RTA allocation", () => {
             categoryId: testCategoryId,
             date: twoMonthsAgo,
           })
-          .expect(200);
+          .expect(201);
 
         const { months } = await getCategories(cookie);
 
@@ -768,7 +768,7 @@ describe("RTA allocation", () => {
             categoryId: testCategoryId,
             date: lastMonth,
           })
-          .expect(200);
+          .expect(201);
 
         const { months: updatedMthsA } = await getCategories(cookie);
 
@@ -792,7 +792,7 @@ describe("RTA allocation", () => {
             accountId: testAccount.id,
             categoryId: testCategoryId,
           })
-          .expect(200);
+          .expect(201);
 
         const { months: updatedMthsB } = await getCategories(cookie);
 
@@ -819,7 +819,7 @@ describe("RTA allocation", () => {
             categoryId: testCategoryId,
             date: twoMonthsAgo,
           })
-          .expect(200);
+          .expect(201);
         const { months: updatedMthsC } = await getCategories(cookie);
 
         const uncategorisedMonthsC = Object.values(updatedMthsC).filter(
@@ -851,7 +851,7 @@ describe("RTA allocation", () => {
             outflow: "10",
             accountId: testAccount.id,
           })
-          .expect(200);
+          .expect(201);
 
         await request(app)
           .post("/api/v1/budget/transaction")
@@ -861,7 +861,7 @@ describe("RTA allocation", () => {
             accountId: testAccount.id,
             categoryId: testCategoryId,
           })
-          .expect(200);
+          .expect(201);
 
         const { months: updatedMthsA } = await getCategories(cookie);
 
@@ -893,7 +893,7 @@ describe("RTA allocation", () => {
             accountId: testAccount.id,
             categoryId: readyToAssignCategoryId,
           })
-          .expect(200);
+          .expect(201);
 
         await compareRTAMonthsToExpected([10, 10], cookie);
       });
@@ -922,7 +922,7 @@ describe("RTA allocation", () => {
             accountId: testAccount.id,
             categoryId: readyToAssignCategoryId,
           })
-          .expect(200);
+          .expect(201);
 
         await compareRTAMonthsToExpected([10, 10], cookie);
 
@@ -936,7 +936,7 @@ describe("RTA allocation", () => {
             accountId: testAccount.id,
             date: dateThreeMonthsAgo,
           })
-          .expect(200);
+          .expect(201);
 
         const { months } = await getCategories(cookie);
 
@@ -976,7 +976,7 @@ describe("RTA allocation", () => {
             outflow: "50",
             accountId: testAccount.id,
           })
-          .expect(200);
+          .expect(201);
 
         await compareRTAMonthsToExpected([0, -50], cookie);
 
@@ -987,7 +987,7 @@ describe("RTA allocation", () => {
             inflow: "70",
             accountId: testAccount.id,
           })
-          .expect(200);
+          .expect(201);
 
         const { months } = await getCategories(cookie);
 
@@ -1010,7 +1010,7 @@ describe("RTA allocation", () => {
             outflow: "10",
             accountId: testAccount.id,
           })
-          .expect(200);
+          .expect(201);
 
         const { categories: updatedCategories } = await getCategories(cookie);
         const testCategoryUpdated = Object.values(updatedCategories).find(
@@ -1054,7 +1054,7 @@ describe("RTA allocation", () => {
             accountId: testAccount.id,
             categoryId: readyToAssignCategoryId,
           })
-          .expect(200);
+          .expect(201);
 
         await request(app)
           .post("/api/v1/budget/transaction")
@@ -1063,7 +1063,7 @@ describe("RTA allocation", () => {
             outflow: "10",
             accountId: testAccount.id,
           })
-          .expect(200);
+          .expect(201);
 
         const { categories: updatedCategories } = await getCategories(cookie);
         const testCategoryUpdated = Object.values(updatedCategories).find(
@@ -1140,7 +1140,7 @@ describe("RTA allocation", () => {
             inflow: "1.11",
             accountId: testAccount.id,
           })
-          .expect(200);
+          .expect(201);
 
         await compareRTAMonthsToExpected([0, 0], cookie);
 
@@ -1164,11 +1164,11 @@ describe("RTA allocation", () => {
             categoryId: rtaCategoryId,
             date: dateThreeMonthsAgo,
           })
-          .expect(200);
+          .expect(201);
 
         await compareRTAMonthsToExpected(
           [1.12, 1.12, 1.12, 1.12, 1.12],
-          cookie,
+          cookie
         );
 
         await request(app)
@@ -1179,7 +1179,7 @@ describe("RTA allocation", () => {
             accountId: testAccount.id,
             categoryId: rtaCategoryId,
           })
-          .expect(200);
+          .expect(201);
 
         await compareRTAMonthsToExpected(
           [1.12, 1.12, 1.12, 2.25, 2.25],
@@ -1214,7 +1214,7 @@ describe("RTA allocation", () => {
             categoryId: rtaCategoryId,
             date: dateThreeMonthsAgo,
           })
-          .expect(200);
+          .expect(201);
 
         await compareRTAMonthsToExpected(
           [-0.01, -0.01, -0.01, -0.01, -0.01],
@@ -1229,7 +1229,7 @@ describe("RTA allocation", () => {
             accountId: testAccount.id,
             categoryId: rtaCategoryId,
           })
-          .expect(200);
+          .expect(201);
 
         await compareRTAMonthsToExpected(
           [-0.01, -0.01, -0.01, 0.01, 0.01],
@@ -1263,7 +1263,7 @@ describe("RTA allocation", () => {
             accountId: testAccount.id,
             categoryId: rtaCategoryId,
           })
-          .expect(200);
+          .expect(201);
 
         await compareRTAMonthsToExpected([0, 0, 0, 0.04, 0.04], cookie);
 
@@ -1276,7 +1276,7 @@ describe("RTA allocation", () => {
             categoryId: rtaCategoryId,
             date: dateThreeMonthsAgo,
           })
-          .expect(200);
+          .expect(201);
 
         await compareRTAMonthsToExpected(
           [-0.03, -0.03, -0.03, 0.01, 0.01],
@@ -1311,7 +1311,7 @@ describe("RTA allocation", () => {
             accountId: testAccount.id,
             categoryId: testCategory.id,
           })
-          .expect(200);
+          .expect(201);
 
         await compareRTAMonthsToExpected([0, 0, 0, 0, -39.01], cookie);
 
@@ -1324,7 +1324,7 @@ describe("RTA allocation", () => {
             categoryId: rtaCategoryId,
             date: dateThreeMonthsAgo,
           })
-          .expect(200);
+          .expect(201);
 
         await compareRTAMonthsToExpected([39, 39, 39, 39, -0.01], cookie);
       });
@@ -1402,7 +1402,7 @@ describe("RTA allocation", () => {
           categoryId: testCategory.id,
           accountId,
         })
-        .expect(200);
+        .expect(201);
 
       const { transactions } = await getAccounts(cookie);
 
@@ -1465,7 +1465,7 @@ describe("RTA allocation", () => {
           categoryId: RTACategoryId,
           accountId: testAccount.id,
         })
-        .expect(200);
+        .expect(201);
 
       await compareRTAMonthsToExpected([-10, -10], cookie);
 
@@ -1476,7 +1476,7 @@ describe("RTA allocation", () => {
           inflow: "9.99",
           accountId: testAccount.id,
         })
-        .expect(200);
+        .expect(201);
 
       await compareRTAMonthsToExpected([-10, -10], cookie);
 
@@ -1487,7 +1487,7 @@ describe("RTA allocation", () => {
           outflow: "9.99",
           accountId: testAccount.id,
         })
-        .expect(200);
+        .expect(201);
 
       await compareRTAMonthsToExpected([-10, -10], cookie);
 
@@ -1510,7 +1510,7 @@ describe("RTA allocation", () => {
           categoryId: RTACategoryId,
           date: dateThreeMonthsAgo,
         })
-        .expect(200);
+        .expect(201);
 
       await compareRTAMonthsToExpected([-10, -10, -10, -10, -10], cookie);
 
@@ -1531,7 +1531,7 @@ describe("RTA allocation", () => {
           inflow: "9.99",
           accountId: testAccount.id,
         })
-        .expect(200);
+        .expect(201);
 
       await compareRTAMonthsToExpected([0, 0, 0, 0, 0], cookie);
     });
@@ -1548,7 +1548,7 @@ describe("RTA allocation", () => {
           categoryId: RTACategoryId,
           accountId: testAccount.id,
         })
-        .expect(200);
+        .expect(201);
 
       await request(app)
         .post("/api/v1/budget/transaction")
@@ -1558,7 +1558,7 @@ describe("RTA allocation", () => {
           categoryId: RTACategoryId,
           accountId: testAccount.id,
         })
-        .expect(200);
+        .expect(201);
 
       await compareRTAMonthsToExpected([21, 21], cookie);
 
@@ -1588,7 +1588,7 @@ describe("RTA allocation", () => {
           categoryId: testCategoryId,
           accountId: testAccount.id,
         })
-        .expect(200);
+        .expect(201);
 
       await request(app)
         .delete("/api/v1/budget/transaction")
@@ -1623,7 +1623,7 @@ describe("RTA allocation", () => {
           categoryId: testCategoryId,
           accountId: testAccount.id,
         })
-        .expect(200);
+        .expect(201);
 
       await request(app)
         .delete("/api/v1/budget/transaction")
@@ -1656,7 +1656,7 @@ describe("RTA allocation", () => {
           categoryId: testCategoryId,
           accountId: testAccount.id,
         })
-        .expect(200);
+        .expect(201);
 
       await request(app)
         .post("/api/v1/budget/transaction")
@@ -1666,7 +1666,7 @@ describe("RTA allocation", () => {
           categoryId: testCategoryId,
           accountId: testAccount.id,
         })
-        .expect(200);
+        .expect(201);
 
       await request(app)
         .post("/api/v1/budget/transaction")
@@ -1675,7 +1675,7 @@ describe("RTA allocation", () => {
           inflow: "12",
           accountId: testAccount.id,
         })
-        .expect(200);
+        .expect(201);
 
       await request(app)
         .delete("/api/v1/budget/transaction")
@@ -1714,7 +1714,7 @@ describe("RTA allocation", () => {
           categoryId: RTACategoryId,
           accountId: testAccount.id,
         })
-        .expect(200);
+        .expect(201);
 
       await request(app)
         .post("/api/v1/budget/transaction")
@@ -1724,7 +1724,7 @@ describe("RTA allocation", () => {
           categoryId: RTACategoryId,
           accountId: testAccount.id,
         })
-        .expect(200);
+        .expect(201);
 
       await compareRTAMonthsToExpected([21, 21], cookie);
 
@@ -1750,7 +1750,7 @@ describe("RTA allocation", () => {
           outflow: "10",
           accountId: testAccount.id,
         })
-        .expect(200);
+        .expect(201);
 
       const { transactions } = await getAccounts(cookie);
 
@@ -1854,7 +1854,7 @@ describe("RTA allocation", () => {
           accountId: testAccount.id,
           categoryId: readyToAssignCategoryId,
         })
-        .expect(200);
+        .expect(201);
 
       const readyToAssignMonths = await getReadyToAssignMonths(cookie);
 
@@ -1893,7 +1893,7 @@ describe("RTA allocation", () => {
           accountId: testAccount.id,
           categoryId: readyToAssignCategoryId,
         })
-        .expect(200);
+        .expect(201);
 
       await request(app)
         .patch("/api/v1/budget/assign")
@@ -1950,7 +1950,7 @@ describe("RTA allocation", () => {
           accountId: testAccount.id,
           categoryId: readyToAssignCategoryId,
         })
-        .expect(200);
+        .expect(201);
 
       await request(app)
         .patch("/api/v1/budget/assign")
@@ -2010,7 +2010,7 @@ describe("RTA allocation", () => {
           accountId: testAccount.id,
           categoryId: readyToAssignCategoryId,
         })
-        .expect(200);
+        .expect(201);
 
       const dateThreeMonthsAgo = subMonths(new Date(), 3);
 
@@ -2022,7 +2022,7 @@ describe("RTA allocation", () => {
           accountId: testAccount.id,
           date: dateThreeMonthsAgo,
         })
-        .expect(200);
+        .expect(201);
 
       const { categories: updatedCategories } = await getCategories(cookie);
       const testCategoryUpdated = Object.values(updatedCategories).find(
@@ -2074,7 +2074,7 @@ describe("RTA allocation", () => {
           accountId: testAccount.id,
           categoryId: readyToAssignCategoryId,
         })
-        .expect(200);
+        .expect(201);
 
       const { transactions } = await getAccounts(cookie);
 
@@ -2106,7 +2106,7 @@ describe("RTA allocation", () => {
         .delete("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send({ transactionIds: [inflowTransaction.id] })
-        .expect(200);
+        .expect(201);
 
       const readyToAssignMonths = await getReadyToAssignMonths(cookie);
 
@@ -2145,7 +2145,7 @@ describe("RTA allocation", () => {
           accountId: testAccount.id,
           categoryId: readyToAssignCategoryId,
         })
-        .expect(200);
+        .expect(201);
 
       const dateThreeMonthsAgo = subMonths(new Date(), 3);
 
@@ -2157,7 +2157,7 @@ describe("RTA allocation", () => {
           accountId: testAccount.id,
           date: dateThreeMonthsAgo,
         })
-        .expect(200);
+        .expect(201);
 
       const { categories: updatedCategories } = await getCategories(cookie);
       const testCategoryUpdated = Object.values(updatedCategories).find(
@@ -2195,7 +2195,7 @@ describe("RTA allocation", () => {
   });
 
   describe.skip("editing transactions", () => {
-    it.skip("Should correctly update rta months when editing from uncategorised to category", async () => { });
+    it.skip("Should correctly update rta months when editing from uncategorised to category", async () => {});
     it("first test", async () => {
       const { id: accountId } = testAccount;
 
@@ -2207,7 +2207,7 @@ describe("RTA allocation", () => {
           memo: "test",
           accountId,
         })
-        .expect(200);
+        .expect(201);
 
       const transaction = await prisma.transaction.findFirstOrThrow({
         where: {
@@ -2228,7 +2228,7 @@ describe("RTA allocation", () => {
         .patch("/api/v1/budget/transaction")
         .set("Authorization", `Bearer ${cookie}`)
         .send(payload)
-        .expect(200);
+        .expect(201);
 
       await compareRTAMonthsToExpected([10, 10], cookie);
     });

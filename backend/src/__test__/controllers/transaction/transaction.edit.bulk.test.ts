@@ -228,17 +228,17 @@ describe("Transaction Bulk Edit", () => {
         const txA = await addTransactionLegacy(
           cookie,
           transactionPayloadA,
-          200
+          201
         );
         const txB = await addTransactionLegacy(
           cookie,
           transactionPayloadB,
-          200
+          201
         );
         const txC = await addTransactionLegacy(
           cookie,
           transactionPayloadC,
-          200
+          201
         );
 
         const beforeTxs = [txA!, txB!, txC!];
@@ -301,22 +301,22 @@ describe("Transaction Bulk Edit", () => {
         const txA = await addTransactionLegacy(
           cookie,
           transactionPayloadA,
-          200
+          201
         );
         const txB = await addTransactionLegacy(
           cookie,
           transactionPayloadB,
-          200
+          201
         );
         const txC = await addTransactionLegacy(
           cookie,
           transactionPayloadC,
-          200
+          201
         );
         const txD = await addTransactionLegacy(
           cookie,
           transactionPayloadD,
-          200
+          201
         );
 
         const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
@@ -380,22 +380,22 @@ describe("Transaction Bulk Edit", () => {
         const txA = await addTransactionLegacy(
           cookie,
           transactionPayloadA,
-          200
+          201
         );
         const txB = await addTransactionLegacy(
           cookie,
           transactionPayloadB,
-          200
+          201
         );
         const txC = await addTransactionLegacy(
           cookie,
           transactionPayloadC,
-          200
+          201
         );
         const txD = await addTransactionLegacy(
           cookie,
           transactionPayloadD,
-          200
+          201
         );
 
         const uncategorisedCategory = await getUncategorisedCategory(cookie);
@@ -471,12 +471,12 @@ describe("Transaction Bulk Edit", () => {
         const txA = await addTransactionLegacy(
           cookie,
           transactionPayloadA,
-          200
+          201
         );
         const txB = await addTransactionLegacy(
           cookie,
           transactionPayloadB,
-          200
+          201
         );
 
         const editBulkPayload: TestEditBulkTransactionsInputWithoutUserId = {
@@ -599,17 +599,17 @@ describe("Transaction Bulk Edit", () => {
         const txA = await addTransactionLegacy(
           cookie,
           transactionPayloadA,
-          200
+          201
         );
         const txB = await addTransactionLegacy(
           cookie,
           transactionPayloadB,
-          200
+          201
         );
         const txC = await addTransactionLegacy(
           cookie,
           transactionPayloadC,
-          200
+          201
         );
 
         const beforeTxs = [txA!, txB!, txC!].map((tx) => ({
@@ -671,17 +671,17 @@ describe("Transaction Bulk Edit", () => {
         const txA = await addTransactionLegacy(
           cookie,
           transactionPayloadA,
-          200
+          201
         );
         const txB = await addTransactionLegacy(
           cookie,
           transactionPayloadB,
-          200
+          201
         );
         const txC = await addTransactionLegacy(
           cookie,
           transactionPayloadC,
-          200
+          201
         );
 
         const { accounts: accountsBefore } = await getAccounts(cookie);
@@ -732,12 +732,12 @@ describe("Transaction Bulk Edit", () => {
         const txA = await addTransactionLegacy(
           cookie,
           transactionPayloadA,
-          200
+          201
         );
         const txB = await addTransactionLegacy(
           cookie,
           transactionPayloadB,
-          200
+          201
         );
 
         const { accounts: accountsBefore } = await getAccounts(cookie);
@@ -782,7 +782,7 @@ describe("Transaction Bulk Edit", () => {
         const txA = await addTransactionLegacy(
           cookie,
           transactionPayloadA,
-          200
+          201
         );
 
         const { accounts: accountsBefore, transactions: transactionsBefore } =
@@ -833,7 +833,7 @@ describe("Transaction Bulk Edit", () => {
         const txA = await addTransactionLegacy(
           cookie,
           transactionPayloadA,
-          200
+          201
         );
 
         const { accounts: accountsBefore, transactions: transactionsBefore } =
@@ -893,9 +893,9 @@ describe("Transaction Bulk Edit", () => {
         outflow: "10",
       };
 
-      const txA = await addTransactionLegacy(cookie, transactionPayloadA, 200);
-      const txB = await addTransactionLegacy(cookie, transactionPayloadB, 200);
-      const txC = await addTransactionLegacy(cookie, transactionPayloadC, 200);
+      const txA = await addTransactionLegacy(cookie, transactionPayloadA, 201);
+      const txB = await addTransactionLegacy(cookie, transactionPayloadB, 201);
+      const txC = await addTransactionLegacy(cookie, transactionPayloadC, 201);
 
       const UPDATED_MEMO = "updated memo";
 
@@ -951,9 +951,9 @@ describe("Transaction Bulk Edit", () => {
         outflow: "10",
       };
 
-      const txA = await addTransactionLegacy(cookie, transactionPayloadA, 200);
-      const txB = await addTransactionLegacy(cookie, transactionPayloadB, 200);
-      const txC = await addTransactionLegacy(cookie, transactionPayloadC, 200);
+      const txA = await addTransactionLegacy(cookie, transactionPayloadA, 201);
+      const txB = await addTransactionLegacy(cookie, transactionPayloadB, 201);
+      const txC = await addTransactionLegacy(cookie, transactionPayloadC, 201);
 
       const UPDATED_MEMO = " ";
 
@@ -1001,7 +1001,7 @@ describe("Transaction Bulk Edit", () => {
         outflow: "10",
       };
 
-      const tx = await addTransactionLegacy(cookie, transactionPayloadC, 200);
+      const tx = await addTransactionLegacy(cookie, transactionPayloadC, 201);
 
       const UPDATED_MEMO = "updated memo";
 
