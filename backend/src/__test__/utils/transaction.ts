@@ -102,7 +102,7 @@ export const createTransaction = async (
 };
 
 export const getTransactionIds = (result: CreateTransactionDto): string[] => {
-  const r = result.created.result;
+  const r = result.created.transactions;
 
   if (r.type === "normal") {
     return [r.transaction.id];

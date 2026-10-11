@@ -93,52 +93,41 @@ export const toCreateTransactionCommand = (
 };
 
 /**
- * Orchestrates creation of a new transaction for a user.
+ * Creates a transaction and applies its associated domain changes atomically.
  *
- * @responsibilities
- * - Executes the operation inside a database transaction.
- * - Validates that the source account is owned by the user.
- * - Determines whether the transaction is a transfer or a normal transaction.
- * - Delegates all creation and side-effects to the appropriate transaction service.
+ * Validates ownership of the source account, determines whether the command
+ * represents a normal transaction or a transfer, and delegates creation to
+ * the appropriate transaction service.
  *
- * @notes
- * - Schema-level validation is assumed to have already occurred.
- * - Transfer transactions are fully handled by `insertTransferTransaction`.
- * - Normal transactions (including category resolution, month updates, and balance recalculation) are fully handled by `insertNormalTransaction`.
+ * Collects the resulting domain changes, including created transactions,
+ * optional payee, memos, and budget months, as well as updated accounts and
+ * budget months. The returned domain result is intended to be mapped to an
+ * API response by the transaction DTO mapper.
  *
- * @param userId - ID of the user creating the transaction.
- * @param transaction - Validated transaction input data.
+ * @param payload - Validated transaction payload, including the user ID.
  *
- * @returns A promise that resolves when the transaction has been successfully inserted.
+ * @returns The created transactions and associated domain changes, including
+ * newly created entities and updated accounts or budget months.
  *
- * @throws {Error} If the user does not own the source account.
- * @throws {SameAccountTransferError} If a transfer targets the same account.
+ * @throws If account ownership validation, transaction creation, or an
+ * associated domain operation fails.
  *
  * @example
- * await insertTransaction('user-123', {
- *   accountId: 'acc-456',
- *   outflow: 1000,
- *   memo: 'Groceries',
- *   categoryId: 'cat-789',
+ * await createTransaction({
+ *   userId: "user-123",
+ *   accountId: "acc-456",
+ *   outflow: "10.00",
+ *   memo: "Groceries",
+ *   categoryId: "cat-789",
  * });
  */
-
-// type AddTransactionResponse = {
-//   transactions: Record<string, TransactionDto>;
-//   accounts: Record<string, AccountDto>;
-//   months: Record<string, MonthDto>;
-// };
-
-// get new months ( insert missing months )
-// get new memos ( insert missing memos )
-
 export const createTransaction = async (
   payload: CreateTransactionPayload & { userId: string }
 ): Promise<CreateTransactionResult> => {
   const command = toCreateTransactionCommand(payload);
 
-  return await prisma.$transaction(async (tx) => {
-    // validate ownership
+  return prisma.$transaction(async (tx) => {
+    // Validate ownership of the source account.
     await accountService.getAccount(tx, command.accountId, command.userId);
 
     if (command.type === "transfer") {
@@ -148,13 +137,16 @@ export const createTransaction = async (
       );
 
       return {
-        created: {
-          transactions: result.transactions,
-          memos: result.memos?.length > 0 ? result.memos : undefined,
+        createdTransactions: {
+          type: "transfer",
+          source: result.sourceTransaction,
+          destination: result.destinationTransaction,
         },
-        updated: {
-          accounts: Object.fromEntries(result.accounts.map((a) => [a.id, a])),
-        },
+        createdPayee: undefined,
+        createdMemos: result.createdMemos,
+        createdMonths: result.createdMonths,
+        updatedAccounts: result.updatedAccounts,
+        updatedMonths: [],
       };
     }
 
@@ -164,19 +156,15 @@ export const createTransaction = async (
     );
 
     return {
-      created: {
-        transactions: [result.transaction],
-        payees: result.payee ? [result.payee] : undefined,
-        memos: result.memos?.length > 0 ? result.memos : undefined,
+      createdTransactions: {
+        type: "normal",
+        transaction: result.transaction,
       },
-      updated: {
-        accounts: {
-          [result.account.id]: result.account,
-        },
-        months: result.months?.length
-          ? Object.fromEntries(result.months.map((m) => [m.id, m]))
-          : undefined,
-      },
+      createdPayee: result.payee,
+      createdMemos: result.memos ?? [],
+      createdMonths: result.createdMonths,
+      updatedAccounts: [result.account],
+      updatedMonths: result.updatedMonths ?? [],
     };
   });
 };

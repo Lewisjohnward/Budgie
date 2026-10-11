@@ -3,7 +3,6 @@ import { payeeService } from "../../../payee/payee.service";
 import { categoryService } from "../../../category/core/category.service";
 import { OperationMode } from "../../../../../../shared/enums/operation-mode";
 import { accountService } from "../../../account/account.service";
-import { insertNormalTransaction } from "./create/insertNormalTransaction";
 import { type DomainNormalTransaction } from "../../transaction.types";
 import { memoService } from "../../../memo/memo.service";
 import { type CreateTransactionCommand } from "../use-cases/insertTransaction";
@@ -18,35 +17,22 @@ import { DomainMemo } from "../../../memo/memo.types";
 import { transactionService } from "../../transaction.service";
 
 /**
- * Inserts a **normal (non-transfer)** transaction for a user, handling all
- * associated domain logic including payee resolution, category assignment,
- * month creation, memo creation, and account balance updates.
+ * Creates a normal (non-transfer) transaction and applies its associated
+ * domain side effects within the provided Prisma transaction.
  *
- * Behaviour:
- * - Resolves the `payeeId` from either an existing payee or `payeeName`.
- * - Validates the category if provided; defaults to the "Uncategorised" category otherwise.
- * - Creates the transaction in the database via `createNormalTransaction`.
- * - Inserts missing category months for the transaction date.
- * - Inserts missing memos for the transaction date.
- * - Updates category month allocations or RTA month activity depending on the category.
- * - Updates account balances to reflect the new transaction.
- * - Recalculates RTA months availability if relevant.
- *
- * Domain invariants:
- * - Normal transactions must belong to a valid category (resolved to Uncategorised if none provided).
- * - Transactions must reference a valid account owned by the user.
- * - All side-effects are applied within the provided Prisma transaction to ensure atomicity.
+ * Resolves the payee and category, creates any missing budget months and
+ * memos, recalculates affected category and RTA months, and updates the
+ * account balance and deletable status.
  *
  * @param tx - Prisma transaction client used for all database operations.
- * @param userId - The ID of the user creating the transaction.
- * @param transaction - Normal transaction data to insert, including optional payee and category information.
+ * @param command - Transaction data, including the account, date, amount,
+ * category, and optional payee information.
  *
- * @returns The newly created `DomainNormalTransaction`, fully mapped to domain types.
+ * @returns The created transaction, updated account, optional newly created
+ * payee, newly created budget months and memos, and updated budget months.
  *
- * @throws Will throw an error if:
- * - The account does not exist or is not owned by the user.
- * - The category does not exist or is not owned by the user.
- * - Any of the payee resolution, month insertion, or balance updates fail.
+ * @throws If the account or category is invalid, payee resolution fails, or
+ * any database operation or domain calculation fails.
  */
 export async function createNormalTransaction(
   tx: Prisma.TransactionClient,
@@ -57,7 +43,8 @@ export async function createNormalTransaction(
   transaction: DomainNormalTransaction;
   account: DomainAccount;
   payee?: DomainPayee;
-  months?: DomainMonth[];
+  createdMonths: DomainMonth[];
+  updatedMonths: DomainMonth[];
   memos: DomainMemo[];
 }> {
   const {
@@ -122,7 +109,7 @@ export async function createNormalTransaction(
   const isRtaTransaction = newTransaction.categoryId === rtaCategoryId;
 
   // insert the missing months
-  await categoryService.months.insertMissingMonths(
+  const createdMonths = await categoryService.months.insertMissingMonths(
     tx,
     userId,
     newTransaction.date
@@ -171,7 +158,8 @@ export async function createNormalTransaction(
     transaction: newTransaction,
     account,
     payee: createdPayee,
-    months: [...updatedCategoryMonths, ...updatedRtaMonths],
+    createdMonths,
+    updatedMonths: [...updatedCategoryMonths, ...updatedRtaMonths],
     memos: createdMemos,
   };
 }

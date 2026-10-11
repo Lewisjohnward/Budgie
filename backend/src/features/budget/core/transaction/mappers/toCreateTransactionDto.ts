@@ -7,14 +7,19 @@ import { accountMapper } from "../../account/account.mapper";
 import { categoryMapper } from "../../category/core/category.mapper";
 
 /**
- * Maps a CreateTransactionResult (domain/use-case output)
- * into a CreateTransactionDto (API response format).
+ * Maps a create transaction use case result to its API response DTO.
  */
-
 export const toCreateTransactionDto = (
   result: CreateTransactionResult
 ): CreateTransactionDto => {
-  const { created, updated } = result;
+  const {
+    createdTransactions,
+    createdPayee,
+    createdMemos,
+    createdMonths,
+    updatedAccounts,
+    updatedMonths,
+  } = result;
 
   const mapCreatedTransactions = (
     transactions: CreateTransactionResult["createdTransactions"]
@@ -38,32 +43,37 @@ export const toCreateTransactionDto = (
             transactions.destination
           ),
         };
+    }
+  };
 
   return {
     created: {
-      result: mappedResult,
-      sideEffects: {
-        payee: created.payee
-          ? payeeMapper.toPayeeDto(created.payee)
-          : undefined,
-        memos: created.memos?.map(memoMapper.toMemoDto),
-      },
+      transactions: mapCreatedTransactions(createdTransactions),
+      ...(createdPayee && {
+        payee: payeeMapper.toPayeeDto(createdPayee),
+      }),
+      memos: createdMemos.map(memoMapper.toMemoDto),
+      months: Object.fromEntries(
+        createdMonths.map((month) => [
+          month.id,
+          categoryMapper.toMonthDto(month),
+        ])
+      ),
     },
+
     updated: {
       accounts: Object.fromEntries(
-        Object.entries(updated.accounts).map(([id, account]) => [
-          id,
+        updatedAccounts.map((account) => [
+          account.id,
           accountMapper.toAccountDto(account),
         ])
       ),
-      months: updated.months
-        ? Object.fromEntries(
-            Object.entries(updated.months).map(([id, month]) => [
-              id,
-              categoryMapper.toMonthDto(month),
-            ])
-          )
-        : undefined,
+      months: Object.fromEntries(
+        updatedMonths.map((month) => [
+          month.id,
+          categoryMapper.toMonthDto(month),
+        ])
+      ),
     },
   };
 };

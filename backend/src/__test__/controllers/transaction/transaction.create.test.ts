@@ -4,6 +4,7 @@ import app from "../../../app";
 import { getAccounts, getCategories } from "../../utils/getData";
 import {
   addTransactionLegacy,
+  createTransaction,
   TestInsertTransactionInputWithoutUserId,
 } from "../../utils/transaction";
 import { login, registerUser } from "../../utils/auth";
@@ -14,6 +15,7 @@ import {
   createAccountAndFetch,
   fetchAccountByName,
 } from "../../utils/account";
+import { getAppSnapshot } from "../../utils/appSnapshot";
 
 describe("Transaction Create", () => {
   let cookie: string;
@@ -192,6 +194,138 @@ describe("Transaction Create", () => {
           },
           201
         );
+      });
+    });
+    describe("Response DTO", () => {
+      it("Should return the expected DTO when creating a normal transaction", async () => {
+        const account = await createAccountAndFetch(cookie);
+        const date = "2026-10-12T00:00:00.000Z";
+
+        const { created, updated } = await createTransaction(cookie, {
+          accountId: account.id,
+          outflow: "10",
+          memo: "Test transaction",
+          date,
+        });
+
+        expect(created).toEqual(
+          expect.objectContaining({
+            transactions: expect.objectContaining({
+              type: "normal",
+              transaction: expect.objectContaining({
+                type: "normal",
+                accountId: account.id,
+                date,
+                memo: "Test transaction",
+                inflow: 0,
+                outflow: 10,
+              }),
+            }),
+            memos: expect.any(Array),
+            months: expect.any(Object),
+          })
+        );
+
+        expect(updated).toEqual(
+          expect.objectContaining({
+            accounts: expect.any(Object),
+            months: expect.any(Object),
+          })
+        );
+
+        const { transactions } = created;
+
+        expect(transactions.type).toBe("normal");
+
+        if (transactions.type !== "normal") {
+          throw new Error("Expected a normal transaction");
+        }
+
+        // The transaction should be represented using the API DTO,
+        // rather than exposing database-specific fields.
+        const transaction = transactions.transaction;
+
+        expect(Object.keys(transaction).sort()).toEqual(
+          [
+            "type",
+            "id",
+            "accountId",
+            "categoryId",
+            "payeeId",
+            "date",
+            "memo",
+            "inflow",
+            "outflow",
+          ].sort()
+        );
+
+        expect(typeof transaction.id).toBe("string");
+        expect(typeof transaction.categoryId).toBe("string");
+        expect(transaction.payeeId).toBeNull();
+        expect(typeof transaction.inflow).toBe("number");
+        expect(typeof transaction.outflow).toBe("number");
+      });
+      it("Should return newly created months and memos when creating a transaction in the past", async () => {
+        const account = await createAccountAndFetch(cookie);
+
+        const { months: monthsBefore, memosByMonth: memosBefore } =
+          await getAppSnapshot(cookie);
+
+        const existingMonthIds = new Set(Object.keys(monthsBefore));
+        const beforeMemoLength = Object.keys(memosBefore).length;
+
+        const now = new Date();
+        const past = new Date(
+          Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 2, 1)
+        );
+        const pastDate = past.toISOString();
+
+        const expectedMonthKeys = [
+          new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 2, 1))
+            .toISOString()
+            .slice(0, 7),
+          new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 1, 1))
+            .toISOString()
+            .slice(0, 7),
+        ];
+
+        const { created } = await createTransaction(cookie, {
+          accountId: account.id,
+          outflow: "10",
+          date: pastDate,
+        });
+
+        const newMonths = Object.values(created.months);
+
+        // These records should not have existed before the request.
+        for (const month of newMonths) {
+          expect(existingMonthIds.has(month.id)).toBe(false);
+        }
+
+        // Two previously unpopulated months, for each existing category.
+        const categoryIds = new Set(
+          Object.values(monthsBefore).map((month) => month.categoryId)
+        );
+
+        expect(newMonths).toHaveLength(categoryIds.size * 2);
+
+        for (const monthKey of expectedMonthKeys) {
+          expect(
+            newMonths.filter((month) => month.month === monthKey)
+          ).toHaveLength(categoryIds.size);
+        }
+
+        // Two new memo records, one for each missing month.
+        expect(created.memos).toHaveLength(2);
+
+        expect(created.memos.map((memo) => memo.month).sort()).toEqual(
+          expectedMonthKeys.sort()
+        );
+
+        // Existing memos should not be recreated.
+        const { memosByMonth: memosAfter } = await getAppSnapshot(cookie);
+
+        expect(Object.keys(memosAfter)).toHaveLength(beforeMemoLength + 2);
       });
     });
     describe("Error Cases", () => {
@@ -474,6 +608,70 @@ describe("Transaction Create", () => {
         };
 
         await addTransactionLegacy(cookie, transferTransaction, 404);
+      });
+    });
+    describe("Response DTO", () => {
+      it("Should return the expected DTO when creating a transfer", async () => {
+        const sourceAccount = await createAccountAndFetch(cookie);
+        const destinationAccount = await createAccountAndFetch(cookie);
+        const date = "2026-10-12T00:00:00.000Z";
+
+        const { created, updated } = await createTransaction(cookie, {
+          accountId: sourceAccount.id,
+          transferAccountId: destinationAccount.id,
+          outflow: "10",
+          date,
+        });
+
+        expect(created.transactions.type).toBe("transfer");
+        if (created.transactions.type !== "transfer") {
+          throw new Error("Expected a transfer transaction");
+        }
+
+        const { source, destination } = created.transactions;
+
+        expect(source).toEqual(
+          expect.objectContaining({
+            type: "transfer",
+            accountId: sourceAccount.id,
+            transferAccountId: destinationAccount.id,
+            date,
+            inflow: 0,
+            outflow: 10,
+          })
+        );
+
+        expect(destination).toEqual(
+          expect.objectContaining({
+            type: "transfer",
+            accountId: destinationAccount.id,
+            transferAccountId: sourceAccount.id,
+            date,
+            inflow: 10,
+            outflow: 0,
+          })
+        );
+
+        // The transfer DTOs should refer to each other.
+        expect(source.transferTransactionId).toBe(destination.id);
+        expect(destination.transferTransactionId).toBe(source.id);
+
+        expect(created.memos).toEqual(expect.any(Array));
+        expect(created.months).toEqual(expect.any(Object));
+
+        expect(updated.accounts).toEqual(expect.any(Object));
+        expect(updated.months).toEqual(expect.any(Object));
+
+        expect(updated.accounts).toEqual(
+          expect.objectContaining({
+            [sourceAccount.id]: expect.objectContaining({
+              id: sourceAccount.id,
+            }),
+            [destinationAccount.id]: expect.objectContaining({
+              id: destinationAccount.id,
+            }),
+          })
+        );
       });
     });
 

@@ -107,21 +107,24 @@ export type TransactionTransferDto = {
  */
 export type TransactionDto = TransactionNormalDto | TransactionTransferDto;
 
-type CreatedTransaction =
-  | { type: "normal"; transaction: TransactionDto }
-  | { type: "transfer"; source: TransactionDto; destination: TransactionDto };
+type CreatedTransactions =
+  | { type: "normal"; transaction: TransactionNormalDto }
+  | {
+    type: "transfer";
+    source: TransactionTransferDto;
+    destination: TransactionTransferDto;
+  };
 
 export type CreateTransactionDto = {
   created: {
-    result: CreatedTransaction;
-    sideEffects?: {
-      payee?: PayeeDto;
-      memos?: MemoDto[];
-    };
+    transactions: CreatedTransactions;
+    payee?: PayeeDto;
+    memos: MemoDto[];
+    months: Record<string, MonthDto>;
   };
 
   updated: {
     accounts: Record<string, AccountDto>;
-    months?: Record<string, MonthDto>;
+    months: Record<string, MonthDto>;
   };
 };
