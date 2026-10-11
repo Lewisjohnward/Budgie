@@ -19,46 +19,44 @@ import { transactionMapper } from "../../transaction.mapper";
 import { type DomainMemo } from "../../../memo/memo.types";
 import { accountMapper } from "../../../account/account.mapper";
 import { accountRepository } from "../../../../../../shared/repository/accountRepositoryImpl";
+import { DomainMonth } from "../../../category/core/category.types";
+
+type CreateTransferTransactionResult = {
+  sourceTransaction: DomainTransferTransaction;
+  destinationTransaction: DomainTransferTransaction;
+  updatedAccounts: DomainAccount[];
+  createdMonths: DomainMonth[];
+  createdMemos: DomainMemo[];
+};
 
 /**
- * Creates a **transfer transaction** between two accounts for a given user.
+ * Creates a transfer between two accounts and applies its associated domain
+ * changes within the provided Prisma transaction.
  *
- * This function creates both sides of a transfer:
- * - **Source transaction** – represents money leaving the `accountId`.
- * - **Destination transaction** – represents money arriving in the `transferAccountId`.
- *
- * Behaviour:
- * - Validates that the destination account exists and is owned by the user.
- * - Prevents transfers where the source and destination accounts are the same.
- * - Defaults `inflow` and `outflow` amounts to zero if undefined.
- * - Persists both transactions atomically and links them via `transferTransactionId`.
- * - Updates account balances for both accounts.
- * - Inserts missing months and memos associated with the transaction date.
- *
- * Domain invariants:
- * - Transfers must occur between two distinct accounts.
- * - `categoryId` is `null` for both source and destination transactions.
- * - The source transaction ID is referenced in the destination transaction.
+ * Validates access to both accounts and prevents transfers between the same
+ * account. Creates linked source and destination transactions, updates both
+ * account balances, creates any missing budget months and memos, and refreshes
+ * account deletable status.
  *
  * @param tx - Prisma transaction client used for all database operations.
- * @param userId - The ID of the user performing the transfer.
- * @param transaction - Details of the transfer transaction, including source and destination accounts, amounts, and date.
+ * @param command - Transfer command containing the source and destination
+ * account IDs, user ID, date, and transaction amounts.
  *
- * @throws {SameAccountTransferError} If the source and destination accounts are the same.
- * @throws Will throw if the destination account does not exist or is not owned by the user.
+ * @returns The created source and destination transactions, updated source
+ * and destination accounts, newly created budget months, and newly created
+ * memos.
  *
- * @returns A promise that resolves once both transactions are successfully created and balances updated.
+ * @throws {SameAccountTransferError} If the source and destination accounts
+ * are the same.
+ * @throws If either account is inaccessible to the user or a database
+ * operation fails.
  */
 export async function createTransferTransaction(
   tx: Prisma.TransactionClient,
   command: CreateTransactionCommand & {
     transferAccountId: AccountId;
   }
-): Promise<{
-  transactions: DomainTransferTransaction[];
-  accounts: DomainAccount[];
-  memos: DomainMemo[];
-}> {
+): Promise<CreateTransferTransactionResult> {
   const {
     userId,
     accountId,
@@ -97,7 +95,7 @@ export async function createTransferTransaction(
   const sourceTx = {
     ...txInput,
     id: sourceId,
-    accountId,
+    accountId: sourceAccount.id,
     date,
     transferAccountId: destinationAccount.id,
     transferTransactionId: destinationId,
@@ -118,52 +116,22 @@ export async function createTransferTransaction(
     categoryId: null,
   };
 
-  // Create source transaction (money leaving or entering source account)
-  // const sourceTransaction = await createTransferSourceTransaction(tx, {
-  //   ...txInput,
-  //   accountId,
-  //   date,
-  //   transferAccountId: destinationAccount.id,
-  //   inflow: inflowAmount,
-  //   outflow: outflowAmount,
-  // });
-
   const rows = await tx.transaction.createManyAndReturn({
     data: [sourceTx, destinationTx],
   });
-  // await tx.transaction.createMany({
-  //   data: [sourceTx, destinationTx],
-  // });
-  //
-  // const rows = await tx.transaction.findMany({
-  //   where: {
-  //     id: {
-  //       in: [sourceId, destinationId],
-  //     },
-  //   },
-  // });
-  //
-  const [sourceTransaction, destinationTransaction] = rows.map(
-    transactionMapper.toDomainTransferTransaction
-  );
 
-  // Create destination transaction (inverse of source)
-  // const destinationTransaction = await createTransferDestinationTransaction(
-  //   tx,
-  //   {
-  //     ...txInput,
-  //     accountId: destinationAccount.id,
-  //     date,
-  //     transferAccountId: accountId,
-  //     transferTransactionId: sourceTransaction.id,
-  //     inflow: outflowAmount,
-  //     outflow: inflowAmount,
-  //   }
-  // );
-  //
-  // await transactionRepository.updateTransaction(tx, sourceTransaction.id, {
-  //   transferTransactionId: destinationTransaction.id,
-  // });
+  const sourceRow = rows.find((row) => row.id === sourceId);
+  const destinationRow = rows.find((row) => row.id === destinationId);
+
+  if (!sourceRow || !destinationRow) {
+    throw new Error("Failed to create both transfer transactions.");
+  }
+
+  const sourceTransaction =
+    transactionMapper.toDomainTransferTransaction(sourceRow);
+
+  const destinationTransaction =
+    transactionMapper.toDomainTransferTransaction(destinationRow);
 
   // Update balances for both accounts
   await accountService.updateAccountBalances(
@@ -173,44 +141,45 @@ export async function createTransferTransaction(
   );
 
   // insert the missing months
-  await categoryService.months.insertMissingMonths(
+  const createdMonths = await categoryService.months.insertMissingMonths(
     tx,
     userId,
     sourceTransaction.date
   );
 
   // insert the missing memos
-  const memos = await memoService.insertMissingMemos(
+  const createdMemos = await memoService.insertMissingMemos(
     tx,
     userId,
     sourceTransaction.date
   );
 
   await accountService.refreshDeletableStatus(tx, [
-    accountId,
+    sourceAccount.id,
     destinationAccount.id,
   ]);
 
-  await accountService.refreshDeletableStatus(tx, [
-    accountId,
-    destinationAccount.id,
-  ]);
-
-  const destRow = await accountRepository.getAccount(tx, accountId, userId);
-  if (!destRow) throw new Error("where is the account?");
-  const destAccount = accountMapper.toDomainAccount(destRow);
-
-  const sourceRowUpdated = await accountRepository.getAccount(
+  const destinationAccountRaw = await accountRepository.getAccount(
     tx,
-    accountId,
+    destinationAccount.id,
     userId
   );
-  if (!sourceRowUpdated) throw new Error("where is the account?");
-  const sourceAccountUpdated = accountMapper.toDomainAccount(destRow);
+  if (!destinationAccountRaw) throw new Error("where is the account?");
+  const destAccount = accountMapper.toDomainAccount(destinationAccountRaw);
+
+  const sourceAccountRaw = await accountRepository.getAccount(
+    tx,
+    sourceAccount.id,
+    userId
+  );
+  if (!sourceAccountRaw) throw new Error("where is the account?");
+  const sourceAccountUpdated = accountMapper.toDomainAccount(sourceAccountRaw);
 
   return {
-    transactions: [sourceTransaction, destinationTransaction],
-    accounts: [destAccount, sourceAccountUpdated],
-    memos,
+    sourceTransaction: sourceTransaction,
+    destinationTransaction: destinationTransaction,
+    updatedAccounts: [sourceAccountUpdated, destAccount],
+    createdMonths,
+    createdMemos: createdMemos,
   };
 }
