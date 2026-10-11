@@ -48,7 +48,11 @@ export const recalculateCategoryMonthsForTransactions = async (
   ];
 
   // get the earliest month that needs updating
-  const earliestMonthToUpdate = transactionsRoundedToStartOfMonth[0].date;
+  const earliestMonthToUpdate = transactionsRoundedToStartOfMonth.reduce(
+    (earliest, transaction) =>
+      transaction.date < earliest ? transaction.date : earliest,
+    transactionsRoundedToStartOfMonth[0].date
+  );
 
   // get all category months from date
   const categoryMonths =
@@ -75,8 +79,26 @@ export const recalculateCategoryMonthsForTransactions = async (
   // Flatten all updated months from the map into a single array
   const allUpdatedMonths = Object.values(updatedMonthsByCategoryId).flat();
 
-  // Call the repository method once with all updated months
-  await categoryRepository.updateMonths(prisma, allUpdatedMonths);
+  const existingMonthsById = new Map(
+    categoryMonths.map((month) => [month.id, month])
+  );
 
-  return allUpdatedMonths;
+  // Filter out all changed months
+  const changedMonths = allUpdatedMonths.filter((updatedMonth) => {
+    const existingMonth = existingMonthsById.get(updatedMonth.id);
+
+    return (
+      existingMonth === undefined ||
+      !updatedMonth.activity.equals(existingMonth.activity) ||
+      !updatedMonth.assigned.equals(existingMonth.assigned) ||
+      !updatedMonth.available.equals(existingMonth.available)
+    );
+  });
+
+  if (changedMonths.length > 0) {
+    // Call the repository method once with all updated months
+    await categoryRepository.updateMonths(prisma, changedMonths);
+  }
+
+  return changedMonths;
 };
