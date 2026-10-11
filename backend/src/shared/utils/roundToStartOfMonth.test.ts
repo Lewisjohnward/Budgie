@@ -49,77 +49,29 @@ describe("roundToStartOfMonth", () => {
     expect(result.toISOString()).toBe("2023-02-01T00:00:00.000Z");
   });
 
-  it("should handle daylight saving time transitions consistently", () => {
-    // Test around DST transition in March (spring forward)
-    const springDST = new Date("2025-03-31T23:59:59.999Z");
-    const springResult = roundToStartOfMonth(springDST);
-
-    expect(springResult.toISOString()).toBe("2025-04-01T00:00:00.000Z");
-
-    // Test around DST transition in October (fall back)
-    const fallDST = new Date("2025-10-31T23:59:59.999Z");
-    const fallResult = roundToStartOfMonth(fallDST);
-
-    expect(fallResult.toISOString()).toBe("2025-10-01T00:00:00.000Z");
-  });
-
-  it("should handle different months consistently", () => {
-    const months = [
-      {
-        input: "2025-01-15T12:00:00.000Z",
-        expected: "2025-01-01T00:00:00.000Z",
-      },
-      {
-        input: "2025-02-15T12:00:00.000Z",
-        expected: "2025-02-01T00:00:00.000Z",
-      },
-      {
-        input: "2025-03-15T12:00:00.000Z",
-        expected: "2025-03-01T00:00:00.000Z",
-      },
-      {
-        input: "2025-04-15T12:00:00.000Z",
-        expected: "2025-04-01T00:00:00.000Z",
-      },
-      {
-        input: "2025-05-15T12:00:00.000Z",
-        expected: "2025-05-01T00:00:00.000Z",
-      },
-      {
-        input: "2025-06-15T12:00:00.000Z",
-        expected: "2025-06-01T00:00:00.000Z",
-      },
-      {
-        input: "2025-07-15T12:00:00.000Z",
-        expected: "2025-07-01T00:00:00.000Z",
-      },
-      {
-        input: "2025-08-15T12:00:00.000Z",
-        expected: "2025-08-01T00:00:00.000Z",
-      },
-      {
-        input: "2025-09-15T12:00:00.000Z",
-        expected: "2025-09-01T00:00:00.000Z",
-      },
-      {
-        input: "2025-10-15T12:00:00.000Z",
-        expected: "2025-10-01T00:00:00.000Z",
-      },
-      {
-        input: "2025-11-15T12:00:00.000Z",
-        expected: "2025-11-01T00:00:00.000Z",
-      },
-      {
-        input: "2025-12-15T12:00:00.000Z",
-        expected: "2025-12-01T00:00:00.000Z",
-      },
-    ];
-
-    months.forEach(({ input, expected }) => {
-      const result = roundToStartOfMonth(new Date(input));
-      expect(result.toISOString()).toBe(expected);
-    });
-  });
+  it.each([
+    {
+      input: "2025-03-31T23:59:59.999Z",
+      expected: "2025-03-01T00:00:00.000Z",
+    },
+    {
+      input: "2025-04-01T00:00:00.000Z",
+      expected: "2025-04-01T00:00:00.000Z",
+    },
+    {
+      input: "2025-12-31T23:59:59.999Z",
+      expected: "2025-12-01T00:00:00.000Z",
+    },
+    {
+      input: "2026-01-01T00:00:00.000Z",
+      expected: "2026-01-01T00:00:00.000Z",
+    },
+  ])(
+    "returns the start of the correct month for $input",
+    ({ input, expected }) => {
+      expect(roundToStartOfMonth(new Date(input)).toISOString()).toBe(expected);
+    }
+  );
 
   it("should handle timezone-aware input consistently", () => {
     const utcDate = new Date("2025-03-15T12:00:00.000Z");

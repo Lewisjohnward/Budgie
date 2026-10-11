@@ -2,20 +2,24 @@ import { categoryRepository } from "../../../../../../../../shared/repository/ca
 import { ensureMonthsContinuity } from "./ensureMonthsContinuity";
 import { Prisma } from "@prisma/client";
 import { ZERO } from "../../../../../../../../shared/constants/zero";
+import { asUserId } from "../../../../../../../user/auth/auth.types";
 
-jest.mock("../../../../../../shared/repository/categoryRepositoryImpl", () => ({
-  categoryRepository: {
-    getMostRecentMonths: jest.fn(),
-    getAllCategoryIds: jest.fn(),
-    getRtaCategoryId: jest.fn(),
-    createMonths: jest.fn(),
-  },
-}));
+jest.mock(
+  "../../../../../../../../shared/repository/categoryRepositoryImpl",
+  () => ({
+    categoryRepository: {
+      getMostRecentMonths: jest.fn(),
+      getAllCategoryIds: jest.fn(),
+      getRtaCategoryId: jest.fn(),
+      createMonths: jest.fn(),
+    },
+  })
+);
 
-const mockPrisma = {} as any;
+const mockPrisma = {} as Prisma.TransactionClient;
 
 describe("ensureMonthsContinuity", () => {
-  const userId = "user-123";
+  const userId = asUserId("user-123");
   const rtaCategoryId = "rta-id";
 
   beforeEach(() => {
@@ -68,9 +72,9 @@ describe("ensureMonthsContinuity", () => {
     ]);
 
     (categoryRepository.getAllCategoryIds as jest.Mock).mockResolvedValue([
-      { id: rtaCategoryId },
-      { id: "cat-2" },
-      { id: "cat-3" },
+      rtaCategoryId,
+      "cat-2",
+      "cat-3",
     ]);
 
     (categoryRepository.getRtaCategoryId as jest.Mock).mockResolvedValue(
@@ -128,7 +132,7 @@ describe("ensureMonthsContinuity", () => {
     ]);
 
     (categoryRepository.getAllCategoryIds as jest.Mock).mockResolvedValue([
-      { id: "cat-1" },
+      "cat-1",
     ]);
     (categoryRepository.getRtaCategoryId as jest.Mock).mockResolvedValue(
       rtaCategoryId
@@ -146,6 +150,12 @@ describe("ensureMonthsContinuity", () => {
       new Date("2025-06-01T00:00:00.000Z"),
       new Date("2025-07-01T00:00:00.000Z"),
       new Date("2025-08-01T00:00:00.000Z"),
+    ]);
+
+    expect(createdMonths.map((month) => month.categoryId)).toEqual([
+      "cat-1",
+      "cat-1",
+      "cat-1",
     ]);
   });
 });

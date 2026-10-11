@@ -1,141 +1,160 @@
+import { asAccountId } from "../../../../../account/account.types";
+import {
+  asTransactionId,
+  DomainTransferTransaction,
+} from "../../../../transaction.types";
 import { filterInvalidBulkEditTransfers } from "./filterInvalidBulkEditTransfers";
-import { TransferTransactionEntity } from "../../../../../../transaction.types";
 
 describe("filterInvalidBulkEditTransfers", () => {
-  const mkTransfer = (overrides: Partial<TransferTransactionEntity> = {}) =>
+  const mkTransfer = (
+    overrides: Partial<DomainTransferTransaction> = {}
+  ): DomainTransferTransaction =>
     ({
-      id: "t1",
-      transferTransactionId: "t2",
-      transferAccountId: "acc-counterpart",
-      ...(overrides as any),
-    }) as TransferTransactionEntity;
+      id: asTransactionId("t1"),
+      transferTransactionId: asTransactionId("t2"),
+      transferAccountId: asAccountId("acc-counterpart"),
+      ...overrides,
+    }) as DomainTransferTransaction;
 
-  it("Should return original transactionIds when there are no selected transfer transactions", () => {
-    const transactionIds = ["n1", "n2", "n3"];
-    const result = filterInvalidBulkEditTransfers(transactionIds, [], "acc-x");
-
-    expect(result).toEqual(transactionIds);
-  });
-
-  it("Should not exclude a selected transfer when only one side is selected and target account is not the counterpart", () => {
-    const transactionIds = ["t1", "n1"];
-    const selectedTransfers = [
-      mkTransfer({
-        id: "t1",
-        transferTransactionId: "t2",
-        transferAccountId: "acc-counterpart",
-      }),
+  it("returns the original transaction IDs when no transfer transactions are selected", () => {
+    const transactionIds = [
+      asTransactionId("n1"),
+      asTransactionId("n2"),
+      asTransactionId("n3"),
     ];
 
     const result = filterInvalidBulkEditTransfers(
       transactionIds,
-      selectedTransfers,
-      "acc-target"
+      [],
+      asAccountId("acc-x")
     );
 
     expect(result).toEqual(transactionIds);
   });
 
-  it("Should exclude a transfer if the user selected both sides of the same transfer pair", () => {
-    const transactionIds = ["t1", "t2", "n1"];
+  it("does not exclude a selected transfer when only one side is selected and the target account is not the counterpart", () => {
+    const transactionIds = [asTransactionId("t1"), asTransactionId("n1")];
+
+    const selectedTransfers = [mkTransfer()];
+
+    const result = filterInvalidBulkEditTransfers(
+      transactionIds,
+      selectedTransfers,
+      asAccountId("acc-target")
+    );
+
+    expect(result).toEqual(transactionIds);
+  });
+
+  it("excludes a transfer when both sides of the same transfer pair are selected", () => {
+    const transactionIds = [
+      asTransactionId("t1"),
+      asTransactionId("t2"),
+      asTransactionId("n1"),
+    ];
+
+    const selectedTransfers = [mkTransfer()];
+
+    const result = filterInvalidBulkEditTransfers(
+      transactionIds,
+      selectedTransfers,
+      asAccountId("acc-target")
+    );
+
+    expect(result).toEqual([asTransactionId("t2"), asTransactionId("n1")]);
+  });
+
+  it("excludes a transfer when the target account is its counterpart account", () => {
+    const transactionIds = [asTransactionId("t1"), asTransactionId("n1")];
+
+    const selectedTransfers = [mkTransfer()];
+
+    const result = filterInvalidBulkEditTransfers(
+      transactionIds,
+      selectedTransfers,
+      asAccountId("acc-counterpart")
+    );
+
+    expect(result).toEqual([asTransactionId("n1")]);
+  });
+
+  it("excludes transfers when either invariant is violated", () => {
+    const transactionIds = [
+      asTransactionId("t1"),
+      asTransactionId("t2"),
+      asTransactionId("t3"),
+      asTransactionId("n1"),
+    ];
+
+    const selectedTransfers: DomainTransferTransaction[] = [
+      mkTransfer({
+        id: asTransactionId("t1"),
+        transferTransactionId: asTransactionId("t2"),
+        transferAccountId: asAccountId("acc-a"),
+      }),
+      mkTransfer({
+        id: asTransactionId("t3"),
+        transferTransactionId: asTransactionId("t4"),
+        transferAccountId: asAccountId("acc-target"),
+      }),
+    ];
+
+    const result = filterInvalidBulkEditTransfers(
+      transactionIds,
+      selectedTransfers,
+      asAccountId("acc-target")
+    );
+
+    expect(result).toEqual([asTransactionId("t2"), asTransactionId("n1")]);
+  });
+
+  it("does not exclude IDs for selected transfers that are not invalid", () => {
+    const transactionIds = [asTransactionId("n1"), asTransactionId("t1")];
+
     const selectedTransfers = [
       mkTransfer({
-        id: "t1",
-        transferTransactionId: "t2",
-        transferAccountId: "acc-counterpart",
+        id: asTransactionId("t999"),
+        transferTransactionId: asTransactionId("t1000"),
+        transferAccountId: asAccountId("acc-target"),
+      }),
+      mkTransfer({
+        id: asTransactionId("t1"),
+        transferTransactionId: asTransactionId("t2"),
+        transferAccountId: asAccountId("acc-a"),
       }),
     ];
 
     const result = filterInvalidBulkEditTransfers(
       transactionIds,
       selectedTransfers,
-      "acc-target"
+      asAccountId("acc-target")
     );
 
-    expect(result).toEqual(["t2", "n1"]);
+    expect(result).toEqual(transactionIds);
   });
 
-  it("Should exclude a transfer if the target account is the transfer's counterpart account", () => {
-    const transactionIds = ["t1", "n1"];
-    const selectedTransfers = [
-      mkTransfer({
-        id: "t1",
-        transferTransactionId: "t2",
-        transferAccountId: "acc-target",
-      }),
+  it("does not mutate the input transaction IDs array", () => {
+    const transactionIds = [
+      asTransactionId("t1"),
+      asTransactionId("t2"),
+      asTransactionId("n1"),
     ];
 
-    const result = filterInvalidBulkEditTransfers(
-      transactionIds,
-      selectedTransfers,
-      "acc-target"
-    );
-
-    expect(result).toEqual(["n1"]);
-  });
-
-  it("Should excludes a transfer when either invariant is violated (both selected OR moving to counterpart)", () => {
-    const transactionIds = ["t1", "t2", "t3", "n1"];
-
-    const selectedTransfers: TransferTransactionEntity[] = [
-      mkTransfer({
-        id: "t1",
-        transferTransactionId: "t2",
-        transferAccountId: "acc-a",
-      }),
-      mkTransfer({
-        id: "t3",
-        transferTransactionId: "t4",
-        transferAccountId: "acc-target",
-      }),
-    ];
-
-    const result = filterInvalidBulkEditTransfers(
-      transactionIds,
-      selectedTransfers,
-      "acc-target"
-    );
-    expect(result).toEqual(["t2", "n1"]);
-  });
-
-  it("Should only excludes ids that are actually present in transactionIds (ignores selectedTransfers not in the selection)", () => {
-    const transactionIds = ["n1", "t1"];
-
-    const selectedTransfers = [
-      mkTransfer({
-        id: "t999",
-        transferTransactionId: "t1000",
-        transferAccountId: "acc-target",
-      }),
-      mkTransfer({
-        id: "t1",
-        transferTransactionId: "t2",
-        transferAccountId: "acc-a",
-      }),
-    ];
-
-    const result = filterInvalidBulkEditTransfers(
-      transactionIds,
-      selectedTransfers,
-      "acc-target"
-    );
-
-    expect(result).toEqual(["n1", "t1"]);
-  });
-
-  it("Should not not mutate the input transactionIds array", () => {
-    const transactionIds = ["t1", "t2", "n1"];
     const original = [...transactionIds];
 
     const selectedTransfers = [
       mkTransfer({
-        id: "t1",
-        transferTransactionId: "t2",
-        transferAccountId: "acc-a",
+        id: asTransactionId("t1"),
+        transferTransactionId: asTransactionId("t2"),
+        transferAccountId: asAccountId("acc-a"),
       }),
     ];
 
-    filterInvalidBulkEditTransfers(transactionIds, selectedTransfers, "acc-x");
+    filterInvalidBulkEditTransfers(
+      transactionIds,
+      selectedTransfers,
+      asAccountId("acc-x")
+    );
 
     expect(transactionIds).toEqual(original);
   });

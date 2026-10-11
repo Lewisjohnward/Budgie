@@ -1,17 +1,12 @@
-import request from "supertest";
 import jwt from "jsonwebtoken";
-import {
-  DecodeToken,
-  GenerateAccessToken,
-  GenerateRefreshToken,
-  ValidateSignature,
-} from "./PasswordUtility";
+import { generateAccessToken, generateRefreshToken } from "./tokens";
+import { DecodeToken } from "../../../../../src/shared/utils/auth/decodeToken";
 
 describe("Password utility", () => {
   describe("Generate refresh/access token", () => {
     it("Signing/Decoding access token works", () => {
       const claims = { _id: "id", email: "test@email.com" };
-      const accessToken = GenerateAccessToken(claims);
+      const accessToken = generateAccessToken(claims);
       const decoded = DecodeToken(accessToken);
       expect(decoded).toEqual({
         ...claims,
@@ -22,7 +17,7 @@ describe("Password utility", () => {
 
     it("Signing/Decoding access token with wrong key throws error", () => {
       const claims = { _id: "id", email: "test@email.com" };
-      const accessToken = GenerateAccessToken(claims);
+      const accessToken = generateAccessToken(claims);
 
       try {
         jwt.verify(accessToken, "WRONG_KEY");
@@ -33,7 +28,7 @@ describe("Password utility", () => {
 
     it("Signing/Decoding refresh token works", () => {
       const claims = { _id: "id", email: "test@email.com" };
-      const accessToken = GenerateRefreshToken(claims);
+      const accessToken = generateRefreshToken(claims);
       const decoded = DecodeToken(accessToken);
       expect(decoded).toEqual({
         ...claims,
@@ -44,7 +39,7 @@ describe("Password utility", () => {
 
     it("Signing/Decoding refresh token with wrong key throws error", () => {
       const claims = { _id: "id", email: "test@email.com" };
-      const accessToken = GenerateRefreshToken(claims);
+      const accessToken = generateRefreshToken(claims);
 
       try {
         jwt.verify(accessToken, "WRONG_KEY");
