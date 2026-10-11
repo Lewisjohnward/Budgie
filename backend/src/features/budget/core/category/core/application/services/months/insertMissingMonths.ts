@@ -5,6 +5,7 @@ import { ZERO } from "../../../../../../../../shared/constants/zero";
 import { getMonthRange } from "../../../utils/getMonthRange";
 import { type UserId } from "../../../../../../../user/auth/auth.types";
 import { asCategoryId, asMonthId, DomainMonth } from "../../../category.types";
+import { getStartOfMonth } from "../../../../../../utils/getStartOfMonth";
 
 const MAX_MONTHS = 12;
 
@@ -34,12 +35,13 @@ export const insertMissingMonths = async (
     userId
   );
 
-  const startDate =
-    earliestMonth < transactionDate ? earliestMonth : transactionDate;
-  const endDate =
-    earliestMonth > transactionDate ? earliestMonth : transactionDate;
+  const transactionMonth = getStartOfMonth(transactionDate);
 
-  const missingMonths = getMonthRange(startDate, endDate, {
+  if (transactionMonth >= earliestMonth) {
+    return [];
+  }
+
+  const missingMonths = getMonthRange(transactionMonth, earliestMonth, {
     startInclusive: true,
     endInclusive: false,
   });
