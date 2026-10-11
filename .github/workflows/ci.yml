@@ -91,7 +91,10 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate --schema=src/shared/prisma/schema.prisma
 
-      - name: Run tests
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Run integration tests
         run: npm run test:integration
 
       - name: Build
