@@ -1,5 +1,3 @@
-import { validateTransaction } from "./validation.domain";
-
 describe("validateTransaction", () => {
   beforeEach(() => {
     jest.useFakeTimers();
@@ -25,7 +23,7 @@ describe("validateTransaction", () => {
     jest.setSystemTime(new Date("2025-01-10T12:00:00.000Z"));
     const transaction = { date: "2025-01-11T12:00:00.000Z" };
     expect(() => validateTransaction(transaction)).toThrow(
-      "transaction is in the future, rejected",
+      "transaction is in the future, rejected"
     );
   });
 
