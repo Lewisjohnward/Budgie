@@ -6,6 +6,7 @@ import { toDomainTransferTransaction } from "./mappers/toDomainTransferTransacti
 import { toCreateTransactionDto } from "./mappers/toCreateTransactionDto";
 import { toTransactionDto } from "./mappers/toTransactionDto";
 import { toTransactionNormalDto } from "./mappers/toTransactionNormalDto";
+import { toTransactionTransferDto } from "./mappers/toTransactionTransferDto";
 
 export const transactionMapper = {
   toDomainTransaction,
@@ -16,6 +17,7 @@ export const transactionMapper = {
 
   toTransactionDto,
   toTransactionNormalDto,
+  toTransactionTransferDto,
 
   toCreateTransactionDto,
 };

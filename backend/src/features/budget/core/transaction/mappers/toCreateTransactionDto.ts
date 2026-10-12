@@ -16,18 +16,27 @@ export const toCreateTransactionDto = (
 ): CreateTransactionDto => {
   const { created, updated } = result;
 
-  const transactions = created.transactions;
+  const mapCreatedTransactions = (
+    transactions: CreateTransactionResult["createdTransactions"]
+  ): CreateTransactionDto["created"]["transactions"] => {
+    switch (transactions.type) {
+      case "normal":
+        return {
+          type: "normal",
+          transaction: transactionMapper.toTransactionNormalDto(
+            transactions.transaction
+          ),
+        };
 
-  const mappedResult =
-    transactions.length === 1
-      ? {
-          type: "normal" as const,
-          transaction: transactionMapper.toTransactionDto(transactions[0]),
-        }
-      : {
-          type: "transfer" as const,
-          source: transactionMapper.toTransactionDto(transactions[0]),
-          destination: transactionMapper.toTransactionDto(transactions[1]),
+      case "transfer":
+        return {
+          type: "transfer",
+          source: transactionMapper.toTransactionTransferDto(
+            transactions.source
+          ),
+          destination: transactionMapper.toTransactionTransferDto(
+            transactions.destination
+          ),
         };
 
   return {
