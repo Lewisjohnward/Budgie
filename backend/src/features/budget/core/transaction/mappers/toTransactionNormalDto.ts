@@ -4,7 +4,8 @@ import {
 } from "../transaction.types";
 
 /**
- * Converts a domain transaction into a normal DTO representation
+ * Converts a domain normal transaction
+ * into a normal DTO representation
  * suitable for API responses.
  */
 export const toTransactionNormalDto = (
