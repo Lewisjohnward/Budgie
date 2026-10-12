@@ -2,15 +2,20 @@ import { useEffect, useRef, useState } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import {
-  useAddTransactionMutation,
-  useEditTransactionMutation,
-} from "@/core/api/budgetApiSlice";
 import { useSelectCategory } from "../components/transactionFormRow/selectCategory/useSelectCategory";
 import { useSelectPayee } from "../components/transactionFormRow/selectPayee/useSelectPayee";
 import { Category } from "@/core/types/NormalizedData";
 import { useSelectDate } from "../components/transactionFormRow/selectDate/useSelectDate";
 import { normaliseDate } from "../utils/normaliseDate";
+import {
+  useCreateTransactionMutation,
+  useEditTransactionMutation,
+} from "@/core/api/budget/transaction/transactionApiSlice";
+import {
+  asAccountId,
+  asCategoryId,
+  asPayeeId,
+} from "../../allocation/types/types";
 
 const TransactionFormSchema = z.object({
   accountId: z.string().uuid(),
@@ -91,7 +96,7 @@ export const useTransactionFormRow = (accountId: string) => {
   const { setValue } = transactionForm;
   const { isDirty } = transactionForm.formState;
 
-  const [addTransaction] = useAddTransactionMutation();
+  const [createTransaction] = useCreateTransactionMutation();
   const [editTransaction] = useEditTransactionMutation();
   const selectDate = useSelectDate();
   const selectPayee = useSelectPayee();
@@ -303,25 +308,20 @@ export const useTransactionFormRow = (accountId: string) => {
           date: normaliseDate(formValues.date).toISOString(),
           inflow: formValues.inflow || "0",
           outflow: formValues.outflow || "0",
-          cleared: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
         },
       ]);
     } else {
       console.log(transactionForm.getValues());
-      addTransaction({
-        id: addTransactionState.transactionId,
-        accountId: formValues.accountId,
-        categoryId: formValues.categoryId || undefined,
-        payeeId: formValues.payeeId ? formValues.payeeId : undefined,
+      createTransaction({
+        accountId: asAccountId(formValues.accountId),
+        categoryId: formValues.categoryId
+          ? asCategoryId(formValues.categoryId)
+          : undefined,
+        payeeId: formValues.payeeId ? asPayeeId(formValues.payeeId) : undefined,
         memo: formValues.memo,
         date: normaliseDate(formValues.date).toISOString(),
         inflow: formValues.inflow || undefined,
         outflow: formValues.outflow || undefined,
-        cleared: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
       });
     }
     transactionForm.reset();
@@ -331,23 +331,19 @@ export const useTransactionFormRow = (accountId: string) => {
   // handle and add another transaction
   const handleSaveAndAddAnotherTransaction = () => {
     transactionForm.handleSubmit((data: TransactionFormData) => {
-      addTransaction({
-        id: addTransactionState.transactionId,
-        accountId: data.accountId,
-        categoryId: data.categoryId || "",
-        payeeId: data.payeeId ? data.payeeId : undefined,
-        memo: data.memo || null,
-        date: data.date.toISOString(),
-        inflow: data.inflow || "0",
-        outflow: data.outflow || "0",
-        cleared: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+      createTransaction({
+        accountId: asAccountId(data.accountId),
+        categoryId: data.categoryId ? asCategoryId(data.categoryId) : undefined,
+        payeeId: data.payeeId ? asPayeeId(data.payeeId) : undefined,
+        memo: data.memo || undefined,
+        date: normaliseDate(data.date).toISOString(),
+        inflow: data.inflow || undefined,
+        outflow: data.outflow || undefined,
       });
     })();
+
     transactionForm.reset();
   };
-
   const handleFormRowClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
@@ -390,7 +386,7 @@ export const useTransactionFormRow = (accountId: string) => {
       categoryName: transaction.unassigned
         ? ""
         : `${transaction.categoryGroup.name}: ${transaction.category.name}` ||
-          "",
+        "",
       categoryId: transaction.categoryId || "",
       memo: transaction.memo || "",
       outflow:
