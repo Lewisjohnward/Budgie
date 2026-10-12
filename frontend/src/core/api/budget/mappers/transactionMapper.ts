@@ -1,4 +1,5 @@
 import { ApiTransaction } from "@/core/types/exported-types";
+import { TransactionBranded } from "@/core/types/NormalizedData";
 import {
   asAccountId,
   asCategoryId,
@@ -6,7 +7,7 @@ import {
   asTransactionId,
 } from "@/pages/budget/allocation/types/types";
 
-export function mapTransaction(t: ApiTransaction) {
+export function mapTransaction(t: ApiTransaction): TransactionBranded {
   if (t.type === "normal") {
     return {
       type: "normal" as const,
