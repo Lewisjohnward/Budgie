@@ -1,3 +1,4 @@
+import { toMonthKey } from "../../../../utils/toMonthKey";
 import { type DomainMonth, type MonthDto } from "../category.types";
 
 /**
@@ -10,7 +11,7 @@ export const toMonthDto = (month: DomainMonth): MonthDto => {
   return {
     id: month.id,
     categoryId: month.categoryId,
-    month: month.month.toISOString().slice(0, 7),
+    month: toMonthKey(month.month),
     assigned: month.assigned.toNumber(),
     available: month.available.toNumber(),
     activity: month.activity.toNumber(),
