@@ -1,8 +1,4 @@
 import { useEffect, useRef } from "react";
-import {
-  useDeleteTransactionMutation,
-  useDuplicateTransactionsMutation,
-} from "@/core/api/budgetApiSlice";
 import { useTransactionTable } from "./useTransactionTable";
 import {
   TransactionFormMode,
@@ -10,6 +6,10 @@ import {
 } from "./useTransactionFormRow";
 import { useAccountData } from "./useAccountData/useAccountData";
 import { AccountId } from "../../allocation/types/types";
+import {
+  useDeleteTransactionMutation,
+  useDuplicateTransactionsMutation,
+} from "@/core/api/budget/transaction/transactionApiSlice";
 
 export const useAccount = (accountId: AccountId) => {
   const { currentAccount, accountsAvailable } = useAccountData({ accountId });

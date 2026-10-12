@@ -1,10 +1,8 @@
 import { AddAccountPayload } from "../types/AccountSchema";
 import { NormalizedData } from "../types/NormalizedData";
-import { DuplicateTransactions } from "../types/TransactionSchema";
 import { apiSlice } from "./apiSlice";
 import { AllocationData } from "../types/Allocation";
 
-// TODO:(lewis 2026-04-17 11:14) this file can be split up like user slice and auth slice
 export const budgetApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAccounts: builder.query<NormalizedData, void>({
@@ -30,39 +28,6 @@ export const budgetApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ["Accounts", "Categories"],
     }),
-    // TODO: TYPING
-    addTransaction: builder.mutation<any, any>({
-      query: (transaction) => ({
-        url: "/budget/transaction",
-        method: "POST",
-        body: transaction,
-      }),
-      invalidatesTags: ["Accounts", "Categories"],
-    }),
-    duplicateTransactions: builder.mutation<void, DuplicateTransactions>({
-      query: (transactions) => ({
-        url: "/budget/transaction/duplicate",
-        method: "POST",
-        body: transactions,
-      }),
-      invalidatesTags: ["Accounts", "Categories"],
-    }),
-    deleteTransaction: builder.mutation<any, any>({
-      query: (transaction) => ({
-        url: "/budget/transaction",
-        method: "DELETE",
-        body: transaction,
-      }),
-      invalidatesTags: ["Accounts", "Categories"],
-    }),
-    editTransaction: builder.mutation<any, any>({
-      query: (transaction) => ({
-        url: "/budget/transaction",
-        method: "PATCH",
-        body: transaction,
-      }),
-      invalidatesTags: ["Accounts", "Categories"],
-    }),
     getCategories: builder.query<AllocationData, void>({
       query: () => ({
         url: "/budget/categories",
@@ -77,9 +42,5 @@ export const {
   useGetAccountsQuery,
   useAddAccountMutation,
   useDeleteAccountMutation,
-  useAddTransactionMutation,
-  useDeleteTransactionMutation,
-  useEditTransactionMutation,
   useGetCategoriesQuery,
-  useDuplicateTransactionsMutation,
 } = budgetApiSlice;
