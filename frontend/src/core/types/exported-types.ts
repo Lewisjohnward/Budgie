@@ -53,6 +53,10 @@ export type DeleteCategoryGroupResponse =
 export type CategoryGroupPositionPatch =
   components["schemas"]["CategoryGroupPositionPatch"];
 
+// Transaction responses
+export type CreateTransactionResponse =
+  components["schemas"]["CreateTransactionResponse"];
+
 // Memo
 export type EditMemoResponse = components["schemas"]["EditMemoResponse"];
 export type EditMemoRequest =

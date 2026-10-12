@@ -367,6 +367,49 @@ export interface components {
              */
             inheritingCategoryId?: string;
         };
+        /** @description Request to create a new transaction. Supports both normal transactions and transfers between accounts. */
+        CreateTransactionRequest: {
+            /**
+             * Format: uuid
+             * @description ID of the account the transaction belongs to.
+             */
+            accountId: string;
+            /**
+             * Format: date-time
+             * @description Transaction date as an ISO 8601 date-time with a timezone offset. Must not be in the future and must be within the last 12 months.
+             * @example 2026-10-10T12:00:00Z
+             */
+            date?: string;
+            /**
+             * Format: uuid
+             * @description ID of the other account involved in a transfer. When provided, payeeId, payeeName and categoryId must not be provided.
+             */
+            transferAccountId?: string;
+            /**
+             * Format: uuid
+             * @description ID of the existing payee for the transaction. Must not be provided alongside payeeName or for an account transfer.
+             */
+            payeeId?: string;
+            /** @description Name of a payee to create or resolve for the transaction. Must not be provided alongside payeeId or for an account transfer. Leading and trailing whitespace is trimmed. */
+            payeeName?: string;
+            /**
+             * Format: uuid
+             * @description ID of the category to assign to the transaction. Must not be provided for an account transfer.
+             */
+            categoryId?: string;
+            /** @description Memo associated with the transaction. Leading and trailing whitespace is trimmed. */
+            memo?: string;
+            /**
+             * @description Transaction amount entering the account, represented as a decimal string. Must be provided instead of outflow and must not be zero or blank. Negative amounts are supported.
+             * @example 125.50
+             */
+            inflow?: string;
+            /**
+             * @description Transaction amount leaving the account, represented as a decimal string. Must be provided instead of inflow and must not be zero or blank. Negative amounts are supported.
+             * @example -25.99
+             */
+            outflow?: string;
+        } & (unknown | unknown);
         /** @description Result of creating a user category, including the newly created category and its associated months. */
         CreateCategoryResponse: {
             created: {
@@ -476,6 +519,38 @@ export interface components {
             /** Format: uuid */
             id: string;
             position: number;
+        };
+        /** @description Result of creating transactions, including created entities and any related entity mutations. */
+        CreateTransactionResponse: {
+            created: {
+                transactions: {
+                    /** @enum {string} */
+                    type: "normal";
+                    transaction: components["schemas"]["Transaction"];
+                } | {
+                    /** @enum {string} */
+                    type: "transfer";
+                    source: components["schemas"]["Transaction"];
+                    destination: components["schemas"]["Transaction"];
+                };
+                payee?: components["schemas"]["Payee"];
+                /** @description Newly created memos. */
+                memos: components["schemas"]["Memo"][];
+                /** @description Newly created months keyed by month id. */
+                months: {
+                    [key: string]: components["schemas"]["Month"];
+                };
+            };
+            updated: {
+                /** @description Updated accounts keyed by account id. */
+                accounts: {
+                    [key: string]: components["schemas"]["Account"];
+                };
+                /** @description Updated months keyed by month id. */
+                months: {
+                    [key: string]: components["schemas"]["Month"];
+                };
+            };
         };
         /** @description Response returned after updating a memo. Contains the updated memo. */
         EditMemoResponse: components["schemas"]["Memo"];
