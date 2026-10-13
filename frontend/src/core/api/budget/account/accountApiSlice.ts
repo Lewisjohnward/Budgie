@@ -1,8 +1,8 @@
-import { NormalizedData } from "@/core/types/NormalizedData";
-import { apiSlice } from "../apiSlice";
 import { AddAccountPayload } from "@/core/types/AccountSchema";
+import { apiSlice } from "../../apiSlice";
+import { NormalizedData } from "@/core/types/NormalizedData";
 
-export const accountsApiSlice = apiSlice.injectEndpoints({
+export const accountApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getAccounts: builder.query<NormalizedData, void>({
       query: () => ({
@@ -43,4 +43,4 @@ export const {
   useAddAccountMutation,
   useDeleteAccountMutation,
   useEditAccountMutation,
-} = accountsApiSlice;
+} = accountApiSlice;

@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/core/components/uiLibrary/input";
 import { darkBlueBg, darkBlueText } from "@/core/theme/colors";
 import { Button } from "@/core/components/uiLibrary/button";
-import { useAddAccountMutation } from "@/core/api/budgetApiSlice";
+import { useAddAccountMutation } from "@/core/api/budget/account/accountApiSlice";
 import { ArrowRight, ChevronLeft, CreditCard } from "lucide-react";
 import clsx from "clsx";
 import { BankIcon, TickIcon } from "@/core/icons/icons";

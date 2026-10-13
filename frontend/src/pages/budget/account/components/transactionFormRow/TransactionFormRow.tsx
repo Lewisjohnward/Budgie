@@ -1,4 +1,3 @@
-import { useGetAccountsQuery } from "@/core/api/budgetApiSlice";
 import { Input } from "@/core/components/uiLibrary/input";
 import { FormProvider, useFormContext } from "react-hook-form";
 import { TableCell, TableRow } from "@/core/components/uiLibrary/table";
@@ -16,6 +15,7 @@ import { SelectPayee } from "./selectPayee";
 import { SelectCategory } from "./selectCategory";
 import { Button } from "@/core/components/uiLibrary/button";
 import { SelectDate } from "./selectDate/SelectDate";
+import { useGetAccountsQuery } from "@/core/api/budget/account/accountApiSlice";
 
 type TransactionFormRowProps = {
   transactionForm: TransactionFormManager;

@@ -1,9 +1,7 @@
 import Navbar from "./navBar/NavBar";
 import { Outlet } from "react-router-dom";
-import {
-  useGetAccountsQuery,
-  useGetCategoriesQuery,
-} from "@/core/api/budgetApiSlice";
+import { useGetCategoriesQuery } from "@/core/api/budgetApiSlice";
+import { useGetAccountsQuery } from "@/core/api/budget/account/accountApiSlice";
 import { ManagePayees } from "@/core/components/ManagePayees/ManagePayees";
 import { EditAccount } from "@/core/components/EditAccount/EditAccount";
 import { useGetBudgetSnapshotQuery } from "@/core/api/budget/budgetSnapshotSlice";
