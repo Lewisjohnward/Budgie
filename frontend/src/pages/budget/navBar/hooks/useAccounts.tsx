@@ -1,4 +1,4 @@
-import { useGetAccountsQuery } from "@/core/api/budgetApiSlice";
+import { useGetAccountsQuery } from "@/core/api/budget/account/accountApiSlice";
 import { useState } from "react";
 
 export const useAccounts = () => {

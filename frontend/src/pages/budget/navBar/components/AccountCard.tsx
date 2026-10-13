@@ -10,7 +10,7 @@ import { Account } from "@/core/types/NormalizedData";
 import { Balance } from "./Balance";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
 import { toggleEditAccount } from "@/core/slices/dialogSlice";
-import { useGetAccountsQuery } from "@/core/api/budgetApiSlice";
+import { useGetAccountsQuery } from "@/core/api/budget/account/accountApiSlice";
 import { useMemo } from "react";
 
 export function useHasUnallocatedTransactions(account: Account) {

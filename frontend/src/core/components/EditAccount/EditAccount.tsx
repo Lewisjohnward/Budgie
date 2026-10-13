@@ -26,8 +26,8 @@ import {
 import { Button } from "@/core/components/uiLibrary/button";
 import { Textarea } from "@/core/components/uiLibrary/textarea";
 import { Input } from "../uiLibrary/input";
-import { useDeleteAccountMutation } from "@/core/api/budgetApiSlice";
 import { useNavigate } from "react-router-dom";
+import { useDeleteAccountMutation } from "@/core/api/budget/account/accountApiSlice";
 
 export function EditAccount() {
   const dispatch = useAppDispatch();
