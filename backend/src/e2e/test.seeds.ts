@@ -1,5 +1,6 @@
 import { seedDemo } from "../demo/application/services/seed";
 import { seedLogin } from "./seeds/auth/login";
+import { seedCreateAccount } from "./seeds/budget/account/management/create/seedCreateAccount";
 import { seedDeleteCategoryBase } from "./seeds/budget/allocation/category/delete/seedDeleteCategoryBase";
 import { seedDeleteCategoryWithAssigned } from "./seeds/budget/allocation/category/delete/seedDeleteCategoryWithAssigned";
 import { seedDeleteCategoryWithTransaction } from "./seeds/budget/allocation/category/delete/seedDeleteCategoryWithTransaction";
@@ -29,5 +30,8 @@ export const seeds = {
   "reorder-category-within-group": seedReorderCategoryWithinGroup,
   "reorder-category": seedReorderCategory,
   "reorder-category-groups": seedReorderCategoryGroups,
+
+  "create-account": seedCreateAccount,
+
   demo: seedDemo,
 } as const;

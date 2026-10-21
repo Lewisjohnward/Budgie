@@ -46,6 +46,7 @@ export function AccountTable({
       {/* > */}
       <Table
         onClick={transactionForm.state.open ? table.onInteraction : undefined}
+        aria-label="Transactions"
       >
         <TableHeader>
           {table.table.getHeaderGroups().map((headerGroup) => (
