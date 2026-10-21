@@ -51,6 +51,10 @@ export const createAccount = async (
     .click();
 };
 
+export const openAddTransactionForm = async (page: Page) => {
+  await page.getByRole("button", { name: "Add Transaction" }).click();
+};
+
 export const formatCurrency = (amount: number): string => {
   const formattedAmount = Math.abs(amount).toFixed(2);
   const sign = amount < 0 ? "-" : "";

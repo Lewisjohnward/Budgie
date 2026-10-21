@@ -12,6 +12,40 @@ export const expectTransactionCategoryVisible = async (
   await expect(row).toBeVisible();
 };
 
+type CreateTransactionInput = {
+  date: Date;
+  memo: string;
+} & ({ outflow: number; inflow?: never } | { inflow: number; outflow?: never });
+
+export const createTransaction = async (
+  page: Page,
+  input: CreateTransactionInput
+) => {
+  await page.getByRole("button", { name: "Add Transaction" }).click();
+
+  await page.getByRole("textbox", { name: "Date" }).click();
+
+  await page
+    .getByRole("gridcell", { name: String(input.date.getDate()) })
+    .click();
+
+  await page.getByRole("textbox", { name: "Memo" }).fill(input.memo);
+
+  if (input.outflow !== undefined) {
+    await page
+      .getByRole("textbox", { name: "Outflow" })
+      .fill(input.outflow.toFixed(2));
+  }
+
+  if (input.inflow !== undefined) {
+    await page
+      .getByRole("textbox", { name: "Inflow" })
+      .fill(input.inflow.toFixed(2));
+  }
+
+  await page.getByRole("button", { name: /submit/i }).click();
+};
+
 const formatCurrency = (amount: number): string =>
   new Intl.NumberFormat("en-GB", {
     style: "currency",
