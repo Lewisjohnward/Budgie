@@ -64,7 +64,12 @@ function AccountContent({ accountId }: AccountContentProps) {
 
   return (
     <AccountLayout
-      alert={<AccountAlert count={uncategorisedTransactions.count} />}
+      alert={
+        <AccountAlert
+          onClick={() => {}}
+          count={uncategorisedTransactions.count}
+        />
+      }
       header={
         <AccountHeader
           name={account.name}
