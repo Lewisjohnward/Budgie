@@ -39,7 +39,7 @@ function AccountContent({ accountId }: AccountContentProps) {
     accountsAvailable,
     table,
     displayTransactionFormRow,
-    transactionForm,
+    transactionEditor,
     uncategorisedTransactions,
     handleDeleteSelectedTransactions,
     handleDuplicateTransactions,
@@ -50,7 +50,7 @@ function AccountContent({ accountId }: AccountContentProps) {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         table.cancelSelection();
-        transactionForm.close();
+        transactionEditor.close();
       }
       if (e.key === "N" && e.shiftKey) {
         // TODO:(lewis 2025-12-03 15:00) dont like this, should it be a method on transactionForm?
@@ -91,7 +91,7 @@ function AccountContent({ accountId }: AccountContentProps) {
       table={
         <AccountTable
           table={table}
-          transactionForm={transactionForm}
+          transactionEditor={transactionEditor}
           onDeleteSelected={handleDeleteSelectedTransactions}
           onDuplicateSelected={handleDuplicateTransactions}
         />

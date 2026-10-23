@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useTransactionTable } from "./useTransactionTable";
 import {
   TransactionFormMode,
-  useTransactionFormRow,
+  useTransactionEditor,
 } from "./useTransactionFormRow";
 import { useAccountData } from "./useAccountData/useAccountData";
 import { AccountId } from "../../allocation/types/types";
@@ -17,15 +17,15 @@ export const useAccount = (accountId: AccountId) => {
     currentAccount.transactions,
     currentAccount.id
   );
-  const transactionFormRow = useTransactionFormRow(currentAccount.id);
+  const transactionEditor = useTransactionEditor(currentAccount.id);
 
   const handleRowSelection = (
     e: React.MouseEvent<HTMLTableRowElement, MouseEvent>,
     row: any
   ) => {
-    if (transactionFormRow.isDirty) return;
-    if (transactionFormRow.addTransactionState.open) {
-      transactionFormRow.closeAddTransactionForm();
+    if (transactionEditor.isDirty) return;
+    if (transactionEditor.addTransactionState.open) {
+      transactionEditor.closeAddTransactionForm();
     }
 
     if (e.ctrlKey) {
@@ -40,7 +40,7 @@ export const useAccount = (accountId: AccountId) => {
 
     if (row.getIsSelected()) {
       transactionTable.table.resetRowSelection();
-      transactionFormRow.loadTransactionForEdit(row.original, row.id);
+      transactionEditor.loadTransactionForEdit(row.original, row.id);
       return;
     }
     transactionTable.onRowSelection(e, row);
@@ -49,7 +49,7 @@ export const useAccount = (accountId: AccountId) => {
   // Reset table selection state and form state when account changes
   useEffect(() => {
     transactionTable.table.resetRowSelection();
-    transactionFormRow.setAddtransactionState({
+    transactionEditor.setAddtransactionState({
       open: false,
       mode: TransactionFormMode.Edit,
       displayAccountField: false,
@@ -61,9 +61,9 @@ export const useAccount = (accountId: AccountId) => {
   }, [currentAccount.id]);
 
   const displayTransactionFormRow = () => {
-    transactionFormRow.resetToNewTransaction();
+    transactionEditor.resetToNewTransaction();
     transactionTable.cancelSelection();
-    transactionFormRow.setAddtransactionState({
+    transactionEditor.setAddtransactionState({
       open: true,
       mode: TransactionFormMode.Add,
       displayAccountField: currentAccount.id === "all",
@@ -84,7 +84,7 @@ export const useAccount = (accountId: AccountId) => {
   }, []);
 
   const handleTableInteraction = () => {
-    transactionFormRow.handleTableInteraction();
+    transactionEditor.handleTableInteraction();
   };
 
   const uncategorisedTxsCount = currentAccount.transactions.filter(
@@ -130,19 +130,19 @@ export const useAccount = (accountId: AccountId) => {
     handleDuplicateTransactions,
 
     displayTransactionFormRow,
-    transactionForm: {
-      form: transactionFormRow.form,
-      state: transactionFormRow.addTransactionState,
-      close: transactionFormRow.closeAddTransactionForm,
-      resetWarning: transactionFormRow.resetWarning,
-      handleSaveTransaction: transactionFormRow.handleSaveTransaction,
+    transactionEditor: {
+      form: transactionEditor.form,
+      state: transactionEditor.addTransactionState,
+      close: transactionEditor.closeAddTransactionForm,
+      resetWarning: transactionEditor.resetWarning,
+      handleSaveTransaction: transactionEditor.handleSaveTransaction,
       handleSaveAndAddAnother:
-        transactionFormRow.handleSaveAndAddAnotherTransaction,
-      onClick: transactionFormRow.handleFormRowClick,
-      isDirty: transactionFormRow.isDirty,
-      selectDate: transactionFormRow.selectDate,
-      selectCategory: transactionFormRow.selectCategory,
-      selectPayee: transactionFormRow.selectPayee,
+        transactionEditor.handleSaveAndAddAnotherTransaction,
+      onClick: transactionEditor.handleFormRowClick,
+      isDirty: transactionEditor.isDirty,
+      selectDate: transactionEditor.selectDate,
+      selectCategory: transactionEditor.selectCategory,
+      selectPayee: transactionEditor.selectPayee,
     },
     uncategorisedTransactions: {
       count: uncategorisedTxsCount,
@@ -154,7 +154,7 @@ export const useAccount = (accountId: AccountId) => {
 };
 
 export type AccountTableState = ReturnType<typeof useAccount>;
-export type TransactionFormManager = AccountTableState["transactionForm"];
+export type TransactionEditor = AccountTableState["transactionEditor"];
 export type TransactionTable = AccountTableState["table"];
 
 // const handleSubmitTransaction = async () => {

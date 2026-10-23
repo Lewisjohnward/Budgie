@@ -16,24 +16,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/core/components/uiLibrary/table";
-import { TransactionFormRow } from "./transactionFormRow/TransactionFormRow";
+import { TransactionEditorRow } from "./transactionFormRow/TransactionEditorRow";
 import { SelectionModal } from "./RowSelectionModal";
 import { columns } from "./columns";
 import clsx from "clsx";
 import { Button } from "@/core/components/uiLibrary/button";
 import { ChevronRight } from "lucide-react";
-import { TransactionFormManager, TransactionTable } from "../hooks/useAccount";
+import { TransactionEditor, TransactionTable } from "../hooks/useAccount";
 
 type AccountTableProps = {
   table: TransactionTable;
-  transactionForm: TransactionFormManager;
+  transactionEditor: TransactionEditor;
   onDeleteSelected: () => void;
   onDuplicateSelected: () => void;
 };
 
 export function AccountTable({
   table,
-  transactionForm,
+  transactionEditor,
   onDeleteSelected,
   onDuplicateSelected,
 }: AccountTableProps) {
@@ -45,7 +45,7 @@ export function AccountTable({
       {/*   className="flex-1 overflow-auto" */}
       {/* > */}
       <Table
-        onClick={transactionForm.state.open ? table.onInteraction : undefined}
+        onClick={transactionEditor.state.open ? table.onInteraction : undefined}
         aria-label="Transactions"
       >
         <TableHeader>
@@ -71,10 +71,10 @@ export function AccountTable({
           ))}
         </TableHeader>
         <TableBody>
-          {transactionForm.state.open &&
-            transactionForm.state.editingTransactionId === undefined && (
+          {transactionEditor.state.open &&
+            transactionEditor.state.editingTransactionId === undefined && (
               // Add transaction
-              <TransactionFormRow transactionForm={transactionForm} />
+              <TransactionEditorRow transactionEditor={transactionEditor} />
             )}
           <TableCell>19/12/2025</TableCell>
           <TableCell className="flex justify-between gap-4 items-center whitespace-nowrap">
@@ -89,17 +89,17 @@ export function AccountTable({
           <TableCell></TableCell>
           {table.table.getRowModel().rows?.length > 0 &&
             table.table.getRowModel().rows.map((row) =>
-              row.id === transactionForm.state.editingTransactionId &&
-              transactionForm.state.open ? (
+              row.id === transactionEditor.state.editingTransactionId &&
+                transactionEditor.state.open ? (
                 // Edit transaction
-                <TransactionFormRow
+                <TransactionEditorRow
                   key={`edit-${row.id}`}
-                  transactionForm={transactionForm}
+                  transactionEditor={transactionEditor}
                 />
-              ) : transactionForm.state.open ? (
+              ) : transactionEditor.state.open ? (
                 <TableRow
                   className={clsx(
-                    transactionForm.isDirty && "hover:bg-transparent"
+                    transactionEditor.isDirty && "hover:bg-transparent"
                   )}
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
