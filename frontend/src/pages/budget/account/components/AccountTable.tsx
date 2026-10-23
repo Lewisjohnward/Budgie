@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/core/components/uiLibrary/table";
-import { TransactionEditorRow } from "./transactionFormRow/TransactionEditorRow";
+import { TransactionEditorRow } from "./transactionEditorRow/TransactionEditorRow";
 import { SelectionModal } from "./RowSelectionModal";
 import { columns } from "./columns";
 import clsx from "clsx";

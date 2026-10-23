@@ -7,7 +7,7 @@ import {
 import { ChevronDown } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { PopoverArrow } from "@radix-ui/react-popover";
-import { SelectDateModel } from "../../../hooks/useTransactionFormRow";
+import { SelectDateModel } from "../../../hooks/useTransactionEditor";
 import { useEffect } from "react";
 
 type SelectDateProps = {

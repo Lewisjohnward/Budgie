@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { useTransactionTable } from "./useTransactionTable";
 import {
-  TransactionFormMode,
+  TransactionEditorMode,
   useTransactionEditor,
-} from "./useTransactionFormRow";
+} from "./useTransactionEditor";
 import { useAccountData } from "./useAccountData/useAccountData";
 import { AccountId } from "../../allocation/types/types";
 import {
@@ -24,8 +24,8 @@ export const useAccount = (accountId: AccountId) => {
     row: any
   ) => {
     if (transactionEditor.isDirty) return;
-    if (transactionEditor.addTransactionState.open) {
-      transactionEditor.closeAddTransactionForm();
+    if (transactionEditor.transactionEditorState.open) {
+      transactionEditor.cancel();
     }
 
     if (e.ctrlKey) {
@@ -49,9 +49,9 @@ export const useAccount = (accountId: AccountId) => {
   // Reset table selection state and form state when account changes
   useEffect(() => {
     transactionTable.table.resetRowSelection();
-    transactionEditor.setAddtransactionState({
+    transactionEditor.setTransactionEditorState({
       open: false,
-      mode: TransactionFormMode.Edit,
+      mode: TransactionEditorMode.Edit,
       displayAccountField: false,
       accountId: "",
       showWarning: false,
@@ -60,12 +60,12 @@ export const useAccount = (accountId: AccountId) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentAccount.id]);
 
-  const displayTransactionFormRow = () => {
+  const displayTransactionEditor = () => {
     transactionEditor.resetToNewTransaction();
     transactionTable.cancelSelection();
-    transactionEditor.setAddtransactionState({
+    transactionEditor.setTransactionEditorState({
       open: true,
-      mode: TransactionFormMode.Add,
+      mode: TransactionEditorMode.Add,
       displayAccountField: currentAccount.id === "all",
       accountId: currentAccount.id || "",
       showWarning: false,
@@ -129,11 +129,11 @@ export const useAccount = (accountId: AccountId) => {
     handleDeleteSelectedTransactions,
     handleDuplicateTransactions,
 
-    displayTransactionFormRow,
+    displayTransactionEditor,
     transactionEditor: {
       form: transactionEditor.form,
-      state: transactionEditor.addTransactionState,
-      close: transactionEditor.closeAddTransactionForm,
+      state: transactionEditor.transactionEditorState,
+      cancel: transactionEditor.cancel,
       resetWarning: transactionEditor.resetWarning,
       handleSaveTransaction: transactionEditor.handleSaveTransaction,
       handleSaveAndAddAnother:
