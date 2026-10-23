@@ -364,9 +364,6 @@ export const useTransactionEditor = (accountId: string) => {
 
     transactionForm.reset();
   };
-  const handleFormRowClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  };
 
   const closeAddTransactionForm = () => {
     transactionForm.reset();

@@ -138,7 +138,6 @@ export const useAccount = (accountId: AccountId) => {
       handleSaveTransaction: transactionEditor.handleSaveTransaction,
       handleSaveAndAddAnother:
         transactionEditor.handleSaveAndAddAnotherTransaction,
-      onClick: transactionEditor.handleFormRowClick,
       isDirty: transactionEditor.isDirty,
       selectDate: transactionEditor.selectDate,
       selectCategory: transactionEditor.selectCategory,
