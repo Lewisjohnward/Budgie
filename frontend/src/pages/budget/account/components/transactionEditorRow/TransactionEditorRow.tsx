@@ -35,7 +35,7 @@ export function TransactionEditorRow({
             ? "bg-green-500/30 hover:bg-green-500/30 border-none"
             : "bg-blue-700/20 hover:bg-blue-700/20 border-none"
         }
-        onClick={transactionEditor.onClick}
+        onClick={(e) => e.stopPropagation()}
       >
         {transactionEditor.state.displayAccountField && (
           <TableCell>
@@ -91,7 +91,6 @@ export function TransactionEditorRow({
         mode={transactionEditor.state.mode}
         handleSaveTransaction={transactionEditor.handleSaveTransaction}
         handleSaveAndAddAnother={transactionEditor.handleSaveAndAddAnother}
-        onClick={transactionEditor.onClick}
         onClose={transactionEditor.close}
       />
     </FormProvider>
