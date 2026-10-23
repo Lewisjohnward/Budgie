@@ -6,7 +6,6 @@ type TransactionEditorActionsProps = {
   showWarning: boolean;
   displayAccountField: boolean;
   mode: TransactionEditorMode;
-  onClick: (e: React.MouseEvent) => void;
   onClose: () => void;
   handleSaveTransaction: () => void;
   handleSaveAndAddAnother: () => void;
@@ -18,7 +17,6 @@ export function TransactionEditorActions({
   mode,
   handleSaveAndAddAnother,
   handleSaveTransaction,
-  onClick,
   onClose,
 }: TransactionEditorActionsProps) {
   return (
@@ -28,13 +26,9 @@ export function TransactionEditorActions({
           ? "bg-green-500/30 hover:bg-green-500/30"
           : "bg-blue-700/20 hover:bg-blue-700/20"
       }
-      onClick={onClick}
     >
       <TableCell colSpan={displayAccountField ? 7 : 6}>
-        <div
-          className="flex justify-end gap-2"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className="flex justify-end gap-2">
           <Button
             onClick={onClose}
             className="h-5 w-[80px] py-3 rounded-sm bg-sky-700/10 text-sky-700 border border-sky-700 hover:bg-sky-700/30"
