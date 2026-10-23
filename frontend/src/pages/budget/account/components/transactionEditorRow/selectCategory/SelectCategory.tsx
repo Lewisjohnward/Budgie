@@ -26,7 +26,7 @@ import {
 } from "@/core/components/uiLibrary/select";
 import { Button } from "@/core/components/uiLibrary/button";
 import clsx from "clsx";
-import { SelectCategoryModel } from "../../../hooks/useTransactionFormRow";
+import { SelectCategoryModel } from "../../../hooks/useTransactionEditor";
 
 type SelectCategoryProps = {
   selectCategory: SelectCategoryModel;

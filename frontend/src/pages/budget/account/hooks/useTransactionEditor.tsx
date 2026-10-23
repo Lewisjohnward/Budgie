@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useSelectCategory } from "../components/transactionFormRow/selectCategory/useSelectCategory";
-import { useSelectPayee } from "../components/transactionFormRow/selectPayee/useSelectPayee";
+import { useSelectCategory } from "../components/transactionEditorRow/selectCategory/useSelectCategory";
+import { useSelectPayee } from "../components/transactionEditorRow/selectPayee/useSelectPayee";
 import { Category } from "@/core/types/NormalizedData";
-import { useSelectDate } from "../components/transactionFormRow/selectDate/useSelectDate";
+import { useSelectDate } from "../components/transactionEditorRow/selectDate/useSelectDate";
 import { normaliseDate } from "../utils/normaliseDate";
 import {
   useCreateTransactionMutation,
@@ -32,7 +32,7 @@ export type TransactionFormData = z.infer<typeof TransactionFormSchema>;
 
 export type TransactionForm = UseFormReturn<TransactionFormData>;
 
-export enum TransactionFormMode {
+export enum TransactionEditorMode {
   Add = "add",
   Edit = "edit",
 }
@@ -59,9 +59,9 @@ const dateStringSchema = z
     );
   }, "Invalid date");
 
-export type TransactionFormState = {
+export type TransactionEditorState = {
   open: boolean;
-  mode: TransactionFormMode;
+  mode: TransactionEditorMode;
   displayAccountField: boolean;
   accountId: string | undefined;
   transactionId?: string;
@@ -70,10 +70,10 @@ export type TransactionFormState = {
 };
 
 export const useTransactionEditor = (accountId: string) => {
-  const [addTransactionState, setAddtransactionState] =
-    useState<TransactionFormState>({
+  const [transactionEditorState, setTransactionEditorState] =
+    useState<TransactionEditorState>({
       open: false,
-      mode: TransactionFormMode.Add,
+      mode: TransactionEditorMode.Add,
       displayAccountField: false,
       accountId: "",
       showWarning: false,
@@ -93,6 +93,7 @@ export const useTransactionEditor = (accountId: string) => {
     },
     resolver: zodResolver(TransactionFormSchema),
   });
+
   const { setValue } = transactionForm;
   const { isDirty } = transactionForm.formState;
 
@@ -220,12 +221,12 @@ export const useTransactionEditor = (accountId: string) => {
 
   useEffect(() => {
     if (
-      addTransactionState.open &&
-      addTransactionState.mode === TransactionFormMode.Add
+      transactionEditorState.open &&
+      transactionEditorState.mode === TransactionEditorMode.Add
     ) {
       selectDate.focus();
     }
-  }, [addTransactionState.open]);
+  }, [transactionEditorState.open]);
 
   const warningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -238,7 +239,7 @@ export const useTransactionEditor = (accountId: string) => {
   }, []);
 
   const resetWarning = () => {
-    setAddtransactionState((prev) => ({
+    setTransactionEditorState((prev) => ({
       ...prev,
       showWarning: false,
     }));
@@ -255,36 +256,36 @@ export const useTransactionEditor = (accountId: string) => {
         clearTimeout(warningTimeoutRef.current);
       }
 
-      setAddtransactionState((prev) => ({
+      setTransactionEditorState((prev) => ({
         ...prev,
         showWarning: true,
       }));
 
       setTimeout(() => {
-        setAddtransactionState((prev) => ({
+        setTransactionEditorState((prev) => ({
           ...prev,
           showWarning: false,
         }));
       }, 200);
 
       setTimeout(() => {
-        setAddtransactionState((prev) => ({
+        setTransactionEditorState((prev) => ({
           ...prev,
           showWarning: true,
         }));
       }, 400);
 
       warningTimeoutRef.current = setTimeout(() => {
-        setAddtransactionState((prev) => ({
+        setTransactionEditorState((prev) => ({
           ...prev,
           showWarning: false,
         }));
         warningTimeoutRef.current = null;
       }, 600);
     } else {
-      setAddtransactionState({
+      setTransactionEditorState({
         open: false,
-        mode: TransactionFormMode.Add,
+        mode: TransactionEditorMode.Add,
         displayAccountField: false,
         accountId: "",
         showWarning: false,
@@ -295,12 +296,12 @@ export const useTransactionEditor = (accountId: string) => {
 
   const handleSaveTransaction = () => {
     const formValues = transactionForm.getValues();
-    if (addTransactionState.mode === TransactionFormMode.Edit) {
+    if (transactionEditorState.mode === TransactionEditorMode.Edit) {
       console.log("edit transaction", formValues);
 
       editTransaction([
         {
-          id: addTransactionState.transactionId,
+          id: transactionEditorState.transactionId,
           accountId: formValues.accountId,
           categoryId: formValues.categoryId || "",
           payeeId: formValues.payeeId ? formValues.payeeId : undefined,
@@ -353,9 +354,9 @@ export const useTransactionEditor = (accountId: string) => {
     selectDate.reset();
     selectCategory.reset();
 
-    setAddtransactionState({
+    setTransactionEditorState({
       open: false,
-      mode: TransactionFormMode.Add,
+      mode: TransactionEditorMode.Add,
       displayAccountField: false,
       accountId: "",
       showWarning: false,
@@ -405,9 +406,9 @@ export const useTransactionEditor = (accountId: string) => {
 
     // Open the form with the transaction ID
     // TODO: this needs to be renamed because its for edit here
-    setAddtransactionState({
+    setTransactionEditorState({
       open: true,
-      mode: TransactionFormMode.Edit,
+      mode: TransactionEditorMode.Edit,
       displayAccountField: accountId === "all",
       accountId: accountId,
       transactionId: transaction.id,
@@ -417,12 +418,11 @@ export const useTransactionEditor = (accountId: string) => {
   };
   return {
     form: transactionForm,
-    addTransactionState,
-    setAddtransactionState,
-    closeAddTransactionForm,
-    handleSaveTransaction,
-    handleSaveAndAddAnotherTransaction,
-    handleFormRowClick,
+    transactionEditorState,
+    setTransactionEditorState,
+    cancel,
+    saveTransaction,
+    saveAndAddAnotherTransaction,
     handleTableInteraction,
     resetWarning,
     isDirty,

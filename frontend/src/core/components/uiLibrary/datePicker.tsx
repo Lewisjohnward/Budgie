@@ -4,7 +4,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/core/components/uiLibrary/popover";
-import { usePopover } from "@/pages/budget/account/components/transactionFormRow/selectCategory";
+import { usePopover } from "@/pages/budget/account/components/transactionEditorRow/selectCategory";
 import { ChevronDown } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 
