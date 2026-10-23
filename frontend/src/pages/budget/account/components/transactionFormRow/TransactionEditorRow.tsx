@@ -9,7 +9,7 @@ import {
 import { ChevronDown } from "lucide-react";
 import { PopoverArrow } from "@radix-ui/react-popover";
 import clsx from "clsx";
-import { TransactionFormManager } from "../../hooks/useAccount";
+import { TransactionEditor } from "../../hooks/useAccount";
 import { TransactionFormMode } from "../../hooks/useTransactionFormRow";
 import { SelectPayee } from "./selectPayee";
 import { SelectCategory } from "./selectCategory";
@@ -17,40 +17,40 @@ import { Button } from "@/core/components/uiLibrary/button";
 import { SelectDate } from "./selectDate/SelectDate";
 import { useGetAccountsQuery } from "@/core/api/budget/account/accountApiSlice";
 
-type TransactionFormRowProps = {
-  transactionForm: TransactionFormManager;
+type TransactionEditorRow = {
+  transactionEditor: TransactionEditor;
 };
 
-export function TransactionFormRow({
-  transactionForm,
-}: TransactionFormRowProps) {
-  const { register } = transactionForm.form;
+export function TransactionEditorRow({
+  transactionEditor,
+}: TransactionEditorRow) {
+  const { register } = transactionEditor.form;
 
   return (
-    <FormProvider {...transactionForm.form}>
+    <FormProvider {...transactionEditor.form}>
       <TableRow
         aria-label="Add transaction form"
-        onFocus={transactionForm.resetWarning}
+        onFocus={transactionEditor.resetWarning}
         className={
-          transactionForm.state.showWarning
+          transactionEditor.state.showWarning
             ? "bg-green-500/30 hover:bg-green-500/30 border-none"
             : "bg-blue-700/20 hover:bg-blue-700/20 border-none"
         }
-        onClick={transactionForm.onClick}
+        onClick={transactionEditor.onClick}
       >
-        {transactionForm.state.displayAccountField && (
+        {transactionEditor.state.displayAccountField && (
           <TableCell>
             <SelectAccount />
           </TableCell>
         )}
         <TableCell>
-          <SelectDate selectDate={transactionForm.selectDate} />
+          <SelectDate selectDate={transactionEditor.selectDate} />
         </TableCell>
         <TableCell>
-          <SelectPayee selectPayee={transactionForm.selectPayee} />
+          <SelectPayee selectPayee={transactionEditor.selectPayee} />
         </TableCell>
         <TableCell>
-          <SelectCategory selectCategory={transactionForm.selectCategory} />
+          <SelectCategory selectCategory={transactionEditor.selectCategory} />
         </TableCell>
         <TableCell>
           <label htmlFor="memo" className="sr-only">
@@ -88,26 +88,28 @@ export function TransactionFormRow({
       </TableRow>
       <TableRow
         className={
-          transactionForm.state.showWarning
+          transactionEditor.state.showWarning
             ? "bg-green-500/30 hover:bg-green-500/30"
             : "bg-blue-700/20 hover:bg-blue-700/20"
         }
-        onClick={transactionForm.onClick}
+        onClick={transactionEditor.onClick}
       >
-        <TableCell colSpan={transactionForm.state.displayAccountField ? 7 : 6}>
+        <TableCell
+          colSpan={transactionEditor.state.displayAccountField ? 7 : 6}
+        >
           <div
             className="flex justify-end gap-2"
             onClick={(e) => e.stopPropagation()}
           >
             <Button
-              onClick={transactionForm.close}
+              onClick={transactionEditor.close}
               className="h-5 w-[80px] py-3 rounded-sm bg-sky-700/10 text-sky-700 border border-sky-700 hover:bg-sky-700/30"
             >
               Cancel
             </Button>
-            {transactionForm.state.mode === TransactionFormMode.Edit ? (
+            {transactionEditor.state.mode === TransactionFormMode.Edit ? (
               <Button
-                onClick={transactionForm.handleSaveTransaction}
+                onClick={transactionEditor.handleSaveTransaction}
                 className="h-5 py-3 rounded-sm px-4 bg-sky-700 text-white border border-sky-700 hover:bg-sky-800"
               >
                 Save
@@ -115,14 +117,14 @@ export function TransactionFormRow({
             ) : (
               <>
                 <Button
-                  onClick={transactionForm.handleSaveTransaction}
+                  onClick={transactionEditor.handleSaveTransaction}
                   type="submit"
                   className="h-5 w-[80px] py-3 rounded-sm bg-sky-700 text-white hover:bg-sky-800"
                 >
                   Submit
                 </Button>
                 <Button
-                  onClick={transactionForm.handleSaveAndAddAnother}
+                  onClick={transactionEditor.handleSaveAndAddAnother}
                   className="h-5 py-3 rounded-sm px-4 bg-sky-700 text-white border border-sky-700 hover:bg-sky-800"
                 >
                   Save and add another

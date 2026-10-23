@@ -69,7 +69,7 @@ export type TransactionFormState = {
   editingTransactionId?: string;
 };
 
-export const useTransactionFormRow = (accountId: string) => {
+export const useTransactionEditor = (accountId: string) => {
   const [addTransactionState, setAddtransactionState] =
     useState<TransactionFormState>({
       open: false,
@@ -493,6 +493,6 @@ export const useTransactionFormRow = (accountId: string) => {
 // Account.tsx
 // .
 
-type TransactionFormRow = ReturnType<typeof useTransactionFormRow>;
-export type SelectDateModel = TransactionFormRow["selectDate"];
-export type SelectCategoryModel = TransactionFormRow["selectCategory"];
+type TransactionEditor = ReturnType<typeof useTransactionEditor>;
+export type SelectDateModel = TransactionEditor["selectDate"];
+export type SelectCategoryModel = TransactionEditor["selectCategory"];
