@@ -21,7 +21,6 @@ import { SelectionModal } from "./RowSelectionModal";
 import { columns } from "./columns";
 import clsx from "clsx";
 import { Button } from "@/core/components/uiLibrary/button";
-import { ChevronRight } from "lucide-react";
 import { TransactionEditor, TransactionTable } from "../hooks/useAccount";
 
 type AccountTableProps = {
@@ -76,17 +75,6 @@ export function AccountTable({
               // Add transaction
               <TransactionEditorRow transactionEditor={transactionEditor} />
             )}
-          <TableCell>19/12/2025</TableCell>
-          <TableCell className="flex justify-between gap-4 items-center whitespace-nowrap">
-            <p>Transfer: main account</p>
-            <ChevronRight size={"15"} />
-          </TableCell>
-          <TableCell>
-            <p className="text-gray-600">Category not needed</p>
-          </TableCell>
-          <TableCell>memo..</TableCell>
-          <TableCell>£5.00</TableCell>
-          <TableCell></TableCell>
           {table.table.getRowModel().rows?.length > 0 &&
             table.table.getRowModel().rows.map((row) =>
               row.id === transactionEditor.state.editingTransactionId &&
