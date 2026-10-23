@@ -10,7 +10,7 @@ import { ChevronDown } from "lucide-react";
 import { PopoverArrow } from "@radix-ui/react-popover";
 import clsx from "clsx";
 import { TransactionEditor } from "../../hooks/useAccount";
-import { TransactionFormMode } from "../../hooks/useTransactionFormRow";
+import { TransactionEditorMode } from "../../hooks/useTransactionEditor";
 import { SelectPayee } from "./selectPayee";
 import { SelectCategory } from "./selectCategory";
 import { Button } from "@/core/components/uiLibrary/button";
@@ -29,7 +29,7 @@ export function TransactionEditorRow({
   return (
     <FormProvider {...transactionEditor.form}>
       <TableRow
-        aria-label="Add transaction form"
+        aria-label="Transaction editor"
         onFocus={transactionEditor.resetWarning}
         className={
           transactionEditor.state.showWarning
@@ -107,7 +107,7 @@ export function TransactionEditorRow({
             >
               Cancel
             </Button>
-            {transactionEditor.state.mode === TransactionFormMode.Edit ? (
+            {transactionEditor.state.mode === TransactionEditorMode.Edit ? (
               <Button
                 onClick={transactionEditor.handleSaveTransaction}
                 className="h-5 py-3 rounded-sm px-4 bg-sky-700 text-white border border-sky-700 hover:bg-sky-800"
