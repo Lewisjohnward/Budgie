@@ -8,7 +8,7 @@ import { ChevronDown } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { PopoverArrow } from "@radix-ui/react-popover";
 import { SelectDateModel } from "../../../hooks/useTransactionFormRow";
-import { useState } from "react";
+import { useEffect } from "react";
 
 type SelectDateProps = {
   selectDate: SelectDateModel;
@@ -17,8 +17,15 @@ type SelectDateProps = {
 export function SelectDate({ selectDate }: SelectDateProps) {
   const { setValue, watch } = useFormContext();
 
-  const date = watch("date");
-  console.log("date:", date);
+  const date = watch("date") as Date | undefined;
+
+  useEffect(() => {
+    if (!date) {
+      setValue("date", new Date());
+    }
+  }, [date, setValue]);
+
+  const formattedDate = date?.toLocaleDateString("en-GB") ?? "";
 
   const handlePointerDownOutside = (e: Event) => {
     // Don't close if clicking the input
@@ -26,24 +33,22 @@ export function SelectDate({ selectDate }: SelectDateProps) {
       e.preventDefault();
       return;
     }
+
     selectDate.popover.close();
   };
-
-  const [viewMonth, setViewMonth] = useState(date ?? new Date());
 
   return (
     <Popover open={selectDate.popover.isOpen}>
       <PopoverTrigger asChild>
         <div className="flex items-center pr-2 bg-white ring-[1px] focus-visible:ring-sky-700 ring-sky-700 rounded-sm overflow-hidden">
           <input
+            aria-label="Date"
             className="px-2 w-full rounded-sm text-ellipsis focus:outline-none focus:ring-0"
             name="Date"
-            placeholder="Date"
+            placeholder="DD/MM/YYYY"
             ref={selectDate.ref}
             onFocus={selectDate.popover.open}
-            value={viewMonth}
-            // value={selectDate.input}
-            // onBlur={selectDate.onBlur}
+            value={formattedDate}
             onChange={selectDate.onChange}
             onKeyDown={(e) => {
               if (e.key === "Tab") {
@@ -51,24 +56,29 @@ export function SelectDate({ selectDate }: SelectDateProps) {
               }
             }}
           />
+
           <ChevronDown className="size-4 text-sky-950" />
         </div>
       </PopoverTrigger>
+
       <PopoverContent
         onOpenAutoFocus={(e) => e.preventDefault()}
         onPointerDownOutside={handlePointerDownOutside}
         className="w-auto p-0 border border-white"
       >
         <PopoverArrow className="w-8 h-2 fill-white" />
+
         <Calendar
           mode="single"
           className="border-sky-950"
-          // month={viewMonth}
-          selected={viewMonth}
-          onSelect={(x) => {
-            // console.log("x:", x);
-            setViewMonth(x);
-            setValue("date", x);
+          selected={date}
+          onSelect={(selectedDate) => {
+            if (selectedDate) {
+              setValue("date", selectedDate, {
+                shouldValidate: true,
+                shouldDirty: true,
+              });
+            }
           }}
         />
       </PopoverContent>
