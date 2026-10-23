@@ -10,12 +10,11 @@ import { ChevronDown } from "lucide-react";
 import { PopoverArrow } from "@radix-ui/react-popover";
 import clsx from "clsx";
 import { TransactionEditor } from "../../hooks/useAccount";
-import { TransactionEditorMode } from "../../hooks/useTransactionEditor";
 import { SelectPayee } from "./selectPayee";
 import { SelectCategory } from "./selectCategory";
-import { Button } from "@/core/components/uiLibrary/button";
 import { SelectDate } from "./selectDate/SelectDate";
 import { useGetAccountsQuery } from "@/core/api/budget/account/accountApiSlice";
+import { TransactionEditorActions } from "./TransactionFormActions";
 
 type TransactionEditorRow = {
   transactionEditor: TransactionEditor;
@@ -86,54 +85,15 @@ export function TransactionEditorRow({
           />
         </TableCell>
       </TableRow>
-      <TableRow
-        className={
-          transactionEditor.state.showWarning
-            ? "bg-green-500/30 hover:bg-green-500/30"
-            : "bg-blue-700/20 hover:bg-blue-700/20"
-        }
+      <TransactionEditorActions
+        showWarning={transactionEditor.state.showWarning}
+        displayAccountField={transactionEditor.state.displayAccountField}
+        mode={transactionEditor.state.mode}
+        handleSaveTransaction={transactionEditor.handleSaveTransaction}
+        handleSaveAndAddAnother={transactionEditor.handleSaveAndAddAnother}
         onClick={transactionEditor.onClick}
-      >
-        <TableCell
-          colSpan={transactionEditor.state.displayAccountField ? 7 : 6}
-        >
-          <div
-            className="flex justify-end gap-2"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Button
-              onClick={transactionEditor.close}
-              className="h-5 w-[80px] py-3 rounded-sm bg-sky-700/10 text-sky-700 border border-sky-700 hover:bg-sky-700/30"
-            >
-              Cancel
-            </Button>
-            {transactionEditor.state.mode === TransactionEditorMode.Edit ? (
-              <Button
-                onClick={transactionEditor.handleSaveTransaction}
-                className="h-5 py-3 rounded-sm px-4 bg-sky-700 text-white border border-sky-700 hover:bg-sky-800"
-              >
-                Save
-              </Button>
-            ) : (
-              <>
-                <Button
-                  onClick={transactionEditor.handleSaveTransaction}
-                  type="submit"
-                  className="h-5 w-[80px] py-3 rounded-sm bg-sky-700 text-white hover:bg-sky-800"
-                >
-                  Submit
-                </Button>
-                <Button
-                  onClick={transactionEditor.handleSaveAndAddAnother}
-                  className="h-5 py-3 rounded-sm px-4 bg-sky-700 text-white border border-sky-700 hover:bg-sky-800"
-                >
-                  Save and add another
-                </Button>
-              </>
-            )}
-          </div>
-        </TableCell>
-      </TableRow>
+        onClose={transactionEditor.close}
+      />
     </FormProvider>
   );
 }
