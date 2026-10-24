@@ -296,7 +296,7 @@ export const useTransactionEditor = (accountId: string) => {
     }
   };
 
-  const handleSaveTransaction = () => {
+  const saveTransaction = () => {
     const formValues = transactionForm.getValues();
 
     const { inflow, outflow } = calculateNetChange(
@@ -340,11 +340,11 @@ export const useTransactionEditor = (accountId: string) => {
       });
     }
     transactionForm.reset();
-    closeAddTransactionForm();
+    cancel();
   };
 
   // handle and add another transaction
-  const handleSaveAndAddAnotherTransaction = () => {
+  const saveAndAddAnotherTransaction = () => {
     transactionForm.handleSubmit((data: TransactionFormData) => {
       const { inflow, outflow } = calculateNetChange(
         Number(data.inflow) ?? 0,
@@ -365,7 +365,7 @@ export const useTransactionEditor = (accountId: string) => {
     transactionForm.reset();
   };
 
-  const closeAddTransactionForm = () => {
+  const cancel = () => {
     transactionForm.reset();
     selectDate.reset();
     selectCategory.reset();

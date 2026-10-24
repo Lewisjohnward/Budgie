@@ -135,9 +135,9 @@ export const useAccount = (accountId: AccountId) => {
       state: transactionEditor.transactionEditorState,
       cancel: transactionEditor.cancel,
       resetWarning: transactionEditor.resetWarning,
-      handleSaveTransaction: transactionEditor.handleSaveTransaction,
-      handleSaveAndAddAnother:
-        transactionEditor.handleSaveAndAddAnotherTransaction,
+      saveTransaction: transactionEditor.saveTransaction,
+      saveAndAddAnotherTransaction:
+        transactionEditor.saveAndAddAnotherTransaction,
       isDirty: transactionEditor.isDirty,
       selectDate: transactionEditor.selectDate,
       selectCategory: transactionEditor.selectCategory,

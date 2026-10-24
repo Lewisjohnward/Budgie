@@ -89,9 +89,11 @@ export function TransactionEditorRow({
         showWarning={transactionEditor.state.showWarning}
         columnCount={transactionEditor.state.displayAccountField ? 7 : 6}
         mode={transactionEditor.state.mode}
-        handleSaveTransaction={transactionEditor.handleSaveTransaction}
-        handleSaveAndAddAnother={transactionEditor.handleSaveAndAddAnother}
-        onClose={transactionEditor.close}
+        onSaveTransaction={transactionEditor.saveTransaction}
+        onSaveAndAddAnotherTransaction={
+          transactionEditor.saveAndAddAnotherTransaction
+        }
+        onCancel={transactionEditor.cancel}
       />
     </FormProvider>
   );

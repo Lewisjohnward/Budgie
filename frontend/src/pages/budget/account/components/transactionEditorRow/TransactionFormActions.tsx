@@ -6,18 +6,18 @@ type TransactionEditorActionsProps = {
   showWarning: boolean;
   columnCount: number;
   mode: TransactionEditorMode;
-  onClose: () => void;
-  handleSaveTransaction: () => void;
-  handleSaveAndAddAnother: () => void;
+  onCancel: () => void;
+  onSaveTransaction: () => void;
+  onSaveAndAddAnotherTransaction: () => void;
 };
 
 export function TransactionEditorActions({
   showWarning,
   columnCount,
   mode,
-  handleSaveAndAddAnother,
-  handleSaveTransaction,
-  onClose,
+  onSaveAndAddAnotherTransaction,
+  onSaveTransaction,
+  onCancel,
 }: TransactionEditorActionsProps) {
   return (
     <TableRow
@@ -30,14 +30,14 @@ export function TransactionEditorActions({
       <TableCell colSpan={columnCount}>
         <div className="flex justify-end gap-2">
           <Button
-            onClick={onClose}
+            onClick={onCancel}
             className="h-5 w-[80px] py-3 rounded-sm bg-sky-700/10 text-sky-700 border border-sky-700 hover:bg-sky-700/30"
           >
             Cancel
           </Button>
           {mode === TransactionEditorMode.Edit ? (
             <Button
-              onClick={handleSaveTransaction}
+              onClick={onSaveTransaction}
               className="h-5 py-3 rounded-sm px-4 bg-sky-700 text-white border border-sky-700 hover:bg-sky-800"
             >
               Save
@@ -45,14 +45,14 @@ export function TransactionEditorActions({
           ) : (
             <>
               <Button
-                onClick={handleSaveTransaction}
+                onClick={onSaveTransaction}
                 type="submit"
                 className="h-5 w-[80px] py-3 rounded-sm bg-sky-700 text-white hover:bg-sky-800"
               >
                 Submit
               </Button>
               <Button
-                onClick={handleSaveAndAddAnother}
+                onClick={onSaveAndAddAnotherTransaction}
                 className="h-5 py-3 rounded-sm px-4 bg-sky-700 text-white border border-sky-700 hover:bg-sky-800"
               >
                 Save and add another
