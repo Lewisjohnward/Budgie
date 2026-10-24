@@ -15,7 +15,7 @@ type UseAccountDataParams = {
 
 // Output
 export type UseAccountData = {
-  currentAccount: AccountOverview;
+  selectedAccount: AccountOverview;
   accountsAvailable: boolean;
   numberOfUncategorisedTransactions: number;
 };
@@ -88,7 +88,7 @@ export const useAccountData = ({
   const sumBalance = accounts.reduce((acc, val) => acc + val.balance, 0);
 
   // create account overview object
-  const currentAccount: AccountOverview =
+  const selectedAccount: AccountOverview =
     chosenAccount === "all"
       ? {
         name: "All Accounts",
@@ -107,12 +107,12 @@ export const useAccountData = ({
 
   const accountsAvailable = accounts.length > 0;
 
-  const numberOfUncategorisedTransactions = currentAccount.transactions.filter(
+  const numberOfUncategorisedTransactions = selectedAccount.transactions.filter(
     (t) => t.categoryGroup?.name === "Uncategorised"
   ).length;
 
   return {
-    currentAccount,
+    selectedAccount,
     accountsAvailable,
     numberOfUncategorisedTransactions,
   };
