@@ -14,10 +14,7 @@ export const useAccount = (accountId: AccountId) => {
     accountsAvailable,
     numberOfUncategorisedTransactions,
   } = useAccountData({ accountId });
-  const transactionTable = useTransactionTable(
-    selectedAccount.transactions,
-    selectedAccount.id
-  );
+  const transactionTable = useTransactionTable(selectedAccount);
   const transactionEditor = useTransactionEditor(selectedAccount.id);
 
   const handleRowSelection = (
