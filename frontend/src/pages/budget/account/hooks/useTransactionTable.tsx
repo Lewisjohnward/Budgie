@@ -9,7 +9,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { columns } from "../components/columns";
-import { DetailedTransaction } from "./useAccountData/types";
+import { AccountOverview } from "./useAccountData/types";
 
 const GLOBAL_FILTER_COLUMN_IDS = [
   "date",
@@ -20,10 +20,9 @@ const GLOBAL_FILTER_COLUMN_IDS = [
   "inflow",
 ];
 
-export const useTransactionTable = (
-  transactions: DetailedTransaction[],
-  accountId: string
-) => {
+export const useTransactionTable = (account: AccountOverview) => {
+  const { transactions, id } = account;
+
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [_, setLastRowSelection] = useState<RowSelectionState>({});
   const [sorting, setSorting] = useState<SortingState>([
@@ -32,9 +31,9 @@ export const useTransactionTable = (
 
   const columnVisibility = useMemo(
     () => ({
-      account: accountId === "all",
+      account: id === "all",
     }),
-    [accountId]
+    [id]
   );
 
   // const tableSorting = useMemo(
