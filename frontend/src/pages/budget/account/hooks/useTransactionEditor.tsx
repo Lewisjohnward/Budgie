@@ -294,7 +294,7 @@ export const useTransactionEditor = (accountId: string) => {
     }
   };
 
-  const handleSaveTransaction = () => {
+  const saveTransaction = () => {
     const formValues = transactionForm.getValues();
     if (transactionEditorState.mode === TransactionEditorMode.Edit) {
       console.log("edit transaction", formValues);
@@ -326,11 +326,11 @@ export const useTransactionEditor = (accountId: string) => {
       });
     }
     transactionForm.reset();
-    closeAddTransactionForm();
+    cancel();
   };
 
   // handle and add another transaction
-  const handleSaveAndAddAnotherTransaction = () => {
+  const saveAndAddAnotherTransaction = () => {
     transactionForm.handleSubmit((data: TransactionFormData) => {
       createTransaction({
         accountId: asAccountId(data.accountId),
@@ -346,7 +346,7 @@ export const useTransactionEditor = (accountId: string) => {
     transactionForm.reset();
   };
 
-  const closeAddTransactionForm = () => {
+  const cancel = () => {
     transactionForm.reset();
     selectDate.reset();
     selectCategory.reset();
