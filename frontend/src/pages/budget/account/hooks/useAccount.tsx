@@ -49,14 +49,7 @@ export const useAccount = (accountId: AccountId) => {
   // Reset table selection state and form state when account changes
   useEffect(() => {
     transactionTable.table.resetRowSelection();
-    transactionEditor.setTransactionEditorState({
-      open: false,
-      mode: TransactionEditorMode.Edit,
-      displayAccountField: false,
-      accountId: "",
-      showWarning: false,
-      editingTransactionId: undefined,
-    });
+    transactionEditor.cancel();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentAccount.id]);
 
