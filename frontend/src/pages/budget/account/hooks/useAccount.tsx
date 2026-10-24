@@ -9,7 +9,11 @@ import {
 } from "@/core/api/budget/transaction/transactionApiSlice";
 
 export const useAccount = (accountId: AccountId) => {
-  const { currentAccount, accountsAvailable } = useAccountData({ accountId });
+  const {
+    currentAccount,
+    accountsAvailable,
+    numberOfUncategorisedTransactions,
+  } = useAccountData({ accountId });
   const transactionTable = useTransactionTable(
     currentAccount.transactions,
     currentAccount.id
@@ -69,10 +73,6 @@ export const useAccount = (accountId: AccountId) => {
     transactionEditor.handleTableInteraction();
   };
 
-  const uncategorisedTxsCount = currentAccount.transactions.filter(
-    (t) => t.categoryGroup?.name === "Uncategorised"
-  ).length;
-
   const [deleteTransaction] = useDeleteTransactionMutation();
   const [duplicateTransactions] = useDuplicateTransactionsMutation();
 
@@ -126,7 +126,7 @@ export const useAccount = (accountId: AccountId) => {
       selectPayee: transactionEditor.selectPayee,
     },
     uncategorisedTransactions: {
-      count: uncategorisedTxsCount,
+      count: numberOfUncategorisedTransactions,
       onClick: () => {
         console.log("view uncat trans");
       },
