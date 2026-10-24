@@ -87,7 +87,7 @@ export function TransactionEditorRow({
       </TableRow>
       <TransactionEditorActions
         showWarning={transactionEditor.state.showWarning}
-        displayAccountField={transactionEditor.state.displayAccountField}
+        columnCount={transactionEditor.state.displayAccountField ? 7 : 6}
         mode={transactionEditor.state.mode}
         handleSaveTransaction={transactionEditor.handleSaveTransaction}
         handleSaveAndAddAnother={transactionEditor.handleSaveAndAddAnother}
