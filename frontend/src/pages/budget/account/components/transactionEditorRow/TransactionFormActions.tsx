@@ -4,7 +4,7 @@ import { TransactionEditorMode } from "../../hooks/useTransactionEditor";
 
 type TransactionEditorActionsProps = {
   showWarning: boolean;
-  displayAccountField: boolean;
+  columnCount: number;
   mode: TransactionEditorMode;
   onClose: () => void;
   handleSaveTransaction: () => void;
@@ -13,7 +13,7 @@ type TransactionEditorActionsProps = {
 
 export function TransactionEditorActions({
   showWarning,
-  displayAccountField,
+  columnCount,
   mode,
   handleSaveAndAddAnother,
   handleSaveTransaction,
@@ -27,7 +27,7 @@ export function TransactionEditorActions({
           : "bg-blue-700/20 hover:bg-blue-700/20"
       }
     >
-      <TableCell colSpan={displayAccountField ? 7 : 6}>
+      <TableCell colSpan={columnCount}>
         <div className="flex justify-end gap-2">
           <Button
             onClick={onClose}
