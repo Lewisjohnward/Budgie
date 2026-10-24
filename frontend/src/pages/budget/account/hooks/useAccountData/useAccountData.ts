@@ -17,6 +17,7 @@ type UseAccountDataParams = {
 export type UseAccountData = {
   currentAccount: AccountOverview;
   accountsAvailable: boolean;
+  numberOfUncategorisedTransactions: number;
 };
 
 export const useAccountData = ({
@@ -106,8 +107,13 @@ export const useAccountData = ({
 
   const accountsAvailable = accounts.length > 0;
 
+  const numberOfUncategorisedTransactions = currentAccount.transactions.filter(
+    (t) => t.categoryGroup?.name === "Uncategorised"
+  ).length;
+
   return {
     currentAccount,
     accountsAvailable,
+    numberOfUncategorisedTransactions,
   };
 };
