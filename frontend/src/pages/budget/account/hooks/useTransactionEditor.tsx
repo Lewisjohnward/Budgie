@@ -367,6 +367,18 @@ export const useTransactionEditor = (accountId: string) => {
     transactionForm.reset();
   };
 
+  const open = () => {
+    resetToNewTransaction();
+    setTransactionEditorState({
+      open: true,
+      mode: TransactionEditorMode.Add,
+      displayAccountField: accountId === "all",
+      accountId: accountId || "",
+      showWarning: false,
+      editingTransactionId: undefined,
+    });
+  };
+
   const cancel = () => {
     transactionForm.reset();
     selectDate.reset();
@@ -431,6 +443,7 @@ export const useTransactionEditor = (accountId: string) => {
     form: transactionForm,
     transactionEditorState,
     setTransactionEditorState,
+    open,
     cancel,
     saveTransaction,
     saveAndAddAnotherTransaction,

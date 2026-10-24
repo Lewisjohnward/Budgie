@@ -38,7 +38,7 @@ function AccountContent({ accountId }: AccountContentProps) {
     isDisplayingAllAccounts,
     accountsAvailable,
     table,
-    displayTransactionEditor,
+    openTransactionEditor,
     transactionEditor,
     uncategorisedTransactions,
     handleDeleteSelectedTransactions,
@@ -54,7 +54,7 @@ function AccountContent({ accountId }: AccountContentProps) {
       }
       if (e.key === "N" && e.shiftKey) {
         // TODO:(lewis 2025-12-03 15:00) dont like this, should it be a method on transactionForm?
-        displayTransactionEditor();
+        openTransactionEditor();
       }
     };
 
@@ -83,7 +83,7 @@ function AccountContent({ accountId }: AccountContentProps) {
       info={<AccountInfo balance={account.balance} />}
       actions={
         <AccountActions
-          onAddTransaction={displayTransactionEditor}
+          onAddTransaction={openTransactionEditor}
           disabled={!accountsAvailable}
           filterState={table.filterState}
         />
