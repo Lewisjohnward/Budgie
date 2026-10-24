@@ -18,10 +18,11 @@ import {
 } from "@/core/components/uiLibrary/table";
 import { TransactionEditorRow } from "./transactionEditorRow/TransactionEditorRow";
 import { SelectionModal } from "./RowSelectionModal";
-import { columns } from "./columns";
 import clsx from "clsx";
 import { Button } from "@/core/components/uiLibrary/button";
 import { TransactionEditor, TransactionTable } from "../hooks/useAccount";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { useRef } from "react";
 
 type AccountTableProps = {
   table: TransactionTable;
@@ -36,6 +37,22 @@ export function AccountTable({
   onDeleteSelected,
   onDuplicateSelected,
 }: AccountTableProps) {
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const rows = table.table.getRowModel().rows;
+
+  const rowVirtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => tableContainerRef.current,
+    estimateSize: () => 35,
+    overscan: 10,
+  });
+
+  const virtualRows = rowVirtualizer.getVirtualItems();
+
+  const visibleColumnCount = table.table.getVisibleLeafColumns().length;
+
+  const isTransactionEditorOpen = transactionEditor.state.open;
+
   return (
     <>
       {/* <section */}
@@ -44,6 +61,7 @@ export function AccountTable({
       {/*   className="flex-1 overflow-auto" */}
       {/* > */}
       <Table
+        containerRef={tableContainerRef}
         onClick={transactionEditor.state.open ? table.onInteraction : undefined}
         aria-label="Transactions"
       >
@@ -70,92 +88,140 @@ export function AccountTable({
           ))}
         </TableHeader>
         <TableBody>
-          {transactionEditor.state.open &&
-            transactionEditor.state.editingTransactionId === undefined && (
-              // Add transaction
-              <TransactionEditorRow transactionEditor={transactionEditor} />
-            )}
-          {table.table.getRowModel().rows?.length > 0 &&
-            table.table.getRowModel().rows.map((row) =>
-              row.id === transactionEditor.state.editingTransactionId &&
-                transactionEditor.state.open ? (
-                // Edit transaction
-                <TransactionEditorRow
-                  key={`edit-${row.id}`}
-                  transactionEditor={transactionEditor}
-                />
-              ) : transactionEditor.state.open ? (
+          {isTransactionEditorOpen ? (
+            <>
+              {transactionEditor.state.editingTransactionId === undefined && (
+                <TransactionEditorRow transactionEditor={transactionEditor} />
+              )}
+
+              {rows.map((row) =>
+                row.id === transactionEditor.state.editingTransactionId ? (
+                  <TransactionEditorRow
+                    key={`edit-${row.id}`}
+                    transactionEditor={transactionEditor}
+                  />
+                ) : (
+                  <TableRow
+                    key={row.id}
+                    className={clsx(
+                      transactionEditor.isDirty && "hover:bg-transparent"
+                    )}
+                    data-state={row.getIsSelected() && "selected"}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      table.onInteraction();
+                    }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      table.onRowSelection(e, row);
+                    }}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                )
+              )}
+            </>
+          ) : (
+            <>
+              {virtualRows.length > 0 && (
                 <TableRow
-                  className={clsx(
-                    transactionEditor.isDirty && "hover:bg-transparent"
-                  )}
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                    table.onInteraction();
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    table.onRowSelection(e, row);
-                  }}
+                  aria-hidden="true"
+                  className="border-0 hover:bg-transparent"
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
+                  <TableCell
+                    colSpan={visibleColumnCount}
+                    className="border-0 p-0"
+                    style={{ height: virtualRows[0].start }}
+                  />
                 </TableRow>
-              ) : (
-                <ContextMenu modal>
-                  <ContextMenuTrigger asChild>
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
-                      onClick={(e) => table.onRowSelection(e, row)}
-                      onContextMenu={() => table.onRowSelectionContextMenu(row)}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  </ContextMenuTrigger>
-                  <ContextMenuContent className="w-64 text-gray-700">
-                    <ContextMenuItem
-                      onClick={onDeleteSelected}
-                      className="justify-start gap-4"
-                    >
-                      <MdDelete />
-                      Delete
-                    </ContextMenuItem>
-                    <ContextMenuSeparator />
-                    <ContextMenuItem
-                      onClick={onDuplicateSelected}
-                      className="justify-start gap-4"
-                    >
-                      <FaCopy />
-                      Duplicate
-                    </ContextMenuItem>
-                  </ContextMenuContent>
-                </ContextMenu>
-              )
-            )}
+              )}
+
+              {virtualRows.map((virtualRow) => {
+                const row = rows[virtualRow.index];
+
+                return (
+                  <ContextMenu modal key={row.id}>
+                    <ContextMenuTrigger asChild>
+                      <TableRow
+                        data-index={virtualRow.index}
+                        ref={rowVirtualizer.measureElement}
+                        data-state={row.getIsSelected() && "selected"}
+                        onClick={(e) => table.onRowSelection(e, row)}
+                        onContextMenu={() =>
+                          table.onRowSelectionContextMenu(row)
+                        }
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    </ContextMenuTrigger>
+
+                    <ContextMenuContent className="w-64 text-gray-700">
+                      <ContextMenuItem
+                        onClick={onDeleteSelected}
+                        className="justify-start gap-4"
+                      >
+                        <MdDelete />
+                        Delete
+                      </ContextMenuItem>
+
+                      <ContextMenuSeparator />
+
+                      <ContextMenuItem
+                        onClick={onDuplicateSelected}
+                        className="justify-start gap-4"
+                      >
+                        <FaCopy />
+                        Duplicate
+                      </ContextMenuItem>
+                    </ContextMenuContent>
+                  </ContextMenu>
+                );
+              })}
+
+              {virtualRows.length > 0 && (
+                <TableRow
+                  aria-hidden="true"
+                  className="border-0 hover:bg-transparent"
+                >
+                  <TableCell
+                    colSpan={visibleColumnCount}
+                    className="border-0 p-0"
+                    style={{
+                      height:
+                        rowVirtualizer.getTotalSize() -
+                        virtualRows[virtualRows.length - 1].end,
+                    }}
+                  />
+                </TableRow>
+              )}
+            </>
+          )}
+
           {table.isFiltered && (
             <TableRow className="border-0 hover:bg-transparent">
-              <TableCell colSpan={columns.length} className="text-center">
+              <TableCell colSpan={visibleColumnCount} className="text-center">
                 <div className="py-4 space-y-4">
                   <p className="font-[400]">
                     Some transactions are hidden by your search{" "}
-                    <span className="font-bold">{`"${table.filterState.searchFilter.filters}"`}</span>
+                    <span className="font-bold">
+                      {`"${table.filterState.searchFilter.filters}"`}
+                    </span>
                   </p>
+
                   <Button
                     className="bg-blue-700/20 text-blue-800 hover:bg-blue-700/30 shadow-none"
                     onClick={table.clearAllFilters}
