@@ -10,15 +10,15 @@ import {
 
 export const useAccount = (accountId: AccountId) => {
   const {
-    currentAccount,
+    selectedAccount,
     accountsAvailable,
     numberOfUncategorisedTransactions,
   } = useAccountData({ accountId });
   const transactionTable = useTransactionTable(
-    currentAccount.transactions,
-    currentAccount.id
+    selectedAccount.transactions,
+    selectedAccount.id
   );
-  const transactionEditor = useTransactionEditor(currentAccount.id);
+  const transactionEditor = useTransactionEditor(selectedAccount.id);
 
   const handleRowSelection = (
     e: React.MouseEvent<HTMLTableRowElement, MouseEvent>,
@@ -52,7 +52,7 @@ export const useAccount = (accountId: AccountId) => {
     transactionTable.table.resetRowSelection();
     transactionEditor.cancel();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentAccount.id]);
+  }, [selectedAccount.id]);
 
   const openTransactionEditor = () => {
     transactionTable.cancelSelection();
@@ -94,11 +94,11 @@ export const useAccount = (accountId: AccountId) => {
     duplicateTransactions({ transactionIds });
   };
 
-  const isDisplayingAllAccounts = currentAccount.name === "All Accounts";
+  const isDisplayingAllAccounts = selectedAccount.name === "All Accounts";
 
   return {
     //account
-    account: currentAccount,
+    account: selectedAccount,
     isDisplayingAllAccounts,
     accountsAvailable,
     //table
