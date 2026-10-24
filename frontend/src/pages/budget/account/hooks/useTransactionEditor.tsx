@@ -442,47 +442,6 @@ export const useTransactionEditor = (accountId: string) => {
     },
   };
 };
-// useTransactionFormRow.ts
-// export const useTransactionFormRow = () => {
-//   const form = useFormContext();
-//
-//   // Compose the two feature hooks
-//   const category = useSelectCategory();
-//   const payee = useSelectPayee();
-//
-//   // Orchestrate cross-control behavior
-//   const handleSelect = (item: { name: string; id: string; type: 'payee' | 'account' }) => {
-//     // update form
-//     if (item.type === 'payee') {
-//       form.setValue('payeeName', item.name, { shouldDirty: true });
-//       form.setValue('payeeId', item.id || null, { shouldDirty: true });
-//     } else {
-//       // account transfer
-//       form.setValue('payeeName', `To/From ${item.name}`, { shouldDirty: true });
-//       form.setValue('payeeId', item.id || null, { shouldDirty: true });
-//       // coordination: disable/reset category
-//       form.setValue('categoryId', null, { shouldDirty: true });
-//     }
-//
-//     // popovers: close appropriately
-//     payee.popover.handleClose();
-//   };
-//
-//   // Expose the two models as sub-objects
-//   return {
-//     category, // as returned from useSelectCategory (e.g., addCategory, currentMonthByCategoryId, popover, etc.)
-//     payee: {
-//       ...payee,
-//       handleSelect, // normalized handler for payee/account clicks
-//     },
-//   };
-// };
-//   Standardize popovers (once)
-// Extract a ComboboxPopover wrapper that bakes in:
-// PopoverTrigger asChild
-// onOpenAutoFocus={e => e.preventDefault()}
-// Close on Tab/Escape, ARIA roles, roving index, virtualization hook
-// Reuse it for payee and category. You’ll stop fixing the same edge cases twice.
 
 //   Unify keyboard + focus logic
 // Create useTransactionFormRow to own field order and focusNextFrom(). Wire payee/category/date “commit → close popover → focus next”.
