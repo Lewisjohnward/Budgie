@@ -1,9 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useTransactionTable } from "./useTransactionTable";
-import {
-  TransactionEditorMode,
-  useTransactionEditor,
-} from "./useTransactionEditor";
+import { useTransactionEditor } from "./useTransactionEditor";
 import { useAccountData } from "./useAccountData/useAccountData";
 import { AccountId } from "../../allocation/types/types";
 import {
@@ -53,17 +50,9 @@ export const useAccount = (accountId: AccountId) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentAccount.id]);
 
-  const displayTransactionEditor = () => {
-    transactionEditor.resetToNewTransaction();
+  const openTransactionEditor = () => {
     transactionTable.cancelSelection();
-    transactionEditor.setTransactionEditorState({
-      open: true,
-      mode: TransactionEditorMode.Add,
-      displayAccountField: currentAccount.id === "all",
-      accountId: currentAccount.id || "",
-      showWarning: false,
-      editingTransactionId: undefined,
-    });
+    transactionEditor.open();
   };
 
   const warningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -122,7 +111,7 @@ export const useAccount = (accountId: AccountId) => {
     handleDeleteSelectedTransactions,
     handleDuplicateTransactions,
 
-    displayTransactionEditor,
+    openTransactionEditor,
     transactionEditor: {
       form: transactionEditor.form,
       state: transactionEditor.transactionEditorState,
