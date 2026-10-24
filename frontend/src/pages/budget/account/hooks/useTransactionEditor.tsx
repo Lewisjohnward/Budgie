@@ -71,16 +71,18 @@ export type TransactionEditorState = {
   editingTransactionId?: string;
 };
 
+const defaultTransactionEditorState = {
+  open: false,
+  mode: TransactionEditorMode.Add,
+  displayAccountField: false,
+  accountId: "",
+  showWarning: false,
+  editingTransactionId: undefined,
+};
+
 export const useTransactionEditor = (accountId: string) => {
   const [transactionEditorState, setTransactionEditorState] =
-    useState<TransactionEditorState>({
-      open: false,
-      mode: TransactionEditorMode.Add,
-      displayAccountField: false,
-      accountId: "",
-      showWarning: false,
-      editingTransactionId: undefined,
-    });
+    useState<TransactionEditorState>(defaultTransactionEditorState);
 
   const transactionForm: TransactionForm = useForm<TransactionFormData>({
     defaultValues: {
@@ -370,14 +372,7 @@ export const useTransactionEditor = (accountId: string) => {
     selectDate.reset();
     selectCategory.reset();
 
-    setTransactionEditorState({
-      open: false,
-      mode: TransactionEditorMode.Add,
-      displayAccountField: false,
-      accountId: "",
-      showWarning: false,
-      editingTransactionId: undefined,
-    });
+    setTransactionEditorState(defaultTransactionEditorState);
   };
 
   // TODO:(lewis 2025-12-03 13:30) replace this with a function that creates default data
