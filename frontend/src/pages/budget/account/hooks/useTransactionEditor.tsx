@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useSelectCategory } from "../components/transactionEditorRow/selectCategory/useSelectCategory";
+import {
+  CategoryBranded,
+  useSelectCategory,
+} from "../components/transactionEditorRow/selectCategory/useSelectCategory";
 import { useSelectPayee } from "../components/transactionEditorRow/selectPayee/useSelectPayee";
-import { Category } from "@/core/types/NormalizedData";
 import { useSelectDate } from "../components/transactionEditorRow/selectDate/useSelectDate";
 import { normaliseDate } from "../utils/normaliseDate";
 import {
@@ -175,7 +177,7 @@ export const useTransactionEditor = (accountId: string) => {
 
   const handleSelectCategory = (
     categoryGroupName: string,
-    category: Category
+    category: CategoryBranded
   ) => {
     // TODO:(lewis 2025-12-05 13:53) if user doesn't add category then just give uncategorised
     if (!categoryGroupName || !category) {

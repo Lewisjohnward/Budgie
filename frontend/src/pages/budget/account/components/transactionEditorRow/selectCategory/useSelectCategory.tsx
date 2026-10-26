@@ -2,10 +2,19 @@ import { useMemo, useReducer, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useGetCategoriesQuery } from "@/core/api/budgetApiSlice";
-import { CategoryGroup, Category } from "@/core/types/NormalizedData";
+import {
+  CategoryUserBranded,
+  CategorySystemBranded,
+  CategoryGroupSystemBranded,
+  CategoryGroupUserBranded,
+  MonthBranded,
+} from "@/core/types/NormalizedData";
 import { useCreateCategoryMutation } from "@/core/api/budget/category/categoryApiSlice";
-import { asCategoryGroupId } from "@/pages/budget/allocation/types/types";
+import {
+  asCategoryGroupId,
+  CategoryId,
+} from "@/pages/budget/allocation/types/types";
+import { useBudgetSnapshot } from "@/pages/budget/allocation/hooks/useAllocation/useCategories";
 
 type SelectCategoryForm = {
   showAddCategoryForm: boolean;
@@ -78,17 +87,40 @@ export const usePopover = () => {
   return { isOpen, handleOpen, handleClose };
 };
 
+export type CategoryBranded = CategorySystemBranded | CategoryUserBranded;
+type CategoryGroupBranded =
+  | CategoryGroupUserBranded
+  | CategoryGroupSystemBranded;
+
 export const useSelectCategory = () => {
   const ref = useRef<HTMLInputElement>(null);
   const popover = usePopover();
-  const { data } = useGetCategoriesQuery();
-  if (data === undefined) {
-    throw new Error("useSelectCategory - data undefined");
-  }
+  const { data } = useBudgetSnapshot();
 
-  const { months, categories, categoryGroups: allCategoryGroups } = data;
+  const {
+    months,
+    categories: { user, rta, uncategorised },
+    categoryGroups: {
+      user: userCategoryGroups,
+      inflow,
+      uncategorised: uncategorisedGroup,
+    },
+  } = data;
 
-  const allCategoriesArray: Category[] = Object.values(categories);
+  const categoriesArray = useMemo<CategoryBranded[]>(
+    () => [...Object.values(user), rta, uncategorised],
+    [user, rta, uncategorised]
+  );
+
+  const categoryGroupsArray = useMemo<CategoryGroupBranded[]>(
+    () => [...Object.values(userCategoryGroups), inflow, uncategorisedGroup],
+    [userCategoryGroups, inflow, uncategorisedGroup]
+  );
+
+  const categoryGroupById = useMemo(
+    () => new Map(categoryGroupsArray.map((group) => [group.id, group])),
+    [categoryGroupsArray]
+  );
 
   const [inputState, dispatchReducer] = useReducer(reducer, initialState);
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
@@ -111,7 +143,7 @@ export const useSelectCategory = () => {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value;
+    const value = e.target.value;
 
     if (value === "") {
       dispatchReducer({ type: "RESET" });
@@ -119,52 +151,33 @@ export const useSelectCategory = () => {
       return;
     }
 
-    const categoryGroupsArray = Object.values(
-      allCategoryGroups
-    ) as CategoryGroup[];
+    const normalizedValue = value.toLowerCase();
 
-    // If the category is the only one remaining in the filtered list and it's spelled exactly, auto-complete with group name
-    // const filteredCategories = allCategoriesArray.filter((c) =>
-    //   c.name.toLowerCase().includes(value.toLowerCase())
-    // );
-
-    // if (
-    //   filteredCategories.length === 1 &&
-    //   filteredCategories[0].name.toLowerCase() === value.toLowerCase()
-    // ) {
-    //   const singleCategory = filteredCategories[0];
-    //   // Find the category group that contains this category
-    //   const categoryGroup = categoryGroupsArray.find((group) =>
-    //     group.categories.includes(singleCategory.id)
-    //   );
-    //
-    //   if (categoryGroup) {
-    //     // Auto-complete with "CategoryGroup: Category" format
-    //     value = `${categoryGroup.name}: ${singleCategory.name}`;
-    //   }
-    // }
-
-    // Check for exact match in "CategoryGroup: Category" format
+    // Check for an exact match in "CategoryGroup: Category" format.
     const hasExactMatch = categoryGroupsArray.some((group) =>
-      group.categories.some((categoryId: string) => {
-        const category = categories[categoryId];
-        const fullName = `${group.name}: ${category.name}`;
-        return fullName === value;
-      })
+      categoriesArray.some(
+        (category) =>
+          category.categoryGroupId === group.id &&
+          `${group.name}: ${category.name}` === value
+      )
     );
 
-    // Check for partial matches in category names or full format
-    const hasResults =
-      allCategoriesArray.some((c) =>
-        c.name.toLowerCase().includes(value.toLowerCase())
-      ) ||
-      categoryGroupsArray.some((group) =>
-        group.categories.some((categoryId: string) => {
-          const category = categories[categoryId];
-          const fullName = `${group.name}: ${category.name}`;
-          return fullName.toLowerCase().includes(value.toLowerCase());
-        })
-      );
+    // Check for partial matches in category names or full names.
+    const hasResults = categoriesArray.some((category) => {
+      const categoryGroup = categoryGroupById.get(category.categoryGroupId);
+
+      const categoryNameMatches = category.name
+        .toLowerCase()
+        .includes(normalizedValue);
+
+      const fullNameMatches = categoryGroup
+        ? `${categoryGroup.name}: ${category.name}`
+          .toLowerCase()
+          .includes(normalizedValue)
+        : false;
+
+      return categoryNameMatches || fullNameMatches;
+    });
 
     if (hasResults) {
       setHighlightedIndex(0);
@@ -180,61 +193,80 @@ export const useSelectCategory = () => {
     });
   };
 
-  // remove protected categories
   const categoryGroups = useMemo(() => {
-    return Object.values(allCategoryGroups).filter(
+    return categoryGroupsArray.filter(
       (group) => group.name !== "Uncategorised"
     );
-  }, [allCategoryGroups]);
+  }, [categoryGroupsArray]);
 
   const extendableCategoryGroups = useMemo(() => {
     return categoryGroups.filter((group) => group.name !== "Inflow");
   }, [categoryGroups]);
-  ////
 
   const filteredCategoryIds = useMemo(() => {
     if (inputState.status === "idle" || inputState.status === "focused") {
-      return new Set(allCategoriesArray.map((c) => c.id));
+      return new Set(categoriesArray.map((category) => category.id));
     }
-    const filtered = allCategoriesArray.filter((c) =>
-      c.name.toLowerCase().includes(input.toLowerCase())
-    );
-    return new Set(filtered.map((c) => c.id));
-  }, [input, inputState.status, allCategoriesArray]);
+
+    const normalizedInput = input.toLowerCase();
+
+    const filtered = categoriesArray.filter((category) => {
+      const categoryGroup = categoryGroupById.get(category.categoryGroupId);
+
+      const categoryNameMatches = category.name
+        .toLowerCase()
+        .includes(normalizedInput);
+
+      const fullNameMatches = categoryGroup
+        ? `${categoryGroup.name}: ${category.name}`
+          .toLowerCase()
+          .includes(normalizedInput)
+        : false;
+
+      return categoryNameMatches || fullNameMatches;
+    });
+
+    return new Set(filtered.map((category) => category.id));
+  }, [input, inputState.status, categoriesArray, categoryGroupById]);
 
   // Flat list of filtered category IDs for keyboard navigation
   const flatFilteredCategoryIds = useMemo(() => {
     const ids: string[] = [];
+
     categoryGroups.forEach((group) => {
-      group.categories.forEach((categoryId: string) => {
-        if (filteredCategoryIds.has(categoryId)) {
-          ids.push(categoryId);
+      categoriesArray.forEach((category) => {
+        if (
+          category.categoryGroupId === group.id &&
+          filteredCategoryIds.has(category.id)
+        ) {
+          ids.push(category.id);
         }
       });
     });
+
     return ids;
-  }, [categoryGroups, filteredCategoryIds]);
+  }, [categoryGroups, categoriesArray, filteredCategoryIds]);
 
   const currentMonthByCategoryId = useMemo(() => {
     const now = new Date();
     const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
 
-    // TODO:(lewis 2025-12-03 14:30) needs typing
-    const map = new Map();
-    allCategoriesArray.forEach((category) => {
-      const currentMonth = category.months
-        .map((monthId) => months[monthId])
-        .find((obj) => {
-          const date = new Date(obj.month);
-          return (
-            date.getFullYear() === currentYear &&
-            date.getMonth() === now.getMonth()
-          );
-        });
-      map.set(category.id, currentMonth);
+    const map = new Map<CategoryId, MonthBranded | undefined>();
+
+    Object.values(months).forEach((month) => {
+      const date = new Date(month.month);
+
+      if (
+        date.getFullYear() === currentYear &&
+        date.getMonth() === currentMonth
+      ) {
+        map.set(month.categoryId, month);
+      }
     });
+
     return map;
-  }, [categories, months]);
+  }, [months]);
 
   // to add a category /////
   const [createCategory, { isLoading }] = useCreateCategoryMutation();
@@ -282,19 +314,23 @@ export const useSelectCategory = () => {
     // If a category is highlighted, select it
     if (highlightedIndex >= 0) {
       const categoryId = flatFilteredCategoryIds[highlightedIndex];
-      const category = categories[categoryId];
-      const categoryGroupsArray = Object.values(
-        allCategoryGroups
-      ) as CategoryGroup[];
-      const categoryGroup = categoryGroupsArray.find((group) =>
-        group.categories.includes(categoryId)
+
+      const category = categoriesArray.find(
+        (category) => category.id === categoryId
       );
-      if (categoryGroup) {
+
+      if (!category) return;
+
+      const categoryGroup = categoryGroupById.get(category.categoryGroupId);
+
+      if (category && categoryGroup) {
         handleSelect(`${categoryGroup.name}: ${category.name}`);
         setHighlightedIndex(-1);
       }
+
       return;
     }
+
     popover.handleClose();
   };
 
@@ -303,27 +339,34 @@ export const useSelectCategory = () => {
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
+
       setHighlightedIndex((prev) => {
         const nextIndex = prev + 1;
+
         return nextIndex < flatFilteredCategoryIds.length ? nextIndex : prev;
       });
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
+
       setHighlightedIndex((prev) => {
         const nextIndex = prev - 1;
+
         return nextIndex >= 0 ? nextIndex : -1;
       });
     } else if (e.key === "Enter" && highlightedIndex >= 0) {
       e.preventDefault();
+
       const categoryId = flatFilteredCategoryIds[highlightedIndex];
-      const category = categories[categoryId];
-      const categoryGroupsArray = Object.values(
-        allCategoryGroups
-      ) as CategoryGroup[];
-      const categoryGroup = categoryGroupsArray.find((group) =>
-        group.categories.includes(categoryId)
+
+      const category = categoriesArray.find(
+        (category) => category.id === categoryId
       );
-      if (categoryGroup) {
+
+      if (!category) return;
+
+      const categoryGroup = categoryGroupById.get(category.categoryGroupId);
+
+      if (category && categoryGroup) {
         handleSelect(`${categoryGroup.name}: ${category.name}`);
         popover.handleClose();
       }
@@ -333,18 +376,22 @@ export const useSelectCategory = () => {
   // Derive highlighted selection and also set local input state accordingly
   const getHighlightedSelection = () => {
     if (highlightedIndex < 0) return null;
+
     const categoryId = flatFilteredCategoryIds[highlightedIndex];
-    const category = categories[categoryId];
-    const categoryGroupsArray = Object.values(
-      allCategoryGroups
-    ) as CategoryGroup[];
-    const categoryGroup = categoryGroupsArray.find((group) =>
-      group.categories.includes(categoryId)
+
+    const category = categoriesArray.find(
+      (category) => category.id === categoryId
     );
-    if (!categoryGroup || !category) return null;
-    // update local input state to selected string
+
+    if (!category) return null;
+
+    const categoryGroup = categoryGroupById.get(category.categoryGroupId);
+
+    if (!categoryGroup) return null;
+
     handleSelect(`${categoryGroup.name}: ${category.name}`);
     setHighlightedIndex(-1);
+
     return { groupName: categoryGroup.name, category } as const;
   };
 
@@ -372,7 +419,7 @@ export const useSelectCategory = () => {
     focus,
     currentMonthByCategoryId,
     categoryGroups,
-    categories,
+    categories: categoriesArray,
     filteredCategoryIds,
     popover,
     // create category
