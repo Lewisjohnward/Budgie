@@ -238,23 +238,27 @@ export function SelectCategory({ selectCategory }: SelectCategoryProps) {
                     </div>
                   )}
                 {categoryGroups.map((categoryGroup) => {
-                  // Filter categories in this group based on input
-                  const filteredCategories = categoryGroup.categories.filter(
-                    (categoryId) => filteredCategoryIds.has(categoryId)
+                  const filteredCategories = categories.filter(
+                    (category) =>
+                      category.categoryGroupId === categoryGroup.id &&
+                      filteredCategoryIds.has(category.id)
                   );
 
-                  // Only show the group if it has matching categories
                   if (filteredCategories.length === 0) return null;
 
                   return (
                     <div key={categoryGroup.id}>
                       <CategoryGroup>{categoryGroup.name}</CategoryGroup>
-                      {filteredCategories.map((categoryId) => {
-                        const category = categories[categoryId];
+
+                      {filteredCategories.map((category) => {
+                        const categoryId = category.id;
+
                         const currentMonthObj =
                           currentMonthByCategoryId.get(categoryId);
+
                         const currentIndex =
                           flatFilteredCategoryIds.indexOf(categoryId);
+
                         const isHighlighted = currentIndex === highlightedIndex;
                         const isSelected = selectedCategoryId === categoryId;
 
@@ -268,6 +272,7 @@ export function SelectCategory({ selectCategory }: SelectCategoryProps) {
                             isSelected={isSelected}
                           >
                             <Category>{category.name}</Category>
+
                             <div className="flex items-center gap-2">
                               <CategoryAllocation
                                 value={currentMonthObj?.available ?? 0}

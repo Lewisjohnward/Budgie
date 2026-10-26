@@ -105,6 +105,9 @@ export type CategoryGroupSystemBranded = {
   name: string;
 };
 
+export type CategoryGroupBranded =
+  CategoryGroupUserBranded | CategoryGroupSystemBranded;
+
 export type CategoryBranded = CategorySystemBranded | CategoryUserBranded;
 
 export type CategoryUserBranded = {
