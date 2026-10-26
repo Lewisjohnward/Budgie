@@ -69,5 +69,65 @@ test.describe("transaction", () => {
         await assertNewTransactionsToCategorise(page);
       });
     });
+    test.describe("categorised", () => {
+      test("can create a categorised inflow transaction", async ({
+        page,
+        request,
+      }) => {
+        const category = "e2e-test";
+
+        await setupScenario(page, request, "create-transaction");
+        await navigateToAccount(page, "test account");
+
+        await openAddTransactionForm(page);
+
+        const date = new Date();
+        await createTransaction(page, {
+          memo: "e2e test",
+          inflow: 25.0,
+          category,
+          date,
+        });
+
+        await assertTransaction(page, {
+          date,
+          category: "test : e2e-test",
+          memo: "e2e test",
+          outflow: 0,
+          inflow: 25,
+        });
+
+        await assertAccountBalance(page, "test account", 25);
+      });
+      test("can create a categorised outflow transaction", async ({
+        page,
+        request,
+      }) => {
+        const category = "e2e-test";
+
+        await setupScenario(page, request, "create-transaction");
+        await navigateToAccount(page, "test account");
+
+        await openAddTransactionForm(page);
+
+        const date = new Date();
+        await createTransaction(page, {
+          memo: "e2e test",
+          outflow: 25.0,
+          category,
+          date,
+        });
+
+        await assertTransaction(page, {
+          date,
+          category: "test : e2e-test",
+          memo: "e2e test",
+          outflow: 25,
+          inflow: 0,
+        });
+
+        await assertAccountBalance(page, "test account", -25);
+      });
+    });
   });
 });
