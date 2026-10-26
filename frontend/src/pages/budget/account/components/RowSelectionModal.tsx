@@ -1,5 +1,4 @@
 import { Ellipsis, X } from "lucide-react";
-import { useGetCategoriesQuery } from "@/core/api/budgetApiSlice";
 import { Button } from "@/core/components/uiLibrary/button";
 import { MdMoveToInbox } from "react-icons/md";
 import {
@@ -19,6 +18,17 @@ import {
   DropdownMenuTrigger,
 } from "@/core/components/uiLibrary/dropdown-menu";
 import { DropdownMenuArrow } from "@radix-ui/react-dropdown-menu";
+import { useBudgetSnapshot } from "../../allocation/hooks/useAllocation/useCategories";
+import { useMemo } from "react";
+import { CategoryUserBranded } from "@/core/types/NormalizedData";
+import { CategoryGroupId } from "../../allocation/types/types";
+
+type CategoryGroupView = {
+  categories: CategoryUserBranded[];
+  id: CategoryGroupId;
+  name: string;
+  position: number;
+};
 
 export function SelectionModal({
   rowCount,
@@ -29,11 +39,25 @@ export function SelectionModal({
   display: boolean;
   cancel: () => void;
 }) {
-  const { data } = useGetCategoriesQuery();
-  if (!data) return <div>There has been an error</div>;
+  const { data } = useBudgetSnapshot();
 
-  const categoryGroups = Object.values(data.categoryGroups);
-  const categories = data.categories;
+  const categoryGroupView: CategoryGroupView[] = useMemo(() => {
+    const categoryGroups = Object.values(data.categoryGroups.user);
+    const categoriesByGroup = new Map<CategoryGroupId, CategoryUserBranded[]>();
+
+    for (const category of Object.values(data.categories.user)) {
+      const groupId = category.categoryGroupId;
+      const groupCategories = categoriesByGroup.get(groupId) ?? [];
+
+      groupCategories.push(category);
+      categoriesByGroup.set(groupId, groupCategories);
+    }
+
+    return Object.values(categoryGroups).map((categoryGroup) => ({
+      ...categoryGroup,
+      categories: categoriesByGroup.get(categoryGroup.id) ?? [],
+    }));
+  }, [data.categoryGroups.user, data.categories.user]);
 
   return (
     <Dialog open={display} modal={false}>
@@ -59,9 +83,9 @@ export function SelectionModal({
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56">
             <DropdownMenuArrow className="fill-white" width={10} height={10} />
-            {categoryGroups.map((categoryGroup) => {
+            {categoryGroupView.map((categoryGroup) => {
               return (
-                <DropdownMenuGroup>
+                <DropdownMenuGroup key={categoryGroup.id}>
                   <DropdownMenuGroup>
                     <DropdownMenuSub>
                       <DropdownMenuSubTrigger>
@@ -69,9 +93,9 @@ export function SelectionModal({
                       </DropdownMenuSubTrigger>
                       <DropdownMenuPortal>
                         <DropdownMenuSubContent>
-                          {categoryGroup.categories.map((categoryId) => (
-                            <DropdownMenuItem>
-                              <span>{categories[categoryId].name}</span>
+                          {categoryGroup.categories.map((category) => (
+                            <DropdownMenuItem key={category.id}>
+                              <span>{category.name}</span>
                             </DropdownMenuItem>
                           ))}
                         </DropdownMenuSubContent>
@@ -91,22 +115,6 @@ export function SelectionModal({
               More
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
-            {categoryGroups.map((categoryGroup) => {
-              return (
-                <DropdownMenuGroup>
-                  <DropdownMenuGroup>
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>
-                        <span>{categoryGroup.name}</span>
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuPortal></DropdownMenuPortal>
-                    </DropdownMenuSub>
-                  </DropdownMenuGroup>
-                </DropdownMenuGroup>
-              );
-            })}
-          </DropdownMenuContent>
         </DropdownMenu>
       </DialogContent>
     </Dialog>
