@@ -13,8 +13,9 @@ export const expectTransactionCategoryVisible = async (
 };
 
 type CreateTransactionInput = {
-  date: Date;
+  date?: Date;
   memo: string;
+  category?: string;
 } & ({ outflow: number; inflow?: never } | { inflow: number; outflow?: never });
 
 export const createTransaction = async (
@@ -23,11 +24,18 @@ export const createTransaction = async (
 ) => {
   await page.getByRole("button", { name: "Add Transaction" }).click();
 
-  await page.getByRole("textbox", { name: "Date" }).click();
+  if (input.date) {
+    await page.getByRole("textbox", { name: "Date" }).click();
 
-  await page
-    .getByRole("gridcell", { name: String(input.date.getDate()) })
-    .click();
+    await page
+      .getByRole("gridcell", { name: String(input.date.getDate()) })
+      .click();
+  }
+
+  if (input.category !== undefined) {
+    await page.getByRole("textbox", { name: "Category" }).click();
+    await page.getByRole("button", { name: input.category }).click();
+  }
 
   await page.getByRole("textbox", { name: "Memo" }).fill(input.memo);
 
