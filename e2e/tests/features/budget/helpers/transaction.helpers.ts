@@ -117,3 +117,11 @@ export const assertTransactionCount = async (
 
   await expect(transactions.getByRole("row")).toHaveCount(expectedCount + 1);
 };
+
+export const assertNewTransactionsToCategorise = async (page: Page) => {
+  const newTransactionsToCategoriseButton = page.getByRole("button", {
+    name: "new transaction to categorise",
+  });
+
+  await expect(newTransactionsToCategoriseButton).toBeVisible();
+};
