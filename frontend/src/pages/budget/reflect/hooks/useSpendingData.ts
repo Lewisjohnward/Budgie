@@ -22,6 +22,7 @@ const colors = ["#93D53E", "#545BFE", "#AEE865", "#CE5E66", "#F6C91D"];
 
 export const useSpendingData = (page: ReflectPageKey) => {
   const title = REFLECT_PAGES[page].title;
+  // TODO:(lewis 2026-10-26 10:03) remove this and use useBudgetSnapshot!
   const data = useCategoriesData();
   const reflectState = useAppSelector(reflectMonth);
   const { initialized } = reflectState;
