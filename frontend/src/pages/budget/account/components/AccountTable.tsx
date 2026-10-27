@@ -29,6 +29,7 @@ type AccountTableProps = {
   transactionEditor: TransactionEditor;
   onDeleteSelected: () => void;
   onDuplicateSelected: () => void;
+  disableVirtualisation?: boolean;
 };
 
 export function AccountTable({
@@ -36,6 +37,7 @@ export function AccountTable({
   transactionEditor,
   onDeleteSelected,
   onDuplicateSelected,
+  disableVirtualisation = false,
 }: AccountTableProps) {
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const rows = table.table.getRowModel().rows;
@@ -49,8 +51,14 @@ export function AccountTable({
 
   const virtualRows = rowVirtualizer.getVirtualItems();
 
-  const visibleColumnCount = table.table.getVisibleLeafColumns().length;
+  const rowsToRender = disableVirtualisation
+    ? rows.map((row, index) => ({ row, index }))
+    : virtualRows.map((virtualRow) => ({
+      row: rows[virtualRow.index],
+      index: virtualRow.index,
+    }));
 
+  const visibleColumnCount = table.table.getVisibleLeafColumns().length;
   const isTransactionEditorOpen = transactionEditor.state.open;
 
   return (
@@ -130,7 +138,7 @@ export function AccountTable({
             </>
           ) : (
             <>
-              {virtualRows.length > 0 && (
+              {!disableVirtualisation && virtualRows.length > 0 && (
                 <TableRow
                   aria-hidden="true"
                   className="border-0 hover:bg-transparent"
@@ -143,56 +151,54 @@ export function AccountTable({
                 </TableRow>
               )}
 
-              {virtualRows.map((virtualRow) => {
-                const row = rows[virtualRow.index];
+              {rowsToRender.map(({ row, index }) => (
+                <ContextMenu modal key={row.id}>
+                  <ContextMenuTrigger asChild>
+                    <TableRow
+                      data-index={index}
+                      ref={
+                        disableVirtualisation
+                          ? undefined
+                          : rowVirtualizer.measureElement
+                      }
+                      data-state={row.getIsSelected() && "selected"}
+                      onClick={(e) => table.onRowSelection(e, row)}
+                      onContextMenu={() => table.onRowSelectionContextMenu(row)}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </ContextMenuTrigger>
 
-                return (
-                  <ContextMenu modal key={row.id}>
-                    <ContextMenuTrigger asChild>
-                      <TableRow
-                        data-index={virtualRow.index}
-                        ref={rowVirtualizer.measureElement}
-                        data-state={row.getIsSelected() && "selected"}
-                        onClick={(e) => table.onRowSelection(e, row)}
-                        onContextMenu={() =>
-                          table.onRowSelectionContextMenu(row)
-                        }
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id}>
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    </ContextMenuTrigger>
+                  <ContextMenuContent className="w-64 text-gray-700">
+                    <ContextMenuItem
+                      onClick={onDeleteSelected}
+                      className="justify-start gap-4"
+                    >
+                      <MdDelete />
+                      Delete
+                    </ContextMenuItem>
 
-                    <ContextMenuContent className="w-64 text-gray-700">
-                      <ContextMenuItem
-                        onClick={onDeleteSelected}
-                        className="justify-start gap-4"
-                      >
-                        <MdDelete />
-                        Delete
-                      </ContextMenuItem>
+                    <ContextMenuSeparator />
 
-                      <ContextMenuSeparator />
+                    <ContextMenuItem
+                      onClick={onDuplicateSelected}
+                      className="justify-start gap-4"
+                    >
+                      <FaCopy />
+                      Duplicate
+                    </ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
+              ))}
 
-                      <ContextMenuItem
-                        onClick={onDuplicateSelected}
-                        className="justify-start gap-4"
-                      >
-                        <FaCopy />
-                        Duplicate
-                      </ContextMenuItem>
-                    </ContextMenuContent>
-                  </ContextMenu>
-                );
-              })}
-
-              {virtualRows.length > 0 && (
+              {!disableVirtualisation && virtualRows.length > 0 && (
                 <TableRow
                   aria-hidden="true"
                   className="border-0 hover:bg-transparent"
