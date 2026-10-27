@@ -28,7 +28,10 @@ export const createTransaction = async (
     await page.getByRole("textbox", { name: "Date" }).click();
 
     await page
-      .getByRole("gridcell", { name: String(input.date.getDate()) })
+      .getByRole("gridcell", {
+        name: String(input.date.getDate()),
+        selected: true,
+      })
       .click();
   }
 
