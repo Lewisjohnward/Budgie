@@ -20,7 +20,8 @@ import {
 } from "../../allocation/types/types";
 
 const TransactionFormSchema = z.object({
-  accountId: z.string().uuid(),
+  // TODO:(lewis 2026-10-27 11:07) need to decide if this is a good idea or not, a hook refactor will probably answer the question
+  accountId: z.string().min(1, "Account ID is required"),
   date: z.date(),
   payeeId: z.string().nullish(),
   categoryName: z.string(),

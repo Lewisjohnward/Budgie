@@ -50,6 +50,7 @@ export function resolveMonthMap(
  *
  * @throws If the bootstrap data has not yet been loaded
  */
+// TODO:(lewis 2026-10-25 17:28) this needs to be hoisted, currently its in allocation but its also needed in reflect and account
 export function useBudgetSnapshot() {
   const { data } = useGetBudgetSnapshotQuery();
 

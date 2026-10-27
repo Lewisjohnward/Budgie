@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import BudgetPage from "../../../Budget";
 import Account from "../../Account";
 import { Provider } from "react-redux";
@@ -34,3 +34,20 @@ export const renderAccountRedirectTest = (store = createStore()) => {
   );
 };
 
+export const renderAccountPage = (store = createStore()) => {
+  return render(
+    <Provider store={store}>
+      <MemoryRouter initialEntries={["/budget/account/acc_1"]}>
+        <Routes>
+          <Route path="/budget" element={<BudgetPage />}>
+            <Route
+              path="account/:accountId"
+              element={<Account disableVirtualisation />}
+            />
+          </Route>
+        </Routes>
+        <CurrentPath />
+      </MemoryRouter>
+    </Provider>
+  );
+};
