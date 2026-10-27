@@ -34,9 +34,3 @@ export const renderAccountRedirectTest = (store = createStore()) => {
   );
 };
 
-export const queryFormRow = () =>
-  screen.queryByRole("row", { name: "Add transaction form" });
-export const findFormRow = () =>
-  screen.findByRole("row", { name: "Add transaction form" });
-export const findTransactionRow = (memo: string) =>
-  screen.findByRole("row", { name: new RegExp(memo, "i") });
