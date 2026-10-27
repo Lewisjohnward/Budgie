@@ -10,7 +10,11 @@ import { useBudgetSnapshot } from "@/pages/budget/allocation/hooks/useAllocation
 import { AccountId } from "@/pages/budget/allocation/types/types";
 import { useEffect } from "react";
 
-export default function Account() {
+export default function Account({
+  disableVirtualisation = false,
+}: {
+  disableVirtualisation?: boolean;
+}) {
   const { accountId } = useParams<{ accountId: AccountId }>();
   const {
     data: { accounts },
@@ -25,14 +29,23 @@ export default function Account() {
     return <Navigate to={destination} replace />;
   }
 
-  return <AccountContent accountId={accountId} />;
+  return (
+    <AccountContent
+      accountId={accountId}
+      disableVirtualisation={disableVirtualisation}
+    />
+  );
 }
 
 type AccountContentProps = {
   accountId: AccountId;
+  disableVirtualisation?: boolean;
 };
 
-function AccountContent({ accountId }: AccountContentProps) {
+function AccountContent({
+  accountId,
+  disableVirtualisation = false,
+}: AccountContentProps) {
   const {
     account,
     isDisplayingAllAccounts,
@@ -94,6 +107,7 @@ function AccountContent({ accountId }: AccountContentProps) {
           transactionEditor={transactionEditor}
           onDeleteSelected={handleDeleteSelectedTransactions}
           onDuplicateSelected={handleDuplicateTransactions}
+          disableVirtualisation={disableVirtualisation}
         />
       }
     />
