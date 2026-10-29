@@ -1,7 +1,7 @@
 import { http, HttpResponse } from "msw";
-import { getSnapshot } from "../__helpers__/msw/state";
-import { calculateCreateTransactionResult } from "./transaction.utils";
 import { CreateTransactionInput } from "@/core/api/budget/transaction/types";
+import { getSnapshot } from "../../__helpers__/msw/state";
+import { calculateCreateTransactionResult } from "./transactionEditor.utils";
 
 const API_URL = import.meta.env.VITE_API_URL;
 

@@ -82,6 +82,8 @@ const defaultTransactionEditorState = {
 };
 
 export const useTransactionEditor = (accountId: string) => {
+  const [createTransaction] = useCreateTransactionMutation();
+  const [editTransaction] = useEditTransactionMutation();
   const [transactionEditorState, setTransactionEditorState] =
     useState<TransactionEditorState>(defaultTransactionEditorState);
 
@@ -102,27 +104,13 @@ export const useTransactionEditor = (accountId: string) => {
   const { setValue } = transactionForm;
   const { isDirty } = transactionForm.formState;
 
-  const [createTransaction] = useCreateTransactionMutation();
-  const [editTransaction] = useEditTransactionMutation();
   const selectDate = useSelectDate();
   const selectPayee = useSelectPayee();
   const selectCategory = useSelectCategory();
 
-  const handleSelectDate = (date: Date | undefined) => {
-    if (!date) return;
-    const utcDate = new Date(
-      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
-    );
-    setValue("date", utcDate, { shouldDirty: true });
-    selectDate.onSelect(
-      date.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "2-digit",
-      })
-    );
+  const handleSelectDate = () => {
     selectDate.popover.close();
-    selectPayee.focus();
+    selectCategory.focus();
   };
 
   const handleInputChangeDate = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -317,7 +305,6 @@ export const useTransactionEditor = (accountId: string) => {
         },
       ]);
     } else {
-      console.log(transactionForm.getValues());
       createTransaction({
         accountId: asAccountId(formValues.accountId),
         categoryId: formValues.categoryId

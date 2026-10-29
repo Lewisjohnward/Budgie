@@ -63,7 +63,9 @@ function AccountContent({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         table.cancelSelection();
+        // if selection cancel selection
         transactionEditor.cancel();
+        // if transaction editor close
       }
       if (e.key === "N" && e.shiftKey) {
         // TODO:(lewis 2025-12-03 15:00) dont like this, should it be a method on transactionForm?

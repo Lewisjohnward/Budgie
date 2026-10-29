@@ -1,0 +1,14 @@
+/ need to test patch data return structure
+
+/ need to update openapi.yml
+
+/ need to consume open api types in fe
+
+/ need to implement optimistic updates in fe
+
+/ need to create an e2e test for transaction creation
+
+clean up transaction form row
+ - create transaction form actions
+
+remove playwright.config from fE

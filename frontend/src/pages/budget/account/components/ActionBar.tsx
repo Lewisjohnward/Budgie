@@ -30,15 +30,13 @@ type CategoryGroupView = {
   position: number;
 };
 
-export function SelectionModal({
-  rowCount,
-  display,
-  cancel,
-}: {
+type ActionBarProps = {
   rowCount: number;
   display: boolean;
   cancel: () => void;
-}) {
+};
+
+export function ActionBar({ rowCount, display, cancel }: ActionBarProps) {
   const { data } = useBudgetSnapshot();
 
   const categoryGroupView: CategoryGroupView[] = useMemo(() => {

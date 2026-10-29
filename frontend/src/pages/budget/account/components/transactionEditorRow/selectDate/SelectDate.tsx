@@ -73,6 +73,7 @@ export function SelectDate({ selectDate }: SelectDateProps) {
           className="border-sky-950"
           selected={date}
           onSelect={(selectedDate) => {
+            selectDate.select();
             if (selectedDate) {
               setValue("date", selectedDate, {
                 shouldValidate: true,

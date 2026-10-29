@@ -2,14 +2,8 @@ import { formatCurrency } from "@/utils/formatCurrency";
 import { screen, within } from "@testing-library/react";
 import { UserEvent } from "@testing-library/user-event";
 
-type TransactionExpectation = {
-  date: Date;
-  payee?: string;
-  category: string;
-  memo: string;
-  outflow: number;
-  inflow: number;
-};
+export const getTransactionRow = async (memo: string) =>
+  screen.findByRole("row", { name: new RegExp(memo, "i") });
 
 export const openTransactionEditor = async (user: UserEvent) => {
   const addTransactionButton = await screen.findByRole("button", {
@@ -47,14 +41,18 @@ type CreateTransactionOptions = {
   saveAndAddAnother?: boolean;
 };
 
+export const setMemoField = async (user: UserEvent, memo: string) => {
+  const memoInput = await screen.findByRole("textbox", { name: /memo/i });
+  await user.type(memoInput, memo);
+};
+
 export const createTransaction = async (
   user: UserEvent,
   options: CreateTransactionOptions
 ) => {
   await openTransactionEditor(user);
 
-  const memoInput = await screen.findByRole("textbox", { name: /memo/i });
-  await user.type(memoInput, options.memo);
+  await setMemoField(user, options.memo);
 
   if (options.outflow) {
     const outflowInput = await screen.findByRole("textbox", {
@@ -81,6 +79,15 @@ export const createTransaction = async (
   await user.click(submitButton);
 };
 
+type TransactionExpectation = {
+  date: Date;
+  payee?: string;
+  category: string;
+  memo: string;
+  outflow: number;
+  inflow: number;
+};
+
 export const assertTransaction = async (expected: TransactionExpectation) => {
   const transactions = screen.getByRole("table", {
     name: "Transactions",
@@ -98,19 +105,19 @@ export const assertTransaction = async (expected: TransactionExpectation) => {
 
   const cells = within(transaction).getAllByRole("cell");
 
-  expect(cells[0]).toHaveTextContent(expected.date.toLocaleDateString("en-GB"));
+  expect(cells[1]).toHaveTextContent(expected.date.toLocaleDateString("en-GB"));
 
-  expect(cells[1]).toHaveTextContent(expected.payee ?? "");
+  expect(cells[2]).toHaveTextContent(expected.payee ?? "");
 
-  expect(cells[2]).toHaveTextContent(expected.category);
+  expect(cells[3]).toHaveTextContent(expected.category);
 
-  expect(cells[3]).toHaveTextContent(expected.memo);
+  expect(cells[4]).toHaveTextContent(expected.memo);
 
-  expect(cells[4]).toHaveTextContent(
+  expect(cells[5]).toHaveTextContent(
     expected.outflow === 0 ? "" : formatCurrency(expected.outflow)
   );
 
-  expect(cells[5]).toHaveTextContent(
+  expect(cells[6]).toHaveTextContent(
     expected.inflow === 0 ? "" : formatCurrency(expected.inflow)
   );
 };
