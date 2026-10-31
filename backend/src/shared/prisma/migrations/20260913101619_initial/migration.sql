@@ -85,7 +85,7 @@ CREATE TABLE "Account" (
     "userId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "open" BOOLEAN NOT NULL DEFAULT true,
-    "deletable" BOOLEAN DEFAULT false,
+    "deletable" BOOLEAN NOT NULL DEFAULT true,
     "type" "AccountType" NOT NULL,
     "balance" DECIMAL(65,30) NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
