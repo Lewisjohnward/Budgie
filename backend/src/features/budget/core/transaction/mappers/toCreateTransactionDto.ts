@@ -1,10 +1,11 @@
 import { type CreateTransactionDto } from "../transaction.types";
 import { type CreateTransactionResult } from "../contracts/createTransaction.contract";
 import { memoMapper } from "../../memo/memo.mapper";
-import { transactionMapper } from "../transaction.mapper";
 import { payeeMapper } from "../../payee/payee.mapper";
 import { accountMapper } from "../../account/account.mapper";
 import { categoryMapper } from "../../category/core/category.mapper";
+import { toTransactionTransferDto } from "./toTransactionTransferDto";
+import { toTransactionNormalDto } from "./toTransactionNormalDto";
 
 /**
  * Maps a create transaction use case result to its API response DTO.
@@ -28,20 +29,14 @@ export const toCreateTransactionDto = (
       case "normal":
         return {
           type: "normal",
-          transaction: transactionMapper.toTransactionNormalDto(
-            transactions.transaction
-          ),
+          transaction: toTransactionNormalDto(transactions.transaction),
         };
 
       case "transfer":
         return {
           type: "transfer",
-          source: transactionMapper.toTransactionTransferDto(
-            transactions.source
-          ),
-          destination: transactionMapper.toTransactionTransferDto(
-            transactions.destination
-          ),
+          source: toTransactionTransferDto(transactions.source),
+          destination: toTransactionTransferDto(transactions.destination),
         };
     }
   };
