@@ -710,6 +710,39 @@ describe("Transaction Bulk Edit", () => {
         expect(accounts[account1.id].balance).toBe(0);
         expect(accounts[account2.id].balance).toBe(-30);
       });
+      it("Should refresh account deletable status after moving transactions", async () => {
+        const account1 = await createAccountAndFetch(cookie, 0);
+        const account2 = await createAccountAndFetch(cookie, 0);
+
+        const transaction = await addTransactionLegacy(
+          cookie,
+          {
+            accountId: account1.id,
+            outflow: "10",
+          },
+          201
+        );
+
+        const { accounts: accountsBefore } = await getAccounts(cookie);
+
+        expect(accountsBefore[account1.id].deletable).toBe(false);
+        expect(accountsBefore[account2.id].deletable).toBe(true);
+
+        await editBulkTransactions(cookie, {
+          transactionIds: [transaction!.id],
+          updates: {
+            accountId: account2.id,
+          },
+        });
+
+        const { accounts: accountsAfter } = await getAccounts(cookie);
+
+        // The source account no longer has transactions.
+        expect(accountsAfter[account1.id].deletable).toBe(true);
+
+        // The destination account now has a transaction.
+        expect(accountsAfter[account2.id].deletable).toBe(false);
+      });
     });
     describe("Transfers", () => {
       it("Should handle transfer transactions", async () => {
