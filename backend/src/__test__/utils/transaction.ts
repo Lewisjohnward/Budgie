@@ -7,7 +7,11 @@ import {
 } from "../../features/budget/core/transaction/transaction.schema";
 import { getAccounts } from "./getData";
 import { type NormalisedTransaction } from "../../features/budget/core/account/account.types";
-import { CreateTransactionDto } from "../../features/budget/core/transaction/transaction.types";
+import {
+  type TransactionTransferDto,
+  type CreateTransactionDto,
+  type TransactionNormalDto,
+} from "../../features/budget/core/transaction/transaction.types";
 
 /**
  * Input type for creating transactions in tests,
@@ -101,6 +105,38 @@ export const createTransaction = async (
   return res.body;
 };
 
+export const createNormalTransaction = async (
+  cookie: string,
+  transaction: TestInsertTransactionInputWithoutUserId
+): Promise<TransactionNormalDto> => {
+  const result = await createTransaction(cookie, transaction);
+
+  if (result.created.transactions.type !== "normal") {
+    throw new Error("Expected a normal transaction to be created");
+  }
+
+  return result.created.transactions.transaction;
+};
+
+export const createTransferTransaction = async (
+  cookie: string,
+  transaction: TestInsertTransactionInputWithoutUserId
+): Promise<{
+  source: TransactionTransferDto;
+  destination: TransactionTransferDto;
+}> => {
+  const result = await createTransaction(cookie, transaction);
+
+  if (result.created.transactions.type !== "transfer") {
+    throw new Error("Expected transfer transactions to be created");
+  }
+
+  return {
+    source: result.created.transactions.source,
+    destination: result.created.transactions.destination,
+  };
+};
+
 export const getTransactionIds = (result: CreateTransactionDto): string[] => {
   const r = result.created.transactions;
 
@@ -191,6 +227,7 @@ export const editBulkTransactions = async (
 
   return {
     res,
+    body: res.body,
   };
 };
 
