@@ -128,3 +128,11 @@ export type CreateTransactionDto = {
     months: Record<string, MonthDto>;
   };
 };
+
+export type EditTransactionsBulkDto = {
+  updated: {
+    transactions: Record<string, TransactionDto>;
+    accounts: Record<string, AccountDto>;
+    months: Record<string, MonthDto>;
+  };
+};
