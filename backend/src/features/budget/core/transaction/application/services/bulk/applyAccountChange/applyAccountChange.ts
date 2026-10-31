@@ -3,6 +3,7 @@ import {
   type TransactionId,
   type DomainTransferTransaction,
   type DomainNormalTransaction,
+  type DomainTransaction,
 } from "../../../../transaction.types";
 import { accountService } from "../../../../../account/account.service";
 import { OperationMode } from "../../../../../../../../shared/enums/operation-mode";
@@ -10,54 +11,84 @@ import { transactionService } from "../../../../transaction.service";
 import { transactionRepository } from "../../../../../../../../shared/repository/transactionRepositoryImpl";
 import { filterInvalidBulkEditTransfers } from "./filterInvalidBulkEditTransfers";
 import { UpdatedTransferTransactionsMismatchError } from "../../../../transaction.errors";
-import { type AccountId } from "../../../../../account/account.types";
-import { UserId } from "../../../../../../../user/auth/auth.types";
+import {
+  type DomainAccount,
+  type AccountId,
+} from "../../../../../account/account.types";
+import { type UserId } from "../../../../../../../user/auth/auth.types";
+
+type ApplyAccountChangeResult = {
+  updatedAccounts: DomainAccount[];
+  updatedTransactions: DomainTransaction[];
+};
+
+const noOpResult: ApplyAccountChangeResult = {
+  updatedAccounts: [],
+  updatedTransactions: [],
+};
 
 /**
  * Applies a bulk account change to a set of transactions while maintaining
- * transfer consistency and updating account balances.
+ * transfer consistency and recalculating affected account balances.
  *
- * This function performs the following steps atomically within the provided
- * Prisma transaction client (`tx`):
+ * All operations are performed within the provided Prisma transaction client
+ * (`tx`) and should be committed or rolled back atomically by the caller.
  *
- * 1. Filters invalid transfer transactions using `filterInvalidBulkEditTransfers`:
- *    - Excludes transfer transactions where both sides are selected.
- *    - Excludes transfers whose target account would conflict with the new account.
+ * The function performs the following steps:
  *
- * 2. Updates the `accountId` of the remaining selected transactions.
+ * 1. Identifies the selected transfer transactions from the supplied
+ *    pre-update transfer transactions.
  *
- * 3. For any updated transfer transactions, updates the `transferAccountId`
- *    of their counterpart transactions so the transfer relationship remains valid.
+ * 2. Retrieves the target account belonging to the specified user.
  *
- * 4. Fetches the updated transactions (normal and transfers) including paired
- *    transactions to ensure correctness.
+ * 3. Filters invalid transfer transactions using
+ *    `filterInvalidBulkEditTransfers`:
+ *    - Excludes transfers where both sides are selected.
+ *    - Excludes transfers whose counterpart account matches the target account.
  *
- * 5. Validates that all selected transfer transactions were updated and no
- *    transfer invariants were violated.
+ * 4. Returns an empty result if no valid transactions remain after filtering.
  *
- * 6. Recalculates account balances:
- *    - Removes the effect of the pre-update transactions.
- *    - Applies the effect of the post-update transactions.
+ * 5. Updates the `accountId` of the remaining selected transactions.
+ *
+ * 6. Updates the `transferAccountId` of their counterpart transactions
+ *    to maintain transfer consistency.
+ *
+ * 7. Retrieves the updated transactions, including their transfer counterparts.
+ *
+ * 8. Validates that all selected transfer transactions expected to be updated
+ *    are present in the retrieved results.
+ *
+ * 9. Recalculates account balances:
+ *    - Removes the balance impact of the pre-update transactions.
+ *    - Applies the balance impact of the updated transactions and their
+ *      corresponding transfer transactions.
+ *
+ * 10. Refreshes the deletable status of all affected accounts.
+ *
+ * 11. Retrieves the updated domain accounts for all affected account IDs.
  *
  * Bulk edit invariants:
- * - Selected transfers must not include both sides in the same update.
- * - Selected transfers must not move onto their counterpart account.
+ * - Both sides of a transfer cannot be selected in the same account change.
+ * - A transfer cannot be moved to the account held by its counterpart.
+ * - Every selected transfer that passes validation must be present in the
+ *   updated transfer results.
  *
- * Notes:
- * - All reads/writes are performed within the provided transaction (`tx`)
- *   and should be executed atomically by the caller.
- * - If no valid transactions remain after filtering, the function returns early.
- *
- * @param tx - Prisma transaction client used for all operations.
- * @param userId - The owner of the transactions being modified.
- * @param accountId - The target account ID to apply to the selected transactions.
+ * @param tx - Prisma transaction client used for all database operations.
+ * @param userId - ID of the user who owns the transactions and accounts.
+ * @param accountId - ID of the target account to assign to the selected transactions.
  * @param transactionIds - IDs of the transactions selected for the account change.
- * @param normalTransactions - Pre-update normal transactions, used to calculate balance adjustments.
- * @param allTransferTransactions - Pre-update transfer transactions, used to locate selected transfers and their counterparts.
+ * @param normalTransactions - Pre-update normal transactions used to identify
+ *   affected transactions and calculate balance adjustments.
+ * @param allTransferTransactions - Pre-update transfer transactions used to
+ *   identify selected transfers and their counterparts.
  *
  * @throws {UpdatedTransferTransactionsMismatchError}
- * Thrown if the set of transfer transactions expected to be updated does not
- * match the set returned after the update, indicating a violation of transfer invariants.
+ * Thrown when the selected transfer transactions expected to be updated do
+ * not match those retrieved after the update.
+ *
+ * @returns A promise resolving to the updated accounts and transactions,
+ * including transfer counterparts. Returns empty arrays if no valid
+ * transactions remain after filtering.
  */
 
 export const applyAccountChange = async (
@@ -67,7 +98,7 @@ export const applyAccountChange = async (
   transactionIds: TransactionId[],
   normalTransactions: DomainNormalTransaction[],
   allTransferTransactions: DomainTransferTransaction[]
-): Promise<void> => {
+): Promise<ApplyAccountChangeResult> => {
   // transactions the user explicitly selected
   const selectedIds = new Set(transactionIds);
 
@@ -88,7 +119,7 @@ export const applyAccountChange = async (
     targetAccountId
   );
 
-  if (transactionIdsToUpdate.length === 0) return;
+  if (transactionIdsToUpdate.length === 0) return noOpResult;
 
   /// update accountId
   await transactionRepository.bulkUpdateAccountId(
@@ -162,4 +193,37 @@ export const applyAccountChange = async (
     [...updatedTransactions, ...updatedSelectedTransfers],
     OperationMode.Add
   );
+
+  const affectedTransferIds = new Set<TransactionId>();
+
+  for (const transfer of preUpdateTransfers) {
+    affectedTransferIds.add(transfer.id);
+    affectedTransferIds.add(transfer.transferTransactionId);
+  }
+
+  const preUpdateAffectedTransfers = allTransferTransactions.filter((t) =>
+    affectedTransferIds.has(t.id)
+  );
+
+  const accountIds = new Set<AccountId>([
+    targetAccountId,
+    ...preUpdateNormals.map(({ accountId }) => accountId),
+    ...preUpdateAffectedTransfers.map(({ accountId }) => accountId),
+    ...updatedTransactions.map(({ accountId }) => accountId),
+    ...updatedAllTransferTransactions.map(({ accountId }) => accountId),
+  ]);
+
+  await accountService.refreshDeletableStatus(tx, [...accountIds]);
+
+  const updatedAccounts = await accountService.getAccountsByIds(tx, userId, [
+    ...accountIds,
+  ]);
+
+  return {
+    updatedAccounts,
+    updatedTransactions: [
+      ...updatedTransactions,
+      ...updatedAllTransferTransactions,
+    ],
+  };
 };

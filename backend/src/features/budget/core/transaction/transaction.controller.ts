@@ -120,9 +120,11 @@ export const editTransactionsBulk = async (
       ...req.body,
     });
 
-    await transactionUseCase.editTransactions(payload);
+    const result = await transactionUseCase.editTransactions(payload);
 
-    res.status(200).json({ message: "Transactions updated" });
+    const dto = transactionMapper.toEditTransactionsBulkDto(result);
+
+    res.status(200).json(dto);
   } catch (error) {
     next(error);
   }

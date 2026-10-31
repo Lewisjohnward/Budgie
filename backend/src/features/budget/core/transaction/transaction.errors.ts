@@ -99,3 +99,9 @@ export class UpdatedTransferTransactionsMismatchError extends TransactionInvaria
     this.name = "UpdatedTransferTransactionsMismatchError";
   }
 }
+
+export class NoValidTransactionUpdateOperationError extends HttpError {
+  constructor() {
+    super("No valid transaction update operation found", 400);
+  }
+}
