@@ -8,6 +8,7 @@ import { updateAccountName } from "./application/services/updateAccountName";
 import { getNextPosition } from "./application/services/getNextPosition";
 import { getAccounts } from "./application/services/getAccounts";
 import { createAndInitialiseAccount } from "./application/services/createAndInitialiseAccount";
+import { getAccountsByIds } from "./application/services/getAcccountsByIds";
 
 export const accountService = {
   createAndInitialiseAccount,
@@ -15,6 +16,7 @@ export const accountService = {
   createAccount,
   getAccount,
   getAccounts,
+  getAccountsByIds,
   deleteAccount,
 
   updateAccountBalances,
