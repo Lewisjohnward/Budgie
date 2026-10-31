@@ -16,7 +16,10 @@ E2E_DATABASE_URL=postgresql://$(DB_USER):$(DB_PASSWORD)@localhost:$(E2E_DB_PORT)
 INTEGRATION_TEST_DB_NAME=budgie_test_db
 PRISMA_SCHEMA_PATH=src/shared/prisma/schema.prisma
 
-.PHONY: help run-db setup-db db-remove-data prisma-gui run-integration-test-db remove-integration-test-db backup-db-data restore-db-data
+.PHONY: help run-db setup-db stop-db remove-db-data \
+	prisma-gui generate-prisma-client migrate-prisma-schema \
+	run-integration-test-db stop-integration-test-db \
+	run-e2e-db reset-e2e-db backup-db-data restore-db-data
 
 .DEFAULT_GOAL := help
 
@@ -47,6 +50,9 @@ help:
 	@echo "  2. Run: make restore-db-data"
 	@echo "  3. Confirm when prompted"
 	@echo "  Note: The database will be dropped and recreated from backup"
+	@echo ""
+	@echo "  run-e2e-db                 Start the E2E database."
+	@echo "  reset-e2e-db               Reset the E2E database schema."
 
 # Development Database
 run-db:
@@ -93,9 +99,12 @@ generate-prisma-client:
 	npx prisma generate --schema=$(PRISMA_SCHEMA_PATH)
 	
 migrate-prisma-schema:
-	@echo "Applying Prisma schema changes..."
-	npx prisma migrate dev --name add-category-group-source --schema=$(PRISMA_SCHEMA_PATH)
-	# npx prisma migrate deploy --schema=$(PRISMA_SCHEMA_PATH)
+	@if [ -z "$(MIGRATION_NAME)" ]; then \
+		echo "Usage: make migrate-prisma-schema MIGRATION_NAME=your_migration_name"; \
+		exit 1; \
+	fi
+	@echo "Creating Prisma migration..."
+	npx prisma migrate dev --name "$(MIGRATION_NAME)" --schema=$(PRISMA_SCHEMA_PATH)
 
 
 run-integration-test-db:
