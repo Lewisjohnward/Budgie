@@ -2,6 +2,8 @@ import { v4 as uuidv4 } from "uuid";
 import { getAccounts, getCategories } from "../../utils/getData";
 import {
   addTransactionLegacy,
+  createNormalTransaction,
+  createTransferTransaction,
   editBulkTransactions,
   TestEditBulkTransactionsInputWithoutUserId,
   TestInsertTransactionInputWithoutUserId,
@@ -20,6 +22,325 @@ describe("Transaction Bulk Edit", () => {
   beforeEach(async () => {
     await registerUser();
     cookie = await login();
+  });
+  describe("Response DTO", () => {
+    it("Should return the correctly mapped DTO for normal transactions", async () => {
+      const account = await createAccountAndFetch(cookie, 0);
+      const category = await getTestCategory(cookie);
+
+      const tx = await createNormalTransaction(cookie, {
+        accountId: account.id,
+        outflow: "10",
+      });
+
+      const { res, body } = await editBulkTransactions(cookie, {
+        transactionIds: [tx.id],
+        updates: {
+          categoryId: category.id,
+        },
+      });
+
+      expect(res.status).toBe(200);
+
+      expect(body.updated.transactions).toEqual({
+        [tx.id]: expect.objectContaining({
+          type: "normal",
+          id: tx.id,
+          accountId: account.id,
+          categoryId: category.id,
+        }),
+      });
+
+      // Category editing should not update any accounts.
+      expect(body.updated.accounts).toEqual({});
+
+      // The affected category month should be returned.
+      const monthId = category.months[0];
+
+      expect(body.updated.months).toHaveProperty(monthId);
+
+      expect(body.updated.months[monthId]).toEqual(
+        expect.objectContaining({
+          activity: -10,
+          available: -10,
+        })
+      );
+    });
+    it("Should return the correctly mapped DTO for transfer transactions", async () => {
+      const account1 = await createAccountAndFetch(cookie, 0);
+      const account2 = await createAccountAndFetch(cookie, 0);
+
+      const tx = await addTransactionLegacy(cookie, {
+        accountId: account1.id,
+        transferAccountId: account2.id,
+        outflow: "25",
+      });
+
+      const { res, body } = await editBulkTransactions(cookie, {
+        transactionIds: [tx!.id],
+        updates: {
+          memo: "Updated transfer",
+        },
+      });
+
+      expect(res.status).toBe(200);
+
+      expect(body.updated.transactions).toEqual({
+        [tx!.id]: expect.objectContaining({
+          type: "transfer",
+          id: tx!.id,
+          accountId: account1.id,
+          transferAccountId: account2.id,
+          transferTransactionId: tx!.transferTransactionId,
+          memo: "Updated transfer",
+        }),
+      });
+
+      expect(body.updated.accounts).toEqual({});
+      expect(body.updated.months).toEqual({});
+    });
+    it("should not return accounts or transactions belonging only to excluded transfers", async () => {
+      const account1 = await createAccountAndFetch(cookie, 0);
+      const account2 = await createAccountAndFetch(cookie, 0);
+      const account3 = await createAccountAndFetch(cookie, 0);
+
+      const transfer = await createTransferTransaction(cookie, {
+        accountId: account1.id,
+        transferAccountId: account2.id,
+        outflow: "10",
+      });
+
+      const tx = await createNormalTransaction(cookie, {
+        accountId: account3.id,
+        outflow: "10",
+      });
+
+      const { res, body } = await editBulkTransactions(cookie, {
+        transactionIds: [transfer.source.id, tx.id],
+        updates: {
+          accountId: account2.id,
+        },
+      });
+
+      expect(res.status).toBe(200);
+
+      expect(body.updated.transactions).toEqual({
+        [tx.id]: expect.objectContaining({
+          type: "normal",
+          id: tx.id,
+          accountId: account2.id,
+        }),
+      });
+
+      expect(body.updated.accounts).not.toHaveProperty(account1.id);
+
+      expect(body.updated.accounts).toEqual({
+        [account2.id]: expect.objectContaining({
+          id: account2.id,
+          balance: 0,
+          deletable: false,
+        }),
+        [account3.id]: expect.objectContaining({
+          id: account3.id,
+          balance: 0,
+          deletable: true,
+        }),
+      });
+
+      expect(Object.keys(body.updated.accounts)).toHaveLength(2);
+      expect(body.updated.months).toEqual({});
+    });
+    it("Should return the correctly mapped DTOs for account changes", async () => {
+      const account1 = await createAccountAndFetch(cookie, 0);
+      const account2 = await createAccountAndFetch(cookie, 0);
+      const account3 = await createAccountAndFetch(cookie, 0);
+
+      const tx = await createNormalTransaction(cookie, {
+        accountId: account1.id,
+        outflow: "10",
+      });
+
+      const { res, body } = await editBulkTransactions(cookie, {
+        transactionIds: [tx.id],
+        updates: {
+          accountId: account2.id,
+        },
+      });
+
+      expect(res.status).toBe(200);
+
+      expect(body.updated.transactions).toEqual({
+        [tx.id]: expect.objectContaining({
+          type: "normal",
+          id: tx.id,
+          accountId: account2.id,
+        }),
+      });
+
+      expect(body.updated.accounts).toEqual({
+        [account1.id]: expect.objectContaining({
+          id: account1.id,
+          balance: 0,
+          deletable: true,
+        }),
+        [account2.id]: expect.objectContaining({
+          id: account2.id,
+          balance: -10,
+          deletable: false,
+        }),
+      });
+
+      expect(body.updated.accounts).not.toHaveProperty(account3.id);
+      expect(Object.keys(body.updated.accounts)).toHaveLength(2);
+
+      expect(body.updated.months).toEqual({});
+    });
+    it("Should return the correctly mapped RTA month DTO when moving a transaction into RTA", async () => {
+      const account = await createAccountAndFetch(cookie, 0);
+      const rtaCategory = await getRTACategory(cookie);
+
+      const tx = await createNormalTransaction(cookie, {
+        accountId: account.id,
+        outflow: "50",
+      });
+
+      const { res, body } = await editBulkTransactions(cookie, {
+        transactionIds: [tx.id],
+        updates: {
+          categoryId: rtaCategory.id,
+        },
+      });
+
+      expect(res.status).toBe(200);
+
+      expect(body.updated.transactions).toEqual({
+        [tx.id]: expect.objectContaining({
+          type: "normal",
+          id: tx.id,
+          accountId: account.id,
+          categoryId: rtaCategory.id,
+        }),
+      });
+
+      expect(body.updated.accounts).toEqual({});
+
+      const monthId = rtaCategory.months[0];
+
+      expect(body.updated.months).toHaveProperty(monthId);
+
+      expect(body.updated.months[monthId]).toEqual(
+        expect.objectContaining({
+          activity: -50,
+          available: -50,
+        })
+      );
+    });
+    it("Should return the correctly mapped DTOs when changing categories", async () => {
+      const account = await createAccountAndFetch(cookie, 0);
+
+      const sourceCategory = await getTestCategory(cookie);
+      const destinationCategory = await getUncategorisedCategory(cookie);
+
+      const tx = await createNormalTransaction(cookie, {
+        accountId: account.id,
+        outflow: "10",
+        categoryId: sourceCategory.id,
+      });
+
+      const { res, body } = await editBulkTransactions(cookie, {
+        transactionIds: [tx.id],
+        updates: {
+          categoryId: destinationCategory.id,
+        },
+      });
+
+      expect(res.status).toBe(200);
+
+      expect(body.updated.transactions).toEqual({
+        [tx.id]: expect.objectContaining({
+          type: "normal",
+          id: tx.id,
+          accountId: account.id,
+          categoryId: destinationCategory.id,
+        }),
+      });
+
+      expect(body.updated.accounts).toEqual({});
+
+      const sourceMonthId = sourceCategory.months[0];
+      const destinationMonthId = destinationCategory.months[0];
+
+      expect(body.updated.months).toHaveProperty(sourceMonthId);
+      expect(body.updated.months).toHaveProperty(destinationMonthId);
+
+      expect(body.updated.months[sourceMonthId]).toEqual(
+        expect.objectContaining({
+          activity: 0,
+          available: 0,
+        })
+      );
+
+      expect(body.updated.months[destinationMonthId]).toEqual(
+        expect.objectContaining({
+          activity: -10,
+          available: -10,
+        })
+      );
+    });
+    it("Should return both transfer DTOs and all affected accounts when changing a transfer account", async () => {
+      const account1 = await createAccountAndFetch(cookie, 0);
+      const account2 = await createAccountAndFetch(cookie, 0);
+      const account3 = await createAccountAndFetch(cookie, 0);
+
+      const transfer = await createTransferTransaction(cookie, {
+        accountId: account1.id,
+        transferAccountId: account2.id,
+        outflow: "10",
+      });
+
+      const { res, body } = await editBulkTransactions(cookie, {
+        transactionIds: [transfer.source.id],
+        updates: {
+          accountId: account3.id,
+        },
+      });
+
+      expect(res.status).toBe(200);
+
+      // Both sides of the transfer should be returned.
+      expect(body.updated.transactions).toHaveProperty(transfer.source.id);
+      expect(body.updated.transactions).toHaveProperty(transfer.destination.id);
+
+      // The selected side should move from account1 to account3.
+      expect(body.updated.transactions[transfer.source.id]).toEqual(
+        expect.objectContaining({
+          type: "transfer",
+          id: transfer.source.id,
+          accountId: account3.id,
+          transferAccountId: account2.id,
+        })
+      );
+
+      // The counterpart should remain in account2 and reference account3.
+      expect(body.updated.transactions[transfer.destination.id]).toEqual(
+        expect.objectContaining({
+          type: "transfer",
+          id: transfer.destination.id,
+          accountId: account2.id,
+          transferAccountId: account3.id,
+        })
+      );
+
+      // All three affected accounts should be returned.
+      expect(body.updated.accounts).toHaveProperty(account1.id);
+      expect(body.updated.accounts).toHaveProperty(account2.id);
+      expect(body.updated.accounts).toHaveProperty(account3.id);
+
+      expect(Object.keys(body.updated.accounts)).toHaveLength(3);
+
+      // Account changes should not update any category months.
+      expect(body.updated.months).toEqual({});
+    });
   });
 
   describe("Error Cases", () => {
@@ -450,7 +771,64 @@ describe("Transaction Bulk Edit", () => {
         expect(uncategorisedCategoryMonths[1].activity).toBe(0);
         expect(uncategorisedCategoryMonths[1].available).toBe(0);
       });
+      it("Should recalculate RTA months when moving transactions from RTA to a normal category", async () => {
+        const account = await createAccountAndFetch(cookie, 0);
+        const rtaCategory = await getRTACategory(cookie);
+        const testCategory = await getTestCategory(cookie);
+
+        const tx = await createNormalTransaction(cookie, {
+          accountId: account.id,
+          outflow: "50",
+        });
+
+        // Move transaction into RTA.
+        await editBulkTransactions(cookie, {
+          transactionIds: [tx.id],
+          updates: {
+            categoryId: rtaCategory.id,
+          },
+        });
+
+        // Verify RTA reflects the transaction.
+        const { months: monthsAfterMovingIntoRta } =
+          await getCategories(cookie);
+
+        const rtaMonthsAfterMovingIntoRta = rtaCategory.months.map(
+          (month) => monthsAfterMovingIntoRta[month]
+        );
+
+        expect(rtaMonthsAfterMovingIntoRta[0].activity).toBe(-50);
+        expect(rtaMonthsAfterMovingIntoRta[0].available).toBe(-50);
+
+        // Move transaction out of RTA.
+        await editBulkTransactions(cookie, {
+          transactionIds: [tx.id],
+          updates: {
+            categoryId: testCategory.id,
+          },
+        });
+
+        const { months: monthsAfterMovingOutOfRta } =
+          await getCategories(cookie);
+
+        const rtaMonthsAfterMovingOutOfRta = rtaCategory.months.map(
+          (month) => monthsAfterMovingOutOfRta[month]
+        );
+
+        const testCategoryMonths = testCategory.months.map(
+          (month) => monthsAfterMovingOutOfRta[month]
+        );
+
+        // RTA activity and availability should return to zero.
+        expect(rtaMonthsAfterMovingOutOfRta[0].activity).toBe(0);
+        expect(rtaMonthsAfterMovingOutOfRta[0].available).toBe(0);
+
+        // The transaction should now affect the destination category.
+        expect(testCategoryMonths[0].activity).toBe(-50);
+        expect(testCategoryMonths[0].available).toBe(-50);
+      });
     });
+
     describe("Transfers", () => {
       it("Should not set categoryId on transfer transactions", async () => {
         const account1 = await createAccountAndFetch(cookie, 0);

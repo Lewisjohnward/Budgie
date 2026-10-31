@@ -5,52 +5,88 @@ import { type DomainNormalTransaction } from "../../../transaction.types";
 import { transactionRepository } from "../../../../../../../shared/repository/transactionRepositoryImpl";
 import { splitTransactionsByType } from "../../../utils/splitTransactionsByType";
 import { UpdatedNormalTransactionsNotFoundError } from "../../../transaction.errors";
-import { type CategoryId } from "../../../../category/core/category.types";
+import {
+  type DomainMonth,
+  type CategoryId,
+} from "../../../../category/core/category.types";
 import { type UserId } from "../../../../../../user/auth/auth.types";
 
+type ApplyCategoryChangeResult = {
+  updatedMonths: DomainMonth[];
+  updatedTransactions: DomainNormalTransaction[];
+};
+
+const noOpResult: ApplyCategoryChangeResult = {
+  updatedMonths: [],
+  updatedTransactions: [],
+};
+
 /**
- * Applies a bulk category update to a set of normal (non-transfer) transactions.
+ * Applies a bulk category change to a collection of normal (non-transfer)
+ * transactions and recalculates the affected category months and RTA availability.
  *
- * This function handles both the database update and all downstream side effects
- * related to category month calculations and RTA (Ready To Assign) activity:
+ * All database operations and derived month calculations are performed within
+ * the provided Prisma transaction client (`tx`) and should be committed or
+ * rolled back atomically by the caller.
  *
- * - Validates that the target category exists and belongs to the user.
- * - Ignores transactions already assigned to the target category.
- * - Updates `categoryId` for the selected transactions in bulk.
- * - Re-fetches the updated transactions to establish the "after" state.
- * - Updates derived month allocations and RTA activity:
- *   - Removes allocations associated with the previous category.
- *   - Adds allocations associated with the new category.
- * - Handles special RTA behavior if the target category is the RTA category.
+ * The function performs the following steps:
  *
- * Invariants / Expectations:
- * - `transactions` must only include normal (non-transfer) transactions owned by `userId`.
- * - Transactions represent the "before" state of the transactions being updated.
- * - After the bulk update, all updated transactions must be retrievable as normal
- *   transactions; otherwise an `UpdatedNormalTransactionsNotFoundError` is thrown.
+ * 1. Returns an empty result if no transactions were supplied.
  *
- * All operations are executed using the provided Prisma transaction client and
- * should be called within an existing transaction for atomicity.
+ * 2. Retrieves the destination category belonging to the specified user.
  *
- * @param tx - Prisma transaction client for executing all operations atomically.
- * @param userId - ID of the user performing the category update.
- * @param categoryId - Target category ID to assign to the provided transactions.
- * @param transactions - Normal transactions to consider for the category change.
- *                       Transactions already assigned to the target category are ignored.
+ * 3. Filters out transactions already assigned to the destination category.
+ *    Returns an empty result if no transactions require updating.
  *
- * @returns A promise that resolves when all transactions have been updated and
- *          month/RTA side effects applied.
+ * 4. Updates the category ID of the remaining transactions.
  *
- * @throws {UpdatedNormalTransactionsNotFoundError} Thrown if the updated transactions
- *         cannot all be re-fetched after the bulk update, indicating an invariant violation.
+ * 5. Retrieves the updated normal transactions and validates that all expected
+ *    transactions were successfully retrieved.
+ *
+ * 6. Identifies the RTA category and splits the pre-update transactions into
+ *    RTA and non-RTA transactions.
+ *
+ * 7. Removes allocations from the previous categories:
+ *    - Removes activity from RTA if any transactions previously belonged to RTA.
+ *    - Recalculates category months for transactions previously assigned to
+ *      non-RTA categories.
+ *
+ * 8. Applies allocations to the destination category:
+ *    - Updates RTA activity if the destination category is RTA.
+ *    - Otherwise, recalculates category months for the updated transactions.
+ *
+ * 9. Recalculates RTA availability if RTA was either the previous category
+ *    for any transaction or the destination category.
+ *
+ * 10. Deduplicates the affected months by month ID, retaining the latest
+ *     recalculated result for each month.
+ *
+ * RTA handling:
+ * - Transactions previously assigned to RTA have their RTA activity removed.
+ * - Transactions moved into RTA have their RTA activity added.
+ * - RTA availability is recalculated only when RTA is affected by the change.
+ *
+ * @param tx - Prisma transaction client used for all database operations.
+ * @param userId - ID of the user whose transactions and categories are being modified.
+ * @param categoryId - ID of the destination category.
+ * @param transactions - Pre-update normal transactions selected for the category
+ *   change. Transactions already assigned to the destination category are ignored.
+ *
+ * @throws {UpdatedNormalTransactionsNotFoundError}
+ * Thrown when the number of updated transactions retrieved does not match
+ * the number of transactions expected after the category update.
+ *
+ * @returns A promise resolving to the updated normal transactions and the
+ * unique affected months containing their final recalculated state.
+ * Returns empty arrays if no transactions require updating.
  */
 export const applyCategoryChange = async (
   tx: Prisma.TransactionClient,
   userId: UserId,
   categoryId: CategoryId,
   transactions: DomainNormalTransaction[]
-): Promise<void> => {
-  if (transactions.length === 0) return;
+): Promise<ApplyCategoryChangeResult> => {
+  if (transactions.length === 0) return noOpResult;
 
   const nextCategory = await categoryService.categories.getCategory(
     tx,
@@ -58,23 +94,20 @@ export const applyCategoryChange = async (
     categoryId
   );
 
-  // only update transactions that aren't currently assigned to the new category
   const transactionsToChange = transactions.filter(
     (t) => t.categoryId !== nextCategory.id
   );
 
-  // get the ids of the transactions to update
-  if (transactionsToChange.length === 0) return;
+  if (transactionsToChange.length === 0) return noOpResult;
+
   const txIdsToChange = transactionsToChange.map((t) => t.id);
 
-  // update categoryId of transactions
   await transactionRepository.bulkUpdateCategoryId(
     tx,
     txIdsToChange,
     nextCategory.id
   );
 
-  // fetch updated transactions
   const updatedTransactions =
     await transactionRepository.getNormalTransactionsByIds(
       tx,
@@ -92,7 +125,6 @@ export const applyCategoryChange = async (
     });
   }
 
-  // months/RTA side effects based on before/after
   const rtaCategoryId = await categoryService.rta.getRtaCategoryId(tx, userId);
 
   const { rtaTransactions, nonRtaTransactions } = splitTransactionsByType(
@@ -100,8 +132,13 @@ export const applyCategoryChange = async (
     rtaCategoryId
   );
 
-  // remove previous allocations
-  if (rtaTransactions.length > 0) {
+  const wasRta = rtaTransactions.length > 0;
+  const isNowRta = nextCategory.id === rtaCategoryId;
+
+  const affectedMonths: DomainMonth[] = [];
+
+  // Remove allocations from the previous categories.
+  if (wasRta) {
     await categoryService.rta.updateMonthsActivityForTransactions(
       tx,
       userId,
@@ -110,18 +147,20 @@ export const applyCategoryChange = async (
       OperationMode.Delete
     );
   }
+
   if (nonRtaTransactions.length > 0) {
-    await categoryService.months.recalculateCategoryMonthsForTransactions(
-      tx,
-      nonRtaTransactions,
-      OperationMode.Delete
-    );
+    const deletedMonths =
+      await categoryService.months.recalculateCategoryMonthsForTransactions(
+        tx,
+        nonRtaTransactions,
+        OperationMode.Delete
+      );
+
+    affectedMonths.push(...deletedMonths);
   }
 
-  // recalculate new allocations -
-  // don't need to split transactions because they
-  // will all have the same categoryId
-  if (nextCategory.id === rtaCategoryId) {
+  // Add allocations to the destination category.
+  if (isNowRta) {
     await categoryService.rta.updateMonthsActivityForTransactions(
       tx,
       userId,
@@ -129,18 +168,32 @@ export const applyCategoryChange = async (
       updatedTransactions,
       OperationMode.Add
     );
+  } else {
+    const addedMonths =
+      await categoryService.months.recalculateCategoryMonthsForTransactions(
+        tx,
+        updatedTransactions,
+        OperationMode.Add
+      );
 
-    // recalculate rta months, doesn't need to be done after category months
-    await categoryService.rta.calculateMonthsAvailable(
+    affectedMonths.push(...addedMonths);
+  }
+
+  // Recalculate RTA availability only when RTA was affected.
+  if (wasRta || isNowRta) {
+    const updatedRtaMonths = await categoryService.rta.calculateMonthsAvailable(
       tx,
       userId,
       rtaCategoryId
     );
-  } else {
-    await categoryService.months.recalculateCategoryMonthsForTransactions(
-      tx,
-      updatedTransactions,
-      OperationMode.Add
-    );
+
+    affectedMonths.push(...updatedRtaMonths);
   }
+
+  return {
+    updatedMonths: [
+      ...new Map(affectedMonths.map((month) => [month.id, month])).values(),
+    ],
+    updatedTransactions,
+  };
 };
