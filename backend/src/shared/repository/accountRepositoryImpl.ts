@@ -36,6 +36,17 @@ export const accountRepository: AccountRepository = {
     return row;
   },
 
+  getAccountsByIds: async (tx, userId, accountIds): Promise<db.Account[]> => {
+    return tx.account.findMany({
+      where: {
+        id: {
+          in: accountIds,
+        },
+        userId,
+      },
+    });
+  },
+
   getAccounts: async function (userId: UserId): Promise<db.Account[]> {
     return await prisma.account.findMany({
       where: {

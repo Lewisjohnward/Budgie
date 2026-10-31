@@ -12,6 +12,12 @@ export interface AccountRepository {
 
   getAccounts(userId: UserId): Promise<db.Account[]>;
 
+  getAccountsByIds(
+    tx: Prisma.TransactionClient,
+    userId: UserId,
+    accountIds: AccountId[]
+  ): Promise<db.Account[]>;
+
   createAccount(
     tx: Prisma.TransactionClient,
     payload: any
