@@ -369,5 +369,23 @@ describe("Account - Create", () => {
       expect(accountC.position).toBe(0);
       expect(accountD.position).toBe(1);
     });
+    it("Should create an account without transactions as deletable", async () => {
+      const accountName = "empty account";
+
+      const response = await request(app)
+        .post("/api/v1/budget/account")
+        .set("Authorization", `Bearer ${cookie}`)
+        .send({
+          name: accountName,
+          type: "BANK",
+        });
+
+      expect(response.status).toBe(200);
+
+      const account = await fetchAccountByName(cookie, accountName);
+
+      expect(account.deletable).toBe(true);
+      expect(account.transactionIds).toHaveLength(0);
+    });
   });
 });
