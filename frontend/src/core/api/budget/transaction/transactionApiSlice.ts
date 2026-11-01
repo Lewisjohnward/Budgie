@@ -14,6 +14,7 @@ import { mapMemo } from "../mappers/memoMapper";
 import { mapPayee } from "../mappers/payeeMapper";
 import { mapAccount } from "../mappers/accountMapper";
 import { TransactionBranded } from "@/core/types/NormalizedData";
+import { addMoney, subtractMoney } from "@/core/utils/money";
 
 const TRANSACTION_ENDPOINT_URL = "/budget/transaction";
 
@@ -103,7 +104,11 @@ export const transactionApiSlice = apiSlice.injectEndpoints({
               const sourceAccount = draft.accounts[transaction.accountId];
 
               if (sourceAccount) {
-                sourceAccount.balance += inflow - outflow;
+                sourceAccount.balance = addMoney(
+                  sourceAccount.balance,
+                  inflow,
+                  -outflow
+                );
               }
 
               if (isTransfer && transaction.transferAccountId) {
@@ -111,7 +116,11 @@ export const transactionApiSlice = apiSlice.injectEndpoints({
                   draft.accounts[transaction.transferAccountId];
 
                 if (destinationAccount) {
-                  destinationAccount.balance += outflow - inflow;
+                  destinationAccount.balance = addMoney(
+                    destinationAccount.balance,
+                    outflow,
+                    -inflow
+                  );
                 }
 
                 const sourceTransaction: TransactionBranded = {
