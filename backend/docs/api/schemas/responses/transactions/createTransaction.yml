@@ -25,7 +25,8 @@ CreateTransactionResponse:
                   type: string
                   enum: [normal]
                 transaction:
-                  $ref: "../../entities/transaction.yml#/Transaction"
+                  $ref: "../../entities/transaction.yml#/TransactionNormal"
+
             - type: object
               required:
                 - type
@@ -36,11 +37,9 @@ CreateTransactionResponse:
                   type: string
                   enum: [transfer]
                 source:
-                  $ref: "../../entities/transaction.yml#/Transaction"
+                  $ref: "../../entities/transaction.yml#/TransactionTransfer"
                 destination:
-                  $ref: "../../entities/transaction.yml#/Transaction"
-          discriminator:
-            propertyName: type
+                  $ref: "../../entities/transaction.yml#/TransactionTransfer"
         payee:
           $ref: "../../entities/payee.yml#/Payee"
         memos:
