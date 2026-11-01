@@ -13,7 +13,7 @@ import {
 import { CategorySelectionState } from "../../../hooks/useAllocation/useCategorySelection";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { formatCurrency } from "@/utils/formatCurrency";
+import { formatCurrency } from "@/core/utils/formatCurrency";
 import clsx from "clsx";
 
 type CategoryRowProps = {

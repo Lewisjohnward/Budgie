@@ -4,7 +4,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/core/components/uiLibrary/tooltip";
-import { formatCurrency } from "../../../../../../../utils/formatCurrency";
+import { formatCurrency } from "@/core/utils/formatCurrency";
 
 type BalanceRowProps = {
   label: string;

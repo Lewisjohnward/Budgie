@@ -3,7 +3,7 @@ import { buildStyles, CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { FaCheckCircle, FaInfoCircle } from "react-icons/fa";
 
-import { formatCurrency } from "@/utils/formatCurrency";
+import { formatCurrency } from "@/core/utils/formatCurrency";
 import { Category, FundingState, FundingStatus } from "../../types/assignTypes";
 
 export const renderUnderfundedNoMoneyContent = (): ReactNode => (

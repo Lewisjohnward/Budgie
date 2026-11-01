@@ -1,5 +1,5 @@
 import { bgGray } from "@/core/theme/colors";
-import { formatCurrency } from "@/utils/formatCurrency";
+import { formatCurrency } from "@/core/utils/formatCurrency";
 import { AutoAssignToggle } from "./AutoAssignToggle";
 import { Button } from "@/core/components/uiLibrary/button";
 import { FundingOption } from "../../types/assignTypes";
