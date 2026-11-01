@@ -1,4 +1,4 @@
-import { formatCurrency } from "@/utils/formatCurrency";
+import { formatCurrency } from "@/core/utils/formatCurrency";
 import { ChevronDown } from "lucide-react";
 import { useRef, useState, useEffect, useMemo } from "react";
 import {
