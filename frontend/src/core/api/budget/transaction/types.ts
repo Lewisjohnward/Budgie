@@ -10,6 +10,7 @@ import {
   CategoryId,
   MonthId,
   PayeeId,
+  TransactionId,
 } from "@/pages/budget/allocation/types/types";
 
 // Create
@@ -53,4 +54,19 @@ export type CreateTransactionResult = {
 
 // Duplicate
 
-// Edit build
+// Edit bulk
+export type EditBulkTransactionsInput = {
+  transactionIds: TransactionId[];
+  updates:
+    | { categoryId: CategoryId }
+    | { accountId: AccountId }
+    | { memo: string };
+};
+
+export type EditBulkTransactionsResult = {
+  updated: {
+    transactions: Record<string, TransactionBranded>;
+    accounts: Record<AccountId, AccountBranded>;
+    months: Record<MonthId, MonthBranded>;
+  };
+};
