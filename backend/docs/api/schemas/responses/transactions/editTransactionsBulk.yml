@@ -1,0 +1,30 @@
+EditTransactionsBulkResponse:
+  type: object
+  description: >
+    Result of bulk editing transactions, including updated transactions
+    and any related account or month mutations.
+  required:
+    - updated
+  properties:
+    updated:
+      type: object
+      required:
+        - transactions
+        - accounts
+        - months
+      properties:
+        transactions:
+          type: object
+          description: Updated transactions keyed by transaction id.
+          additionalProperties:
+            $ref: "../../entities/transaction.yml#/Transaction"
+        accounts:
+          type: object
+          description: Updated accounts keyed by account id.
+          additionalProperties:
+            $ref: "../../entities/account.yml#/Account"
+        months:
+          type: object
+          description: Updated months keyed by month id.
+          additionalProperties:
+            $ref: "../../entities/month.yml#/Month"

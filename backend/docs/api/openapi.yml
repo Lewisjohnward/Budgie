@@ -68,6 +68,8 @@ components:
     # Transaction requests
     CreateTransactionRequest:
       $ref: "./schemas/requests/transactions/createTransaction.yml#/CreateTransactionRequest"
+    EditTransactionsBulkRequest:
+      $ref: "./schemas/requests/transactions/editTransactionsBulk.yml#/EditTransactionsBulkRequest"
 
     #----------
     # Responses
@@ -96,6 +98,8 @@ components:
     # Transaction responses
     CreateTransactionResponse:
       $ref: "./schemas/responses/transactions/createTransaction.yml#/CreateTransactionResponse"
+    EditTransactionsBulkResponse:
+      $ref: "./schemas/responses/transactions/editTransactionsBulk.yml#/EditTransactionsBulkResponse"
 
     # Edit memo response
     EditMemoResponse:
