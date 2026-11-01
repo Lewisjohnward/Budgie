@@ -1,0 +1,73 @@
+EditTransactionRequest:
+  type: object
+  description: >
+    Partial update of a single transaction. Only provided fields will be
+    updated. At least one field must be provided.
+  minProperties: 1
+  properties:
+    accountId:
+      type: string
+      format: uuid
+      description: Account to which the transaction belongs.
+
+    date:
+      type: string
+      format: date
+      description: >
+        Transaction date. Must not be in the future.
+
+    payeeId:
+      type: string
+      format: uuid
+      nullable: true
+      description: >
+        ID of an existing payee. Cannot be provided together with payeeName.
+        Null removes the associated payee.
+
+    payeeName:
+      type: string
+      description: >
+        Name of the payee. Cannot be provided together with payeeId.
+
+    categoryId:
+      type: string
+      format: uuid
+      nullable: true
+      description: >
+        Category assigned to the transaction. Cannot be provided together
+        with a non-null transferAccountId.
+
+    memo:
+      type: string
+      description: Updated transaction memo.
+
+    inflow:
+      type: string
+      description: >
+        Transaction inflow amount represented as a decimal string.
+        Must be non-zero when provided and cannot be provided together
+        with outflow.
+      example: "150.00"
+
+    outflow:
+      type: string
+      description: >
+        Transaction outflow amount represented as a decimal string.
+        Must be non-zero when provided and cannot be provided together
+        with inflow.
+      example: "25.50"
+
+    cleared:
+      type: boolean
+      description: Whether the transaction has been cleared.
+
+    transferAccountId:
+      type: string
+      format: uuid
+      nullable: true
+      description: >
+        Destination account for a transfer. Null removes the transfer.
+        Cannot be provided together with categoryId when setting a
+        non-null transferAccountId.
+
+  additionalProperties: false
