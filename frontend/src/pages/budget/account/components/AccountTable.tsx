@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "@/core/components/uiLibrary/table";
 import { TransactionEditorRow } from "./transactionEditorRow/TransactionEditorRow";
-import { SelectionModal } from "./RowSelectionModal";
+import { ActionBar } from "./ActionBar";
 import clsx from "clsx";
 import { Button } from "@/core/components/uiLibrary/button";
 import { TransactionEditor, TransactionTable } from "../hooks/useAccount";
@@ -72,6 +72,11 @@ export function AccountTable({
         containerRef={tableContainerRef}
         onClick={transactionEditor.state.open ? table.onInteraction : undefined}
         aria-label="Transactions"
+        className="table-fixed"
+        style={{
+          width: "100%",
+          minWidth: table.table.getTotalSize(),
+        }}
       >
         <TableHeader>
           {table.table.getHeaderGroups().map((headerGroup) => (
@@ -81,14 +86,18 @@ export function AccountTable({
                   <TableHead
                     key={header.id}
                     className="sticky top-0 p-0 z-50 bg-white text-nowrap text-ellipsis"
-                    style={{ width: header.getSize() }}
+                    style={{
+                      width: header.getSize(),
+                      minWidth: header.getSize(),
+                      maxWidth: header.getSize(),
+                    }}
                   >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
                   </TableHead>
                 );
               })}
@@ -114,6 +123,7 @@ export function AccountTable({
                     className={clsx(
                       transactionEditor.isDirty && "hover:bg-transparent"
                     )}
+                    aria-selected={row.getIsSelected()}
                     data-state={row.getIsSelected() && "selected"}
                     onContextMenu={(e) => {
                       e.preventDefault();
@@ -125,7 +135,15 @@ export function AccountTable({
                     }}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
+                      <TableCell
+                        key={cell.id}
+                        style={{
+                          width: cell.column.getSize(),
+                          minWidth: cell.column.getSize(),
+                          maxWidth: cell.column.getSize(),
+                          overflow: "hidden",
+                        }}
+                      >
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -161,12 +179,21 @@ export function AccountTable({
                           ? undefined
                           : rowVirtualizer.measureElement
                       }
+                      aria-selected={row.getIsSelected()}
                       data-state={row.getIsSelected() && "selected"}
                       onClick={(e) => table.onRowSelection(e, row)}
                       onContextMenu={() => table.onRowSelectionContextMenu(row)}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
+                        <TableCell
+                          key={cell.id}
+                          style={{
+                            width: cell.column.getSize(),
+                            minWidth: cell.column.getSize(),
+                            maxWidth: cell.column.getSize(),
+                            overflow: "hidden",
+                          }}
+                        >
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
@@ -241,7 +268,7 @@ export function AccountTable({
         </TableBody>
       </Table>
       {/* </section> */}
-      <SelectionModal
+      <ActionBar
         rowCount={table.numberOfRows}
         display={table.displaySelectionModal}
         cancel={table.cancelSelection}
