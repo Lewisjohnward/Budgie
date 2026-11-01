@@ -1,4 +1,4 @@
-import { formatCurrency } from "@/utils/formatCurrency";
+import { formatCurrency } from "@/core/utils/formatCurrency";
 
 export function Available({ value }: { value: number }) {
   const style =
