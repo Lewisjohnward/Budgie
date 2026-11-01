@@ -1,19 +1,44 @@
-import { CreateTransactionResponse } from "@/core/types/exported-types";
+import {
+  CreateTransactionResponse,
+  DeleteTransactionsResponse,
+  DuplicateTransactionsResponse,
+  EditTransactionResponse,
+} from "@/core/types/exported-types";
 import { apiSlice } from "../../apiSlice";
 import { budgetSnapshotSlice } from "../budgetSnapshotSlice";
-import { CreateTransactionInput, CreateTransactionResult } from "./types";
+import {
+  CreateTransactionInput,
+  CreateTransactionResult,
+  DeleteTransactionsInput,
+  DeleteTransactionsResult,
+  DuplicateTransactionsInput,
+  DuplicateTransactionsResult,
+  EditBulkTransactionsInput,
+  EditBulkTransactionsResult,
+  EditTransactionInput,
+  EditTransactionResult,
+} from "./types";
 import {
   asAccountId,
   asMonthId,
+  asPayeeId,
   asTransactionId,
   TransactionId,
 } from "@/pages/budget/allocation/types/types";
 import { mapMonth } from "../mappers/monthMapper";
-import { mapTransaction } from "../mappers/transactionMapper";
+import {
+  mapNormalTransaction,
+  mapTransaction,
+  mapTransferTransaction,
+} from "../mappers/transactionMapper";
 import { mapMemo } from "../mappers/memoMapper";
 import { mapPayee } from "../mappers/payeeMapper";
 import { mapAccount } from "../mappers/accountMapper";
-import { TransactionBranded } from "@/core/types/NormalizedData";
+import { applyOptimisticTransactionsBulkEdit } from "./utils/applyOptimisticTransactionsBulkEdit";
+import { applyOptimisticTransactionCreate } from "./utils/applyOptimisticTransctionCreate";
+import { applyOptimisticTransactionsDelete } from "./utils/applyOptimisticTransactionsDelete";
+import { applyOptimisticTransactionEdit } from "./utils/applyOptimisticTransactionEdit";
+import { applyOptimisticTransactionsDuplicate } from "./utils/applyOptimisticTransactionsDuplicate";
 
 const TRANSACTION_ENDPOINT_URL = "/budget/transaction";
 
@@ -36,18 +61,20 @@ export const transactionApiSlice = apiSlice.injectEndpoints({
           transactions:
             response.created.transactions.type === "normal"
               ? {
-                type: "normal" as const,
-                transaction: mapTransaction(
-                  response.created.transactions.transaction
-                ),
-              }
+                  type: "normal" as const,
+                  transaction: mapNormalTransaction(
+                    response.created.transactions.transaction
+                  ),
+                }
               : {
-                type: "transfer" as const,
-                source: mapTransaction(response.created.transactions.source),
-                destination: mapTransaction(
-                  response.created.transactions.destination
-                ),
-              },
+                  type: "transfer" as const,
+                  source: mapTransferTransaction(
+                    response.created.transactions.source
+                  ),
+                  destination: mapTransferTransaction(
+                    response.created.transactions.destination
+                  ),
+                },
           ...(response.created.payee
             ? { payee: mapPayee(response.created.payee) }
             : {}),
@@ -76,215 +103,416 @@ export const transactionApiSlice = apiSlice.injectEndpoints({
       }),
 
       async onQueryStarted(transaction, { dispatch, queryFulfilled }) {
-        const sourceTransactionId = asTransactionId(crypto.randomUUID());
-
-        const isTransfer = Boolean(transaction.transferAccountId);
-
-        const destinationTransactionId = isTransfer
-          ? asTransactionId(crypto.randomUUID())
-          : undefined;
-
-        const optimisticTransactionIds: TransactionId[] = [
-          sourceTransactionId,
-          ...(destinationTransactionId ? [destinationTransactionId] : []),
-        ];
-
-        const inflow = Number(transaction.inflow ?? "0");
-        const outflow = Number(transaction.outflow ?? "0");
-
-        const date = transaction.date ?? new Date().toISOString();
-        const memo = transaction.memo ?? "";
+        let optimisticTransactionIds: TransactionId[];
 
         const optimisticPatch = dispatch(
           budgetSnapshotSlice.util.updateQueryData(
             "getBudgetSnapshot",
             undefined,
             (draft) => {
-              const sourceAccount = draft.accounts[transaction.accountId];
-
-              if (sourceAccount) {
-                sourceAccount.balance += inflow - outflow;
-              }
-
-              if (isTransfer && transaction.transferAccountId) {
-                const destinationAccount =
-                  draft.accounts[transaction.transferAccountId];
-
-                if (destinationAccount) {
-                  destinationAccount.balance += outflow - inflow;
-                }
-
-                const sourceTransaction: TransactionBranded = {
-                  type: "transfer",
-                  id: sourceTransactionId,
-                  accountId: transaction.accountId,
-                  payeeId: null,
-                  date,
-                  memo,
-                  inflow,
-                  outflow,
-                  transferAccountId: transaction.transferAccountId,
-                  transferTransactionId: destinationTransactionId!,
-                };
-
-                const destinationTransaction: TransactionBranded = {
-                  type: "transfer",
-                  id: destinationTransactionId!,
-                  accountId: transaction.transferAccountId,
-                  payeeId: null,
-                  date,
-                  memo,
-                  inflow: outflow,
-                  outflow: inflow,
-                  transferAccountId: transaction.accountId,
-                  transferTransactionId: sourceTransactionId,
-                };
-
-                draft.transactions[sourceTransactionId] = sourceTransaction;
-
-                draft.transactions[destinationTransactionId!] =
-                  destinationTransaction;
-
-                return;
-              }
-
-              const payee = transaction.payeeId
-                ? draft.payees[transaction.payeeId]
-                : undefined;
-
-              const categoryId =
-                transaction.categoryId ??
-                (payee?.automaticallyCategorisePayee
-                  ? payee.defaultCategoryId
-                  : null) ??
-                draft.categories.uncategorised.id;
-
-              const optimisticTransaction: TransactionBranded = {
-                type: "normal",
-                id: sourceTransactionId,
-                accountId: transaction.accountId,
-                categoryId,
-                payeeId: transaction.payeeId ?? null,
-                date,
-                memo,
-                inflow,
-                outflow,
-              };
-
-              draft.transactions[sourceTransactionId] = optimisticTransaction;
+              optimisticTransactionIds = applyOptimisticTransactionCreate(
+                draft,
+                transaction
+              );
             }
           )
         );
 
+        let data: CreateTransactionResult;
+
         try {
-          const { data } = await queryFulfilled;
-
-          dispatch(
-            budgetSnapshotSlice.util.updateQueryData(
-              "getBudgetSnapshot",
-              undefined,
-              (draft) => {
-                // Remove the optimistic transaction(s).
-                for (const id of optimisticTransactionIds) {
-                  delete draft.transactions[id];
-                }
-
-                // Insert the authoritative transaction(s).
-                if (data.created.transactions.type === "normal") {
-                  const transaction = data.created.transactions.transaction;
-
-                  draft.transactions[transaction.id] = transaction;
-                } else {
-                  const { source, destination } = data.created.transactions;
-
-                  draft.transactions[source.id] = source;
-                  draft.transactions[destination.id] = destination;
-                }
-
-                // Apply authoritative account balances.
-                for (const account of Object.values(data.updated.accounts)) {
-                  draft.accounts[account.id] = account;
-                }
-
-                // Apply created months.
-                for (const month of Object.values(data.created.months)) {
-                  draft.months[month.id] = month;
-                }
-
-                // Apply updated months.
-                for (const month of Object.values(data.updated.months)) {
-                  draft.months[month.id] = month;
-                }
-
-                // Apply the payee if the server created one.
-                if (data.created.payee) {
-                  draft.payees[data.created.payee.id] = data.created.payee;
-                }
-
-                // Apply returned monthly memos.
-                for (const memo of data.created.memos) {
-                  draft.notesByMonth[memo.month] = memo;
-                }
-              }
-            )
-          );
+          ({ data } = await queryFulfilled);
         } catch {
           optimisticPatch.undo();
+          return;
         }
+
+        dispatch(
+          budgetSnapshotSlice.util.updateQueryData(
+            "getBudgetSnapshot",
+            undefined,
+            (draft) => {
+              for (const id of optimisticTransactionIds) {
+                delete draft.transactions[id];
+              }
+
+              if (data.created.transactions.type === "normal") {
+                const transaction = data.created.transactions.transaction;
+
+                draft.transactions[transaction.id] = transaction;
+              } else {
+                const { source, destination } = data.created.transactions;
+
+                draft.transactions[source.id] = source;
+                draft.transactions[destination.id] = destination;
+              }
+
+              for (const account of Object.values(data.updated.accounts)) {
+                draft.accounts[account.id] = account;
+              }
+
+              for (const month of Object.values(data.created.months)) {
+                draft.months[month.id] = month;
+              }
+
+              for (const month of Object.values(data.updated.months)) {
+                draft.months[month.id] = month;
+              }
+
+              if (data.created.payee) {
+                draft.payees[data.created.payee.id] = data.created.payee;
+              }
+
+              for (const memo of data.created.memos) {
+                draft.notesByMonth[memo.month] = memo;
+              }
+            }
+          )
+        );
       },
       invalidatesTags: ["Accounts", "Categories"],
     }),
-    editTransaction: builder.mutation<any, any>({
-      query: (transaction) => ({
-        url: "/budget/transaction",
+    editTransaction: builder.mutation<
+      EditTransactionResult,
+      EditTransactionInput
+    >({
+      query: ({ transactionId, updates }) => ({
+        url: `${TRANSACTION_ENDPOINT_URL}/${transactionId}`,
         method: "PATCH",
-        body: transaction,
+        body: updates,
       }),
-      invalidatesTags: ["Accounts", "Categories", "Bootstrap"],
+
+      invalidatesTags: ["Accounts", "Categories"],
+
+      transformResponse: (
+        response: EditTransactionResponse
+      ): EditTransactionResult => ({
+        created: {
+          transaction: Object.fromEntries(
+            Object.entries(response.created.transaction).map(
+              ([id, transaction]) => [
+                asTransactionId(id),
+                mapTransferTransaction(transaction),
+              ]
+            )
+          ),
+          payee: Object.fromEntries(
+            Object.entries(response.created.payee).map(([id, payee]) => [
+              asPayeeId(id),
+              mapPayee(payee),
+            ])
+          ),
+          months: Object.fromEntries(
+            Object.entries(response.created.months).map(([id, month]) => [
+              asMonthId(id),
+              mapMonth(month),
+            ])
+          ),
+          memos: Object.fromEntries(
+            Object.entries(response.created.memos).map(([id, memo]) => [
+              id,
+              mapMemo(memo),
+            ])
+          ),
+        },
+        updated: {
+          accounts: Object.fromEntries(
+            Object.entries(response.updated.accounts).map(([id, account]) => [
+              asAccountId(id),
+              mapAccount(account),
+            ])
+          ),
+          months: Object.fromEntries(
+            Object.entries(response.updated.months).map(([id, month]) => [
+              asMonthId(id),
+              mapMonth(month),
+            ])
+          ),
+          transaction: Object.fromEntries(
+            Object.entries(response.updated.transaction).map(
+              ([id, transaction]) => [
+                id as TransactionId,
+                mapTransaction(transaction),
+              ]
+            )
+          ),
+        },
+        deleted: {
+          transaction: Object.fromEntries(
+            Object.entries(response.deleted.transaction).map(
+              ([id, transaction]) => [
+                id as TransactionId,
+                mapTransferTransaction(transaction),
+              ]
+            )
+          ),
+        },
+      }),
+
+      async onQueryStarted(
+        { transactionId, updates },
+        { dispatch, queryFulfilled }
+      ) {
+        const optimisticPatch = dispatch(
+          budgetSnapshotSlice.util.updateQueryData(
+            "getBudgetSnapshot",
+            undefined,
+            (draft) => {
+              applyOptimisticTransactionEdit(draft, transactionId, updates);
+            }
+          )
+        );
+
+        let data: EditTransactionResult;
+
+        try {
+          ({ data } = await queryFulfilled);
+        } catch {
+          optimisticPatch.undo();
+          return;
+        }
+
+        dispatch(
+          budgetSnapshotSlice.util.updateQueryData(
+            "getBudgetSnapshot",
+            undefined,
+            (draft) => {
+              Object.assign(draft.payees, data.created.payee);
+              Object.assign(draft.accounts, data.updated.accounts);
+              Object.assign(draft.months, data.created.months);
+              Object.assign(draft.months, data.updated.months);
+              Object.assign(draft.transactions, data.updated.transaction);
+
+              for (const memo of Object.values(data.created.memos)) {
+                draft.notesByMonth[memo.month] = memo;
+              }
+            }
+          )
+        );
+      },
     }),
-    deleteTransaction: builder.mutation<any, any>({
-      query: (transaction) => ({
-        url: "/budget/transaction",
+    deleteTransaction: builder.mutation<
+      DeleteTransactionsResult,
+      DeleteTransactionsInput
+    >({
+      query: (transactions) => ({
+        url: TRANSACTION_ENDPOINT_URL,
         method: "DELETE",
-        body: transaction,
+        body: transactions,
       }),
-      invalidatesTags: ["Accounts", "Categories", "Bootstrap"],
+      invalidatesTags: ["Accounts", "Categories"],
+
+      transformResponse: (
+        response: DeleteTransactionsResponse
+      ): DeleteTransactionsResult => ({
+        deleted: {
+          transactions: Object.fromEntries(
+            Object.entries(response.deleted.transactions).map(
+              ([id, transaction]) => [
+                id as TransactionId,
+                mapTransaction(transaction),
+              ]
+            )
+          ),
+        },
+        updated: {
+          accounts: Object.fromEntries(
+            Object.entries(response.updated.accounts).map(([id, account]) => [
+              asAccountId(id),
+              mapAccount(account),
+            ])
+          ),
+          months: Object.fromEntries(
+            Object.entries(response.updated.months).map(([id, month]) => [
+              asMonthId(id),
+              mapMonth(month),
+            ])
+          ),
+        },
+      }),
+
+      async onQueryStarted(input, { dispatch, queryFulfilled }) {
+        const optimisticPatch = dispatch(
+          budgetSnapshotSlice.util.updateQueryData(
+            "getBudgetSnapshot",
+            undefined,
+            (draft) => {
+              applyOptimisticTransactionsDelete(draft, input.transactionIds);
+            }
+          )
+        );
+
+        let data: DeleteTransactionsResult;
+
+        try {
+          ({ data } = await queryFulfilled);
+        } catch {
+          optimisticPatch.undo();
+          return;
+        }
+
+        dispatch(
+          budgetSnapshotSlice.util.updateQueryData(
+            "getBudgetSnapshot",
+            undefined,
+            (draft) => {
+              for (const transaction of Object.values(
+                data.deleted.transactions
+              )) {
+                delete draft.transactions[transaction.id];
+              }
+
+              Object.assign(draft.accounts, data.updated.accounts);
+              Object.assign(draft.months, data.updated.months);
+            }
+          )
+        );
+      },
     }),
-    duplicateTransactions: builder.mutation<any, any>({
+    duplicateTransactions: builder.mutation<
+      DuplicateTransactionsResult,
+      DuplicateTransactionsInput
+    >({
       query: (transactions) => ({
         url: "/budget/transaction/duplicate",
         method: "POST",
         body: transactions,
       }),
-      invalidatesTags: ["Accounts", "Categories", "Bootstrap"],
+      invalidatesTags: ["Accounts", "Categories"],
+
+      transformResponse: (
+        response: DuplicateTransactionsResponse
+      ): DuplicateTransactionsResult => ({
+        created: {
+          transactions: response.created.transactions.map((t) => {
+            switch (t.type) {
+              case "normal":
+                return {
+                  type: "normal" as const,
+                  transaction: mapNormalTransaction(t.transaction),
+                };
+
+              case "transfer":
+                return {
+                  type: "transfer" as const,
+                  source: mapTransferTransaction(t.source),
+                  destination: mapTransferTransaction(t.destination),
+                };
+            }
+          }),
+        },
+        updated: {
+          accounts: Object.fromEntries(
+            Object.entries(response.updated.accounts).map(([id, account]) => [
+              asAccountId(id),
+              mapAccount(account),
+            ])
+          ),
+          months: Object.fromEntries(
+            Object.entries(response.updated.months).map(([id, month]) => [
+              asMonthId(id),
+              mapMonth(month),
+            ])
+          ),
+        },
+      }),
+
+      async onQueryStarted(input, { dispatch, queryFulfilled }) {
+        let optimisticTransactionIds: TransactionId[];
+
+        const optimisticPatch = dispatch(
+          budgetSnapshotSlice.util.updateQueryData(
+            "getBudgetSnapshot",
+            undefined,
+            (draft) => {
+              optimisticTransactionIds = applyOptimisticTransactionsDuplicate(
+                draft,
+                input.transactionIds
+              );
+            }
+          )
+        );
+
+        let data: DuplicateTransactionsResult;
+
+        try {
+          ({ data } = await queryFulfilled);
+        } catch {
+          optimisticPatch.undo();
+          return;
+        }
+
+        dispatch(
+          budgetSnapshotSlice.util.updateQueryData(
+            "getBudgetSnapshot",
+            undefined,
+            (draft) => {
+              for (const id of optimisticTransactionIds) {
+                delete draft.transactions[id];
+              }
+
+              for (const transactionUnit of data.created.transactions) {
+                if (transactionUnit.type === "normal") {
+                  draft.transactions[transactionUnit.transaction.id] =
+                    transactionUnit.transaction;
+                } else {
+                  draft.transactions[transactionUnit.source.id] =
+                    transactionUnit.source;
+                  draft.transactions[transactionUnit.destination.id] =
+                    transactionUnit.destination;
+                }
+              }
+
+              Object.assign(draft.accounts, data.updated.accounts);
+              Object.assign(draft.months, data.updated.months);
+            }
+          )
+        );
+      },
     }),
-    editBulkTransactions: builder.mutation<any, any>({
+
+    editBulkTransactions: builder.mutation<
+      EditBulkTransactionsResult,
+      EditBulkTransactionsInput
+    >({
       query: (mutation) => ({
         url: `${TRANSACTION_ENDPOINT_URL}/bulk`,
         method: "PATCH",
         body: mutation,
       }),
+      invalidatesTags: ["Accounts", "Categories"],
+
       async onQueryStarted(mutation, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
+        const optimisticPatch = dispatch(
           budgetSnapshotSlice.util.updateQueryData(
             "getBudgetSnapshot",
             undefined,
             (draft) => {
-              for (const transactionId of mutation.transactionIds) {
-                const transaction = draft.transactions[transactionId];
-
-                if (transaction) {
-                  Object.assign(transaction, mutation.updates);
-                }
-              }
+              applyOptimisticTransactionsBulkEdit(draft, mutation);
             }
           )
         );
+
+        let data: EditBulkTransactionsResult;
+
         try {
-          await queryFulfilled;
+          ({ data } = await queryFulfilled);
         } catch {
-          patchResult.undo();
+          optimisticPatch.undo();
+          return;
         }
+
+        dispatch(
+          budgetSnapshotSlice.util.updateQueryData(
+            "getBudgetSnapshot",
+            undefined,
+            (draft) => {
+              Object.assign(draft.transactions, data.updated.transactions);
+              Object.assign(draft.accounts, data.updated.accounts);
+              Object.assign(draft.months, data.updated.months);
+            }
+          )
+        );
       },
     }),
   }),
