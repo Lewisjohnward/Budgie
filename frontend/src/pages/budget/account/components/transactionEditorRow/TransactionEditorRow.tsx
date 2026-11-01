@@ -7,6 +7,7 @@ import { SelectCategory } from "./selectCategory";
 import { SelectDate } from "./selectDate/SelectDate";
 import { TransactionEditorActions } from "./TransactionFormActions";
 import { SelectAccount } from "./selectAccount/selectAccount";
+import { Checkbox } from "@/core/components/uiLibrary/checkbox";
 
 type TransactionEditorRow = {
   transactionEditor: TransactionEditor;
@@ -29,6 +30,12 @@ export function TransactionEditorRow({
         }
         onClick={(e) => e.stopPropagation()}
       >
+        <TableCell>
+          <Checkbox
+            className="[&_svg]:h-3 [&_svg]:w-3 size-3 rounded-[2px] shadow-none"
+            checked={true}
+          />
+        </TableCell>
         {transactionEditor.state.displayAccountField && (
           <TableCell>
             <SelectAccount />
@@ -79,7 +86,7 @@ export function TransactionEditorRow({
       </TableRow>
       <TransactionEditorActions
         showWarning={transactionEditor.state.showWarning}
-        columnCount={transactionEditor.state.displayAccountField ? 7 : 6}
+        columnCount={transactionEditor.state.displayAccountField ? 8 : 7}
         mode={transactionEditor.state.mode}
         onSaveTransaction={transactionEditor.saveTransaction}
         onSaveAndAddAnotherTransaction={

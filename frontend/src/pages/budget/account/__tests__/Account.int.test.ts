@@ -1,8 +1,8 @@
-import { setSnapshot } from "../__helpers__/msw/state";
-import { renderAccountRedirectTest } from "../__helpers__/testUtils";
-import { baseSnapshot } from "./account.snapshot";
+import { setSnapshot } from "./__helpers__/msw/state";
+import { renderAccountRedirectTest } from "./__helpers__/testUtils";
+import { baseSnapshot } from "./Account.snapshot";
 import { screen } from "@testing-library/react";
-import { setupTestServer } from "../__helpers__/msw/server";
+import { setupTestServer } from "./__helpers__/msw/server";
 
 setupTestServer();
 
