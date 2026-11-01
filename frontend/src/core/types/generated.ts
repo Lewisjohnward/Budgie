@@ -410,6 +410,26 @@ export interface components {
              */
             outflow?: string;
         } & (unknown | unknown);
+        /** @description Request to bulk update multiple transactions. Supports updating the category, account, or memo for the selected transactions. */
+        EditTransactionsBulkRequest: {
+            /** @description IDs of the transactions to update. */
+            transactionIds: string[];
+            /** @description The field to update. Exactly one of categoryId, accountId, or memo must be provided. */
+            updates: {
+                /**
+                 * Format: uuid
+                 * @description ID of the category to assign to the transactions.
+                 */
+                categoryId?: string;
+                /**
+                 * Format: uuid
+                 * @description ID of the account to assign the transactions to.
+                 */
+                accountId?: string;
+                /** @description Memo to assign to the transactions. Leading and trailing whitespace is trimmed. */
+                memo?: string;
+            } & (unknown | unknown | unknown);
+        };
         /** @description Result of creating a user category, including the newly created category and its associated months. */
         CreateCategoryResponse: {
             created: {
@@ -542,6 +562,23 @@ export interface components {
                 };
             };
             updated: {
+                /** @description Updated accounts keyed by account id. */
+                accounts: {
+                    [key: string]: components["schemas"]["Account"];
+                };
+                /** @description Updated months keyed by month id. */
+                months: {
+                    [key: string]: components["schemas"]["Month"];
+                };
+            };
+        };
+        /** @description Result of bulk editing transactions, including updated transactions and any related account or month mutations. */
+        EditTransactionsBulkResponse: {
+            updated: {
+                /** @description Updated transactions keyed by transaction id. */
+                transactions: {
+                    [key: string]: components["schemas"]["Transaction"];
+                };
                 /** @description Updated accounts keyed by account id. */
                 accounts: {
                     [key: string]: components["schemas"]["Account"];

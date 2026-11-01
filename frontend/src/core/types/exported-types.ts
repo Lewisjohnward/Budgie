@@ -56,6 +56,8 @@ export type CategoryGroupPositionPatch =
 // Transaction responses
 export type CreateTransactionResponse =
   components["schemas"]["CreateTransactionResponse"];
+export type EditTransactionsBulkResponse =
+  components["schemas"]["EditTransactionsBulkResponse"];
 
 // Memo
 export type EditMemoResponse = components["schemas"]["EditMemoResponse"];
