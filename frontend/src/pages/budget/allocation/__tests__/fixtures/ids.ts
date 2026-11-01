@@ -31,6 +31,8 @@ export const accountIds = {
 export const transactionIds = {
   groceries: "tx_1",
   groceries2: "tx_2",
+  groceries3: "tx_3",
+  groceries4: "tx_4",
 };
 
 export const memoIds = {
