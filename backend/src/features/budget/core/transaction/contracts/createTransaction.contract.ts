@@ -2,27 +2,7 @@ import { type DomainAccount } from "../../account/account.types";
 import { type DomainMonth } from "../../category/core/category.types";
 import { type DomainMemo } from "../../memo/memo.types";
 import { type DomainPayee } from "../../payee/payee.types";
-import {
-  type DomainNormalTransaction,
-  type DomainTransferTransaction,
-} from "../../transaction/transaction.types";
-
-/**
- * Describes the transactions created by the operation.
- *
- * A normal transaction creates one transaction, while a transfer creates
- * a source and destination transaction.
- */
-export type CreatedTransactions =
-  | {
-    type: "normal";
-    transaction: DomainNormalTransaction;
-  }
-  | {
-    type: "transfer";
-    source: DomainTransferTransaction;
-    destination: DomainTransferTransaction;
-  };
+import { CreatedTransactions } from "../transaction.types";
 
 /**
  * Result returned from the create transaction use case.
