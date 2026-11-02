@@ -90,3 +90,22 @@ export type DomainTransferSourceTransaction = DomainTransferBase & {
 export type DomainTransferDestinationTransaction = DomainTransferBase & {
   transferTransactionId: TransactionId;
 };
+
+/**
+ * Represents a group of transaction records created by an operation.
+ *
+ * A normal transaction consists of a single transaction record, while a
+ * transfer consists of linked source and destination transaction records.
+ *
+ * The `type` property discriminates between the two transaction variants.
+ */
+export type CreatedTransactions =
+  | {
+      type: "normal";
+      transaction: DomainNormalTransaction;
+    }
+  | {
+      type: "transfer";
+      source: DomainTransferTransaction;
+      destination: DomainTransferTransaction;
+    };
