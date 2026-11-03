@@ -9,7 +9,7 @@ import { type CreateTransactionPayload } from "../../transaction.schema";
 import { type AccountId, asAccountId } from "../../../account/account.types";
 import { asPayeeId, type PayeeId } from "../../../payee/payee.types";
 import { asUserId, type UserId } from "../../../../../user/auth/auth.types";
-import { type CreateTransactionResult } from "../../contracts/createTransaction.contract";
+import { CreateTransactionResult } from "../../transaction.contract";
 
 /**
  * Base structure for a transaction create command after transforming raw input.

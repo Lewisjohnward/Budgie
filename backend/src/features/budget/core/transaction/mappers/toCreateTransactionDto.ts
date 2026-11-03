@@ -1,11 +1,11 @@
 import { type CreateTransactionDto } from "../transaction.types";
-import { type CreateTransactionResult } from "../contracts/createTransaction.contract";
 import { memoMapper } from "../../memo/memo.mapper";
 import { payeeMapper } from "../../payee/payee.mapper";
 import { accountMapper } from "../../account/account.mapper";
 import { categoryMapper } from "../../category/core/category.mapper";
 import { toTransactionTransferDto } from "./toTransactionTransferDto";
 import { toTransactionNormalDto } from "./toTransactionNormalDto";
+import { CreateTransactionResult } from "../transaction.contract";
 
 /**
  * Maps a create transaction use case result to its API response DTO.
