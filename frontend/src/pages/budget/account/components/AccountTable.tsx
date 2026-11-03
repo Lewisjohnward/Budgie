@@ -241,7 +241,8 @@ export function AccountTable({
         </TableBody>
       </Table>
       {/* </section> */}
-      <SelectionModal
+      <ActionBar
+        selectedTransactionIds={table.selectedRowIds}
         rowCount={table.numberOfRows}
         display={table.displaySelectionModal}
         cancel={table.cancelSelection}

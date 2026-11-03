@@ -74,11 +74,6 @@ export const useTransactionTable = (account: AccountOverview) => {
     },
     onSortingChange: setSorting,
   });
-  // visual row order !== data array index order
-  // row.id represents the original data index array, not the visual position
-  const [lastRowSelectionIndex, setLastRowSelectionIndex] = useState<
-    number | null
-  >(null);
 
   const handleSetColumnFilters = (filters: ColumnFiltersState) => {
     const globalFilter = filters.find((filter) => filter.id === "");
@@ -101,40 +96,50 @@ export const useTransactionTable = (account: AccountOverview) => {
     setColumnFilters(newFilters);
   };
 
+  const [lastSelectedRowId, setLastSelectedRowId] = useState<string | null>(
+    null
+  );
+
   const onRowSelection = useCallback(
-    (e: React.MouseEvent<HTMLTableRowElement, MouseEvent>, row: any) => {
-      const currentSelection = { ...rowSelection };
+    (e: React.MouseEvent<HTMLTableRowElement>, row: any) => {
+      const rows = table.getRowModel().rows;
 
       if (e.shiftKey) {
-        const startIndex = lastRowSelectionIndex ?? row.index;
-        const endIndex = row.index;
-        const [min, max] =
-          startIndex < endIndex
-            ? [startIndex, endIndex]
-            : [endIndex, startIndex];
+        const anchorId = lastSelectedRowId ?? row.id;
+
+        const startIndex = rows.findIndex((r) => r.id === anchorId);
+        const endIndex = rows.findIndex((r) => r.id === row.id);
+
+        if (startIndex === -1 || endIndex === -1) {
+          return;
+        }
+
+        const min = Math.min(startIndex, endIndex);
+        const max = Math.max(startIndex, endIndex);
 
         const selectedRows = Object.fromEntries(
-          table
-            .getRowModel()
-            .rows.slice(min, max + 1)
-            .map((r) => [r.id, true])
+          rows.slice(min, max + 1).map((r) => [r.id, true])
         );
 
-        table.setRowSelection({ ...currentSelection, ...selectedRows });
-      } else if (e.ctrlKey || e.metaKey) {
-        table.setRowSelection((prev) => ({
-          ...prev,
-          [row.id]: !prev[row.id],
-        }));
-      } else {
-        table.resetRowSelection();
-        row.toggleSelected();
+        // Replace selection with the selected range.
+        table.setRowSelection(selectedRows);
+
+        // Keep the original anchor for subsequent Shift-clicks.
+        return;
       }
 
-      // Save visual index (row.index) for shift-selection
-      setLastRowSelectionIndex(row.index);
+      if (e.ctrlKey || e.metaKey) {
+        // TODO:(lewis 2026-10-28 17:47) this fixes the ctrl selection bug
+        row.toggleSelected();
+        setLastSelectedRowId(row.id);
+        return;
+      }
+
+      // Select only the clicked row.
+      table.setRowSelection({ [row.id]: true });
+      setLastSelectedRowId(row.id);
     },
-    [lastRowSelectionIndex, rowSelection, table]
+    [lastSelectedRowId, table]
   );
 
   const onRowSelectionContextMenu = useCallback(
@@ -244,8 +249,8 @@ export const useTransactionTable = (account: AccountOverview) => {
 
   const earliestMonth = earliestTransactionDate
     ? new Date(earliestTransactionDate).toLocaleString("en-US", {
-        month: "long",
-      })
+      month: "long",
+    })
     : new Date().toLocaleString("en-US", { month: "long" });
 
   const futureYear = earliestYear
