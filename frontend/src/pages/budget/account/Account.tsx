@@ -62,8 +62,12 @@ function AccountContent({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
+        if (transactionEditor.state.open) {
+          transactionEditor.cancel();
+          return;
+        }
+
         table.cancelSelection();
-        transactionEditor.cancel();
       }
       if (e.key === "N" && e.shiftKey) {
         // TODO:(lewis 2025-12-03 15:00) dont like this, should it be a method on transactionForm?
