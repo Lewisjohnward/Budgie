@@ -1,9 +1,13 @@
 import { getAccounts } from "../../utils/getData";
 import {
   addTransactionLegacy,
+  createNormalTransaction,
+  createTransferTransaction,
   duplicateTransactions,
 } from "../../utils/transaction";
 import { login, registerUser } from "../../utils/auth";
+import { getMonthsByCategoryId } from "../../utils/appSnapshot";
+import { getRTACategory } from "../../utils/category";
 import {
   createAccount,
   createAccountAndFetch,
@@ -17,6 +21,203 @@ describe("Transaction Duplicate", () => {
   beforeEach(async () => {
     await registerUser();
     cookie = await login();
+  });
+  describe("Response DTO", () => {
+    it("Should return normal transactions using the correct DTO shape", async () => {
+      const account1 = await createAccountAndFetch(cookie, 0);
+
+      const normal = await createNormalTransaction(cookie, {
+        accountId: account1.id,
+        inflow: "20",
+      });
+
+      const response = await duplicateTransactions(cookie, [normal.id]);
+
+      expect(response.created.transactions).toHaveLength(1);
+
+      const normalDto = response.created.transactions.find(
+        (transaction) => transaction.type === "normal"
+      );
+
+      expect(normalDto).toBeDefined();
+
+      if (normalDto?.type === "normal") {
+        expect(normalDto.transaction.id).not.toBe(normal.id);
+      }
+    });
+    it("Should return transfer pairs as a single transfer DTO", async () => {
+      const account1 = await createAccountAndFetch(cookie, 0);
+      const account2 = await createAccountAndFetch(cookie, 0);
+
+      const { source, destination } = await createTransferTransaction(cookie, {
+        accountId: account1.id,
+        transferAccountId: account2.id,
+        outflow: "10",
+      });
+
+      const response = await duplicateTransactions(cookie, [source.id]);
+
+      expect(response.created.transactions).toHaveLength(1);
+
+      const [createdTransfer] = response.created.transactions;
+
+      expect(createdTransfer.type).toBe("transfer");
+
+      if (createdTransfer.type !== "transfer") {
+        throw new Error("Expected transfer DTO");
+      }
+
+      expect(createdTransfer.source.id).not.toBe(source.id);
+      expect(createdTransfer.source.id).not.toBe(destination.id);
+
+      expect(createdTransfer.destination.id).not.toBe(source.id);
+      expect(createdTransfer.destination.id).not.toBe(destination.id);
+
+      expect(createdTransfer.source.accountId).toBe(source.accountId);
+      expect(createdTransfer.destination.accountId).toBe(destination.accountId);
+
+      expect(createdTransfer.source.outflow).toBe(source.outflow);
+      expect(createdTransfer.destination.inflow).toBe(destination.inflow);
+
+      expect(createdTransfer.source.transferTransactionId).toBe(
+        createdTransfer.destination.id
+      );
+
+      expect(createdTransfer.destination.transferTransactionId).toBe(
+        createdTransfer.source.id
+      );
+    });
+    it("Should return updated accounts as an ID-keyed record", async () => {
+      const account1 = await createAccountAndFetch(cookie, 0);
+      const account2 = await createAccountAndFetch(cookie, 0);
+
+      const { source } = await createTransferTransaction(cookie, {
+        accountId: account1.id,
+        transferAccountId: account2.id,
+        outflow: "10",
+      });
+
+      const response = await duplicateTransactions(cookie, [source.id]);
+
+      expect(response.updated.accounts).toEqual(
+        expect.objectContaining({
+          [account1.id]: expect.objectContaining({
+            id: account1.id,
+            balance: -20,
+          }),
+          [account2.id]: expect.objectContaining({
+            id: account2.id,
+            balance: 20,
+          }),
+        })
+      );
+
+      expect(Array.isArray(response.updated.accounts)).toBe(false);
+    });
+    it("Should return correctly mapped normal and transfer DTOs", async () => {
+      const account1 = await createAccountAndFetch(cookie, 0);
+      const account2 = await createAccountAndFetch(cookie, 0);
+
+      const { source } = await createTransferTransaction(cookie, {
+        accountId: account1.id,
+        transferAccountId: account2.id,
+        outflow: "10",
+      });
+
+      const normal = await createNormalTransaction(cookie, {
+        accountId: account1.id,
+        inflow: "20",
+      });
+
+      const response = await duplicateTransactions(cookie, [
+        source.id,
+        normal.id,
+      ]);
+
+      expect(response.created.transactions).toHaveLength(2);
+
+      const normalDto = response.created.transactions.find(
+        (transaction) => transaction.type === "normal"
+      );
+
+      const transferDto = response.created.transactions.find(
+        (transaction) => transaction.type === "transfer"
+      );
+
+      expect(normalDto).toBeDefined();
+      expect(transferDto).toBeDefined();
+
+      if (normalDto?.type === "normal") {
+        expect(normalDto.transaction.id).not.toBe(normal!.id);
+      }
+
+      if (transferDto?.type === "transfer") {
+        expect(transferDto.source.transferTransactionId).toBe(
+          transferDto.destination.id
+        );
+
+        expect(transferDto.destination.transferTransactionId).toBe(
+          transferDto.source.id
+        );
+      }
+    });
+    it("Should return updated months as an ID-keyed record", async () => {
+      const account = await createAccountAndFetch(cookie, 0);
+
+      const normal = await createNormalTransaction(cookie, {
+        accountId: account.id,
+        outflow: "20",
+      });
+
+      const rtaCategory = await getRTACategory(cookie);
+
+      const rtaMonthsBefore = await getMonthsByCategoryId(
+        cookie,
+        rtaCategory.id
+      );
+
+      const categoryMonthsBefore = await getMonthsByCategoryId(
+        cookie,
+        normal.categoryId
+      );
+
+      categoryMonthsBefore.sort(
+        (a, b) => Date.parse(a.month) - Date.parse(b.month)
+      );
+      rtaMonthsBefore.sort((a, b) => Date.parse(a.month) - Date.parse(b.month));
+
+      const response = await duplicateTransactions(cookie, [normal.id]);
+
+      expect(response.updated.months).toHaveProperty(
+        categoryMonthsBefore[0].id
+      );
+      expect(response.updated.months).toHaveProperty(rtaMonthsBefore[1].id);
+
+      const categoryUpdatedMonth =
+        response.updated.months[categoryMonthsBefore[0].id];
+
+      expect(categoryUpdatedMonth).toEqual(
+        expect.objectContaining({
+          id: categoryMonthsBefore[0].id,
+          categoryId: normal.categoryId,
+          month: categoryMonthsBefore[0].month,
+          activity: categoryMonthsBefore[0].activity - 20,
+        })
+      );
+
+      const rtaUpdatedMonth = response.updated.months[rtaMonthsBefore[1].id];
+
+      expect(rtaUpdatedMonth).toEqual(
+        expect.objectContaining({
+          id: rtaMonthsBefore[1].id,
+          categoryId: rtaCategory.id,
+          month: rtaMonthsBefore[1].month,
+          available: rtaMonthsBefore[1].available - 20,
+        })
+      );
+
+      expect(Array.isArray(response.updated.months)).toBe(false);
+    });
   });
 
   describe("Error Cases", () => {
