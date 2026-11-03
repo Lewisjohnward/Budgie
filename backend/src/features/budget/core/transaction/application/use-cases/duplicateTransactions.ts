@@ -13,6 +13,9 @@ import { asUserId, type UserId } from "../../../../../user/auth/auth.types";
 import { payeeService } from "../../../payee/payee.service";
 import { sanitizeSystemPayee } from "../../utils/sanitiseSystemPayee";
 import { getUniqueAccountIds } from "../../utils/getUniqueAccountIds";
+import { DuplicateTransactionsResult } from "../../contracts/duplicateTransactions.contract";
+import { DomainMonth } from "../../../category/core/category.types";
+import { transactionMapper } from "../../transaction.mapper";
 
 /**
  * Command type for duplicating transactions.
@@ -81,10 +84,10 @@ export const toDuplicateTransactionsCommand = (
  */
 export const duplicateTransactions = async (
   payload: DuplicateTransactionsPayload
-): Promise<void> => {
+): Promise<DuplicateTransactionsResult> => {
   const { userId, transactionIds } = toDuplicateTransactionsCommand(payload);
 
-  await prisma.$transaction(async (tx) => {
+  return await prisma.$transaction(async (tx) => {
     const { normalTransactions, allTransferTransactions } =
       await transactionService.getTransactionsWithPairs(
         tx,
@@ -116,13 +119,30 @@ export const duplicateTransactions = async (
     const duplicatedNonRtaTxs = createDuplicatedTxs(nonRtaTransactions);
     const duplicatedRtaTxs = createDuplicatedTxs(rtaTransactions);
 
+    const duplicatedTransactions = [
+      ...duplicatedTransferTxs,
+      ...duplicatedRtaTxs,
+      ...duplicatedNonRtaTxs,
+    ];
+
+    const createdTransactions = transactionMapper.toCreatedTransactions(
+      [...duplicatedNonRtaTxs, ...duplicatedRtaTxs],
+      duplicatedTransferTxs
+    );
+
+    // Insert all transactions
+    await transactionRepository.createTransactions(tx, duplicatedTransactions);
+
+    const updatedMonths: DomainMonth[] = [];
     // update months for duplicated transactions
     if (nonRtaTransactions.length > 0) {
-      await categoryService.months.recalculateCategoryMonthsForTransactions(
-        tx,
-        nonRtaTransactions,
-        OperationMode.Add
-      );
+      const updatedNonRtaMonths =
+        await categoryService.months.recalculateCategoryMonthsForTransactions(
+          tx,
+          nonRtaTransactions,
+          OperationMode.Add
+        );
+      updatedMonths.push(...updatedNonRtaMonths);
     }
 
     // update rta activity and then recalculate rta months available
@@ -136,33 +156,35 @@ export const duplicateTransactions = async (
       );
     }
 
-    await categoryService.rta.calculateMonthsAvailable(
+    const updatedRtaMonths = await categoryService.rta.calculateMonthsAvailable(
       tx,
       userId,
       rtaCategoryId
     );
 
-    // Insert all transactions
-    await transactionRepository.createTransactions(tx, [
-      ...duplicatedTransferTxs,
-      ...duplicatedRtaTxs,
-      ...duplicatedNonRtaTxs,
-    ]);
+    updatedMonths.push(...updatedRtaMonths);
 
     // Update account balances for the duplicated transfers
     await accountService.updateAccountBalances(
       tx,
-      [...duplicatedTransferTxs, ...rtaTransactions, ...nonRtaTransactions],
+      duplicatedTransactions,
       OperationMode.Add
     );
 
-    await accountService.refreshDeletableStatus(
+    const uniqueAccountIds = getUniqueAccountIds(duplicatedTransactions);
+
+    await accountService.refreshDeletableStatus(tx, uniqueAccountIds);
+
+    const updatedAccounts = await accountService.getAccountsByIds(
       tx,
-      getUniqueAccountIds([
-        ...duplicatedNonRtaTxs,
-        ...duplicatedRtaTxs,
-        ...duplicatedTransferTxs,
-      ])
+      userId,
+      uniqueAccountIds
     );
+
+    return {
+      createdTransactions,
+      updatedMonths,
+      updatedAccounts,
+    };
   });
 };

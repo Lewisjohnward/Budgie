@@ -47,7 +47,7 @@ export const deleteTransactions = async (
       ...req.body,
     });
 
-    await transactionUseCase.deleteTransactions(payload);
+    const result = await transactionUseCase.deleteTransactions(payload);
 
     res.status(200).json({ message: "Success" });
   } catch (error) {
@@ -69,9 +69,10 @@ export const duplicateTransactions = async (
       ...req.body,
     });
 
-    await transactionUseCase.duplicateTransactions(payload);
+    const result = await transactionUseCase.duplicateTransactions(payload);
+    const dto = transactionMapper.toDuplicateTransactionsDto(result);
 
-    res.status(200).json({ message: "Transaction duplicated" });
+    res.status(200).json(dto);
   } catch (error) {
     next(error);
   }

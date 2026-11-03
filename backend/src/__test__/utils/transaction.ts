@@ -11,6 +11,7 @@ import {
   type TransactionTransferDto,
   type CreateTransactionDto,
   type TransactionNormalDto,
+  DuplicateTransactionsDto,
 } from "../../features/budget/core/transaction/transaction.types";
 
 /**
@@ -175,12 +176,14 @@ export const duplicateTransactions = async (
   cookie: string,
   transactionsToDuplicate: string[],
   expectCode: number = 200
-) => {
-  await request(app)
+): Promise<DuplicateTransactionsDto> => {
+  const res = await request(app)
     .post("/api/v1/budget/transaction/duplicate")
     .set("Authorization", `Bearer ${cookie}`)
     .send({ transactionIds: transactionsToDuplicate })
     .expect(expectCode);
+
+  return res.body;
 };
 
 const testAccountData = {
