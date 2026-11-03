@@ -410,6 +410,50 @@ export interface components {
              */
             outflow?: string;
         } & (unknown | unknown);
+        /** @description Partial update of a single transaction. Only provided fields will be updated. At least one field must be provided. */
+        EditTransactionRequest: {
+            /**
+             * Format: uuid
+             * @description Account to which the transaction belongs.
+             */
+            accountId?: string;
+            /**
+             * Format: date
+             * @description Transaction date. Must not be in the future.
+             */
+            date?: string;
+            /**
+             * Format: uuid
+             * @description ID of an existing payee. Cannot be provided together with payeeName. Null removes the associated payee.
+             */
+            payeeId?: string | null;
+            /** @description Name of the payee. Cannot be provided together with payeeId. */
+            payeeName?: string;
+            /**
+             * Format: uuid
+             * @description Category assigned to the transaction. Cannot be provided together with a non-null transferAccountId.
+             */
+            categoryId?: string | null;
+            /** @description Updated transaction memo. */
+            memo?: string;
+            /**
+             * @description Transaction inflow amount represented as a decimal string. Must be non-zero when provided and cannot be provided together with outflow.
+             * @example 150.00
+             */
+            inflow?: string;
+            /**
+             * @description Transaction outflow amount represented as a decimal string. Must be non-zero when provided and cannot be provided together with inflow.
+             * @example 25.50
+             */
+            outflow?: string;
+            /** @description Whether the transaction has been cleared. */
+            cleared?: boolean;
+            /**
+             * Format: uuid
+             * @description Destination account for a transfer. Null removes the transfer. Cannot be provided together with categoryId when setting a non-null transferAccountId.
+             */
+            transferAccountId?: string | null;
+        };
         /** @description Request to bulk update multiple transactions. Supports updating the category, account, or memo for the selected transactions. */
         EditTransactionsBulkRequest: {
             /** @description IDs of the transactions to update. */
@@ -429,6 +473,16 @@ export interface components {
                 /** @description Memo to assign to the transactions. Leading and trailing whitespace is trimmed. */
                 memo?: string;
             } & (unknown | unknown | unknown);
+        };
+        /** @description Request to duplicate multiple transactions. */
+        DuplicateTransactionsRequest: {
+            /** @description IDs of the transactions to delete. */
+            transactionIds: string[];
+        };
+        /** @description Request to delete multiple transactions. */
+        DeleteTransactionsRequest: {
+            /** @description IDs of the transactions to delete. */
+            transactionIds: string[];
         };
         /** @description Result of creating a user category, including the newly created category and its associated months. */
         CreateCategoryResponse: {
@@ -572,6 +626,39 @@ export interface components {
                 };
             };
         };
+        /** @description Result of editing a transaction, including newly created entities and existing entities affected by the operation. */
+        EditTransactionResponse: {
+            /** @description Entities created as a result of the transaction edit. */
+            created: {
+                /** @description Created payees keyed by payee id. */
+                payee: {
+                    [key: string]: components["schemas"]["Payee"];
+                };
+                /** @description Created months keyed by month id. */
+                months: {
+                    [key: string]: components["schemas"]["Month"];
+                };
+                /** @description Created memos keyed by memo id. */
+                memos: {
+                    [key: string]: components["schemas"]["Memo"];
+                };
+            };
+            /** @description Existing entities affected by the transaction edit. */
+            updated: {
+                /** @description Updated accounts keyed by account id. */
+                accounts: {
+                    [key: string]: components["schemas"]["Account"];
+                };
+                /** @description Updated months keyed by month id. */
+                months: {
+                    [key: string]: components["schemas"]["Month"];
+                };
+                /** @description Updated transactions keyed by transaction id. */
+                transactions: {
+                    [key: string]: components["schemas"]["Transaction"];
+                };
+            };
+        };
         /** @description Result of bulk editing transactions, including updated transactions and any related account or month mutations. */
         EditTransactionsBulkResponse: {
             updated: {
@@ -579,6 +666,42 @@ export interface components {
                 transactions: {
                     [key: string]: components["schemas"]["Transaction"];
                 };
+                /** @description Updated accounts keyed by account id. */
+                accounts: {
+                    [key: string]: components["schemas"]["Account"];
+                };
+                /** @description Updated months keyed by month id. */
+                months: {
+                    [key: string]: components["schemas"]["Month"];
+                };
+            };
+        };
+        /** @description Result of duplicating transactions including duplicated transactions and any related account or month mutations. */
+        DuplicateTransactionsResponse: {
+            created: {
+                /** @description Created transactions. */
+                transactions: components["schemas"]["Transaction"][];
+            };
+            updated: {
+                /** @description Updated accounts keyed by account id. */
+                accounts: {
+                    [key: string]: components["schemas"]["Account"];
+                };
+                /** @description Updated months keyed by month id. */
+                months: {
+                    [key: string]: components["schemas"]["Month"];
+                };
+            };
+        };
+        /** @description Result of deleting transactions, including deleted transactions and any related account or month mutations. */
+        DeleteTransactionsResponse: {
+            deleted: {
+                /** @description Deleted transactions keyed by transaction id. */
+                transactions: {
+                    [key: string]: components["schemas"]["Transaction"];
+                };
+            };
+            updated: {
                 /** @description Updated accounts keyed by account id. */
                 accounts: {
                     [key: string]: components["schemas"]["Account"];

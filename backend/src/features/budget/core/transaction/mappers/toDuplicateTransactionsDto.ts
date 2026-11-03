@@ -1,7 +1,7 @@
 import { toAccountDto } from "../../account/mappers/toAccountDto";
 import { toMonthDto } from "../../category/core/mappers/toMonthDto";
-import type { DuplicateTransactionsResult } from "../contracts/duplicateTransactions.contract";
-import type { DuplicateTransactionsDto } from "../transaction.types";
+import { type DuplicateTransactionsResult } from "../contracts/duplicateTransactions.contract";
+import { type DuplicateTransactionsDto } from "../transaction.types";
 import { toTransactionNormalDto } from "./toTransactionNormalDto";
 import { toTransactionTransferDto } from "./toTransactionTransferDto";
 

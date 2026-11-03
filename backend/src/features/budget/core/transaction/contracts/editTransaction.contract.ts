@@ -1,6 +1,7 @@
 import { type DomainAccount } from "../../account/account.types";
 import { type DomainMonth } from "../../category/core/category.types";
-import { DomainPayee } from "../../payee/payee.types";
+import { type DomainMemo } from "../../memo/memo.types";
+import { type DomainPayee } from "../../payee/payee.types";
 import { type DomainTransaction } from "../transaction.types";
 
 /**
@@ -22,6 +23,7 @@ import { type DomainTransaction } from "../transaction.types";
 export type EditTransactionResult = {
   createdPayee?: DomainPayee;
   createdMonths: DomainMonth[];
+  createdMemos: DomainMemo[];
 
   updatedAccounts: DomainAccount[];
   updatedMonths: DomainMonth[];

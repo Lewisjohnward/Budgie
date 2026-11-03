@@ -241,7 +241,7 @@ describe("Transaction Bulk Edit", () => {
 
         expect(body.updated.months).toEqual({});
       });
-      it("should not return accounts or transactions belonging only to excluded transfers", async () => {
+      it("Should not return accounts or transactions belonging only to excluded transfers", async () => {
         const account1 = await createAccountAndFetch(cookie, 0);
         const account2 = await createAccountAndFetch(cookie, 0);
         const account3 = await createAccountAndFetch(cookie, 0);

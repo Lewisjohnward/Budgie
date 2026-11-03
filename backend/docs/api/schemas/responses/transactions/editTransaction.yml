@@ -1,0 +1,60 @@
+EditTransactionResponse:
+  type: object
+  description: >
+    Result of editing a transaction, including newly created entities
+    and existing entities affected by the operation.
+  required:
+    - created
+    - updated
+  properties:
+    created:
+      type: object
+      description: Entities created as a result of the transaction edit.
+      required:
+        - payee
+        - months
+        - memos
+      properties:
+        payee:
+          type: object
+          description: Created payees keyed by payee id.
+          additionalProperties:
+            $ref: "../../entities/payee.yml#/Payee"
+
+        months:
+          type: object
+          description: Created months keyed by month id.
+          additionalProperties:
+            $ref: "../../entities/month.yml#/Month"
+
+        memos:
+          type: object
+          description: Created memos keyed by memo id.
+          additionalProperties:
+            $ref: "../../entities/memo.yml#/Memo"
+
+    updated:
+      type: object
+      description: Existing entities affected by the transaction edit.
+      required:
+        - accounts
+        - months
+        - transactions
+      properties:
+        accounts:
+          type: object
+          description: Updated accounts keyed by account id.
+          additionalProperties:
+            $ref: "../../entities/account.yml#/Account"
+
+        months:
+          type: object
+          description: Updated months keyed by month id.
+          additionalProperties:
+            $ref: "../../entities/month.yml#/Month"
+
+        transactions:
+          type: object
+          description: Updated transactions keyed by transaction id.
+          additionalProperties:
+            $ref: "../../entities/transaction.yml#/Transaction"

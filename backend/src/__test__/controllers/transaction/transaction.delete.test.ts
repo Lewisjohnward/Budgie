@@ -1,6 +1,8 @@
 import { getAccounts } from "../../utils/getData";
 import {
   addTransactionLegacy,
+  createNormalTransaction,
+  createTransferTransaction,
   deleteTransactions,
   TestInsertTransactionInputWithoutUserId,
 } from "../../utils/transaction";
@@ -10,6 +12,12 @@ import {
   createAccountAndFetch,
   fetchAccountByName,
 } from "../../utils/account";
+import {
+  getMonthsByCategoryId,
+  getRtaCategory,
+  getTestCategory,
+  getUserCategoryByName,
+} from "../../utils/appSnapshot";
 
 describe("Transaction Delete", () => {
   let cookie: string;
@@ -17,6 +25,215 @@ describe("Transaction Delete", () => {
   beforeEach(async () => {
     await registerUser();
     cookie = await login();
+  });
+
+  describe("Response DTO", () => {
+    it("Should return the correctly mapped DTO when deleting a normal transaction", async () => {
+      const account = await createAccountAndFetch(cookie, 0, "test-account");
+      const category = await getTestCategory(cookie);
+      const rtaCategory = await getRtaCategory(cookie);
+
+      const months = await getMonthsByCategoryId(cookie, category.id);
+      const rtaMonths = await getMonthsByCategoryId(cookie, rtaCategory.id);
+
+      const transactionPayload: TestInsertTransactionInputWithoutUserId = {
+        accountId: account.id,
+        categoryId: category.id,
+        outflow: "10",
+      };
+
+      const tx = await createNormalTransaction(cookie, transactionPayload);
+
+      const dto = await deleteTransactions(cookie, [tx.id]);
+
+      expect(dto.updated.accounts).toEqual({
+        [account.id]: {
+          id: account.id,
+          name: "test-account",
+          position: 0,
+          open: true,
+          type: "BANK",
+          balance: 0,
+          deletable: true,
+        },
+      });
+
+      const currentCategoryMonth = months[0];
+      const nextRtaMonth = rtaMonths[1];
+
+      expect(dto.updated.months).toEqual({
+        [currentCategoryMonth.id]: currentCategoryMonth,
+        [nextRtaMonth.id]: nextRtaMonth,
+      });
+
+      expect(dto.deleted.transactions).toEqual({
+        [tx.id]: tx,
+      });
+    });
+    it("Should return the correctly mapped DTO when deleting a transfer transaction", async () => {
+      const account1 = await createAccountAndFetch(cookie, 0, "account-1");
+      const account2 = await createAccountAndFetch(cookie, 0, "account-2");
+
+      const tx = await createTransferTransaction(cookie, {
+        accountId: account1.id,
+        transferAccountId: account2.id,
+        outflow: "10",
+      });
+
+      const dto = await deleteTransactions(cookie, [tx.source.id]);
+
+      expect(dto.updated.accounts).toEqual({
+        [account1.id]: {
+          id: account1.id,
+          name: "account-1",
+          balance: 0,
+          deletable: true,
+          open: true,
+          position: 0,
+          type: "BANK",
+        },
+        [account2.id]: {
+          id: account2.id,
+          name: "account-2",
+          balance: 0,
+          deletable: true,
+          open: true,
+          position: 1,
+          type: "BANK",
+        },
+      });
+
+      expect(dto.updated.months).toEqual({});
+
+      const sourceTx = tx.source;
+      const destinationTx = tx.destination;
+
+      expect(dto.deleted.transactions).toEqual({
+        [sourceTx.id]: sourceTx,
+        [destinationTx.id]: destinationTx,
+      });
+    });
+    it("Should return the correctly mapped DTO when deleting multiple transactions", async () => {
+      const account1 = await createAccountAndFetch(cookie, 0, "account-1");
+      const account2 = await createAccountAndFetch(cookie, 0, "account-2");
+
+      const rtaCategory = await getRtaCategory(cookie);
+      const rtaMonths = await getMonthsByCategoryId(cookie, rtaCategory.id);
+
+      const testCategory = await getTestCategory(cookie);
+      const testCategoryMonths = await getMonthsByCategoryId(
+        cookie,
+        testCategory.id
+      );
+
+      const normalTx = await createNormalTransaction(cookie, {
+        accountId: account1.id,
+        categoryId: testCategory.id,
+        outflow: "10",
+      });
+
+      const transferTx = await createTransferTransaction(cookie, {
+        accountId: account1.id,
+        transferAccountId: account2.id,
+        outflow: "20",
+      });
+
+      const dto = await deleteTransactions(cookie, [
+        normalTx.id,
+        transferTx.source.id,
+      ]);
+
+      expect(dto.updated.accounts).toEqual({
+        [account1.id]: {
+          id: account1.id,
+          name: "account-1",
+          balance: 0,
+          deletable: true,
+          open: true,
+          position: 0,
+          type: "BANK",
+        },
+        [account2.id]: {
+          id: account2.id,
+          name: "account-2",
+          balance: 0,
+          deletable: true,
+          open: true,
+          position: 1,
+          type: "BANK",
+        },
+      });
+
+      const currentTestCategoryMonth = testCategoryMonths[0];
+      const nextRtaMonth = rtaMonths[1];
+
+      expect(dto.updated.months).toEqual({
+        [currentTestCategoryMonth.id]: currentTestCategoryMonth,
+        [nextRtaMonth.id]: nextRtaMonth,
+      });
+
+      expect(dto.deleted.transactions).toEqual({
+        [normalTx.id]: normalTx,
+        [transferTx.source.id]: transferTx.source,
+        [transferTx.destination.id]: transferTx.destination,
+      });
+    });
+    it("Should return the correctly mapped DTO when deleting multiple normal transactions from different categories", async () => {
+      const account = await createAccountAndFetch(cookie, 0, "test-account");
+
+      const rtaCategory = await getRtaCategory(cookie);
+      const testCategory = await getUserCategoryByName(
+        cookie,
+        "another test category"
+      );
+
+      const rtaMonths = await getMonthsByCategoryId(cookie, rtaCategory.id);
+      const testCategoryMonths = await getMonthsByCategoryId(
+        cookie,
+        testCategory.id
+      );
+
+      const tx1 = await createNormalTransaction(cookie, {
+        accountId: account.id,
+        categoryId: testCategory.id,
+        outflow: "10",
+      });
+
+      const tx2 = await createNormalTransaction(cookie, {
+        accountId: account.id,
+        categoryId: rtaCategory.id,
+        inflow: "20",
+      });
+
+      const dto = await deleteTransactions(cookie, [tx1.id, tx2.id]);
+
+      expect(dto.updated.accounts).toEqual({
+        [account.id]: {
+          id: account.id,
+          name: "test-account",
+          balance: 0,
+          deletable: true,
+          open: true,
+          position: 0,
+          type: "BANK",
+        },
+      });
+
+      const currentTestCategoryMonth = testCategoryMonths[0];
+      const currentRtaMonth = rtaMonths[0];
+      const nextRtaMonth = rtaMonths[1];
+
+      expect(dto.updated.months).toEqual({
+        [currentTestCategoryMonth.id]: currentTestCategoryMonth,
+        [currentRtaMonth.id]: currentRtaMonth,
+        [nextRtaMonth.id]: nextRtaMonth,
+      });
+
+      expect(dto.deleted.transactions).toEqual({
+        [tx1.id]: tx1,
+        [tx2.id]: tx2,
+      });
+    });
   });
 
   describe("Error Cases", () => {

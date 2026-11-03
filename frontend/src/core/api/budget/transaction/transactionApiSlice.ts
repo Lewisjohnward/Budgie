@@ -249,6 +249,7 @@ export const transactionApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["Accounts", "Categories"],
     }),
     editTransaction: builder.mutation<any, any>({
+      // TODO:(lewis 2026-11-07 14:04) transactionId is sent using query params
       query: (transaction) => ({
         url: "/budget/transaction",
         method: "PATCH",
