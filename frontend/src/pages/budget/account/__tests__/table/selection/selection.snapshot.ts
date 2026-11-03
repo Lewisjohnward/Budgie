@@ -1,3 +1,4 @@
+// TODO:(lewis 2026-10-25 12:59) this helper needs to be hoisted
 import { ApiBudgetSnapshot } from "@/core/types/exported-types";
 import {
   accountIds,
@@ -7,17 +8,22 @@ import {
   monthIds,
   transactionIds,
 } from "@/pages/budget/allocation/__tests__/fixtures/ids";
+// TODO:(lewis 2026-10-25 12:59) this helper needs to be hoisted
 import { createMonth } from "@/pages/budget/allocation/__tests__/utils/createMonth";
 import { createAccount } from "@/pages/budget/allocation/__tests__/utils/entities/createAccount";
+// TODO:(lewis 2026-10-25 12:59) this helper needs to be hoisted
 import {
   createSystemCategory,
   createUserCategory,
 } from "@/pages/budget/allocation/__tests__/utils/entities/createCategory";
+// TODO:(lewis 2026-10-25 12:59) this helper needs to be hoisted
 import {
   createSystemCategoryGroup,
   createUserCategoryGroup,
 } from "@/pages/budget/allocation/__tests__/utils/entities/createCategoryGroup";
+// TODO:(lewis 2026-10-25 12:59) this helper needs to be hoisted
 import { createMemo } from "@/pages/budget/allocation/__tests__/utils/entities/createMemo";
+// TODO:(lewis 2026-10-25 12:59) this helper needs to be hoisted
 import { defaultMonth } from "@/pages/budget/allocation/__tests__/utils/entities/defaults";
 import { createNormalTransaction } from "@/pages/budget/allocation/__tests__/utils/entities/createTransaction";
 

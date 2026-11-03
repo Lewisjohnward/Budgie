@@ -62,30 +62,20 @@ export async function createNormalTransaction(
     type: _type,
   } = command;
 
-  const resolvedPayeeId =
+  const resolvedPayeeResult =
     payeeId !== undefined || payeeName !== undefined
       ? await payeeService.resolvePayeeId(tx, userId, payeeId, payeeName)
+      : { type: "none" as const };
+
+  const createdPayee =
+    resolvedPayeeResult.type === "created"
+      ? resolvedPayeeResult.createdPayee
       : undefined;
-
-  let createdPayee: DomainPayee | undefined;
-  if (payeeName && resolvedPayeeId !== undefined) {
-    const row = await payeeRepository.getPayeeByIdAndUserId(
-      tx,
-      resolvedPayeeId,
-      userId
-    );
-    if (!row) {
-      throw new Error("there should be a payee id!");
-    }
-
-    createdPayee = payeeMapper.toDomainPayee(row);
-  }
 
   if (categoryId) {
     await categoryService.categories.getCategory(tx, userId, categoryId);
   }
 
-  // TODO:(lewis 2026-01-26 11:31) needs to go in service in categories //
   const uncategorisedCategoryId = categoryId
     ? undefined
     : await categoryService.categories.getUncategorisedCategoryId(tx, userId);
@@ -100,7 +90,10 @@ export async function createNormalTransaction(
     memo,
     inflow,
     outflow,
-    payeeId: resolvedPayeeId,
+    payeeId:
+      resolvedPayeeResult.type !== "none"
+        ? resolvedPayeeResult.payeeId
+        : undefined,
     categoryId: finalCategoryId,
     origin,
   });
@@ -108,14 +101,14 @@ export async function createNormalTransaction(
   const mode = OperationMode.Add;
   const isRtaTransaction = newTransaction.categoryId === rtaCategoryId;
 
-  // insert the missing months
+  // Insert missing months
   const createdMonths = await categoryService.months.insertMissingMonths(
     tx,
     userId,
     newTransaction.date
   );
 
-  // insert the missing memos
+  // Insert missing memos
   const createdMemos = await memoService.insertMissingMemos(
     tx,
     userId,
@@ -123,6 +116,7 @@ export async function createNormalTransaction(
   );
 
   let updatedCategoryMonths: DomainMonth[] = [];
+
   if (!isRtaTransaction) {
     updatedCategoryMonths =
       await categoryService.months.recalculateCategoryMonthsForTransactions(
@@ -152,6 +146,7 @@ export async function createNormalTransaction(
 
   const accRow = await accountRepository.getAccount(tx, accountId, userId);
   if (!accRow) throw new Error("where is the account?");
+
   const account = accountMapper.toDomainAccount(accRow);
 
   return {

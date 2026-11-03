@@ -1,0 +1,35 @@
+DeleteTransactionsResponse:
+  type: object
+  description: >
+    Result of deleting transactions, including deleted transactions
+    and any related account or month mutations.
+  required:
+    - deleted
+    - updated
+  properties:
+    deleted:
+      type: object
+      required:
+        - transactions
+      properties:
+        transactions:
+          type: object
+          description: Deleted transactions keyed by transaction id.
+          additionalProperties:
+            $ref: "../../entities/transaction.yml#/Transaction"
+    updated:
+      type: object
+      required:
+        - accounts
+        - months
+      properties:
+        accounts:
+          type: object
+          description: Updated accounts keyed by account id.
+          additionalProperties:
+            $ref: "../../entities/account.yml#/Account"
+        months:
+          type: object
+          description: Updated months keyed by month id.
+          additionalProperties:
+            $ref: "../../entities/month.yml#/Month"

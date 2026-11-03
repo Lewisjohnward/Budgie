@@ -269,6 +269,7 @@ export function AccountTable({
       </Table>
       {/* </section> */}
       <ActionBar
+        selectedTransactionIds={table.selectedRowIds}
         rowCount={table.numberOfRows}
         display={table.displaySelectionModal}
         cancel={table.cancelSelection}

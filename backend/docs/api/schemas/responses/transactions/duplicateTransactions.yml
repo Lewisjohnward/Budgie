@@ -1,0 +1,59 @@
+DuplicateTransactionsResponse:
+  type: object
+  description: >
+    Result of duplicating transactions including duplicated transactions and any related account or month mutations.
+  required:
+    - created
+    - updated
+  properties:
+    created:
+      type: object
+      required:
+        - transactions
+      properties:
+        transactions:
+          type: array
+          description: Transactions created by the duplication operation.
+          items:
+            oneOf:
+              - type: object
+                required:
+                  - type
+                  - transaction
+                properties:
+                  type:
+                    type: string
+                    enum: [normal]
+                  transaction:
+                    $ref: "../../entities/transaction.yml#/Transaction"
+              - type: object
+                required:
+                  - type
+                  - source
+                  - destination
+                properties:
+                  type:
+                    type: string
+                    enum: [transfer]
+                  source:
+                    $ref: "../../entities/transaction.yml#/Transaction"
+                  destination:
+                    $ref: "../../entities/transaction.yml#/Transaction"
+            discriminator:
+              propertyName: type
+    updated:
+      type: object
+      required:
+        - accounts
+        - months
+      properties:
+        accounts:
+          type: object
+          description: Updated accounts keyed by account id.
+          additionalProperties:
+            $ref: "../../entities/account.yml#/Account"
+        months:
+          type: object
+          description: Updated months keyed by month id.
+          additionalProperties:
+            $ref: "../../entities/month.yml#/Month"

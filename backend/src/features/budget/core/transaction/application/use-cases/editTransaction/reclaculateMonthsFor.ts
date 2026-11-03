@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { splitTransactionsByType } from "../../../utils/splitTransactionsByType";
 import { type DomainNormalTransaction } from "../../../transaction.types";
 import { type UserId } from "../../../../../../user/auth/auth.types";
+import { DomainMonth } from "../../../../category/core/category.types";
 
 /**
  * Recalculates category month state and RTA activity for a set of normal transactions.
@@ -31,8 +32,8 @@ export async function recalcMonthsFor(
   userId: UserId,
   txs: DomainNormalTransaction[],
   mode: OperationMode
-): Promise<void> {
-  if (txs.length === 0) return;
+): Promise<DomainMonth[]> {
+  if (txs.length === 0) return [];
 
   const rtaCategoryId = await categoryService.rta.getRtaCategoryId(tx, userId);
 
@@ -41,12 +42,15 @@ export async function recalcMonthsFor(
     rtaCategoryId
   );
 
+  const updatedMonths: DomainMonth[] = [];
   if (nonRtaTransactions.length) {
-    await categoryService.months.recalculateCategoryMonthsForTransactions(
-      tx,
-      nonRtaTransactions,
-      mode
-    );
+    const updatedCategoryMonths =
+      await categoryService.months.recalculateCategoryMonthsForTransactions(
+        tx,
+        nonRtaTransactions,
+        mode
+      );
+    updatedMonths.push(...updatedCategoryMonths);
   }
 
   if (rtaTransactions.length) {
@@ -60,5 +64,13 @@ export async function recalcMonthsFor(
   }
 
   // RTA available depends on global state, so do it after any month changes
-  await categoryService.rta.calculateMonthsAvailable(tx, userId, rtaCategoryId);
+  const updatedRtaMonths = await categoryService.rta.calculateMonthsAvailable(
+    tx,
+    userId,
+    rtaCategoryId
+  );
+
+  updatedMonths.push(...updatedRtaMonths);
+
+  return updatedMonths;
 }

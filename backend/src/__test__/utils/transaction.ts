@@ -12,6 +12,8 @@ import {
   type CreateTransactionDto,
   type TransactionNormalDto,
   DuplicateTransactionsDto,
+  DeleteTransactionsDto,
+  EditTransactionDto,
 } from "../../features/budget/core/transaction/transaction.types";
 
 /**
@@ -152,12 +154,14 @@ export const deleteTransactions = async (
   cookie: string,
   transactionIds: string[],
   expectCode: number = 200
-) => {
-  await request(app)
+): Promise<DeleteTransactionsDto> => {
+  const res = await request(app)
     .delete("/api/v1/budget/transaction")
     .set("Authorization", `Bearer ${cookie}`)
     .send({ transactionIds })
     .expect(expectCode);
+
+  return res.body;
 };
 
 export const editTransactions = async (
@@ -197,6 +201,20 @@ export const addAccount = async (cookie: string) => {
     .post("/api/v1/budget/account")
     .set("Authorization", `Bearer ${cookie}`)
     .send(testAccountData);
+};
+
+export const editTransactionWithDto = async (
+  cookie: string,
+  id: string,
+  payload: EditSingleTransactionInput
+): Promise<EditTransactionDto> => {
+  const res = await request(app)
+    .patch(`/api/v1/budget/transaction/${id}`)
+    .set("Authorization", `Bearer ${cookie}`)
+    .send(payload)
+    .expect(200);
+
+  return res.body;
 };
 
 export const editSingleTransaction = async (

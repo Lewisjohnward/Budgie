@@ -68,8 +68,14 @@ components:
     # Transaction requests
     CreateTransactionRequest:
       $ref: "./schemas/requests/transactions/createTransaction.yml#/CreateTransactionRequest"
+    EditTransactionRequest:
+      $ref: "./schemas/requests/transactions/editTransaction.yml#/EditTransactionRequest"
     EditTransactionsBulkRequest:
       $ref: "./schemas/requests/transactions/editTransactionsBulk.yml#/EditTransactionsBulkRequest"
+    DuplicateTransactionsRequest:
+      $ref: "./schemas/requests/transactions/duplicateTransactions.yml#/DuplicateTransactionsRequest"
+    DeleteTransactionsRequest:
+      $ref: "./schemas/requests/transactions/deleteTransactions.yml#/DeleteTransactionsRequest"
 
     #----------
     # Responses
@@ -98,8 +104,14 @@ components:
     # Transaction responses
     CreateTransactionResponse:
       $ref: "./schemas/responses/transactions/createTransaction.yml#/CreateTransactionResponse"
+    EditTransactionResponse:
+      $ref: "./schemas/responses/transactions/editTransaction.yml#/EditTransactionResponse"
     EditTransactionsBulkResponse:
       $ref: "./schemas/responses/transactions/editTransactionsBulk.yml#/EditTransactionsBulkResponse"
+    DuplicateTransactionsResponse:
+      $ref: "./schemas/responses/transactions/duplicateTransactions.yml#/DuplicateTransactionsResponse"
+    DeleteTransactionsResponse:
+      $ref: "./schemas/responses/transactions/deleteTransactions.yml#/DeleteTransactionsResponse"
 
     # Edit memo response
     EditMemoResponse:

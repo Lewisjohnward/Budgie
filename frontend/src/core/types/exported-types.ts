@@ -26,6 +26,8 @@ export type ApiAccount = components["schemas"]["Account"];
 export type ApiPayee = components["schemas"]["Payee"];
 export type ApiTransaction = components["schemas"]["Transaction"];
 export type ApiTransactionNormal = components["schemas"]["TransactionNormal"];
+export type ApiTransactionTransfer =
+  components["schemas"]["TransactionTransfer"];
 
 export type ApiMonthKey = string;
 
@@ -56,8 +58,14 @@ export type CategoryGroupPositionPatch =
 // Transaction responses
 export type CreateTransactionResponse =
   components["schemas"]["CreateTransactionResponse"];
+export type DuplicateTransactionsResponse =
+  components["schemas"]["DuplicateTransactionsResponse"];
 export type EditTransactionsBulkResponse =
   components["schemas"]["EditTransactionsBulkResponse"];
+export type DeleteTransactionsResponse =
+  components["schemas"]["DeleteTransactionsResponse"];
+export type EditTransactionResponse =
+  components["schemas"]["EditTransactionResponse"];
 
 // Memo
 export type EditMemoResponse = components["schemas"]["EditMemoResponse"];

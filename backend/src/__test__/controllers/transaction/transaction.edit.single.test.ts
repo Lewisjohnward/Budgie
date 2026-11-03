@@ -2,7 +2,9 @@ import { v4 as uuidv4 } from "uuid";
 import { getAccounts, getCategories } from "../../utils/getData";
 import {
   addTransactionLegacy,
+  createNormalTransaction,
   editSingleTransaction,
+  editTransactionWithDto,
   type TestInsertTransactionInputWithoutUserId,
 } from "../../utils/transaction";
 import { login, registerUser } from "../../utils/auth";
@@ -13,6 +15,7 @@ import {
   getTestCategory,
   getUncategorisedCategory,
 } from "../../utils/category";
+import { getUserCategories } from "../../utils/appSnapshot";
 import { getPayees, getPayeeByName } from "../../utils/payee";
 import { LENGTH_ON_SIGNUP } from "../../utils/memo";
 import {
@@ -29,6 +32,117 @@ describe("Transaction Single Edit", () => {
     await registerUser();
     cookie = await login();
   });
+
+  describe("Response DTO", () => {
+    it("Should return the correct DTO when editing a normal transaction month (to beginning of current month)", async () => {
+      const account = await createAccountAndFetch(cookie, 0, "test-account");
+      const category = await getTestCategory(cookie);
+      const transactionPayload: TestInsertTransactionInputWithoutUserId = {
+        accountId: account.id,
+        categoryId: category.id,
+        outflow: "10",
+      };
+
+      const tx = await createNormalTransaction(cookie, transactionPayload);
+
+      const date = new Date();
+      date.setDate(1);
+      date.setHours(12, 0, 0, 0);
+
+      const dto = await editTransactionWithDto(cookie, tx.id, {
+        date: date.toISOString(),
+      });
+
+      expect(dto.created.payee).toEqual({});
+      expect(dto.created.months).toEqual({});
+      expect(dto.created.memos).toEqual({});
+
+      expect(dto.updated.accounts).toEqual({});
+      expect(dto.updated.months).toEqual({});
+      expect(dto.updated.transactions).toEqual({
+        [tx.id]: { ...tx, date: date.toISOString() },
+      });
+    });
+    it("Should return the correct DTO when editing a normal transaction month (into past)", async () => {
+      const account = await createAccountAndFetch(cookie, 0, "test-account");
+      const userCategories = await getUserCategories(cookie);
+
+      const categoryCount = Object.values(userCategories).length + 2;
+
+      const category = await getTestCategory(cookie);
+      const transactionPayload: TestInsertTransactionInputWithoutUserId = {
+        accountId: account.id,
+        categoryId: category.id,
+        outflow: "10",
+      };
+
+      const tx = await createNormalTransaction(cookie, transactionPayload);
+
+      const date = new Date();
+      date.setDate(1);
+      date.setMonth(date.getMonth() - 6);
+      date.setHours(12, 0, 0, 0);
+      console.log("date:", date);
+
+      const dto = await editTransactionWithDto(cookie, tx.id, {
+        date: date.toISOString(),
+      });
+
+      expect(dto.created.payee).toEqual({});
+
+      // create.months check
+      const expectedMonths = [];
+
+      const cursor = new Date(date);
+      const currentMonth = new Date();
+      currentMonth.setDate(1);
+      currentMonth.setHours(0, 0, 0, 0);
+
+      currentMonth.setDate(1);
+
+      while (cursor < currentMonth) {
+        expectedMonths.push(cursor.toISOString().slice(0, 7));
+        cursor.setMonth(cursor.getMonth() + 1);
+      }
+
+      const createdMonths = Object.values(dto.created.months);
+
+      console.log({
+        expectedMonths,
+        expectedLength: categoryCount * expectedMonths.length,
+        categoryCount,
+      });
+
+      expect(createdMonths).toHaveLength(categoryCount * expectedMonths.length);
+
+      // create.memos check
+      // expect(dto.created.memos).toEqual({});
+      //
+      // expect(dto.updated.accounts).toEqual({});
+      // expect(dto.updated.months).toEqual({});
+      // expect(dto.updated.transactions).toEqual({
+      //   [tx.id]: { ...tx, date: date.toISOString() },
+      // });
+    });
+    describe("Created", () => {
+      it("returns empty created records when no records are created");
+      it("returns backfilled months when editing into the past");
+      it("returns a newly created payee");
+    });
+
+    describe("Updated", () => {
+      it("returns the edited transaction");
+      it("returns affected accounts when changing account");
+      it("returns affected months when changing category");
+      it("returns affected accounts and months when changing amount");
+    });
+
+    describe("Transfers", () => {
+      it("returns correct DTO when converting to a transfer");
+      it("returns correct DTO when converting back to normal transaction");
+    });
+  });
+
   describe("Error Cases", () => {
     it("Should return 400 when updating a transaction providing no fields", async () => {
       const account1 = await createAccountAndFetch(cookie, 0);
@@ -2285,7 +2399,7 @@ describe("Transaction Single Edit", () => {
           });
         });
         describe("Category Months", () => {
-          it.skip("Should backfill category months when editing a transfer transaction into the past", async () => { });
+          it.skip("Should backfill category months when editing a transfer transaction into the past", async () => {});
         });
       });
     });

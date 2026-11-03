@@ -7,6 +7,7 @@ import { payeeService } from "../../../../payee/payee.service";
 import { type EditTransactionCommand } from "./editTransaction";
 import { type AccountId } from "../../../../account/account.types";
 import { type UserId } from "../../../../../../user/auth/auth.types";
+import { DomainPayee } from "../../../../payee/payee.types";
 
 /**
  * Represents a fully-resolved intent to edit a single transaction.
@@ -24,6 +25,7 @@ import { type UserId } from "../../../../../../user/auth/auth.types";
 export type EditTransactionIntent = {
   updateData: Prisma.TransactionUncheckedUpdateInput;
   transfer: TransferIntent;
+  createdPayee?: DomainPayee;
 };
 
 /**
@@ -100,35 +102,38 @@ export const resolveTransferIntent = (
  * Builds an edit intent for a single transaction without performing any writes.
  *
  * This function derives:
- * - a Prisma `TransactionUpdateInput` describing how the main transaction should be updated
- * - a resolved transfer intent describing how (or if) transfer-related records should change
+ * - A Prisma `TransactionUpdateInput` describing how the main transaction should be updated
+ * - A resolved transfer intent describing how (or if) transfer-related records should change
+ * - The newly created payee, if a new payee is created during intent resolution
  *
  * It uses the provided transaction snapshot and edit payload to apply domain rules and
  * perform all necessary validations and lookups, including:
  *
  * - Validating ownership of referenced accounts, categories, and payees
  * - Resolving relational updates using Prisma `connect` / `disconnect`
+ * - Resolving existing payees or creating new ones when a `payeeName` is provided
  * - Enforcing transfer semantics (e.g. clearing category and payee for transfers)
  * - Handling explicit removal of transfers (transfer → normal)
  * - Ensuring inflow and outflow remain mutually exclusive
  * - Mapping `null` or missing category inputs to the uncategorised category where required
  *
- * No database mutations are performed here; the returned intent is meant to be applied
- * later as part of a transactional workflow.
+ * Although this function may create a payee, it does not persist transaction updates.
+ * All operations are performed within the provided Prisma transaction, ensuring that
+ * payee creation is rolled back if the surrounding transaction fails.
  *
- * @param tx - Prisma transaction client used for all reads and validations
+ * @param tx - Prisma transaction client used for database operations
  * @param userId - ID of the user performing the edit (used for ownership checks)
  * @param snapshot - Immutable snapshot of the transaction prior to editing
  * @param payload - Partial edit payload describing the requested changes
  *
  * @returns An edit intent containing:
- * - `updateData`: a Prisma-compatible update object for the main transaction
- * - `transfer`: the resolved transfer intent describing transfer lifecycle changes
+ * - `updateData`: A Prisma-compatible update object for the main transaction
+ * - `transfer`: The resolved transfer intent describing transfer lifecycle changes
+ * - `createdPayee`: The newly created domain payee, or `undefined` if no payee was created
  *
  * @throws If referenced entities (account, category, payee) do not exist or are not owned
  * by the user. Specific error types are thrown by the underlying services.
  */
-
 export async function buildEditIntent(
   tx: Prisma.TransactionClient,
   userId: UserId,
@@ -192,6 +197,7 @@ export async function buildEditIntent(
     }
   }
 
+  let createdPayee: DomainPayee | undefined;
   // payeeId or payeeName
   const { payeeId, payeeName } = payload;
   if (payeeId !== undefined || payeeName !== undefined) {
@@ -209,14 +215,20 @@ export async function buildEditIntent(
     if (payeeId === null || willBeTransfer) {
       updateData.payee = { disconnect: true };
     } else {
-      const resolvedPayeeId = await payeeService.resolvePayeeId(
+      const resolvedPayee = await payeeService.resolvePayeeId(
         tx,
         userId,
-        payeeId,
+        payeeId ?? undefined,
         payeeName
       );
 
-      updateData.payee = { connect: { id: resolvedPayeeId } };
+      if (resolvedPayee.type !== "none") {
+        updateData.payee = { connect: { id: resolvedPayee.payeeId } };
+      }
+
+      if (resolvedPayee.type === "created") {
+        createdPayee = resolvedPayee.createdPayee;
+      }
     }
   }
 
@@ -238,5 +250,5 @@ export async function buildEditIntent(
     updateData.inflow = ZERO;
   }
 
-  return { updateData, transfer };
+  return { updateData, transfer, createdPayee };
 }

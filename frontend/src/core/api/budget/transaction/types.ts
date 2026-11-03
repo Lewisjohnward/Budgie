@@ -9,9 +9,21 @@ import {
   AccountId,
   CategoryId,
   MonthId,
+  NoteId,
   PayeeId,
   TransactionId,
 } from "@/pages/budget/allocation/types/types";
+
+export type CreatedTransactionBranded =
+  | {
+      type: "normal";
+      transaction: TransactionBranded;
+    }
+  | {
+      type: "transfer";
+      source: TransactionBranded;
+      destination: TransactionBranded;
+    };
 
 // Create
 export type CreateTransactionInput = {
@@ -28,16 +40,7 @@ export type CreateTransactionInput = {
 
 export type CreateTransactionResult = {
   created: {
-    transactions:
-      | {
-          type: "normal";
-          transaction: TransactionBranded;
-        }
-      | {
-          type: "transfer";
-          source: TransactionBranded;
-          destination: TransactionBranded;
-        };
+    transactions: CreatedTransactionBranded;
     payee?: PayeeBranded;
     memos: NoteBranded[];
     months: Record<MonthId, MonthBranded>;
@@ -49,18 +52,69 @@ export type CreateTransactionResult = {
 };
 
 // Edit
+export type EditTransactionInput = {
+  transactionId: TransactionId;
+  updates: {
+    accountId?: AccountId;
+    date?: string;
+    payeeId?: PayeeId | null;
+    payeeName?: string;
+    categoryId?: CategoryId;
+    memo?: string;
+    inflow?: number;
+    outflow?: number;
+    transferAccountId?: AccountId | null;
+  };
+};
+
+export type EditTransactionResult = {
+  created: {
+    payee: Record<PayeeId, PayeeBranded>;
+    months: Record<MonthId, MonthBranded>;
+    memos: Record<NoteId, NoteBranded>;
+  };
+  updated: {
+    accounts: Record<AccountId, AccountBranded>;
+    months: Record<MonthId, MonthBranded>;
+    transactions: Record<TransactionId, TransactionBranded>;
+  };
+};
 
 // Delete
+export type DeleteTransactionsInput = {
+  transactionIds: TransactionId[];
+};
+
+export type DeleteTransactionsResult = {
+  deleted: {
+    transactions: Record<TransactionId, TransactionBranded>;
+  };
+  updated: {
+    accounts: Record<AccountId, AccountBranded>;
+    months: Record<MonthId, MonthBranded>;
+  };
+};
 
 // Duplicate
+export type DuplicateTransactionsInput = {
+  transactionIds: TransactionId[];
+};
+
+export type DuplicateTransactionsResult = {
+  created: {
+    transactions: CreatedTransactionBranded[];
+  };
+  updated: {
+    accounts: Record<AccountId, AccountBranded>;
+    months: Record<MonthId, MonthBranded>;
+  };
+};
 
 // Edit bulk
 export type EditBulkTransactionsInput = {
   transactionIds: TransactionId[];
   updates:
-    | { categoryId: CategoryId }
-    | { accountId: AccountId }
-    | { memo: string };
+    { categoryId: CategoryId } | { accountId: AccountId } | { memo: string };
 };
 
 export type EditBulkTransactionsResult = {

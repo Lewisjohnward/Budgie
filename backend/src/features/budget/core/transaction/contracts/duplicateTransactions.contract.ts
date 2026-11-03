@@ -1,6 +1,6 @@
 import { type DomainAccount } from "../../account/account.types";
 import { type DomainMonth } from "../../category/core/category.types";
-import { CreatedTransactions } from "../transaction.types";
+import { type CreatedTransactions } from "../transaction.types";
 
 /**
  * Result returned from the duplicate transactions use case.
