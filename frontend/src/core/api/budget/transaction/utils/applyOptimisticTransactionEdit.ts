@@ -1,14 +1,48 @@
-import { BudgetSnapshot } from "@/core/types/NormalizedData";
-import { addMoney } from "@/core/utils/money";
+import {
+  AccountBranded,
+  TransactionNormal,
+  TransactionTransfer,
+} from "@/core/types/NormalizedData";
 import {
   AccountId,
   TransactionId,
 } from "@/pages/budget/allocation/types/types";
 import { Draft } from "immer";
 import { EditTransactionInput } from "../types";
+import { addMoney } from "@/core/utils/money";
 
+export type TransactionEditDraft = {
+  accounts: Record<AccountId, Pick<AccountBranded, "balance">>;
+  transactions: Record<
+    TransactionId,
+    | Pick<
+        TransactionNormal,
+        | "id"
+        | "accountId"
+        | "type"
+        | "categoryId"
+        | "payeeId"
+        | "date"
+        | "memo"
+        | "inflow"
+        | "outflow"
+      >
+    | Pick<
+        TransactionTransfer,
+        | "id"
+        | "accountId"
+        | "type"
+        | "date"
+        | "memo"
+        | "inflow"
+        | "outflow"
+        | "transferTransactionId"
+        | "transferAccountId"
+      >
+  >;
+};
 export const applyOptimisticTransactionEdit = (
-  draft: Draft<BudgetSnapshot>,
+  draft: Draft<TransactionEditDraft>,
   transactionId: TransactionId,
   updates: EditTransactionInput["updates"]
 ): void => {
@@ -54,9 +88,19 @@ export const applyOptimisticTransactionEdit = (
     );
   }
 
-  const newInflow = addMoney(0, updates.inflow ?? transaction.inflow);
+  const isUpdatingInflow = updates.inflow !== undefined;
+  const isUpdatingOutflow = updates.outflow !== undefined;
 
-  const newOutflow = addMoney(0, updates.outflow ?? transaction.outflow);
+  let newInflow = transaction.inflow;
+  let newOutflow = transaction.outflow;
+
+  if (isUpdatingInflow) {
+    newInflow = addMoney(0, updates.inflow!);
+    newOutflow = 0;
+  } else if (isUpdatingOutflow) {
+    newOutflow = addMoney(0, updates.outflow!);
+    newInflow = 0;
+  }
 
   if (updates.date !== undefined) {
     transaction.date = updates.date;
@@ -122,7 +166,9 @@ export const applyOptimisticTransactionEdit = (
   for (const [accountId, balanceDelta] of accountBalanceDelta) {
     const account = draft.accounts[accountId];
 
-    if (!account) continue;
+    if (!account) {
+      throw new Error(`Account not found: ${accountId}`);
+    }
 
     account.balance = addMoney(account.balance, balanceDelta);
   }

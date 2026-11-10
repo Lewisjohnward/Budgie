@@ -1,4 +1,8 @@
-import { BudgetSnapshot } from "@/core/types/NormalizedData";
+import {
+  AccountBranded,
+  TransactionNormal,
+  TransactionTransfer,
+} from "@/core/types/NormalizedData";
 import { addMoney } from "@/core/utils/money";
 import {
   AccountId,
@@ -6,8 +10,29 @@ import {
 } from "@/pages/budget/allocation/types/types";
 import { Draft } from "immer";
 
-export const applyOptimisticTransactionDelete = (
-  draft: Draft<BudgetSnapshot>,
+export type TransactionDeleteDraft = {
+  accounts: Record<AccountId, Pick<AccountBranded, "balance">>;
+
+  transactions: Record<
+    TransactionId,
+    | Pick<
+        TransactionNormal,
+        "id" | "accountId" | "type" | "inflow" | "outflow"
+      >
+    | Pick<
+        TransactionTransfer,
+        | "id"
+        | "accountId"
+        | "type"
+        | "inflow"
+        | "outflow"
+        | "transferTransactionId"
+      >
+  >;
+};
+
+export const applyOptimisticTransactionsDelete = (
+  draft: Draft<TransactionDeleteDraft>,
   transactionIds: TransactionId[]
 ): void => {
   const idsToDelete = new Set<TransactionId>();
@@ -47,7 +72,9 @@ export const applyOptimisticTransactionDelete = (
   for (const [accountId, balanceDelta] of accountBalanceDelta) {
     const account = draft.accounts[accountId];
 
-    if (!account) continue;
+    if (!account) {
+      throw new Error(`Account not found: ${accountId}`);
+    }
 
     account.balance = addMoney(account.balance, balanceDelta);
   }

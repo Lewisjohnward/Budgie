@@ -1,6 +1,7 @@
 import {
-  BudgetSnapshot,
+  AccountBranded,
   TransactionBranded,
+  TransactionNormal,
   TransactionTransfer,
 } from "@/core/types/NormalizedData";
 import { addMoney } from "@/core/utils/money";
@@ -11,8 +12,47 @@ import {
 } from "@/pages/budget/allocation/types/types";
 import { Draft } from "immer";
 
+export type TransactionDuplicateDraft = {
+  accounts: Record<AccountId, Pick<AccountBranded, "balance">>;
+  transactions: Record<
+    TransactionId,
+    | Pick<
+        TransactionNormal,
+        "id" | "accountId" | "type" | "inflow" | "outflow" | "memo"
+      >
+    | Pick<
+        TransactionTransfer,
+        | "id"
+        | "accountId"
+        | "type"
+        | "inflow"
+        | "outflow"
+        | "transferTransactionId"
+        | "transferAccountId"
+        | "memo"
+      >
+  >;
+};
+
+type TransferDuplicate = Pick<
+  TransactionTransfer,
+  | "id"
+  | "accountId"
+  | "type"
+  | "inflow"
+  | "outflow"
+  | "transferTransactionId"
+  | "transferAccountId"
+  | "memo"
+>;
+
+type NormalDuplicate = Pick<
+  TransactionNormal,
+  "id" | "accountId" | "type" | "inflow" | "outflow" | "memo"
+>;
+
 export const applyOptimisticTransactionsDuplicate = (
-  draft: Draft<BudgetSnapshot>,
+  draft: Draft<TransactionDuplicateDraft>,
   transactionIds: TransactionId[]
 ): TransactionId[] => {
   const optimisticTransactionIds: TransactionId[] = [];
@@ -20,7 +60,9 @@ export const applyOptimisticTransactionsDuplicate = (
   const idsToSkip = new Set<TransactionId>();
   const accountBalanceDelta = new Map<AccountId, number>();
 
-  const addAccountBalanceDelta = (transaction: TransactionBranded) => {
+  const addAccountBalanceDelta = (
+    transaction: Pick<TransactionBranded, "accountId" | "inflow" | "outflow">
+  ) => {
     const oldDelta = accountBalanceDelta.get(transaction.accountId) ?? 0;
 
     const newDelta = addMoney(
@@ -58,13 +100,13 @@ export const applyOptimisticTransactionsDuplicate = (
 
       optimisticTransactionIds.push(tempSourceId, tempDestinationId);
 
-      const duplicatedDestinationTransaction: TransactionTransfer = {
+      const duplicatedDestinationTransaction: TransferDuplicate = {
         ...destinationTransaction,
         id: tempDestinationId,
         transferTransactionId: tempSourceId,
       };
 
-      const duplicatedSourceTransaction: TransactionTransfer = {
+      const duplicatedSourceTransaction: TransferDuplicate = {
         ...transaction,
         id: tempSourceId,
         transferTransactionId: tempDestinationId,
@@ -80,7 +122,7 @@ export const applyOptimisticTransactionsDuplicate = (
       const tempId = asTransactionId(crypto.randomUUID());
       optimisticTransactionIds.push(tempId);
 
-      const duplicatedTransaction: TransactionBranded = {
+      const duplicatedTransaction: NormalDuplicate = {
         ...transaction,
         id: tempId,
       };

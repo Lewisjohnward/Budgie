@@ -1,17 +1,65 @@
 import {
-  BudgetSnapshot,
+  AccountBranded,
+  PayeeBranded,
   TransactionBranded,
+  TransactionNormal,
+  TransactionTransfer,
 } from "@/core/types/NormalizedData";
 import { addMoney } from "@/core/utils/money";
 import {
+  AccountId,
+  PayeeId,
   TransactionId,
   asTransactionId,
 } from "@/pages/budget/allocation/types/types";
 import { Draft } from "immer";
 import { CreateTransactionInput } from "../types";
+import { CategoryBranded } from "@/pages/budget/account/components/transactionEditorRow/selectCategory/useSelectCategory";
+
+export type TransactionCreateDraft = {
+  accounts: Record<AccountId, Pick<AccountBranded, "balance">>;
+  categories: {
+    uncategorised: Pick<CategoryBranded, "id">;
+  };
+  payees: Record<
+    PayeeId,
+    Pick<
+      PayeeBranded,
+      "id" | "automaticallyCategorisePayee" | "defaultCategoryId"
+    >
+  >;
+  transactions: Record<
+    TransactionId,
+    | Pick<
+        TransactionNormal,
+        | "id"
+        | "accountId"
+        | "type"
+        | "categoryId"
+        | "payeeId"
+        | "date"
+        | "memo"
+        | "inflow"
+        | "outflow"
+      >
+    | Pick<
+        TransactionTransfer,
+        | "id"
+        | "accountId"
+        | "type"
+        | "payeeId"
+        | "date"
+        | "memo"
+        | "inflow"
+        | "outflow"
+        | "transferTransactionId"
+        | "transferAccountId"
+      >
+  >;
+};
 
 export const applyOptimisticTransactionCreate = (
-  draft: Draft<BudgetSnapshot>,
+  draft: Draft<TransactionCreateDraft>,
   transactionInput: CreateTransactionInput
 ): TransactionId[] => {
   const isTransfer = Boolean(transactionInput.transferAccountId);

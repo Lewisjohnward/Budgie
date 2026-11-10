@@ -1,12 +1,49 @@
-import { BudgetSnapshot } from "@/core/types/NormalizedData";
+import {
+  AccountBranded,
+  TransactionNormal,
+  TransactionTransfer,
+} from "@/core/types/NormalizedData";
 import { subtractMoney, addMoney } from "@/core/utils/money";
 import { Draft } from "immer";
 import { EditBulkTransactionsInput } from "../types";
+import {
+  AccountId,
+  TransactionId,
+} from "@/pages/budget/allocation/types/types";
+
+export type TransactionsBulkEditDraft = {
+  accounts: Record<AccountId, Pick<AccountBranded, "balance">>;
+
+  transactions: Record<
+    TransactionId,
+    | Pick<
+        TransactionNormal,
+        | "id"
+        | "accountId"
+        | "type"
+        | "inflow"
+        | "outflow"
+        | "categoryId"
+        | "memo"
+      >
+    | Pick<
+        TransactionTransfer,
+        | "id"
+        | "accountId"
+        | "type"
+        | "inflow"
+        | "outflow"
+        | "transferTransactionId"
+        | "transferAccountId"
+        | "memo"
+      >
+  >;
+};
 
 export const applyOptimisticTransactionsBulkEdit = (
-  draft: Draft<BudgetSnapshot>,
+  draft: Draft<TransactionsBulkEditDraft>,
   mutation: EditBulkTransactionsInput
-) => {
+): void => {
   const selectedIds = new Set(mutation.transactionIds);
 
   for (const transactionId of mutation.transactionIds) {
