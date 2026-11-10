@@ -30,7 +30,7 @@ import { mapPayee } from "../mappers/payeeMapper";
 import { mapAccount } from "../mappers/accountMapper";
 import { applyOptimisticTransactionsBulkEdit } from "./utils/applyOptimisticTransactionsBulkEdit";
 import { applyOptimisticTransactionCreate } from "./utils/applyOptimisticTransctionCreate";
-import { applyOptimisticTransactionDelete } from "./utils/applyOptimisticTransactionDelete";
+import { applyOptimisticTransactionsDelete } from "./utils/applyOptimisticTransactionDelete";
 import { applyOptimisticTransactionEdit } from "./utils/applyOptimisticTransactionEdit";
 import { applyOptimisticTransactionsDuplicate } from "./utils/applyOptimisticTransactionsDuplicate";
 
@@ -265,7 +265,7 @@ export const transactionApiSlice = apiSlice.injectEndpoints({
         );
       },
     }),
-    deleteTransaction: builder.mutation<
+    deleteTransactions: builder.mutation<
       DeleteTransactionsResult,
       DeleteTransactionsInput
     >({
@@ -311,7 +311,7 @@ export const transactionApiSlice = apiSlice.injectEndpoints({
             "getBudgetSnapshot",
             undefined,
             (draft) => {
-              applyOptimisticTransactionDelete(draft, input.transactionIds);
+              applyOptimisticTransactionsDelete(draft, input.transactionIds);
             }
           )
         );
@@ -494,7 +494,7 @@ export const transactionApiSlice = apiSlice.injectEndpoints({
 export const {
   useCreateTransactionMutation,
   useEditTransactionMutation,
-  useDeleteTransactionMutation,
+  useDeleteTransactionsMutation,
   useDuplicateTransactionsMutation,
   useEditBulkTransactionsMutation,
 } = transactionApiSlice;

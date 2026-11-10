@@ -4,7 +4,7 @@ import { useTransactionEditor } from "./useTransactionEditor";
 import { useAccountData } from "./useAccountData/useAccountData";
 import { AccountId } from "../../allocation/types/types";
 import {
-  useDeleteTransactionMutation,
+  useDeleteTransactionsMutation,
   useDuplicateTransactionsMutation,
 } from "@/core/api/budget/transaction/transactionApiSlice";
 
@@ -70,11 +70,11 @@ export const useAccount = (accountId: AccountId) => {
     transactionEditor.handleTableInteraction();
   };
 
-  const [deleteTransaction] = useDeleteTransactionMutation();
+  const [deleteTransactions] = useDeleteTransactionsMutation();
   const [duplicateTransactions] = useDuplicateTransactionsMutation();
 
   const handleDeleteSelectedTransactions = () => {
-    deleteTransaction({ transactionIds: transactionTable.selectedRowIds });
+    deleteTransactions({ transactionIds: transactionTable.selectedRowIds });
     transactionTable.cancelSelection();
   };
 
