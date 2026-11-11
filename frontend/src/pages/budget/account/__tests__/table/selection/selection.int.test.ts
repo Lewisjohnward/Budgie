@@ -10,7 +10,7 @@ import { baseSnapshot } from "./selection.snapshot";
 
 setupTestServer();
 
-const setupTransactionTest = (snapshot: ApiBudgetSnapshot) => {
+const setupTransactionSelectionTest = (snapshot: ApiBudgetSnapshot) => {
   setSnapshot(snapshot);
   server.use(createTransactionHandler);
   renderAccountPage();
@@ -19,7 +19,7 @@ const setupTransactionTest = (snapshot: ApiBudgetSnapshot) => {
 
 describe("table", () => {
   beforeEach(() => {
-    setupTransactionTest(baseSnapshot);
+    setupTransactionSelectionTest(baseSnapshot);
   });
 
   describe("selection", () => {

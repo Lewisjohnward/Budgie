@@ -19,7 +19,7 @@ import { baseSnapshot } from "./transactionEditor.snapshot";
 
 setupTestServer();
 
-const setupTransactionTest = async (snapshot: ApiBudgetSnapshot) => {
+const setupTransactionEditorTest = async (snapshot: ApiBudgetSnapshot) => {
   setSnapshot(snapshot);
   server.use(createTransactionHandler);
   renderAccountPage();
@@ -30,7 +30,7 @@ const setupTransactionTest = async (snapshot: ApiBudgetSnapshot) => {
 describe("transaction editor row", () => {
   let user: UserEvent;
   beforeEach(async () => {
-    user = await setupTransactionTest(baseSnapshot);
+    user = await setupTransactionEditorTest(baseSnapshot);
   });
 
   it("opens when the user clicks add transaction", async () => {
