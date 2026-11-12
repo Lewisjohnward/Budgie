@@ -1,4 +1,3 @@
-import { useGetAccountsQuery } from "@/core/api/budget/account/accountApiSlice";
 import {
   Popover,
   PopoverTrigger,
@@ -8,22 +7,28 @@ import {
 import clsx from "clsx";
 import { ChevronDown } from "lucide-react";
 import { useFormContext } from "react-hook-form";
+import { useMemo } from "react";
+import { useBudgetSnapshot } from "@/pages/budget/allocation/hooks/useAllocation/useCategories";
 
 export function SelectAccount() {
-  const { data } = useGetAccountsQuery();
+  const {
+    data: { accounts },
+  } = useBudgetSnapshot();
+
   const { setValue, watch } = useFormContext();
 
-  if (!data) return <div>There has been an error</div>;
-
-  const cashAccounts = Object.values(data.accounts).filter(
-    (account) => account.type === "BANK"
-  );
-
-  const creditAccounts = Object.values(data.accounts).filter(
-    (account) => account.type === "CREDIT_CARD"
-  );
-
   const accountId = watch("accountId");
+
+  const { cashAccounts, creditAccounts } = useMemo(() => {
+    const accountsArray = Object.values(accounts);
+
+    return {
+      cashAccounts: accountsArray.filter((account) => account.type === "BANK"),
+      creditAccounts: accountsArray.filter(
+        (account) => account.type === "CREDIT_CARD"
+      ),
+    };
+  }, [accounts]);
 
   const handleSelectAccount = (accountId: string) => {
     setValue("accountId", accountId, { shouldDirty: true });
@@ -36,7 +41,7 @@ export function SelectAccount() {
           <input
             readOnly
             className="px-2 w-full caret-transparent rounded-sm text-ellipsis focus:outline-none focus:ring-0"
-            value={data.accounts[accountId]?.name || "Account"}
+            value={accounts[accountId]?.name || "Account"}
           />
           <ChevronDown className="size-4 text-sky-950" />
         </div>

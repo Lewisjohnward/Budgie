@@ -6,24 +6,31 @@ import clsx from "clsx";
 import { Dot, Pencil } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import useMouseOver from "@/core/hooks/useMouseOver";
-import { Account } from "@/core/types/NormalizedData";
+import { AccountBranded } from "@/core/types/NormalizedData";
 import { Balance } from "./Balance";
 import { useAppDispatch } from "@/core/hooks/reduxHooks";
 import { toggleEditAccount } from "@/core/slices/dialogSlice";
-import { useGetAccountsQuery } from "@/core/api/budget/account/accountApiSlice";
 import { useMemo } from "react";
+import { useBudgetSnapshot } from "../../allocation/hooks/useAllocation/useCategories";
 
-export function useHasUnallocatedTransactions(account: Account) {
-  const { data } = useGetAccountsQuery();
+export function useHasUnallocatedTransactions(account: AccountBranded) {
+  const {
+    data: { transactions },
+  } = useBudgetSnapshot();
 
-  return useMemo(() => {
-    return account.transactionIds?.some(
-      (transactionId) => !data?.transactions?.[transactionId]?.categoryId
-    );
-  }, [account.transactionIds, data?.transactions]);
+  return useMemo(
+    () =>
+      Object.values(transactions).some(
+        (transaction) =>
+          transaction.accountId === account.id &&
+          transaction.type === "normal" &&
+          !transaction.categoryId
+      ),
+    [account.id, transactions]
+  );
 }
 
-export function AccountCard({ account }: { account: Account }) {
+export function AccountCard({ account }: { account: AccountBranded }) {
   const { mouseOver, handleMouseEnter, handleMouseLeave } = useMouseOver();
   const dispatch = useAppDispatch();
   const handleOpenDialog = () => dispatch(toggleEditAccount(account));

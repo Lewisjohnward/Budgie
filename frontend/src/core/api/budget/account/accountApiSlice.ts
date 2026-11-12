@@ -9,7 +9,6 @@ export const accountApiSlice = apiSlice.injectEndpoints({
         url: "/budget/account",
         method: "GET",
       }),
-      providesTags: ["Accounts"],
     }),
     addAccount: builder.mutation<void, AddAccountPayload>({
       query: (newAccount) => ({
@@ -17,7 +16,7 @@ export const accountApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: newAccount,
       }),
-      invalidatesTags: ["Accounts", "Categories", "Bootstrap"],
+      invalidatesTags: ["Categories", "Bootstrap"],
     }),
     deleteAccount: builder.mutation<void, { accountId: string }>({
       query: (accountId) => ({
@@ -25,7 +24,7 @@ export const accountApiSlice = apiSlice.injectEndpoints({
         method: "DELETE",
         body: accountId,
       }),
-      invalidatesTags: ["Accounts", "Categories", "Bootstrap"],
+      invalidatesTags: ["Categories", "Bootstrap"],
     }),
     editAccount: builder.mutation<void, any>({
       query: (accountId) => ({
@@ -33,7 +32,7 @@ export const accountApiSlice = apiSlice.injectEndpoints({
         method: "DELETE",
         body: accountId,
       }),
-      invalidatesTags: ["Accounts", "Categories", "Bootstrap"],
+      invalidatesTags: ["Categories", "Bootstrap"],
     }),
   }),
 });
