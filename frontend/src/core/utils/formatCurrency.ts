@@ -3,18 +3,29 @@ export function formatCurrency(
   {
     showPlus = false,
     showNegative = true,
-  }: { showPlus?: boolean; showNegative?: boolean } = {}
+    locale = "en-GB",
+    includeSpace = false,
+  }: {
+    showPlus?: boolean;
+    showNegative?: boolean;
+    locale?: string;
+    includeSpace?: boolean;
+  } = {}
 ): string {
-  const absValue = Math.abs(value).toFixed(2);
-  const formattedValue = `£${absValue}`;
+  const formattedValue = Math.abs(value).toLocaleString(locale, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  const currency = `£${includeSpace ? " " : ""}${formattedValue}`;
 
   if (value < 0) {
-    return showNegative ? `-${formattedValue}` : formattedValue;
+    return showNegative ? `-${currency}` : currency;
   }
 
-  if (value > 0) {
-    return showPlus ? `+${formattedValue}` : formattedValue;
+  if (value > 0 && showPlus) {
+    return `+${currency}`;
   }
 
-  return formattedValue;
+  return currency;
 }

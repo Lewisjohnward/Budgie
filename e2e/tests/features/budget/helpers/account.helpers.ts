@@ -59,7 +59,7 @@ export const formatCurrency = (amount: number): string => {
   const formattedAmount = Math.abs(amount).toFixed(2);
   const sign = amount < 0 ? "-" : "";
 
-  return `£ ${sign}${formattedAmount}`;
+  return `${sign}£ ${formattedAmount}`;
 };
 
 export const assertAccountBalance = async (
