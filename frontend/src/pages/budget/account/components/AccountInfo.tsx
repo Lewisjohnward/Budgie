@@ -1,4 +1,4 @@
-import { numberToCurrency } from "@/core/lib/numberToCurrency";
+import { formatCurrency } from "@/core/utils/formatCurrency";
 
 type AccountInfoProps = {
   balance: number;
@@ -6,7 +6,7 @@ type AccountInfoProps = {
 
 export function AccountInfo({ balance }: AccountInfoProps) {
   const color = balance >= 0 ? "text-green-600" : "text-red-600";
-  const formattedBalance = numberToCurrency(balance);
+  const formattedBalance = formatCurrency(balance, { includeSpace: true });
 
   return (
     <div data-testid="account-balance">
