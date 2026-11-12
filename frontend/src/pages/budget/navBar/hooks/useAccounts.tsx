@@ -1,26 +1,26 @@
-import { useGetAccountsQuery } from "@/core/api/budget/account/accountApiSlice";
 import { useState } from "react";
+import { useBudgetSnapshot } from "../../allocation/hooks/useAllocation/useCategories";
 
 export const useAccounts = () => {
-  const { data } = useGetAccountsQuery();
-  if (!data) {
-    throw new Error("temp placeholder");
-  }
+  const {
+    data: { accounts },
+  } = useBudgetSnapshot();
 
   const [expanded, setExpanded] = useState(true);
 
-  const accounts = Object.values(data.accounts);
-  const balance = accounts
+  const accountsArray = Object.values(accounts);
+
+  const balance = accountsArray
     .map((account) => account.balance)
     .reduce((sum, balance) => {
       return sum + balance;
     }, 0);
 
-  const bankAccounts = Object.values(data.accounts).filter(
+  const bankAccounts = accountsArray.filter(
     (account) => account.type === "BANK"
   );
 
-  const userHasAccounts = accounts.length > 0;
+  const userHasAccounts = accountsArray.length > 0;
 
   return {
     userHasAccounts,
