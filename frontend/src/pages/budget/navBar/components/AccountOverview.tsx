@@ -34,7 +34,7 @@ export function AccountOverview() {
                 <Balance balance={balance} />
               </button>
               {accounts.cash.expanded && (
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {accounts.cash.accounts.map((account) => (
                     <AccountCard account={account} />
                   ))}
