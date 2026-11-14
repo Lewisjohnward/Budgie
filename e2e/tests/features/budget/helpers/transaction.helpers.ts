@@ -1,4 +1,4 @@
-import { expect, Page } from "@playwright/test";
+import { expect, Locator, Page } from "@playwright/test";
 
 export const expectTransactionCategoryVisible = async (
   page: Page,
@@ -63,6 +63,23 @@ const formatCurrency = (amount: number): string =>
     currency: "GBP",
   }).format(amount);
 
+export const getTransactionRow = (page: Page, memo: string) =>
+  page.getByRole("row", { name: new RegExp(memo, "i") });
+
+export const getTransactionRows = (page: Page, memos: string[]) => {
+  const table = page.getByRole("table", {
+    name: "Transactions",
+  });
+
+  const memoRegex = new RegExp(
+    `^(?:${memos.map((memo) => memo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})$`
+  );
+
+  return table.getByRole("row").filter({
+    has: page.getByText(memoRegex, { exact: true }),
+  });
+};
+
 type TransactionExpectation = {
   date: Date;
   category: string;
@@ -118,6 +135,63 @@ export const assertTransaction = async (
   );
 };
 
+export const assertTransactionRows = async (
+  page: Page,
+  rows: Locator,
+  expected: TransactionExpectation
+) => {
+  const count = await rows.count();
+
+  await Promise.all(
+    Array.from({ length: count }, (_, i) =>
+      assertTransactionRowByLocator(page, rows.nth(i), expected)
+    )
+  );
+};
+
+export const assertTransactionRowByLocator = async (
+  page: Page,
+  row: Locator,
+  expected: TransactionExpectation
+) => {
+  await expect(row).toBeVisible();
+
+  const columnNames = [
+    "Date",
+    "Category",
+    "Memo",
+    "Outflow",
+    "Inflow",
+  ] as const;
+
+  const columnIndices = await Promise.all(
+    columnNames.map(async (name) =>
+      page
+        .getByRole("table", { name: "Transactions" })
+        .getByRole("columnheader", { name, exact: true })
+        .evaluate((element) =>
+          Array.from(element.parentElement!.children).indexOf(element)
+        )
+    )
+  );
+
+  const cells = row.getByRole("cell");
+
+  const expectedValues = [
+    expected.date.toLocaleDateString("en-GB"),
+    expected.category,
+    expected.memo,
+    expected.outflow === 0 ? "" : formatCurrency(expected.outflow),
+    expected.inflow === 0 ? "" : formatCurrency(expected.inflow),
+  ];
+
+  await Promise.all(
+    columnIndices.map((index, i) =>
+      expect(cells.nth(index)).toHaveText(expectedValues[i])
+    )
+  );
+};
+
 export const assertTransactionCount = async (
   page: Page,
   expectedCount: number
@@ -138,4 +212,39 @@ export const assertNewTransactionsToCategorise = async (
   });
 
   await expect(button).toBeVisible();
+};
+
+export const openContextMenu = async (
+  page: Page,
+  { memo }: { memo: string }
+) => {
+  const transaction = getTransactionRow(page, memo);
+
+  await transaction.click({ button: "right" });
+
+  await expect(page.getByRole("menu")).toBeVisible();
+};
+
+export const duplicateTransactions = async (page: Page, memos: string[]) => {
+  for (const memo of memos) {
+    const transaction = getTransactionRow(page, memo);
+    await transaction.click({ modifiers: ["Control"] });
+  }
+
+  const lastSelectedMemo = memos[memos.length - 1];
+
+  await openContextMenu(page, { memo: lastSelectedMemo });
+
+  await page
+    .getByRole("menuitem", {
+      name: "duplicate",
+    })
+    .click();
+};
+
+  await page
+    .getByRole("menuitem", {
+      name: "duplicate",
+    })
+    .click();
 };
