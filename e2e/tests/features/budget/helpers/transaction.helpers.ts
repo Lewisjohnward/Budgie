@@ -212,12 +212,15 @@ export const assertTransactionCount = async (
   await expect(transactions.getByRole("row")).toHaveCount(expectedCount + 1);
 };
 
-export const assertNewTransactionsToCategorise = async (page: Page) => {
-  const newTransactionsToCategoriseButton = page.getByRole("button", {
-    name: "new transaction to categorise",
+export const assertNewTransactionsToCategorise = async (
+  page: Page,
+  count: number = 1
+) => {
+  const button = page.getByRole("button", {
+    name: new RegExp(`^${count} new transactions? to categorise`),
   });
 
-  await expect(newTransactionsToCategoriseButton).toBeVisible();
+  await expect(button).toBeVisible();
 };
 
 export const openContextMenu = async (
