@@ -9,6 +9,8 @@ import {
   assertTransactionCount,
   getTransactionRows,
   assertTransactionRows,
+  deleteTransactions,
+  getTransactionCount,
 } from "../../helpers/transaction.helpers";
 import {
   assertAccountBalance,
@@ -140,6 +142,138 @@ test.describe("transaction", () => {
 
         await assertAccountBalance(page, "test account", 0);
         await assertNewTransactionsToCategorise(page, 4);
+      });
+    });
+    test.describe("delete", () => {
+      test("can delete an outflow transaction", async ({ page, request }) => {
+        await setupScenario(page, request, "create-transaction");
+        await navigateToAccount(page, "test account");
+
+        await openAddTransactionForm(page);
+
+        const date = new Date();
+
+        await createTransaction(page, {
+          memo: "test transaction",
+          outflow: 10,
+          date,
+        });
+
+        const expectedTransaction = {
+          date,
+          category: uncategorisedCategory,
+          memo: "test transaction",
+          outflow: 10,
+          inflow: 0,
+        };
+
+        await assertTransaction(page, expectedTransaction);
+
+        await assertAccountBalance(page, "test account", -10);
+
+        await assertNewTransactionsToCategorise(page);
+
+        const transactionCountBefore = await getTransactionCount(page);
+
+        await deleteTransactions(page, ["test transaction"]);
+
+        const transactionCountAfter = await getTransactionCount(page);
+
+        expect(transactionCountBefore - 1).toBe(transactionCountAfter);
+
+        const rows = getTransactionRows(page, ["test transaction"]);
+        await expect(rows).toHaveCount(0);
+
+        await assertAccountBalance(page, "test account", 0);
+      });
+      test("can delete an inflow transaction", async ({ page, request }) => {
+        await setupScenario(page, request, "create-transaction");
+        await navigateToAccount(page, "test account");
+
+        await openAddTransactionForm(page);
+
+        const date = new Date();
+
+        await createTransaction(page, {
+          memo: "test transaction",
+          inflow: 10,
+          date,
+        });
+
+        const expectedTransaction = {
+          date,
+          category: uncategorisedCategory,
+          memo: "test transaction",
+          outflow: 0,
+          inflow: 10,
+        };
+        await assertTransaction(page, expectedTransaction);
+
+        await assertAccountBalance(page, "test account", 10);
+        await assertNewTransactionsToCategorise(page);
+
+        const transactionCountBefore = await getTransactionCount(page);
+
+        await deleteTransactions(page, ["test transaction"]);
+
+        const transactionCountAfter = await getTransactionCount(page);
+
+        expect(transactionCountBefore - 1).toBe(transactionCountAfter);
+
+        const rows = getTransactionRows(page, ["test transaction"]);
+        await expect(rows).toHaveCount(0);
+
+        await assertAccountBalance(page, "test account", 0);
+      });
+      test("can delete multiple transactions", async ({ page, request }) => {
+        await setupScenario(page, request, "create-transaction");
+        await navigateToAccount(page, "test account");
+
+        await openAddTransactionForm(page);
+
+        const date = new Date();
+
+        await createTransaction(page, {
+          memo: "test transaction inflow",
+          inflow: 10,
+          date,
+        });
+
+        const expectedTransaction = {
+          date,
+          category: uncategorisedCategory,
+          memo: "test transaction inflow",
+          outflow: 0,
+          inflow: 10,
+        };
+        await assertTransaction(page, expectedTransaction);
+
+        await createTransaction(page, {
+          memo: "test transaction outflow",
+          outflow: 10,
+          date,
+        });
+
+        await assertAccountBalance(page, "test account", 0);
+        await assertNewTransactionsToCategorise(page, 2);
+
+        const transactionCountBefore = await getTransactionCount(page);
+
+        await deleteTransactions(page, [
+          "test transaction inflow",
+          "test transaction outflow",
+        ]);
+        const transactionCountAfter = await getTransactionCount(page);
+
+        expect(transactionCountBefore - 2).toBe(transactionCountAfter);
+
+        const rows = getTransactionRows(page, [
+          "test transaction inflow",
+          "test transaction outflow",
+        ]);
+
+        await expect(rows).toHaveCount(0);
+        await assertAccountBalance(page, "test account", 0);
       });
     });
   });

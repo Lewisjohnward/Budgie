@@ -192,6 +192,15 @@ export const assertTransactionRowByLocator = async (
   );
 };
 
+export const getTransactionCount = async (page: Page) => {
+  const transactions = page.getByRole("table", {
+    name: "Transactions",
+  });
+
+  // Exclude the header row.
+  return (await transactions.getByRole("row").count()) - 1;
+};
+
 export const assertTransactionCount = async (
   page: Page,
   expectedCount: number
@@ -242,9 +251,19 @@ export const duplicateTransactions = async (page: Page, memos: string[]) => {
     .click();
 };
 
+export const deleteTransactions = async (page: Page, memos: string[]) => {
+  for (const memo of memos) {
+    const transaction = getTransactionRow(page, memo);
+    await transaction.click({ modifiers: ["Control"] });
+  }
+
+  const lastSelectedMemo = memos[memos.length - 1];
+
+  await openContextMenu(page, { memo: lastSelectedMemo });
+
   await page
     .getByRole("menuitem", {
-      name: "duplicate",
+      name: "delete",
     })
     .click();
 };
