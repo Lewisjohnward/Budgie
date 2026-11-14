@@ -2,6 +2,7 @@ import { seedDemo } from "../demo/application/services/seed";
 import { seedLogin } from "./seeds/auth/login";
 import { seedCreateAccount } from "./seeds/budget/account/management/create/seedCreateAccount";
 import { seedCreateTransaction } from "./seeds/budget/account/transaction/seedCreateTransaction";
+import { seedContextMenuDuplicateOutflowTransaction } from "./seeds/budget/account/transaction/seedContextMenuDuplicateOutflowTransaction";
 import { seedDeleteCategoryBase } from "./seeds/budget/allocation/category/delete/seedDeleteCategoryBase";
 import { seedDeleteCategoryWithAssigned } from "./seeds/budget/allocation/category/delete/seedDeleteCategoryWithAssigned";
 import { seedDeleteCategoryWithTransaction } from "./seeds/budget/allocation/category/delete/seedDeleteCategoryWithTransaction";
@@ -13,6 +14,9 @@ import { seedDeleteCategoryGroupWithTransaction } from "./seeds/budget/allocatio
 import { seedRenameCategoryGroup } from "./seeds/budget/allocation/categoryGroup/rename/renameCategoryGroup";
 import { seedReorderCategoryGroups } from "./seeds/budget/allocation/categoryGroup/reorder/reorderCategoryGroups";
 import { seedUpdateMemoBase } from "./seeds/budget/allocation/memo/update/seedUpdateMemoBase";
+import { seedContextMenuDuplicateMultipleTransactions } from "./seeds/budget/account/transaction/seedContextMenuDuplicateMultipleTransactions";
+import { seedContextMenuDeleteOutflowTransaction } from "./seeds/budget/account/transaction/seedContextMenuDeleteOutflowTransaction";
+import { seedContextMenuDeleteMultipleTransactions } from "./seeds/budget/account/transaction/seedContextMenuDeleteMultipleTransactions";
 
 export const seeds = {
   login: seedLogin,
@@ -35,6 +39,16 @@ export const seeds = {
   "create-account": seedCreateAccount,
 
   "create-transaction": seedCreateTransaction,
+
+  "context-menu-duplicate-outflow-transaction":
+    seedContextMenuDuplicateOutflowTransaction,
+  "context-menu-duplicate-multiple-transactions":
+    seedContextMenuDuplicateMultipleTransactions,
+
+  "context-menu-delete-outflow-transaction":
+    seedContextMenuDeleteOutflowTransaction,
+  "context-menu-delete-multiple-transactions":
+    seedContextMenuDeleteMultipleTransactions,
 
   demo: seedDemo,
 } as const;
