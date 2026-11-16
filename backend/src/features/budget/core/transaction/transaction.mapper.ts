@@ -10,9 +10,13 @@ import { toTransactionTransferDto } from "./mappers/toTransactionTransferDto";
 import { toEditTransactionsBulkDto } from "./mappers/toEditTransactionsBulkDto";
 import { toCreatedTransactions } from "./mappers/toCreatedTransactions";
 import { toDuplicateTransactionsDto } from "./mappers/toDuplicateTransactionsDto";
+import { toDeleteTransactionsDto } from "./mappers/toDeleteTransactionsDto";
+import { snapshotToDomainTransaction } from "./mappers/snapshotToDomainTransaction";
+import { toEditTransactionDto } from "./mappers/toEditTransactionDto";
 
 export const transactionMapper = {
   toCreatedTransactions,
+  snapshotToDomainTransaction,
 
   toDomainTransaction,
   toDomainNormalTransaction,
@@ -25,6 +29,8 @@ export const transactionMapper = {
   toTransactionTransferDto,
 
   toCreateTransactionDto,
+  toDeleteTransactionsDto,
+  toEditTransactionDto,
   toDuplicateTransactionsDto,
   toEditTransactionsBulkDto,
 };

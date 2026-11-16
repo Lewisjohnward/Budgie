@@ -6,7 +6,10 @@ import {
   type CategoryGroupUserDto,
   type CategoryGroupSystemDto,
 } from "../../features/budget/core/categorygroup/categoryGroup.types";
-import { type CategoryUserDto } from "../../features/budget/core/category/core/types/category.dto";
+import {
+  type CategorySystemDto,
+  type CategoryUserDto,
+} from "../../features/budget/core/category/core/types/category.dto";
 
 const SNAPSHOT_ENDPOINT_URL = "/api/v1/budget/snapshot";
 
@@ -40,6 +43,17 @@ export const getAppSnapshot = async (
 };
 
 /**
+ * Fetches RTA category from the current budget snapshot
+ */
+export const getRtaCategory = async (
+  cookie: string
+): Promise<CategorySystemDto> => {
+  const snapshot = await getAppSnapshot(cookie);
+
+  return snapshot.categories.rta;
+};
+
+/**
  * Fetches all user categories from the current budget snapshot.
  */
 export const getUserCategories = async (
@@ -67,10 +81,16 @@ export const getMonths = async (
 export const getUserCategoryByName = async (
   cookie: string,
   name: string
-): Promise<CategoryUserDto | undefined> => {
+): Promise<CategoryUserDto> => {
   const userCategories = await getUserCategories(cookie);
 
-  return Object.values(userCategories).find((c) => c.name === name);
+  const category = Object.values(userCategories).find((c) => c.name === name);
+
+  if (!category) {
+    throw new Error(`Unable to find category: ${name}`);
+  }
+
+  return category;
 };
 
 /**
@@ -178,4 +198,22 @@ export const getInflowCategoryGroup = async (
   const categoryGroups = await getCategoryGroups(cookie);
 
   return categoryGroups.inflow;
+};
+
+/**
+ * Get test category
+ */
+export const getTestCategory = async (
+  cookie: string
+): Promise<CategoryUserDto> => {
+  const categories = await getUserCategories(cookie);
+
+  const testCategory =
+    Object.values(categories).find((c) => c.name === "test category") ?? null;
+
+  if (testCategory === null) {
+    throw new Error("unable to find test category");
+  }
+
+  return testCategory;
 };

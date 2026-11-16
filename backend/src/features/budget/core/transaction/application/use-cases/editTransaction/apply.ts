@@ -5,90 +5,138 @@ import { Decimal } from "@prisma/client/runtime/library";
 import { type EditTransactionIntent } from "./intent";
 import { transactionRepository } from "../../../../../../../shared/repository/transactionRepositoryImpl";
 import { categoryRepository } from "../../../../../../../shared/repository/categoryRepositoryImpl";
-import { type db } from "../../../transaction.types";
+import {
+  type DomainTransferTransaction,
+  type db,
+} from "../../../transaction.types";
 import { type UserId } from "../../../../../../user/auth/auth.types";
+import { type TransactionSnapshot } from "./types";
+import { transactionMapper } from "../../../transaction.mapper";
 
 /**
- * Applies an `EditTransactionIntent` to a transaction, handling both regular edits
- * and transfer lifecycle operations, and returns an updated snapshot of the transaction.
+ * Result returned after applying an edit transaction intent.
  *
- * This function ensures domain invariants are maintained for both normal and transfer transactions.
+ * Contains the updated transaction snapshot and any transfer counterpart
+ * transactions created or deleted as a result of the edit.
+ *
+ * @property snapshot - The updated transaction snapshot, including the
+ * main transaction and its paired transaction if applicable.
+ * @property createdTransaction - The newly created transfer counterpart,
+ * if the edit created or replaced an existing transfer counterpart.
+ * @property deletedTransaction - The deleted transfer counterpart, if the
+ * edit removed or replaced an existing transfer counterpart.
+ */
+export type ApplyEditIntentResult = {
+  snapshot: TransactionSnapshot;
+  createdTransaction?: DomainTransferTransaction;
+  deletedTransaction?: DomainTransferTransaction;
+};
+
+/**
+ * Applies an `EditTransactionIntent` to a transaction, handling regular edits
+ * and transfer lifecycle operations, and returns the resulting transaction
+ * snapshot along with any created or deleted transfer counterparts.
+ *
+ * This function ensures domain invariants are maintained for both normal and
+ * transfer transactions.
  *
  * Behavior by transfer type:
- * - **remove**: Converts a transfer to a normal transaction.
+ *
+ * - **remove**: Converts a transfer into a normal transaction.
  *   - Unlinks `transferAccountId` and `transferTransactionId` from the main transaction.
- *   - Deletes the paired transfer transaction (if it exists).
+ *   - Deletes the paired transfer transaction, if it exists.
  *   - Applies any remaining non-transfer updates.
- * - **none**: Updates non-transfer fields only.
- *   - Mirrors changes to the paired transaction if the main transaction is a transfer.
- *   - Swaps `inflow`/`outflow` on paired transactions when amounts change.
+ *   - Returns the deleted counterpart, if applicable.
+ *
+ * - **none**: Updates existing transaction fields without changing its transfer state.
+ *   - Mirrors applicable changes to the paired transaction if the main transaction
+ *     is a transfer.
+ *   - Swaps `inflow` and `outflow` on the paired transaction when amounts change.
+ *
  * - **create**: Converts a normal transaction into a transfer.
  *   - Validates the target account.
- *   - Updates the main transaction to point to the target account.
+ *   - Updates the main transaction to reference the target account.
  *   - Creates a paired transaction in the target account.
  *   - Links the main transaction to the paired transaction via `transferTransactionId`.
- * - **change**: Moves a transfer to a new target account.
- *   - Deletes the previous paired transaction if present.
+ *   - Returns the newly created counterpart.
+ *
+ * - **change**: Moves an existing transfer to a different target account.
+ *   - Validates the new target account.
+ *   - Updates the main transaction to reference the new target account.
+ *   - Deletes the previous paired transaction, if it exists.
  *   - Creates a new mirrored paired transaction in the new target account.
  *   - Relinks the main transaction to the new paired transaction.
+ *   - Returns both the newly created and deleted counterparts.
  *
  * Notes:
- * - All operations are performed inside the provided Prisma transaction client (`tx`) for atomicity.
- * - Returns a fresh `TransactionSnapshot` via `getTransactionSnapshotWithPair` after updates.
- * - Caller must ensure authorization and ownership of transactions/accounts.
+ * - All database operations are performed inside the provided Prisma transaction
+ *   client (`tx`) to guarantee atomicity.
+ * - Returns a fresh `TransactionSnapshot` via `getTransactionSnapshotWithPair`
+ *   after applying the changes.
+ * - Created and deleted counterpart transactions are returned as domain
+ *   transactions so the caller can synchronise the client's local state.
+ * - The caller is responsible for handling related side effects, such as
+ *   account balance updates and budget month recalculations.
+ * - Ownership and authorization checks for referenced transactions and accounts
+ *   are enforced through the underlying services and repositories.
  *
  * @param tx - Prisma transaction client used for atomic database operations.
  * @param userId - ID of the user performing the edit, used for ownership enforcement.
- * @param before - Snapshot of the transaction (and optional paired transfer) before edits.
- * @param intent - The edit intent, containing:
- *   - `updateData`: Non-transfer fields to update.
- *   - `transfer`: Instructions for handling transfer behavior (`remove`, `none`, `create`, `change`).
+ * @param before - Snapshot of the transaction and its optional paired transfer
+ *   before the edit.
+ * @param intent - Resolved edit intent containing:
+ *   - `updateData`: Prisma-compatible updates for the main transaction.
+ *   - `transfer`: Instructions describing the transfer lifecycle operation
+ *     (`remove`, `none`, `create`, or `change`).
  *
- * @returns The updated `TransactionSnapshot`, including paired transfer if applicable.
+ * @returns A promise resolving to an `ApplyEditIntentResult` containing:
+ *   - `snapshot`: The updated transaction snapshot.
+ *   - `createdTransaction`: The newly created transfer counterpart, if applicable.
+ *   - `deletedTransaction`: The deleted transfer counterpart, if applicable.
  *
- * @throws Will throw if:
- * - Ownership or authorization rules are violated.
- * - Transfer invariants are broken (e.g., paired transaction missing, same-account transfer).
+ * @throws If ownership or authorization rules are violated.
+ * @throws If transfer invariants are broken, such as an invalid target account
+ *   or a missing transfer counterpart.
  */
 export async function applyEditIntent(
   tx: Prisma.TransactionClient,
   userId: UserId,
   before: TransactionSnapshot,
   intent: EditTransactionIntent
-): Promise<TransactionSnapshot> {
+): Promise<ApplyEditIntentResult> {
   const transfer = intent.transfer;
   const mainId = before.mainTx.id;
   // Changing a transfer to a normal transaction
   if (transfer.type === "remove") {
-    const pairedId = before.isTransfer
-      ? (before.pairedTx?.id ?? before.mainTx.transferTransactionId ?? null)
-      : null;
+    const paired = before.pairedTx;
 
-    // pick category: payload wins, else default to Unassigned
     const categoryId =
       intent.updateData?.categoryId ??
       (await categoryRepository.getUncategorisedCategoryId(tx, userId));
 
-    // // 1) Unlink main
-    await transactionRepository.updateTransaction(tx, before.mainTx.id, {
+    // Unlink main
+    await transactionRepository.updateTransaction(tx, mainId, {
       transferAccountId: null,
       transferTransactionId: null,
       categoryId,
     });
 
-    // 2) Delete paired
-    if (pairedId) {
-      await transactionRepository.deleteTransactions(tx, [pairedId], userId);
+    // Delete paired
+    if (paired) {
+      await transactionRepository.deleteTransactions(tx, [paired.id], userId);
     }
 
-    // 3) Apply other (non-transfer) edits
+    // Apply remaining edits
     const { categoryId: _categoryId, ...rest } = intent.updateData ?? {};
 
     if (Object.keys(rest).length > 0) {
       await transactionRepository.updateTransaction(tx, mainId, rest);
     }
 
-    return await getTransactionSnapshotWithPair(tx, userId, before.mainTx.id);
+    return {
+      snapshot: await getTransactionSnapshotWithPair(tx, userId, mainId),
+      deletedTransaction: paired ? paired : undefined,
+    };
   }
 
   // Apply main updates (non-transfer fields)
@@ -135,7 +183,9 @@ export async function applyEditIntent(
       }
     }
 
-    return await getTransactionSnapshotWithPair(tx, userId, mainId);
+    return {
+      snapshot: await getTransactionSnapshotWithPair(tx, userId, mainId),
+    };
   }
 
   // Changing a normal tx to a transfer tx
@@ -172,7 +222,10 @@ export async function applyEditIntent(
       transferTransactionId: paired.id,
     });
 
-    return await getTransactionSnapshotWithPair(tx, userId, mainId);
+    return {
+      snapshot: await getTransactionSnapshotWithPair(tx, userId, mainId),
+      createdTransaction: transactionMapper.toDomainTransferTransaction(paired),
+    };
   }
 
   // Moving a transfer tx to a new account
@@ -219,11 +272,18 @@ export async function applyEditIntent(
       transferTransactionId: newPaired.id,
     });
 
-    return await getTransactionSnapshotWithPair(tx, userId, mainId);
+    return {
+      snapshot: await getTransactionSnapshotWithPair(tx, userId, mainId),
+      createdTransaction:
+        transactionMapper.toDomainTransferTransaction(newPaired),
+      deletedTransaction: before.pairedTx ? before.pairedTx : undefined,
+    };
   }
 
   // Exhaustive guard
-  return await getTransactionSnapshotWithPair(tx, userId, mainId);
+  return {
+    snapshot: await getTransactionSnapshotWithPair(tx, userId, mainId),
+  };
 }
 
 function mirrorAmounts(main: db.Transaction) {
