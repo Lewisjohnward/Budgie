@@ -11,12 +11,16 @@ import { assertTransactionDateWithinLast12Months } from "../../../utils/assertTr
 import { type EditSingleTransactionPayload } from "../../../transaction.schema";
 import {
   asCategoryId,
+  type DomainMonth,
   type CategoryId,
 } from "../../../../category/core/category.types";
 import { type AccountId, asAccountId } from "../../../../account/account.types";
 import { asTransactionId } from "../../../transaction.types";
 import { asPayeeId, type PayeeId } from "../../../../payee/payee.types";
 import { asUserId } from "../../../../../../user/auth/auth.types";
+import { type EditTransactionResult } from "../../../transaction.contract";
+import { transactionMapper } from "../../../transaction.mapper";
+import { Decimal } from "@prisma/client/runtime/library";
 
 /**
  * Represents a fully-branded edit command for a single transaction.
@@ -126,12 +130,12 @@ export const editTransaction = async (
   userId: string,
   transactionId: string,
   payload: EditSingleTransactionPayload
-): Promise<void> => {
+): Promise<EditTransactionResult> => {
   const uId = asUserId(userId);
   const brandedPayload = toEditTransactionCommand(payload);
   const id = asTransactionId(transactionId);
 
-  await prisma.$transaction(async (tx) => {
+  return await prisma.$transaction(async (tx) => {
     if (brandedPayload.date !== undefined) {
       assertTransactionDateWithinLast12Months(brandedPayload.date);
     }
@@ -145,12 +149,27 @@ export const editTransaction = async (
       brandedPayload
     );
 
-    const afterTxSnapshot = await applyEditIntent(
+    const applyResult = await applyEditIntent(
       tx,
       uId,
       beforeTxSnapshot,
       intent
     );
+
+    const afterTxSnapshot = applyResult.snapshot;
+
+    const accountIds = new Set<AccountId>(
+      [
+        beforeTxSnapshot.mainTx.accountId,
+        beforeTxSnapshot.pairedTx?.accountId,
+        afterTxSnapshot.mainTx.accountId,
+        afterTxSnapshot.pairedTx?.accountId,
+      ].filter((id): id is AccountId => id != null)
+    );
+
+    const accountsBefore = await accountService.getAccountsByIds(tx, uId, [
+      ...accountIds,
+    ]);
 
     await accountService.updateAccountBalances(
       tx,
@@ -168,41 +187,108 @@ export const editTransaction = async (
       OperationMode.Add
     );
 
-    await categoryService.months.insertMissingMonths(
+    const createdMonths = await categoryService.months.insertMissingMonths(
       tx,
       uId,
       afterTxSnapshot.mainTx.date
     );
 
     // insert the missing memos
-    await memoService.insertMissingMemos(tx, uId, afterTxSnapshot.mainTx.date);
+    const createdMemos = await memoService.insertMissingMemos(
+      tx,
+      uId,
+      afterTxSnapshot.mainTx.date
+    );
 
-    if (!beforeTxSnapshot.isTransfer) {
-      await recalcMonthsFor(
-        tx,
-        uId,
-        [beforeTxSnapshot.mainTx],
-        OperationMode.Delete
-      );
-    }
-    if (!afterTxSnapshot.isTransfer) {
-      await recalcMonthsFor(
-        tx,
-        uId,
-        [afterTxSnapshot.mainTx],
-        OperationMode.Add
-      );
+    const beforeMonth = beforeTxSnapshot.mainTx.date.toISOString().slice(0, 7);
+    const afterMonth = afterTxSnapshot.mainTx.date.toISOString().slice(0, 7);
+
+    const transactionMovedMonth = beforeMonth !== afterMonth;
+
+    const categoryChanged =
+      !beforeTxSnapshot.isTransfer &&
+      !afterTxSnapshot.isTransfer &&
+      beforeTxSnapshot.mainTx.categoryId !== afterTxSnapshot.mainTx.categoryId;
+
+    const amountChanged =
+      !beforeTxSnapshot.mainTx.inflow.equals(afterTxSnapshot.mainTx.inflow) ||
+      !beforeTxSnapshot.mainTx.outflow.equals(afterTxSnapshot.mainTx.outflow);
+
+    const updatedMonths: DomainMonth[] = [];
+
+    const transactionTypeChanged =
+      beforeTxSnapshot.isTransfer !== afterTxSnapshot.isTransfer;
+
+    const shouldRecalculateMonths =
+      transactionMovedMonth ||
+      categoryChanged ||
+      amountChanged ||
+      transactionTypeChanged;
+
+    if (shouldRecalculateMonths) {
+      if (!beforeTxSnapshot.isTransfer) {
+        const months = await recalcMonthsFor(
+          tx,
+          uId,
+          [beforeTxSnapshot.mainTx],
+          OperationMode.Delete
+        );
+
+        updatedMonths.push(...months);
+      }
+
+      if (!afterTxSnapshot.isTransfer) {
+        const months = await recalcMonthsFor(
+          tx,
+          uId,
+          [afterTxSnapshot.mainTx],
+          OperationMode.Add
+        );
+
+        updatedMonths.push(...months);
+      }
     }
 
-    await accountService.refreshDeletableStatus(tx, [
-      ...new Set(
-        [
-          beforeTxSnapshot.mainTx.accountId,
-          beforeTxSnapshot.pairedTx?.accountId,
-          afterTxSnapshot.mainTx.accountId,
-          afterTxSnapshot.pairedTx?.accountId,
-        ].filter((id): id is AccountId => id != null)
-      ),
+    await accountService.refreshDeletableStatus(tx, [...accountIds]);
+
+    const accountsAfter = await accountService.getAccountsByIds(tx, uId, [
+      ...accountIds,
     ]);
+
+    const accountsBeforeMap = new Map(
+      accountsBefore.map((account) => [account.id, account])
+    );
+
+    const updatedAccounts = accountsAfter.filter((account) => {
+      const before = accountsBeforeMap.get(account.id);
+
+      if (!before) {
+        throw new Error(`Account ${account.id} not found in before snapshot`);
+      }
+
+      return Object.keys(account).some((key) => {
+        const beforeValue = before[key as keyof typeof before];
+        const afterValue = account[key as keyof typeof account];
+
+        if (beforeValue instanceof Decimal && afterValue instanceof Decimal) {
+          return !beforeValue.equals(afterValue);
+        }
+
+        return !Object.is(beforeValue, afterValue);
+      });
+    });
+
+    return {
+      createdTransaction: applyResult.createdTransaction,
+      deletedTransaction: applyResult.deletedTransaction,
+
+      createdPayee: intent.createdPayee,
+      createdMonths,
+      createdMemos,
+
+      updatedAccounts,
+      updatedMonths,
+      updatedTransaction: afterTxSnapshot.mainTx,
+    };
   });
 };

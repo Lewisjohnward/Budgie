@@ -2,7 +2,9 @@ import { v4 as uuidv4 } from "uuid";
 import { getAccounts, getCategories } from "../../utils/getData";
 import {
   addTransactionLegacy,
+  createNormalTransaction,
   editSingleTransaction,
+  editTransactionWithDto,
   type TestInsertTransactionInputWithoutUserId,
 } from "../../utils/transaction";
 import { login, registerUser } from "../../utils/auth";
@@ -29,6 +31,449 @@ describe("Transaction Single Edit", () => {
     await registerUser();
     cookie = await login();
   });
+
+  describe("Response DTO", () => {
+    it("Should return the correct DTO when editing a normal transaction month (to beginning of current month)", async () => {
+      const account = await createAccountAndFetch(cookie, 0, "test-account");
+      const category = await getTestCategory(cookie);
+      const transactionPayload: TestInsertTransactionInputWithoutUserId = {
+        accountId: account.id,
+        categoryId: category.id,
+        outflow: "10",
+      };
+
+      const tx = await createNormalTransaction(cookie, transactionPayload);
+
+      const date = new Date();
+      date.setDate(1);
+      date.setHours(12, 0, 0, 0);
+
+      const dto = await editTransactionWithDto(cookie, tx.id, {
+        date: date.toISOString(),
+      });
+
+      expect(dto.created.payee).toEqual({});
+      expect(dto.created.months).toEqual({});
+      expect(dto.created.memos).toEqual({});
+
+      expect(dto.updated.accounts).toEqual({});
+      expect(dto.updated.months).toEqual({});
+      expect(dto.updated.transaction).toEqual({
+        [tx.id]: { ...tx, date: date.toISOString() },
+      });
+    });
+    describe("Created", () => {
+      it("returns empty created and deleted records when no records are created or deleted", async () => {
+        const account = await createAccountAndFetch(cookie, 0, "test-account");
+        const category = await getTestCategory(cookie);
+
+        const tx = await createNormalTransaction(cookie, {
+          accountId: account.id,
+          categoryId: category.id,
+          outflow: "10",
+        });
+
+        const dto = await editTransactionWithDto(cookie, tx.id, {
+          memo: "Updated memo",
+        });
+
+        expect(dto.created).toEqual({
+          transaction: {},
+          payee: {},
+          months: {},
+          memos: {},
+        });
+
+        expect(dto.deleted).toEqual({
+          transaction: {},
+        });
+
+        expect(dto.updated.transaction).toHaveProperty(tx.id);
+        expect(dto.updated.accounts).toEqual({});
+      });
+
+      it("returns backfilled months when editing into the past", async () => {
+        const account = await createAccountAndFetch(cookie, 0, "test-account");
+        const category = await getTestCategory(cookie);
+
+        const tx = await createNormalTransaction(cookie, {
+          accountId: account.id,
+          categoryId: category.id,
+          outflow: "10",
+        });
+
+        const date = new Date();
+        date.setDate(1);
+        date.setMonth(date.getMonth() - 6);
+        date.setHours(12, 0, 0, 0);
+
+        const dto = await editTransactionWithDto(cookie, tx.id, {
+          date: date.toISOString(),
+        });
+
+        const expectedMonthIds: string[] = [];
+        const cursor = new Date(date);
+        const currentMonth = new Date();
+        currentMonth.setDate(1);
+        currentMonth.setHours(0, 0, 0, 0);
+
+        while (cursor < currentMonth) {
+          expectedMonthIds.push(cursor.toISOString().slice(0, 7));
+          cursor.setMonth(cursor.getMonth() + 1);
+        }
+
+        const createdMonths = Object.values(dto.created.months);
+
+        expect(createdMonths.length).toBeGreaterThan(0);
+
+        for (const month of createdMonths) {
+          expect(month.month).toBeDefined();
+          expect(month.categoryId).toBeDefined();
+        }
+
+        expect(
+          Array.from(new Set(createdMonths.map((month) => month.month)))
+        ).toEqual(expect.arrayContaining(expectedMonthIds));
+      });
+
+      it("returns a newly created payee", async () => {
+        const account = await createAccountAndFetch(cookie, 0, "test-account");
+        const category = await getTestCategory(cookie);
+
+        const tx = await createNormalTransaction(cookie, {
+          accountId: account.id,
+          categoryId: category.id,
+          outflow: "10",
+        });
+
+        const payeeName = "New DTO Payee";
+
+        const dto = await editTransactionWithDto(cookie, tx.id, {
+          payeeName,
+        });
+
+        const createdPayees = Object.values(dto.created.payee);
+
+        expect(createdPayees).toHaveLength(1);
+        expect(createdPayees[0]).toEqual(
+          expect.objectContaining({
+            name: payeeName,
+            id: expect.any(String),
+          })
+        );
+      });
+    });
+
+    describe("Updated", () => {
+      it("returns the edited transaction", async () => {
+        const account = await createAccountAndFetch(cookie, 0, "test-account");
+        const category = await getTestCategory(cookie);
+
+        const tx = await createNormalTransaction(cookie, {
+          accountId: account.id,
+          categoryId: category.id,
+          outflow: "10",
+        });
+
+        const memo = "Updated transaction memo";
+
+        const dto = await editTransactionWithDto(cookie, tx.id, {
+          memo,
+        });
+
+        expect(dto.updated.transaction).toEqual({
+          [tx.id]: expect.objectContaining({
+            id: tx.id,
+            type: "normal",
+            accountId: account.id,
+            categoryId: category.id,
+            memo,
+          }),
+        });
+      });
+
+      it("returns affected accounts when changing account", async () => {
+        const accountA = await createAccountAndFetch(cookie, 0, "account-a");
+        const accountB = await createAccountAndFetch(cookie, 1, "account-b");
+        const category = await getTestCategory(cookie);
+
+        const tx = await createNormalTransaction(cookie, {
+          accountId: accountA.id,
+          categoryId: category.id,
+          outflow: "10",
+        });
+
+        const dto = await editTransactionWithDto(cookie, tx.id, {
+          accountId: accountB.id,
+        });
+
+        expect(dto.updated.transaction[tx.id]).toEqual(
+          expect.objectContaining({
+            id: tx.id,
+            accountId: accountB.id,
+          })
+        );
+
+        expect(dto.updated.accounts).toHaveProperty(accountA.id);
+        expect(dto.updated.accounts).toHaveProperty(accountB.id);
+      });
+
+      it("returns empty accounts when editing a transaction without changing balances", async () => {
+        const account = await createAccountAndFetch(cookie, 0, "test-account");
+        const category = await getTestCategory(cookie);
+
+        const tx = await createNormalTransaction(cookie, {
+          accountId: account.id,
+          categoryId: category.id,
+          outflow: "10",
+        });
+
+        const dto = await editTransactionWithDto(cookie, tx.id, {
+          memo: "Updated memo",
+        });
+
+        expect(dto.updated.accounts).toEqual({});
+      });
+
+      it("returns affected months when changing category", async () => {
+        const account = await createAccountAndFetch(cookie, 0, "test-account");
+        const categoryA = await getTestCategory(cookie);
+        const categoryB = await getUncategorisedCategory(cookie);
+
+        const tx = await createNormalTransaction(cookie, {
+          accountId: account.id,
+          categoryId: categoryA.id,
+          outflow: "10",
+        });
+
+        const dto = await editTransactionWithDto(cookie, tx.id, {
+          categoryId: categoryB.id,
+        });
+
+        expect(dto.updated.transaction[tx.id]).toEqual(
+          expect.objectContaining({
+            id: tx.id,
+            categoryId: categoryB.id,
+          })
+        );
+
+        expect(Object.keys(dto.updated.months).length).toBeGreaterThan(0);
+      });
+
+      it("returns affected accounts and months when changing amount", async () => {
+        const account = await createAccountAndFetch(cookie, 0, "test-account");
+        const category = await getTestCategory(cookie);
+
+        const tx = await createNormalTransaction(cookie, {
+          accountId: account.id,
+          categoryId: category.id,
+          outflow: "10",
+        });
+
+        const dto = await editTransactionWithDto(cookie, tx.id, {
+          outflow: "25",
+        });
+
+        expect(dto.updated.transaction[tx.id]).toEqual(
+          expect.objectContaining({
+            id: tx.id,
+            outflow: 25,
+            inflow: 0,
+          })
+        );
+
+        expect(dto.updated.accounts).toHaveProperty(account.id);
+        expect(Object.keys(dto.updated.months).length).toBeGreaterThan(0);
+      });
+    });
+
+    describe("Transfers", () => {
+      it("returns the updated transaction and created counterpart when converting to a transfer", async () => {
+        const accountA = await createAccountAndFetch(cookie, 0, "account-a");
+        const accountB = await createAccountAndFetch(cookie, 1, "account-b");
+        const category = await getTestCategory(cookie);
+
+        const tx = await createNormalTransaction(cookie, {
+          accountId: accountA.id,
+          categoryId: category.id,
+          outflow: "10",
+        });
+
+        const dto = await editTransactionWithDto(cookie, tx.id, {
+          transferAccountId: accountB.id,
+          outflow: "5",
+        });
+
+        const updatedTransaction = dto.updated.transaction[tx.id];
+
+        expect(updatedTransaction).toEqual(
+          expect.objectContaining({
+            id: tx.id,
+            type: "transfer",
+            accountId: accountA.id,
+            transferAccountId: accountB.id,
+            inflow: 0,
+            outflow: 5,
+            transferTransactionId: expect.any(String),
+          })
+        );
+
+        if (updatedTransaction.type !== "transfer") {
+          throw new Error("Expected transaction to be a transfer");
+        }
+
+        const pairedId = updatedTransaction.transferTransactionId;
+
+        expect(dto.created.transaction[pairedId]).toEqual(
+          expect.objectContaining({
+            id: pairedId,
+            type: "transfer",
+            accountId: accountB.id,
+            transferAccountId: accountA.id,
+            transferTransactionId: tx.id,
+            inflow: 5,
+            outflow: 0,
+          })
+        );
+
+        expect(dto.updated.transaction).not.toHaveProperty(pairedId);
+
+        expect(dto.updated.accounts).toHaveProperty(accountA.id);
+        expect(dto.updated.accounts).toHaveProperty(accountB.id);
+
+        expect(dto.deleted.transaction).toEqual({});
+      });
+
+      it("returns the updated transaction and deleted counterpart when converting back to a normal transaction", async () => {
+        const accountA = await createAccountAndFetch(cookie, 0, "account-a");
+        const accountB = await createAccountAndFetch(cookie, 1, "account-b");
+        const category = await getTestCategory(cookie);
+
+        const tx = await createNormalTransaction(cookie, {
+          accountId: accountA.id,
+          categoryId: category.id,
+          outflow: "10",
+        });
+
+        const transferDto = await editTransactionWithDto(cookie, tx.id, {
+          transferAccountId: accountB.id,
+        });
+
+        const transferTransaction = transferDto.updated.transaction[tx.id];
+
+        if (transferTransaction.type !== "transfer") {
+          throw new Error("Expected transaction to be a transfer");
+        }
+
+        const pairedId = transferTransaction.transferTransactionId;
+
+        const dto = await editTransactionWithDto(cookie, tx.id, {
+          transferAccountId: null,
+        });
+
+        expect(dto.updated.transaction[tx.id]).toEqual(
+          expect.objectContaining({
+            id: tx.id,
+            type: "normal",
+            accountId: accountA.id,
+            categoryId: expect.any(String),
+            inflow: 0,
+            outflow: 10,
+          })
+        );
+
+        expect(dto.deleted.transaction[pairedId]).toEqual(
+          expect.objectContaining({
+            id: pairedId,
+            type: "transfer",
+            accountId: accountB.id,
+            transferAccountId: accountA.id,
+            transferTransactionId: tx.id,
+          })
+        );
+
+        expect(dto.updated.transaction).not.toHaveProperty(pairedId);
+        expect(dto.created.transaction).toEqual({});
+
+        expect(dto.updated.accounts).toHaveProperty(accountB.id);
+        expect(Object.keys(dto.updated.months).length).toBeGreaterThan(0);
+      });
+
+      it("returns the deleted and newly created counterparts when changing a transfer destination", async () => {
+        const accountA = await createAccountAndFetch(cookie, 0, "account-a");
+        const accountB = await createAccountAndFetch(cookie, 1, "account-b");
+        const accountC = await createAccountAndFetch(cookie, 2, "account-c");
+        const category = await getTestCategory(cookie);
+
+        const tx = await createNormalTransaction(cookie, {
+          accountId: accountA.id,
+          categoryId: category.id,
+          outflow: "10",
+        });
+
+        const firstDto = await editTransactionWithDto(cookie, tx.id, {
+          transferAccountId: accountB.id,
+        });
+
+        const firstTransaction = firstDto.updated.transaction[tx.id];
+
+        if (firstTransaction.type !== "transfer") {
+          throw new Error("Expected transaction to be a transfer");
+        }
+
+        const oldPairedId = firstTransaction.transferTransactionId;
+
+        const dto = await editTransactionWithDto(cookie, tx.id, {
+          transferAccountId: accountC.id,
+        });
+
+        const updatedTransaction = dto.updated.transaction[tx.id];
+
+        expect(updatedTransaction).toEqual(
+          expect.objectContaining({
+            id: tx.id,
+            type: "transfer",
+            accountId: accountA.id,
+            transferAccountId: accountC.id,
+            transferTransactionId: expect.any(String),
+          })
+        );
+
+        if (updatedTransaction.type !== "transfer") {
+          throw new Error("Expected transaction to be a transfer");
+        }
+
+        const newPairedId = updatedTransaction.transferTransactionId;
+
+        expect(dto.deleted.transaction[oldPairedId]).toEqual(
+          expect.objectContaining({
+            id: oldPairedId,
+            accountId: accountB.id,
+            transferTransactionId: tx.id,
+          })
+        );
+
+        expect(dto.created.transaction[newPairedId]).toEqual(
+          expect.objectContaining({
+            id: newPairedId,
+            type: "transfer",
+            accountId: accountC.id,
+            transferAccountId: accountA.id,
+            transferTransactionId: tx.id,
+            inflow: 10,
+            outflow: 0,
+          })
+        );
+
+        expect(dto.updated.transaction).not.toHaveProperty(oldPairedId);
+        expect(dto.updated.transaction).not.toHaveProperty(newPairedId);
+
+        expect(dto.updated.accounts).toHaveProperty(accountB.id);
+        expect(dto.updated.accounts).toHaveProperty(accountC.id);
+      });
+    });
+  });
+
   describe("Error Cases", () => {
     it("Should return 400 when updating a transaction providing no fields", async () => {
       const account1 = await createAccountAndFetch(cookie, 0);
@@ -2285,7 +2730,7 @@ describe("Transaction Single Edit", () => {
           });
         });
         describe("Category Months", () => {
-          it.skip("Should backfill category months when editing a transfer transaction into the past", async () => { });
+          it.skip("Should backfill category months when editing a transfer transaction into the past", async () => {});
         });
       });
     });

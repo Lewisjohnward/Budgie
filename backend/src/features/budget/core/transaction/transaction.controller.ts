@@ -48,8 +48,9 @@ export const deleteTransactions = async (
     });
 
     const result = await transactionUseCase.deleteTransactions(payload);
+    const dto = transactionMapper.toDeleteTransactionsDto(result);
 
-    res.status(200).json({ message: "Success" });
+    res.status(200).json(dto);
   } catch (error) {
     next(error);
   }
@@ -94,13 +95,14 @@ export const editSingleTransaction = async (
       ...req.body,
     });
 
-    await transactionUseCase.editTransaction(
+    const result = await transactionUseCase.editTransaction(
       req.user?._id!,
       transactionId,
       payload
     );
+    const dto = transactionMapper.toEditTransactionDto(result);
 
-    res.status(200).json({ message: "Transaction updated" });
+    res.status(200).json(dto);
   } catch (error) {
     next(error);
   }

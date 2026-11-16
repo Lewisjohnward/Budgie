@@ -3,6 +3,7 @@ import { transactionService } from "../../transaction.service";
 import { type DeleteTransactionsPayload } from "../../transaction.schema";
 import { asTransactionId, type TransactionId } from "../../transaction.types";
 import { asUserId, type UserId } from "../../../../../user/auth/auth.types";
+import { type DeleteTransactionsResult } from "../../transaction.contract";
 
 /**
  * Command type for deleting transactions.
@@ -57,9 +58,13 @@ export const toDeleteTransactionsCommand = (
  */
 export const deleteTransactions = async (
   payload: DeleteTransactionsPayload
-): Promise<void> => {
+): Promise<DeleteTransactionsResult> => {
   const { userId, transactionIds } = toDeleteTransactionsCommand(payload);
-  await prisma.$transaction(async (tx) => {
-    await transactionService.deleteTransactionsById(tx, userId, transactionIds);
+  return await prisma.$transaction(async (tx) => {
+    return await transactionService.deleteTransactionsById(
+      tx,
+      userId,
+      transactionIds
+    );
   });
 };
