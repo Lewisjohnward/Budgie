@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { TransactionSnapshot } from "./getTransactionSnapshotWithPair";
+import { type TransactionSnapshot } from "./types";
 import { ZERO } from "../../../../../../../shared/constants/zero";
 import { categoryService } from "../../../../category/core/category.service";
 import { accountService } from "../../../../account/account.service";
