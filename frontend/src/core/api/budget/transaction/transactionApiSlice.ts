@@ -291,7 +291,7 @@ export const transactionApiSlice = apiSlice.injectEndpoints({
         );
       },
     }),
-    deleteTransaction: builder.mutation<
+    deleteTransactions: builder.mutation<
       DeleteTransactionsResult,
       DeleteTransactionsInput
     >({
@@ -521,7 +521,7 @@ export const transactionApiSlice = apiSlice.injectEndpoints({
 export const {
   useCreateTransactionMutation,
   useEditTransactionMutation,
-  useDeleteTransactionMutation,
+  useDeleteTransactionsMutation,
   useDuplicateTransactionsMutation,
   useEditBulkTransactionsMutation,
 } = transactionApiSlice;
