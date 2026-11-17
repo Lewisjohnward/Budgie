@@ -1,16 +1,11 @@
 import Navbar from "./navBar/NavBar";
 import { Outlet } from "react-router-dom";
 import { useGetCategoriesQuery } from "@/core/api/budgetApiSlice";
-import { useGetAccountsQuery } from "@/core/api/budget/account/accountApiSlice";
 import { ManagePayees } from "@/core/components/ManagePayees/ManagePayees";
 import { EditAccount } from "@/core/components/EditAccount/EditAccount";
 import { useGetBudgetSnapshotQuery } from "@/core/api/budget/budgetSnapshotSlice";
 
 export default function BudgetPage() {
-  const {
-    isLoading: isLoadingAccounts,
-    isUninitialized: isUninitializedAccounts,
-  } = useGetAccountsQuery();
   const {
     isLoading: isLoadingCategories,
     isUninitialized: isUninitializedCategories,
@@ -23,10 +18,8 @@ export default function BudgetPage() {
   } = useGetBudgetSnapshotQuery();
 
   if (
-    isLoadingAccounts ||
     isLoadingAppSnapshot ||
     isLoadingCategories ||
-    isUninitializedAccounts ||
     isUnitializedAppSnapshot ||
     isUninitializedCategories
   ) {

@@ -68,6 +68,6 @@ export const apiSlice = createApi({
   // baseQuery: baseQuery /* baseQueryWithReauth */,
   baseQuery: baseQueryWithReauth,
   // TODO:(lewis 2026-09-09 13:19) bootstrap will need removing when finishing accounts
-  tagTypes: ["Accounts", "Categories", "Bootstrap"],
+  tagTypes: ["Categories", "Bootstrap"],
   endpoints: () => ({}),
 });
