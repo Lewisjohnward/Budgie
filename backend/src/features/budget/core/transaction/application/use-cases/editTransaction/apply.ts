@@ -1,9 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { accountService } from "../../../../account/account.service";
-import {
-  getTransactionSnapshotWithPair,
-  type TransactionSnapshot,
-} from "./getTransactionSnapshotWithPair";
+import { getTransactionSnapshotWithPair } from "./getTransactionSnapshotWithPair";
 import { Decimal } from "@prisma/client/runtime/library";
 import { type EditTransactionIntent } from "./intent";
 import { transactionRepository } from "../../../../../../../shared/repository/transactionRepositoryImpl";
