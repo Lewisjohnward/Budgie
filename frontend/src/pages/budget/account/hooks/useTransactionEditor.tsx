@@ -15,6 +15,7 @@ import {
   asAccountId,
   asCategoryId,
   asPayeeId,
+  asTransactionId,
 } from "../../allocation/types/types";
 
 const TransactionFormSchema = z.object({
@@ -299,18 +300,24 @@ export const useTransactionEditor = (accountId: string) => {
     if (transactionEditorState.mode === TransactionEditorMode.Edit) {
       console.log("edit transaction", formValues);
 
-      editTransaction([
-        {
-          id: transactionEditorState.transactionId,
-          accountId: formValues.accountId,
-          categoryId: formValues.categoryId || "",
-          payeeId: formValues.payeeId ? formValues.payeeId : undefined,
-          memo: formValues.memo || null,
+      editTransaction({
+        transactionId: asTransactionId(transactionEditorState.transactionId!),
+        updates: {
+          accountId: asAccountId(formValues.accountId),
+          categoryId:
+            formValues.categoryId !== undefined
+              ? asCategoryId(formValues.categoryId)
+              : undefined,
+          payeeId:
+            formValues.payeeId !== undefined && formValues.payeeId !== null
+              ? asPayeeId(formValues.payeeId)
+              : undefined,
+          memo: formValues.memo,
           date: normaliseDate(formValues.date).toISOString(),
-          inflow: formValues.inflow || "0",
-          outflow: formValues.outflow || "0",
+          inflow: formValues.inflow || undefined,
+          outflow: formValues.outflow || undefined,
         },
-      ]);
+      });
     } else {
       console.log(transactionForm.getValues());
       createTransaction({
@@ -387,7 +394,7 @@ export const useTransactionEditor = (accountId: string) => {
       categoryName: transaction.unassigned
         ? ""
         : `${transaction.categoryGroup.name}: ${transaction.category.name}` ||
-        "",
+          "",
       categoryId: transaction.categoryId || "",
       memo: transaction.memo || "",
       outflow:
