@@ -25,19 +25,89 @@ export const createTransaction = async (
   await page.getByRole("button", { name: "Add Transaction" }).click();
 
   if (input.date) {
-    await page.getByRole("textbox", { name: "Date" }).click();
+    await selectDate(page, input.date);
+  }
+
+  if (input.category !== undefined) {
+    await selectCategory(page, input.category);
+  }
+
+  await fillMemo(page, input.memo);
+
+  if (input.outflow !== undefined) {
+    await fillOutflow(page, input.outflow);
+  }
+
+  if (input.inflow !== undefined) {
+    await fillInflow(page, input.inflow);
+  }
+
+  await page.getByRole("button", { name: /submit/i }).click();
+};
+
+export const selectDate = async (page: Page, date: Date) => {
+  await page.getByRole("textbox", { name: "Date" }).click();
+  const calendar = page.getByRole("grid");
+
+  await expect(calendar).toBeVisible();
+
+  const targetMonth = date.getMonth();
+  const targetYear = date.getFullYear();
+
+  const displayedMonth = page.locator(
+    '[id^="react-day-picker-"][aria-live="polite"]'
+  );
+
+  while (true) {
+    const monthText = await displayedMonth.textContent();
+
+    if (!monthText) {
+      throw new Error("Could not read the displayed calendar month");
+    }
+
+    const currentDate = new Date(`${monthText} 1`);
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+
+    if (currentMonth === targetMonth && currentYear === targetYear) {
+      break;
+    }
+
+    const isTargetEarlier =
+      targetYear < currentYear ||
+      (targetYear === currentYear && targetMonth < currentMonth);
 
     await page
-      .getByRole("gridcell", {
-        name: String(input.date.getDate()),
-        selected: true,
+      .getByRole("button", {
+        name: isTargetEarlier ? "Go to previous month" : "Go to next month",
       })
       .click();
   }
 
-  if (input.category !== undefined) {
-    await page.getByRole("textbox", { name: "Category" }).click();
-    await page.getByRole("button", { name: input.category }).click();
+  const day = calendar.locator(`button[name="day"]:not(.day-outside)`).filter({
+    hasText: new RegExp(`^${date.getDate()}$`),
+  });
+
+  await day.click();
+};
+
+export const selectCategory = async (page: Page, category: string) => {
+  await page.getByRole("textbox", { name: "Category" }).click();
+  await page.getByRole("button", { name: category }).click();
+};
+
+export const fillOutflow = async (page: Page, outflow: number) => {
+  await page.getByRole("textbox", { name: "Outflow" }).fill(outflow.toFixed(2));
+};
+
+export const fillInflow = async (page: Page, inflow: number) => {
+  await page.getByRole("textbox", { name: "Inflow" }).fill(inflow.toFixed(2));
+};
+
+export const fillMemo = async (page: Page, memo: string) => {
+  await page.getByRole("textbox", { name: "Memo" }).fill(memo);
+};
+
   }
 
   await page.getByRole("textbox", { name: "Memo" }).fill(input.memo);
