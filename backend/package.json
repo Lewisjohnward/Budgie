@@ -8,6 +8,7 @@
     "e2e:server": "ts-node src/e2e.ts",
     "types": "openapi-typescript docs/api/openapi.yml -o ../frontend/src/core/types/generated.ts",
     "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
     "build": "tsc",
     "test": "jest -i",
     "test:unit:watch": "jest --config jest.config.unit.ts --watch",
