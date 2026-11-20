@@ -108,23 +108,56 @@ export const fillMemo = async (page: Page, memo: string) => {
   await page.getByRole("textbox", { name: "Memo" }).fill(memo);
 };
 
+export const activateTransactionEditView = async (page: Page, memo: string) => {
+  const transactionRow = getTransactionRow(page, memo);
+  await transactionRow.dblclick();
+
+  await page.getByRole("textbox", { name: "Memo" }).waitFor({
+    state: "visible",
+  });
+};
+
+export type EditTransactionInput = {
+  date?: Date;
+  payee?: string;
+  category?: string;
+  memo?: string;
+  outflow?: number;
+  inflow?: number;
+};
+
+export const editTransaction = async (
+  page: Page,
+  memo: string,
+  input: EditTransactionInput
+) => {
+  await activateTransactionEditView(page, memo);
+
+  if (input.date !== undefined) {
+    await selectDate(page, input.date);
   }
 
-  await page.getByRole("textbox", { name: "Memo" }).fill(input.memo);
+  if (input.payee !== undefined) {
+    await page.getByRole("textbox", { name: "Payee" }).fill(input.payee);
+  }
+
+  if (input.category !== undefined) {
+    await selectCategory(page, input.category);
+  }
+
+  if (input.memo !== undefined) {
+    await fillMemo(page, input.memo);
+  }
 
   if (input.outflow !== undefined) {
-    await page
-      .getByRole("textbox", { name: "Outflow" })
-      .fill(input.outflow.toFixed(2));
+    await fillOutflow(page, input.outflow);
   }
 
   if (input.inflow !== undefined) {
-    await page
-      .getByRole("textbox", { name: "Inflow" })
-      .fill(input.inflow.toFixed(2));
+    await fillInflow(page, input.inflow);
   }
 
-  await page.getByRole("button", { name: /submit/i }).click();
+  await page.getByRole("button", { name: /save/i }).click();
 };
 
 const formatCurrency = (amount: number): string =>
