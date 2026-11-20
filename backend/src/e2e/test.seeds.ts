@@ -17,6 +17,7 @@ import { seedUpdateMemoBase } from "./seeds/budget/allocation/memo/update/seedUp
 import { seedContextMenuDuplicateMultipleTransactions } from "./seeds/budget/account/transaction/seedContextMenuDuplicateMultipleTransactions";
 import { seedContextMenuDeleteOutflowTransaction } from "./seeds/budget/account/transaction/seedContextMenuDeleteOutflowTransaction";
 import { seedContextMenuDeleteMultipleTransactions } from "./seeds/budget/account/transaction/seedContextMenuDeleteMultipleTransactions";
+import { seedEditTransaction } from "./seeds/budget/account/transaction/seedEditTransaction";
 
 export const seeds = {
   login: seedLogin,
@@ -39,6 +40,8 @@ export const seeds = {
   "create-account": seedCreateAccount,
 
   "create-transaction": seedCreateTransaction,
+
+  "edit-transaction": seedEditTransaction,
 
   "context-menu-duplicate-outflow-transaction":
     seedContextMenuDuplicateOutflowTransaction,
