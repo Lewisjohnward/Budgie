@@ -1,5 +1,9 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { Column, createColumnHelper } from "@tanstack/react-table";
+import {
+  Column,
+  createColumnHelper,
+  HeaderContext,
+} from "@tanstack/react-table";
 import { DetailedTransaction } from "../hooks/useAccountData/types";
 import { Checkbox } from "@/core/components/uiLibrary/checkbox";
 
@@ -50,44 +54,44 @@ const financeColumnSizing = {
 
 const createSortableHeader =
   (label: string) =>
-    ({ column }: { column: Column<any> }) => {
-      const isSorted = column.getIsSorted();
-      return (
-        <button
-          onClick={(e) => {
-            column.toggleSorting(isSorted === "asc");
-            e.stopPropagation();
-          }}
-          className="flex justify-between border border-neutral-300 items-center w-full h-full px-2 hover:text-blue-600"
-        >
-          {label}
-          {isSorted === "asc" && <ChevronUp size={16} />}
-          {isSorted === "desc" && <ChevronDown size={16} />}
-        </button>
-      );
-    };
-
-const createHeader = (label: string) => (thing: { thing: any }) => {
-  const table = thing.table;
-
-  const isAllSelected = table.getIsAllRowsSelected();
-  const isIndeterminate = !isAllSelected && table.getIsSomeRowsSelected();
-
-  return (
-    <div className="flex justify-between border border-neutral-300 items-center w-full h-full px-2 hover:text-blue-600">
-      <Checkbox
-        aria-label="Toggle select all transactions"
-        className="[&_svg]:h-3 [&_svg]:w-3 size-3 rounded-[2px] shadow-none"
-        checked={isIndeterminate ? "indeterminate" : isAllSelected}
-        onCheckedChange={() => {
-          table.toggleAllRowsSelected(
-            isIndeterminate || isAllSelected ? false : true
-          );
+  ({ column }: { column: Column<any> }) => {
+    const isSorted = column.getIsSorted();
+    return (
+      <button
+        onClick={(e) => {
+          column.toggleSorting(isSorted === "asc");
+          e.stopPropagation();
         }}
-      />
-    </div>
-  );
-};
+        className="flex justify-between border border-neutral-300 items-center w-full h-full px-2 hover:text-blue-600"
+      >
+        {label}
+        {isSorted === "asc" && <ChevronUp size={16} />}
+        {isSorted === "desc" && <ChevronDown size={16} />}
+      </button>
+    );
+  };
+
+const createHeader =
+  (label: string) =>
+  ({ table }: HeaderContext<DetailedTransaction, unknown>) => {
+    const isAllSelected = table.getIsAllRowsSelected();
+    const isIndeterminate = !isAllSelected && table.getIsSomeRowsSelected();
+
+    return (
+      <div className="flex justify-between border border-neutral-300 items-center w-full h-full px-2 hover:text-blue-600">
+        <Checkbox
+          aria-label={`Toggle select all ${label.toLowerCase()}`}
+          className="[&_svg]:h-3 [&_svg]:w-3 size-3 rounded-[2px] shadow-none"
+          checked={isIndeterminate ? "indeterminate" : isAllSelected}
+          onCheckedChange={() => {
+            table.toggleAllRowsSelected(
+              isIndeterminate || isAllSelected ? false : true
+            );
+          }}
+        />
+      </div>
+    );
+  };
 
 const columnHelper = createColumnHelper<DetailedTransaction>();
 
