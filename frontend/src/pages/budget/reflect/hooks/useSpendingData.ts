@@ -1,10 +1,5 @@
 import { useState, useEffect } from "react";
 import { useAppSelector, useAppDispatch } from "@/core/hooks/reduxHooks";
-import { useCategoriesData } from "../../allocation/hooks/useAllocation/useCategories";
-import {
-  RTA_CATEGORY,
-  UNCATEGORISED_CATEGORY,
-} from "../../allocation/constants/categories";
 import {
   reflectMonth,
   initializeAllPages,
@@ -15,6 +10,7 @@ import {
 } from "../slices/reflectMonthSlice";
 import { REFLECT_PAGES, type ReflectPageKey } from "../constants/pages";
 import type { DateRangeOption } from "../constants/dateRanges";
+import { useBudgetSnapshot } from "../../allocation/hooks/useAllocation/useCategories";
 
 export type ViewMode = "categories" | "groups";
 
@@ -22,25 +18,27 @@ const colors = ["#93D53E", "#545BFE", "#AEE865", "#CE5E66", "#F6C91D"];
 
 export const useSpendingData = (page: ReflectPageKey) => {
   const title = REFLECT_PAGES[page].title;
-  // TODO:(lewis 2026-10-26 10:03) remove this and use useBudgetSnapshot!
-  const data = useCategoriesData();
+  const {
+    data: {
+      months,
+      categories: {
+        user: userCategories,
+        rta,
+        uncategorised: uncategorisedCategory,
+      },
+      categoryGroups: { user: userCategoryGroups },
+    },
+  } = useBudgetSnapshot();
   const reflectState = useAppSelector(reflectMonth);
   const { initialized } = reflectState;
   const pageFilters = reflectState.pages[page];
   const { monthIndex, startMonthIndex, endMonthIndex } = pageFilters;
 
-  const months = Object.values(data.months);
-  const categories = Object.values(data.categories);
-  const uniqueMonths = [...new Set(months.map((m) => m.month))];
+  const monthsArray = Object.values(months);
+  const uniqueMonths = [...new Set(monthsArray.map((m) => m.month))];
 
-  const uncategorisedCategoryId = categories.find(
-    (c) => c.name === UNCATEGORISED_CATEGORY
-  )?.id;
-  const rtaCategoryId = categories.find((c) => c.name === RTA_CATEGORY)?.id;
-
-  const allUserMonthsWithoutProtected = months.filter(
-    (m) =>
-      m.categoryId !== uncategorisedCategoryId && m.categoryId !== rtaCategoryId
+  const allUserMonthsWithoutProtected = monthsArray.filter(
+    (m) => m.categoryId !== uncategorisedCategory.id && m.categoryId !== rta.id
   );
 
   // Get the date range for filtering
@@ -367,7 +365,7 @@ export const useSpendingData = (page: ReflectPageKey) => {
     const categoryTotals = new Map<string, { name: string; value: number }>();
 
     currentMonthData.forEach((monthData) => {
-      const category = data.categories[monthData.categoryId];
+      const category = userCategories[monthData.categoryId];
       const categoryId = monthData.categoryId;
       const categoryName = category?.name || "Unknown";
       const activity = Math.abs(monthData.activity);
@@ -391,11 +389,11 @@ export const useSpendingData = (page: ReflectPageKey) => {
     const groupTotals = new Map<string, { name: string; value: number }>();
 
     currentMonthData.forEach((monthData) => {
-      const category = data.categories[monthData.categoryId];
+      const category = userCategories[monthData.categoryId];
       const groupId = category?.categoryGroupId;
 
       if (groupId) {
-        const group = data.categoryGroups[groupId];
+        const group = userCategoryGroups[groupId];
         const groupName = group?.name || "Unknown Group";
         const activity = Math.abs(monthData.activity);
 
