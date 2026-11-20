@@ -1,20 +1,5 @@
-import { useGetCategoriesQuery } from "@/core/api/budgetApiSlice";
-import { AllocationData } from "@/core/types/Allocation";
 import { CategoryMonthMap, MonthKey } from "../../types/types";
 import { useGetBudgetSnapshotQuery } from "@/core/api/budget/budgetSnapshotSlice";
-
-// this is currently used in reflect it will need removing
-export const useCategoriesData = () => {
-  const { data } = useGetCategoriesQuery();
-  if (!data) {
-    return {
-      categoryGroups: {},
-      categories: {},
-      months: {},
-    } as AllocationData;
-  }
-  return data;
-};
 
 export function resolveMonthMap(
   monthsByDate: Record<MonthKey, CategoryMonthMap>,

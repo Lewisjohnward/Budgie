@@ -170,7 +170,6 @@ export const transactionApiSlice = apiSlice.injectEndpoints({
           )
         );
       },
-      invalidatesTags: ["Categories"],
     }),
     editTransaction: builder.mutation<
       EditTransactionResult,
@@ -181,8 +180,6 @@ export const transactionApiSlice = apiSlice.injectEndpoints({
         method: "PATCH",
         body: updates,
       }),
-
-      invalidatesTags: ["Categories"],
 
       transformResponse: (
         response: EditTransactionResponse
@@ -300,7 +297,6 @@ export const transactionApiSlice = apiSlice.injectEndpoints({
         method: "DELETE",
         body: transactions,
       }),
-      invalidatesTags: ["Categories"],
 
       transformResponse: (
         response: DeleteTransactionsResponse
@@ -378,7 +374,6 @@ export const transactionApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: transactions,
       }),
-      invalidatesTags: ["Categories"],
 
       transformResponse: (
         response: DuplicateTransactionsResponse
@@ -480,7 +475,6 @@ export const transactionApiSlice = apiSlice.injectEndpoints({
         method: "PATCH",
         body: mutation,
       }),
-      invalidatesTags: ["Categories"],
 
       async onQueryStarted(mutation, { dispatch, queryFulfilled }) {
         const optimisticPatch = dispatch(
