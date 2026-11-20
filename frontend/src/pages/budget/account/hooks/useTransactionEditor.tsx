@@ -17,6 +17,8 @@ import {
   asPayeeId,
   asTransactionId,
 } from "../../allocation/types/types";
+import { CategoryBranded } from "@/core/types/NormalizedData";
+import { calculateNetChange } from "./useTransactionEditor/utils/calculateNetChange";
 
 const TransactionFormSchema = z.object({
   accountId: z.string().uuid(),
@@ -297,6 +299,12 @@ export const useTransactionEditor = (accountId: string) => {
 
   const handleSaveTransaction = () => {
     const formValues = transactionForm.getValues();
+
+    const { inflow, outflow } = calculateNetChange(
+      Number(formValues.inflow) ?? 0,
+      Number(formValues.outflow) ?? 0
+    );
+
     if (transactionEditorState.mode === TransactionEditorMode.Edit) {
       console.log("edit transaction", formValues);
 
@@ -314,8 +322,8 @@ export const useTransactionEditor = (accountId: string) => {
               : undefined,
           memo: formValues.memo,
           date: normaliseDate(formValues.date).toISOString(),
-          inflow: formValues.inflow || undefined,
-          outflow: formValues.outflow || undefined,
+          inflow: inflow?.toString(),
+          outflow: outflow?.toString(),
         },
       });
     } else {
@@ -328,8 +336,8 @@ export const useTransactionEditor = (accountId: string) => {
         payeeId: formValues.payeeId ? asPayeeId(formValues.payeeId) : undefined,
         memo: formValues.memo,
         date: normaliseDate(formValues.date).toISOString(),
-        inflow: formValues.inflow || undefined,
-        outflow: formValues.outflow || undefined,
+        inflow: inflow?.toString(),
+        outflow: outflow?.toString(),
       });
     }
     transactionForm.reset();
@@ -339,14 +347,19 @@ export const useTransactionEditor = (accountId: string) => {
   // handle and add another transaction
   const handleSaveAndAddAnotherTransaction = () => {
     transactionForm.handleSubmit((data: TransactionFormData) => {
+      const { inflow, outflow } = calculateNetChange(
+        Number(data.inflow) ?? 0,
+        Number(data.outflow) ?? 0
+      );
+
       createTransaction({
         accountId: asAccountId(data.accountId),
         categoryId: data.categoryId ? asCategoryId(data.categoryId) : undefined,
         payeeId: data.payeeId ? asPayeeId(data.payeeId) : undefined,
         memo: data.memo || undefined,
         date: normaliseDate(data.date).toISOString(),
-        inflow: data.inflow || undefined,
-        outflow: data.outflow || undefined,
+        inflow: inflow?.toString(),
+        outflow: outflow?.toString(),
       });
     })();
 
