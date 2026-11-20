@@ -72,7 +72,7 @@ const createSortableHeader =
   };
 
 const createHeader =
-  (label: string) =>
+  () =>
   ({ table }: HeaderContext<DetailedTransaction, unknown>) => {
     const isAllSelected = table.getIsAllRowsSelected();
     const isIndeterminate = !isAllSelected && table.getIsSomeRowsSelected();
@@ -80,7 +80,7 @@ const createHeader =
     return (
       <div className="flex justify-between border border-neutral-300 items-center w-full h-full px-2 hover:text-blue-600">
         <Checkbox
-          aria-label={`Toggle select all ${label.toLowerCase()}`}
+          aria-label={`Toggle select all transactions`}
           className="[&_svg]:h-3 [&_svg]:w-3 size-3 rounded-[2px] shadow-none"
           checked={isIndeterminate ? "indeterminate" : isAllSelected}
           onCheckedChange={() => {
@@ -99,7 +99,7 @@ export const columns = [
   columnHelper.display({
     id: "checkbox",
     ...checkboxColumnSizing,
-    header: createHeader("Checkbox"),
+    header: createHeader(),
     cell: (info) => {
       const isSelected = info.row.getIsSelected();
       return (
