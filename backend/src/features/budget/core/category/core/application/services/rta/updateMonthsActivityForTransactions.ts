@@ -36,7 +36,7 @@ export const updateMonthsActivityForTransactions = async (
   rtaCategoryId: CategoryId,
   transactions: DomainNormalTransaction[],
   mode: OperationMode
-) => {
+): Promise<void> => {
   const rtaMonths = await categoryService.months.getAllRtaMonths(
     prisma,
     userId,
