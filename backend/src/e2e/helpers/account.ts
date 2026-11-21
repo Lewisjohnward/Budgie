@@ -14,12 +14,15 @@ export const createBankAccount = async (
   userId: UserId,
   { name, balance }: CreateBankAccountOptions
 ): Promise<DomainAccount> => {
-  const account = await accountService.createAndInitialiseAccount(tx, {
-    userId: userId,
-    name,
-    type: "BANK",
-    balance: new Decimal(balance),
-  });
+  const { createdAccount } = await accountService.createAndInitialiseAccount(
+    tx,
+    {
+      userId: userId,
+      name,
+      type: "BANK",
+      balance: new Decimal(balance),
+    }
+  );
 
-  return account;
+  return createdAccount;
 };
