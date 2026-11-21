@@ -18,6 +18,7 @@ import { deleteTransactionsByAccountId } from "./application/services/deleteTran
 import { payeeService } from "../payee/payee.service";
 import { getTransactionsByAccountIds } from "./application/services/getTransactionsByAccountIds";
 import { insertNormalTransaction } from "./application/services/create/insertNormalTransaction";
+import { createOpeningBalanceTransaction } from "./application/services/createOpeningBalanceTransaction";
 
 export const transactionService = {
   // insert
@@ -44,25 +45,7 @@ export const transactionService = {
     });
   },
 
-  createOpeningBalanceTransaction: async (
-    tx: Prisma.TransactionClient,
-    userId: UserId,
-    accountId: AccountId,
-    balance: Decimal
-  ) => {
-    const startingBalancePayeeId = await payeeService.getStartingBalancePayeeId(
-      tx,
-      userId
-    );
-
-    await createSystemTransaction(tx, {
-      userId,
-      accountId,
-      amount: balance,
-      memo: "Starting Balance",
-      payeeId: startingBalancePayeeId,
-    });
-  },
+  createOpeningBalanceTransaction,
 
   createClosingBalanceTransaction: async (
     tx: Prisma.TransactionClient,
