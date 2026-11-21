@@ -1,5 +1,7 @@
-import { AddAccountPayload } from "../account.schema";
-import { AccountType } from "../account.types";
+import { type MonthDto } from "../../category/core/category.types";
+import { type TransactionNormalDto } from "../../transaction/transaction.types";
+import { type AddAccountPayload } from "../account.schema";
+import { type AccountType } from "../account.types";
 
 /**
  * Payload for creating a new account, including the position index.
@@ -20,4 +22,32 @@ export type AccountDto = Readonly<{
   type: AccountType;
   balance: number;
   deletable: boolean;
+}>;
+
+/**
+ * DTO returned after an account creation operation.
+ *
+ * Structure:
+ *
+ * - `created.account`:
+ *   The account created by the operation.
+ *
+ * - `created.transaction`:
+ *   The initial transaction created alongside the account, if applicable.
+ *
+ * - `updated.months`:
+ *   Budget months whose aggregates were affected by the account creation,
+ *   keyed by month ID.
+ *
+ * The frontend is responsible for adding the created account and optional
+ * transaction to its local state and merging the updated months.
+ */
+export type CreateAccountDto = Readonly<{
+  created: {
+    account: AccountDto;
+    transaction?: TransactionNormalDto;
+  };
+  updated: {
+    months: Record<string, MonthDto>;
+  };
 }>;

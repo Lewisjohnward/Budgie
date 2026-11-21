@@ -7,6 +7,7 @@ import {
 } from "./account.schema";
 import { normaliseAccounts } from "./utils/normaliseAccounts";
 import { accountUseCase } from "./account.useCase";
+import { accountMapper } from "./account.mapper";
 
 /**
  * Retrieves all accounts for the current user, including their transactions.
@@ -47,9 +48,10 @@ export const addAccount = async (
       ...req.body,
     });
 
-    await accountUseCase.createAccount(payload);
+    const result = await accountUseCase.createAccount(payload);
+    const dto = accountMapper.toCreateAccountDto(result);
 
-    res.status(200).json({ message: "Account added" });
+    res.status(200).json(dto);
   } catch (error) {
     next(error);
   }
