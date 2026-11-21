@@ -2,7 +2,8 @@ import request from "supertest";
 import app from "../../app";
 import { getAccounts } from "./getData";
 import { prisma } from "../../shared/prisma/client";
-import { AddAccountInput } from "../../features/budget/core/account/account.schema";
+import { type AddAccountInput } from "../../features/budget/core/account/account.schema";
+import { type CreateAccountDto } from "../../features/budget/core/account/account.types";
 
 /**
  * Input type for creating accounts in tests,
@@ -103,6 +104,29 @@ export const createAccountAndFetch = async (
 
   return account;
 };
+
+type CreateAccountResponse = {
+  status: number;
+  body: CreateAccountDto;
+};
+
+/**
+ * Sends an account creation request and returns the response status and body.
+ */
+export async function createAccountRaw(
+  cookie: string,
+  accountData: TestCreateAccountInputWithoutUserId
+): Promise<CreateAccountResponse> {
+  const res = await request(app)
+    .post(createAccountEndpoint)
+    .set("Authorization", `Bearer ${cookie}`)
+    .send(accountData);
+
+  return {
+    status: res.status,
+    body: res.body,
+  };
+}
 
 export const editAccount = async (
   cookie: string,
