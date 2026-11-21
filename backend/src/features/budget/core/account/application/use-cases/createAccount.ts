@@ -1,9 +1,9 @@
-import { transactionService } from "../../../transaction/transaction.service";
 import { type AddAccountPayload } from "../../account.schema";
 import { prisma } from "../../../../../../shared/prisma/client";
 import { asUserId, type UserId } from "../../../../../user/auth/auth.types";
 import { accountService } from "../../account.service";
 import { DuplicateAccountNameError } from "../../account.errors";
+import { type CreateAccountResult } from "../../account.contract";
 
 export type CreateAccountCommand = Omit<AddAccountPayload, "userId"> & {
   userId: UserId;
@@ -17,41 +17,46 @@ const toCreateAccountCommand = (
 });
 
 /**
- * Creates a new user account with optional opening balance.
+ * Creates a new account for a user, optionally initialising it with an opening balance.
  *
- * This function ensures atomicity by performing all operations in a single database transaction:
- * 1. Inserts the account into the database.
- * 2. Creates an associated AccountPayee for transfers.
- * 3. If a non-zero balance is provided, creates an opening balance transaction and updates account deletable status.
+ * Account creation and initialisation are performed atomically within a Prisma
+ * transaction. If an opening balance is provided and non-zero, an associated
+ * system transaction is created.
  *
- * The function will retry up to 5 times if a position conflict occurs, and throws a `DuplicateAccountNameError`
- * if the account name already exists.
+ * The operation handles concurrent account creation by retrying when a position
+ * uniqueness conflict occurs. Account name conflicts are converted into a
+ * DuplicateAccountNameError.
  *
- * @param payload - The data required to create the account
- * @param payload.userId - ID of the user who owns the account
- * @param payload.name - Display name of the account
- * @param payload.type - Type of account ("BANK" | "CREDIT_CARD")
- * @param payload.position - Position/order of the account for UI purposes
- * @param payload.balance - Optional opening balance (must be non 0)
+ * Behaviour:
+ * - Converts the incoming payload into a typed CreateAccountCommand.
+ * - Creates the account and its associated resources.
+ * - Creates an opening balance transaction when the provided balance is non-zero.
+ * - Retries the operation up to five times if a position uniqueness conflict occurs.
  *
- * @returns A promise that resolves once the account (and optional opening balance transaction) is successfully created.
+ * @param payload - The data required to create the account.
+ * @param payload.userId - ID of the user who will own the account.
+ * @param payload.name - Display name of the account.
+ * @param payload.type - Type of account (BANK or CREDIT_CARD).
+ * @param payload.position - Position/order of the account within the user's accounts.
+ * @param payload.balance - Initial account balance.
+ *
+ * @returns The created account, optionally including its opening balance transaction
+ *   and any updated budget months.
  *
  * @throws {DuplicateAccountNameError} If an account with the same name already exists.
- * @throws {Error} If the transaction fails after retries.
+ * @throws {Error} If account creation fails or all position conflict retries are exhausted.
  */
 export const createAccount = async (
   payload: AddAccountPayload
-): Promise<void> => {
+): Promise<CreateAccountResult> => {
   for (let i = 0; i < 5; i++) {
     try {
-      await prisma.$transaction(async (tx) => {
-        await accountService.createAndInitialiseAccount(
+      return await prisma.$transaction(async (tx) =>
+        accountService.createAndInitialiseAccount(
           tx,
           toCreateAccountCommand(payload)
-        );
-      });
-
-      return;
+        )
+      );
     } catch (err: any) {
       if (err.code === "P2002") {
         const fields = (err.meta?.target ?? []) as string[];
