@@ -1,0 +1,32 @@
+CreateAccountResponse:
+  type: object
+  description: >
+    Result of creating an account, including the created account,
+    an optional initial transaction, and any related entity mutations.
+  required:
+    - created
+    - updated
+  properties:
+    created:
+      type: object
+      description: Entities created by the account creation operation.
+      required:
+        - account
+      properties:
+        account:
+          $ref: "../../entities/account.yml#/Account"
+        transaction:
+          description: Initial transaction created alongside the account, if applicable.
+          $ref: "../../entities/transaction.yml#/TransactionNormal"
+
+    updated:
+      type: object
+      description: Existing entities affected by the account creation operation.
+      required:
+        - months
+      properties:
+        months:
+          type: object
+          description: Updated months keyed by month id.
+          additionalProperties:
+            $ref: "../../entities/month.yml#/Month"

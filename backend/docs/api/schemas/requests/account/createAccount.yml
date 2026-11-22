@@ -1,0 +1,31 @@
+CreateAccountRequest:
+  type: object
+  description: >
+    Request to create a new account with an initial balance.
+    The account is automatically associated with the authenticated user.
+  required:
+    - name
+    - type
+  properties:
+    name:
+      type: string
+      minLength: 1
+      maxLength: 50
+      description: >
+        Name of the account. Leading and trailing whitespace is trimmed.
+      example: "Natwest"
+
+    type:
+      type: string
+      description: Type of account.
+      enum:
+        - BANK
+        - CREDIT_CARD
+      example: BANK
+
+    balance:
+      type: number
+      description: >
+        Initial account balance. Defaults to zero when omitted.
+        Negative balances are supported.
+      example: 1250.50
