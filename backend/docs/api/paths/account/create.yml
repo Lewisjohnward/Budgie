@@ -1,0 +1,36 @@
+post:
+  summary: Create account
+  description: >
+    Creates a new account, automatically assigning its sorting position
+    and optionally creating an initial balance transaction.
+  operationId: createAccount
+  tags:
+    - Accounts
+  security:
+    - bearerAuth: []
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../../schemas/requests/account/createAccount.yml#/CreateAccountRequest"
+
+  responses:
+    "200":
+      description: Successfully created account and starting balance transaction (if applicable)
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/responses/account/createAccount.yml#/CreateAccountResponse"
+
+    "400":
+      description: Bad request (invalid account details)
+
+    "401":
+      description: Unauthorised (missing or expired session token)
+
+    "409":
+      description: Conflict (an account with this normalised name already exists)
+
+    "500":
+      description: Server error
