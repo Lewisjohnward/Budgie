@@ -24,6 +24,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/budget/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create account
+         * @description Creates a new account, automatically assigning its sorting position and optionally creating an initial balance transaction.
+         */
+        post: operations["createAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/budget/memo/{id}": {
         parameters: {
             query?: never;
@@ -367,6 +387,25 @@ export interface components {
              */
             inheritingCategoryId?: string;
         };
+        /** @description Request to create a new account with an initial balance. The account is automatically associated with the authenticated user. */
+        CreateAccountRequest: {
+            /**
+             * @description Name of the account. Leading and trailing whitespace is trimmed.
+             * @example Natwest
+             */
+            name: string;
+            /**
+             * @description Type of account.
+             * @example BANK
+             * @enum {string}
+             */
+            type: "BANK" | "CREDIT_CARD";
+            /**
+             * @description Initial account balance. Defaults to zero when omitted. Negative balances are supported.
+             * @example 1250.5
+             */
+            balance?: number;
+        };
         /** @description Request to create a new transaction. Supports both normal transactions and transfers between accounts. */
         CreateTransactionRequest: {
             /**
@@ -594,6 +633,22 @@ export interface components {
             id: string;
             position: number;
         };
+        /** @description Result of creating an account, including the created account, an optional initial transaction, and any related entity mutations. */
+        CreateAccountResponse: {
+            /** @description Entities created by the account creation operation. */
+            created: {
+                account: components["schemas"]["Account"];
+                /** @description Initial transaction created alongside the account, if applicable. */
+                transaction?: components["schemas"]["TransactionNormal"];
+            };
+            /** @description Existing entities affected by the account creation operation. */
+            updated: {
+                /** @description Updated months keyed by month id. */
+                months: {
+                    [key: string]: components["schemas"]["Month"];
+                };
+            };
+        };
         /** @description Result of creating transactions, including created entities and any related entity mutations. */
         CreateTransactionResponse: {
             created: {
@@ -798,6 +853,58 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    createAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAccountRequest"];
+            };
+        };
+        responses: {
+            /** @description Successfully created account and starting balance transaction (if applicable) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateAccountResponse"];
+                };
+            };
+            /** @description Bad request (invalid account details) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorised (missing or expired session token) */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Conflict (an account with this normalised name already exists) */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

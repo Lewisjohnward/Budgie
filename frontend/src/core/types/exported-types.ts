@@ -31,6 +31,10 @@ export type ApiTransactionTransfer =
 
 export type ApiMonthKey = string;
 
+// Account requests
+export type CreateAccountRequest =
+  components["schemas"]["CreateAccountRequest"];
+
 // Snapshot response
 export type ApiBudgetSnapshot =
   paths["/budget/snapshot"]["get"]["responses"]["200"]["content"]["application/json"];
@@ -54,6 +58,10 @@ export type DeleteCategoryGroupResponse =
   components["schemas"]["DeleteCategoryGroupResponse"];
 export type CategoryGroupPositionPatch =
   components["schemas"]["CategoryGroupPositionPatch"];
+
+// Account responses
+export type CreateAccountResponse =
+  components["schemas"]["CreateAccountResponse"];
 
 // Transaction responses
 export type CreateTransactionResponse =

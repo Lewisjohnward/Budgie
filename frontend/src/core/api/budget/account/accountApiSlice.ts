@@ -1,14 +1,17 @@
-import { AddAccountPayload } from "@/core/types/AccountSchema";
 import { apiSlice } from "../../apiSlice";
+import { CreateAccountInput, CreateAccountResult } from "./types";
+import { toCreateAccountRequest } from "./mappers/toRequest";
+import { toCreateAccountResult } from "./mappers/toResponse";
 
 export const accountApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
-    addAccount: builder.mutation<void, AddAccountPayload>({
-      query: (newAccount) => ({
+    addAccount: builder.mutation<CreateAccountResult, CreateAccountInput>({
+      query: (input) => ({
         url: "/budget/account",
         method: "POST",
-        body: newAccount,
+        body: toCreateAccountRequest(input),
       }),
+      transformResponse: toCreateAccountResult,
       invalidatesTags: ["Bootstrap"],
     }),
     deleteAccount: builder.mutation<void, { accountId: string }>({
