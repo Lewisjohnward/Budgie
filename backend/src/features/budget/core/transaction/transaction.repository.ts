@@ -51,10 +51,10 @@ export interface TransactionRepository {
     newCategoryId: CategoryId
   ): Promise<void>;
 
-  getTransactionIdsByAccountId(
+  getTransactionsByAccountId(
     tx: Prisma.TransactionClient,
     accountId: AccountId
-  ): Promise<string[]>;
+  ): Promise<db.Transaction[]>;
 
   createTransaction(
     tx: Prisma.TransactionClient,

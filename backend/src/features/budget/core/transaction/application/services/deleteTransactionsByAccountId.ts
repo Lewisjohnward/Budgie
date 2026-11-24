@@ -23,10 +23,14 @@ export const deleteTransactionsByAccountId = async (
   userId: UserId,
   accountId: AccountId
 ) => {
-  const rawTransactionIds =
-    await transactionRepository.getTransactionIdsByAccountId(tx, accountId);
+  const rawTransactions =
+    await transactionRepository.getTransactionsByAccountId(tx, accountId);
 
-  const txIds = rawTransactionIds.map((id) => asTransactionId(id));
+  const transactions = rawTransactions.map(
+    transactionMapper.toDomainNormalTransaction
+  );
+
+  const txIds = transactions.map((tx) => tx.id);
 
   await transactionService.deleteTransactionsById(tx, userId, txIds);
 };

@@ -184,18 +184,17 @@ export const transactionRepository: TransactionRepository = {
     });
   },
 
-  getTransactionIdsByAccountId: async function(
+  getTransactionsByAccountId: async function (
     tx: Prisma.TransactionClient,
     accountId: AccountId
-  ): Promise<string[]> {
+  ): Promise<db.Transaction[]> {
     const rows = await tx.transaction.findMany({
       where: {
         accountId,
       },
-      select: { id: true },
     });
 
-    return rows.map(({ id }) => id);
+    return rows;
   },
 
   updateTransactionsPayee: async function(
