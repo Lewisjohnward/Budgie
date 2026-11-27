@@ -99,8 +99,9 @@ export const deleteAccount = async (
       accountId,
     });
 
-    await accountUseCase.deleteAccount(payload);
-    res.sendStatus(200);
+    const result = await accountUseCase.deleteAccount(payload);
+    const dto = accountMapper.toDeleteAccountDto(result);
+    res.status(200).send(dto);
   } catch (error) {
     next(error);
   }

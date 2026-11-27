@@ -1,5 +1,8 @@
 import { type MonthDto } from "../../category/core/category.types";
-import { type TransactionNormalDto } from "../../transaction/transaction.types";
+import {
+  type DomainNormalTransaction,
+  type TransactionNormalDto,
+} from "../../transaction/transaction.types";
 import { type AddAccountPayload } from "../account.schema";
 import { type AccountType } from "../account.types";
 
@@ -46,6 +49,31 @@ export type CreateAccountDto = Readonly<{
   created: {
     account: AccountDto;
     transaction?: TransactionNormalDto;
+  };
+  updated: {
+    months: Record<string, MonthDto>;
+  };
+}>;
+
+/**
+ * DTO returned after an account deletion operation.
+ *
+ * Structure:
+ *
+ * - `deleted.account`:
+ *   The account deleted by the operation.
+ *
+ * - `deleted.transactions`:
+ *   Transactions deleted alongside the account, keyed by transaction ID.
+ *
+ * - `updated.months`:
+ *   Budget months whose aggregates were affected by the account deletion,
+ *   keyed by month ID.
+ */
+export type DeleteAccountDto = Readonly<{
+  deleted: {
+    account: AccountDto;
+    transactions: Record<string, DomainNormalTransaction>;
   };
   updated: {
     months: Record<string, MonthDto>;

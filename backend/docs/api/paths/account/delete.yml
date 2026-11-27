@@ -1,0 +1,39 @@
+delete:
+  summary: Delete an account
+  description: >
+    Deletes an account, removing all system transactions
+    that are associated with it.
+  operationId: deleteAccount
+  tags:
+    - Accounts
+  security:
+    - bearerAuth: []
+  parameters:
+    - in: path
+      name: accountId
+      required: true
+      schema:
+        type: string
+      description: The ID of the account to delete.
+      example: "8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d"
+
+  responses:
+    "200":
+      description: >
+        Successfully deleted account and any associated system transactions
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/responses/account/deleteAccount.yml#/DeleteAccountResponse"
+
+    "400":
+      description: Bad request (invalid account id)
+
+    "401":
+      description: Unauthorised (missing or expired session token)
+
+    "409":
+      description: Cannot delete an undeletable account
+
+    "500":
+      description: Server error

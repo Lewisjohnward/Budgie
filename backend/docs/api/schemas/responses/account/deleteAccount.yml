@@ -1,0 +1,36 @@
+DeleteAccountResponse:
+  type: object
+  description: >
+    Result of an account deletion operation, including deleted entities
+    and existing entities affected by the deletion.
+  required:
+    - deleted
+    - updated
+  additionalProperties: false
+  properties:
+    deleted:
+      type: object
+      description: Entities deleted by the account deletion operation.
+      required:
+        - account
+        - transactions
+      properties:
+        account:
+          $ref: "../../entities/account.yml#/Account"
+        transactions:
+          type: object
+          description: Deleted system transactions keyed by transaction id.
+          additionalProperties:
+            $ref: "../../entities/transaction.yml#/TransactionNormal"
+
+    updated:
+      type: object
+      description: Existing entities affected by the account deletion operation.
+      required:
+        - months
+      properties:
+        months:
+          type: object
+          description: Updated months keyed by month id.
+          additionalProperties:
+            $ref: "../../entities/month.yml#/Month"

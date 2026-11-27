@@ -11,6 +11,8 @@ paths:
   # Account
   /budget/account:
     $ref: "./paths/account/create.yml"
+  /budget/account/{id}:
+    $ref: "./paths/account/delete.yml"
 
   # Memos
   /budget/memo/{id}:
