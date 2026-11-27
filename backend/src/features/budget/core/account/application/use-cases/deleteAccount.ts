@@ -5,6 +5,7 @@ import { transactionService } from "../../../transaction/transaction.service";
 import { type AccountId, asAccountId } from "../../account.types";
 import { asUserId, type UserId } from "../../../../../user/auth/auth.types";
 import { CannotDeleteUndeletableAccountError } from "../../account.errors";
+import { type DeleteAccountResult } from "../../account.contract";
 
 export type DeleteAccountCommand = Omit<
   DeleteAccountPayload,
@@ -25,10 +26,15 @@ export const toDeleteAccountCommand = (
 /**
  * Deletes an account and all its associated transactions.
  *
- * This operation is performed within a single database transaction to ensure consistency:
- * 1. Checks whether the account is deletable.
- * 2. Deletes all transactions linked to the account.
+ * Performs the deletion within a single database transaction to ensure
+ * consistency. The operation:
+ *
+ * 1. Retrieves the account and checks whether it can be deleted.
+ * 2. Deletes all transactions associated with the account and updates the
+ *    affected budget months.
  * 3. Deletes the account itself.
+ *
+ * All database changes are committed or rolled back together.
  *
  * @param payload - Data required to delete the account
  * @param payload.userId - ID of the user who owns the account
@@ -36,14 +42,15 @@ export const toDeleteAccountCommand = (
  *
  * @throws {CannotDeleteUndeletableAccountError} If the account cannot be deleted
  *
- * @returns A promise that resolves when the account and its transactions have been deleted.
+ * @returns A promise that resolves to the deleted account, deleted
+ * transactions, and updated budget months.
  */
 export const deleteAccount = async (
   payload: DeleteAccountPayload
-): Promise<void> => {
+): Promise<DeleteAccountResult> => {
   const { accountId, userId } = toDeleteAccountCommand(payload);
 
-  await prisma.$transaction(async (tx) => {
+  return await prisma.$transaction(async (tx) => {
     const account = await accountService.getAccount(tx, accountId, userId);
     const { deletable } = account;
 
@@ -51,7 +58,7 @@ export const deleteAccount = async (
       throw new CannotDeleteUndeletableAccountError();
     }
 
-    await transactionService.deleteTransactionsByAccountId(
+    const result = await transactionService.deleteTransactionsByAccountId(
       tx,
       userId,
       accountId
@@ -65,5 +72,11 @@ export const deleteAccount = async (
       account.type,
       account.position
     );
+
+    return {
+      deletedAccount: account,
+      deletedTransactions: result.deletedTransactions,
+      updatedMonths: result.updatedMonths,
+    };
   });
 };
