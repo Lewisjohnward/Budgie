@@ -44,6 +44,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/budget/account/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete an account
+         * @description Deletes an account, removing all system transactions that are associated with it.
+         */
+        delete: operations["deleteAccount"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/budget/memo/{id}": {
         parameters: {
             query?: never;
@@ -824,6 +844,24 @@ export interface components {
             transferAccountId: string;
             transferTransactionId: string;
         };
+        /** @description Result of an account deletion operation, including deleted entities and existing entities affected by the deletion. */
+        DeleteAccountResponse: {
+            /** @description Entities deleted by the account deletion operation. */
+            deleted: {
+                account: components["schemas"]["Account"];
+                /** @description Deleted system transactions keyed by transaction id. */
+                transactions: {
+                    [key: string]: components["schemas"]["TransactionNormal"];
+                };
+            };
+            /** @description Existing entities affected by the account deletion operation. */
+            updated: {
+                /** @description Updated months keyed by month id. */
+                months: {
+                    [key: string]: components["schemas"]["Month"];
+                };
+            };
+        };
     };
     responses: never;
     parameters: never;
@@ -904,6 +942,60 @@ export interface operations {
                 content?: never;
             };
             /** @description Conflict (an account with this normalised name already exists) */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Server error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /**
+                 * @description The ID of the account to delete.
+                 * @example 8a7b6c5d-4e3f-2a1b-0c9d-8e7f6a5b4c3d
+                 */
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successfully deleted account and any associated system transactions */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteAccountResponse"];
+                };
+            };
+            /** @description Bad request (invalid account id) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorised (missing or expired session token) */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Cannot delete an undeletable account */
             409: {
                 headers: {
                     [name: string]: unknown;

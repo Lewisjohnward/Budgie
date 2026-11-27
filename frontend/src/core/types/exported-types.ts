@@ -62,6 +62,8 @@ export type CategoryGroupPositionPatch =
 // Account responses
 export type CreateAccountResponse =
   components["schemas"]["CreateAccountResponse"];
+export type DeleteAccountResponse =
+  components["schemas"]["DeleteAccountResponse"];
 
 // Transaction responses
 export type CreateTransactionResponse =

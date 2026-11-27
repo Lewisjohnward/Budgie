@@ -3,7 +3,7 @@ import {
   MonthBranded,
   TransactionNormal,
 } from "@/core/types/NormalizedData";
-import { MonthId } from "@/pages/budget/allocation/types/types";
+import { MonthId, TransactionId } from "@/pages/budget/allocation/types/types";
 
 // Create
 export type CreateAccountInput = {
@@ -16,6 +16,16 @@ export type CreateAccountResult = {
   created: {
     account: AccountBranded;
     transaction?: TransactionNormal;
+  };
+  updated: {
+    months: Record<MonthId, MonthBranded>;
+  };
+};
+
+export type DeleteAccountResult = {
+  deleted: {
+    account: AccountBranded;
+    transactions: Record<TransactionId, TransactionNormal>;
   };
   updated: {
     months: Record<MonthId, MonthBranded>;

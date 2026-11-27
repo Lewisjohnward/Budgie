@@ -1,10 +1,19 @@
 import { apiSlice } from "../../apiSlice";
-import { CreateAccountInput, CreateAccountResult } from "./types";
+import {
+  CreateAccountInput,
+  CreateAccountResult,
+  DeleteAccountResult,
+} from "./types";
 import { toCreateAccountRequest } from "./mappers/toRequest";
-import { toCreateAccountResult } from "./mappers/toResponse";
+import {
+  toCreateAccountResult,
+  toDeleteAccountResult,
+} from "./mappers/toResponse";
 import { budgetSnapshotSlice } from "../budgetSnapshotSlice";
 import { applyOptimisticAccountCreate } from "./utils/applyOptimisticAccountCreate";
 import { AccountId } from "@/pages/budget/allocation/types/types";
+import { DeleteAccountResponse } from "@/core/types/exported-types";
+import { applyOptimisticAccountDelete } from "./utils/applyOptimisticAccountDelete";
 
 export const accountApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -62,13 +71,59 @@ export const accountApiSlice = apiSlice.injectEndpoints({
         );
       },
     }),
-    deleteAccount: builder.mutation<void, { accountId: string }>({
+    deleteAccount: builder.mutation<
+      DeleteAccountResponse,
+      { accountId: AccountId }
+    >({
       query: (accountId) => ({
-        url: `/budget/account`,
+        url: `/budget/account/${accountId.accountId}`,
         method: "DELETE",
-        body: accountId,
       }),
-      invalidatesTags: ["Bootstrap"],
+
+      transformResponse: toDeleteAccountResult,
+
+      async onQueryStarted(input, { dispatch, queryFulfilled }) {
+        const optimisticPatch = dispatch(
+          budgetSnapshotSlice.util.updateQueryData(
+            "getBudgetSnapshot",
+            undefined,
+            (draft) => {
+              applyOptimisticAccountDelete(draft, input.accountId);
+            }
+          )
+        );
+
+        let data: DeleteAccountResult;
+
+        try {
+          ({ data } = await queryFulfilled);
+        } catch {
+          optimisticPatch.undo();
+          return;
+        }
+
+        dispatch(
+          budgetSnapshotSlice.util.updateQueryData(
+            "getBudgetSnapshot",
+            undefined,
+            (draft) => {
+              delete draft.accounts[optimisticAccountId];
+
+              const account = data.created.account;
+              draft.accounts[account.id] = account;
+
+              if (data.created.transaction) {
+                const transaction = data.created.transaction;
+                draft.transactions[transaction.id] = transaction;
+              }
+
+              for (const month of Object.values(data.updated.months)) {
+                draft.months[month.id] = month;
+              }
+            }
+          )
+        );
+      },
     }),
     editAccount: builder.mutation<void, any>({
       query: (accountId) => ({

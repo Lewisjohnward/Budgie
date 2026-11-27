@@ -1,9 +1,15 @@
-import { CreateAccountResponse } from "@/core/types/exported-types";
-import { asMonthId } from "@/pages/budget/allocation/types/types";
+import {
+  CreateAccountResponse,
+  DeleteAccountResponse,
+} from "@/core/types/exported-types";
+import {
+  asMonthId,
+  asTransactionId,
+} from "@/pages/budget/allocation/types/types";
 import { mapAccount } from "../../mappers/accountMapper";
 import { mapMonth } from "../../mappers/monthMapper";
 import { mapNormalTransaction } from "../../mappers/transactionMapper";
-import { CreateAccountResult } from "../types";
+import { CreateAccountResult, DeleteAccountResult } from "../types";
 
 export const toCreateAccountResult = (
   response: CreateAccountResponse
@@ -13,6 +19,28 @@ export const toCreateAccountResult = (
     ...(response.created.transaction && {
       transaction: mapNormalTransaction(response.created.transaction),
     }),
+  },
+  updated: {
+    months: Object.fromEntries(
+      Object.entries(response.updated.months).map(([id, month]) => [
+        asMonthId(id),
+        mapMonth(month),
+      ])
+    ),
+  },
+});
+
+export const toDeleteAccountResult = (
+  response: DeleteAccountResponse
+): DeleteAccountResult => ({
+  deleted: {
+    account: mapAccount(response.deleted.account),
+    transactions: Object.fromEntries(
+      Object.entries(response.deleted.transactions).map(([id, transaction]) => [
+        asTransactionId(id),
+        mapNormalTransaction(transaction),
+      ])
+    ),
   },
   updated: {
     months: Object.fromEntries(
