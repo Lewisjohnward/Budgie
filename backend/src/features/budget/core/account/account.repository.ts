@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { Decimal } from "@prisma/client/runtime/library";
-import { type AccountId, type db } from "./account.types";
+import { type AccountType, type AccountId, type db } from "./account.types";
 import { type UserId } from "../../../user/auth/auth.types";
 
 export interface AccountRepository {
@@ -74,4 +74,11 @@ export interface AccountRepository {
     tx: Prisma.TransactionClient,
     accountIds: AccountId[]
   ): Promise<void>;
+
+  shiftAccountsAfterDeletion: (
+    tx: Prisma.TransactionClient,
+    userId: UserId,
+    type: AccountType,
+    deletedPosition: number
+  ) => Promise<db.Account[]>;
 }

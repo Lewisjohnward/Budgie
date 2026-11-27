@@ -142,6 +142,18 @@ export const getMonthsByCategoryId = async (
 };
 
 /**
+ * Fetches all historical month records associated with
+ * the RTA category for a user
+ */
+export const getMonthsForRtaCategory = async (
+  cookie: string
+): Promise<MonthDto[]> => {
+  const rtaCategory = await getRtaCategory(cookie);
+  const rtaCategoryMonths = getMonthsByCategoryId(cookie, rtaCategory.id);
+  return rtaCategoryMonths;
+};
+
+/**
  * Fetches the categorized group map slices (user, inflow, uncategorised) from the snapshot.
  */
 export const getCategoryGroups = async (

@@ -58,5 +58,12 @@ export const deleteAccount = async (
     );
 
     await accountService.deleteAccount(tx, accountId);
+
+    await accountService.shiftAccountsAfterDeletion(
+      tx,
+      userId,
+      account.type,
+      account.position
+    );
   });
 };

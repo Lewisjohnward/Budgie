@@ -74,6 +74,39 @@ export async function createAccount(
   return accountData;
 }
 
+export async function createAccountAndReturn(
+  cookie: string,
+  overrides?: Partial<TestCreateAccountInputWithoutUserId>
+) {
+  const uniqueName = `test account ${crypto.randomUUID()}`;
+
+  const accountData: TestCreateAccountInputWithoutUserId = {
+    name: uniqueName,
+    type: "BANK",
+    balance: 100,
+    ...overrides,
+  };
+
+  const res = await request(app)
+    .post(createAccountEndpoint)
+    .set("Authorization", `Bearer ${cookie}`)
+    .send(accountData);
+
+  if (res.status !== 200) {
+    throw new Error(
+      `Failed to create test account: ${res.status} - ${JSON.stringify(res.body)}`
+    );
+  }
+
+  const account = await prisma.account.findFirstOrThrow({
+    where: {
+      name: accountData.name,
+    },
+  });
+
+  return account;
+}
+
 export const createAccountAndFetch = async (
   cookie: string,
   balance: number = 0,
