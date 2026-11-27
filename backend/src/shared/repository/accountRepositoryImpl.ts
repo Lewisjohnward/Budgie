@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { AccountRepository } from "../../features/budget/core/account/account.repository";
 import { Decimal } from "@prisma/client/runtime/library";
 import {
+  type AccountType,
   CreateAccountPayloadWithPosition,
   type AccountId,
   type db,
@@ -194,5 +195,66 @@ export const accountRepository: AccountRepository = {
         AND t."origin" = 'USER'
     )
 `;
+  },
+
+  /**
+   * Repositions accounts after an account has been deleted.
+   *
+   * Retrieves all accounts belonging to the specified user and account type
+   * whose positions are higher than the deleted account's position, then
+   * decrements each position by one to maintain a contiguous ordering.
+   *
+   * Accounts belonging to other users or account types are unaffected.
+   *
+   * Accounts are updated sequentially in ascending position order to avoid
+   * potential unique constraint violations when positions are indexed by
+   * user and account type.
+   *
+   * Returns the updated account records for all accounts whose positions
+   * have changed.
+   *
+   * @param tx - Prisma transaction client used for database operations.
+   * @param userId - ID of the user whose accounts need repositioning.
+   * @param type - Account type used to scope the repositioning operation.
+   * @param deletedPosition - Position of the deleted account.
+   * @returns A promise that resolves to the updated account records.
+   */
+  shiftAccountsAfterDeletion: async (
+    tx: Prisma.TransactionClient,
+    userId: UserId,
+    type: AccountType,
+    deletedPosition: number
+  ): Promise<db.Account[]> => {
+    const accounts = await tx.account.findMany({
+      where: {
+        userId,
+        type,
+        position: {
+          gt: deletedPosition,
+        },
+      },
+      orderBy: {
+        position: "asc",
+      },
+    });
+
+    const updatedAccounts = [];
+
+    for (const account of accounts) {
+      const updatedAccount = await tx.account.update({
+        where: {
+          id: account.id,
+        },
+        data: {
+          position: {
+            decrement: 1,
+          },
+        },
+      });
+
+      updatedAccounts.push(updatedAccount);
+    }
+
+    return updatedAccounts;
   },
 };

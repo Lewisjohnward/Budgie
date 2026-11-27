@@ -9,6 +9,7 @@ import { getNextPosition } from "./application/services/getNextPosition";
 import { getAccounts } from "./application/services/getAccounts";
 import { createAndInitialiseAccount } from "./application/services/createAndInitialiseAccount";
 import { getAccountsByIds } from "./application/services/getAcccountsByIds";
+import { shiftAccountsAfterDeletion } from "./application/services/shiftAccountsAfterDeletion";
 
 export const accountService = {
   createAndInitialiseAccount,
@@ -21,6 +22,7 @@ export const accountService = {
 
   updateAccountBalances,
   getNextPosition,
+  shiftAccountsAfterDeletion,
 
   refreshDeletableStatus,
   updateAccountName,
